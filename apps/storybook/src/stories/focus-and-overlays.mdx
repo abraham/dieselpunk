@@ -1,0 +1,84 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Guides/Focus and overlays" />
+
+# Focus and overlays
+
+How windows, dialogs, popovers, tooltips, and toasts treat the keyboard, focus, and each other. Each rule here has a test in all three engines.
+
+## Modal windows and dialogs
+
+A modal window (`modal`) and a dialog use a native `<dialog>` and `showModal()`, so the rest of the page is inert and the surface is in the top layer. The library adds what the platform leaves out:
+
+- **The page does not scroll behind it.** `<html>` gets `overflow: hidden` while any modal is open. It is counted, so two modals closed in either order leave your own inline `overflow` as it was.
+- **Initial focus is on content.** An element with `autofocus` takes it, else the first tabbable element of the body and footer, else the dialog itself. Never a titlebar button.
+- **Tab and Shift+Tab stay inside.**
+- **Focus goes back to the opener** when it closes, even if the opener has moved in the page. If it was removed, focus goes to the page.
+- **A backdrop click does nothing.** These are task surfaces, and an accidental click must not discard work. Give the dialog a button that closes it.
+
+```html
+<punk-dialog heading="Discard the run?" alert>
+  <p>Stopping now throws away the progress.</p>
+  <punk-button slot="footer" data-punk-close="cancel">Keep crafting</punk-button>
+  <punk-button slot="footer" variant="danger" data-punk-close="discard">Discard</punk-button>
+</punk-dialog>
+```
+
+A `data-punk-close` element closes the dialog with the reason `action` and sets `returnValue` to its value. `punk-close` carries `{ reason, returnValue }`, and the reason is one of `escape`, `close-button`, `method`, `action`, `outside`, and `tab`. `alert` makes it an `alertdialog` described by its body. `persistent` stops Escape from closing it.
+
+A window or dialog with no `heading` and no `aria-label` warns in development, and so does a dialog with no focusable content that is not `persistent`, since a touch user could not leave it.
+
+## Escape closes the topmost
+
+One list of open overlays has one `keydown` listener, present only while the list is not empty. Escape closes the topmost and stops there.
+
+- A **tooltip** is topmost over everything that opened before it, so Escape closes it first, and the popover or window under it after.
+- A **popover** over a window closes first, then the window.
+- A **`persistent` dialog** and a **window that is not `dismissible`** take Escape and do not close, so it does not fall through to a window beneath.
+- A **window in move mode** puts itself back with Escape, and a second Escape closes it.
+
+## Popovers
+
+A popover opens from its trigger, the element named by `for` or the one before it, and writes `aria-expanded` (and `aria-haspopup` for a menu) to it. For a `punk-button` it goes to the button inside.
+
+- **Content mode.** A pointer open leaves focus where it is. A keyboard open (Enter, Space, or an arrow on the trigger) moves focus to an `autofocus` element, else the first tabbable one, else the surface.
+- **Menu mode.** Opening always focuses the first enabled `menuitem`. Up, Down, Home, and End move without wrapping, Escape closes and returns to the trigger, and activating an item does not close the menu unless the popover has `data-punk-close-on-activate`.
+- **Tab leaves cleanly.** Tab on the last tabbable element, or Shift+Tab on the first, closes the popover and continues from the trigger.
+- Light dismissal is Escape and a press outside. The popover works with the Popover API turned off.
+- Inside a modal, the trigger must be inside the same dialog, since the rest of the page is inert.
+
+```html
+<punk-button id="actions">Actions</punk-button>
+<punk-popover for="actions" mode="menu" data-punk-close-on-activate>
+  <button role="menuitem">Copy recipe</button>
+  <button role="menuitem">Clear queue</button>
+</punk-popover>
+```
+
+## Toasts
+
+A toast never takes focus. The stack holds two live regions that exist before any toast does, and moves each toast into the right one: `role="alert"` for `warning` and `danger`, `role="status"` for `info` and `success`. A region added together with its content is not reliably announced, which is why the regions stay. Neither region re-reads the toasts already showing when one arrives.
+
+- Every toast has a dismiss button, reachable with Tab.
+- The countdown pauses while the pointer is over the toast, while focus is inside it, and while the page is hidden, and resumes with the time that was left. A touch does not pause it, since a touch makes a pointer enter and leave at once.
+- `info` and `success` close after 5 seconds. `warning`, `danger`, and a toast with an `action` stay until dismissed.
+- `punk-dismiss` is sent first and can be cancelled, for a framework that owns the toast and removes it itself.
+
+**A modal makes a toast stack inert**, as it does everything outside it, and a toast shown behind a modal still counts down. When toasts must be usable while a dialog is open, put a stack inside the dialog.
+
+## Moving a window
+
+Dragging a window by its titlebar is quick for a pointer, but a drag needs a second way (WCAG 2.2 SC 2.5.7), so a `movable` window has a move button.
+
+1. Activate the move button. The window announces what to do.
+2. The arrow keys move the window by 8px, and 32px with Shift. A click anywhere puts the titlebar's center there.
+3. Enter places it. Escape puts it back.
+
+A drag never starts on a button, link, or field in the titlebar. The window never leaves the viewport, and on an axis where it is larger than the viewport its start edge stays put, so the titlebar stays reachable.
+
+## What to do in your application
+
+- Open an overlay from a user action, and let it return focus; do not call `focus()` on the opener yourself.
+- Keep the trigger of a popover and the popover in the same tree, and in the same dialog when one is open.
+- Name every window, dialog, toolbar, and tab list.
+- Do not rely on a backdrop click, or on a toast, to tell a user something they must act on: use a dialog.

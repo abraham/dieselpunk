@@ -28,7 +28,7 @@ const meta: Meta<StoryArgs<PunkTabs>> = {
         component: `
 A list of tabs that show one panel at a time. The tab pair is registered together by \`@dieselpunk/core/tabs/register.js\`. Give \`punk-tabs\` an \`aria-label\`.
 
-**Panels:** a \`punk-tab\` names its panel by \`id\` in \`panel\`. The panel can be inside the tabs, or anywhere else in the same tree (beside them, as long as it is in the same document or shadow root). The tabs own the panels' \`role="tabpanel"\`, \`aria-labelledby\`, and \`hidden\`, and put \`tabindex="0"\` on a panel with nothing to Tab to. They give back what they wrote when a tab is removed or the tabs leave the page.
+**Panels:** a \`punk-tab\` names its panel by \`id\` in \`panel\`. The panel can be inside the tabs, or anywhere else in the same tree (beside them, as long as it is in the same document or shadow root). The tabs own the panels' \`role="tabpanel"\`, \`aria-labelledby\`, and \`hidden\`, and put \`tabindex="0"\` on a panel with nothing to Tab to. They give back what they wrote when a tab is removed or the tabs leave the page. A panel is hidden with the \`hidden\` attribute, which a \`display\` rule of your own on the panel overrides, so put layout on an element inside the panel.
 
 **Selection:** the first enabled tab is selected unless one has \`selected\`. \`value\` is the selected tab's \`panel\`. \`punk-tab-change\` with \`{ value, tab, panel }\` is sent when the user selects a tab, and not when the application sets \`value\` or \`selected\`.
 

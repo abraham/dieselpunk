@@ -1,6 +1,6 @@
 # Phase 3: Application Shell — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (shared internals), 2 (layout and disclosure), 3 (tabs and toolbar), 4 (window and dialog), 5 (popover), 6 (toast), 7 (toggles and slider), 8 (text, number, and select), and 9 (test infrastructure) are implemented, with their workbench parts; the Application shell example and guides, the framework fixtures, and hardening are not started.
+**Status:** Draft 1. Work packages 1 (shared internals), 2 (layout and disclosure), 3 (tabs and toolbar), 4 (window and dialog), 5 (popover), 6 (toast), 7 (toggles and slider), 8 (text, number, and select), 9 (test infrastructure), and 10 (workbench) are implemented; the framework fixtures and guides, and hardening, are not started.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 3
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md), [SPEC-PHASE-2.md](SPEC-PHASE-2.md)
 **Package:** `@dieselpunk/core`
@@ -630,7 +630,7 @@ Additions to Phase 2 §9:
 
 1. **A docs page and story set for each family**, with a playground, every state, the theme by density matrix, keyboard tables, and the manifest's API table. Overlays have stories that open them with a button, and the playground controls `open`.
 2. **Application shell** example (`Overview / Application shell`): the SPEC §8 markup, completed. A window with tabs (Production, Modules, Settings), a toolbar, a recipe and progress bar, a slot grid of item stacks, a settings panel built from the form controls with a live display of the submitted `FormData`, a dialog that confirms a destructive action, a popover menu, and toasts. It is the SPEC §19 scenario, and the first screen stays the Inventory overview (SPEC §15).
-3. **Responsive layouts guide:** the window at 375px and at 200% zoom, a footer that stacks, and a settings row (label beside its control above 480px, and above it below) built from `punk-stack`, `punk-cluster`, and a container query. The guide's examples are the same code as the fixtures that the tests render.
+3. **Responsive layouts guide:** the window at 375px and at 200% zoom, a footer that stacks, and a settings row (label beside its control above 480px, and above it below) built from `punk-stack`, `punk-cluster`, and a container query. Its examples are stories, which the workbench's smoke test loads at 375px and at 187px and fails if the page scrolls sideways.
 4. **Forms guide:** association, `FormData`, reset, validation and when messages appear, disabled fieldsets, labels (decision 5), and the autofill limit in §14.
 5. **Focus and overlays guide:** modal behavior, focus return, Escape order (decision 10), why backdrop clicks do nothing, toast announcements and their limit in a modal, popover focus modes, and the move mode for windows.
 6. **Accessibility guide** (Phase 1 §10.7, Phase 2 §9) gains each component's keyboard model, forced-colors cues, and the rule on error text (decision 7).
@@ -728,7 +728,7 @@ Packages are ordered by dependency.
 | 7 | Toggles and slider | 1 | `punk-checkbox`, `punk-switch`, `punk-slider`, `slider-math`, the parity test. Done (§11.7). |
 | 8 | Text, number, and select | 1, 7 | `punk-text-field`, `punk-number-field`, `punk-select`, tests. Done (§11.8). |
 | 9 | Test infrastructure | 2 to 8 as they land | Three gallery groups, axe and reflow coverage, ARIA snapshots, the visual matrix and `overlays.spec.ts`, `forms.test.ts`, `focus.test.ts`, `perf-shell.test.ts`, consumer typing and the shell fixture, baselines. Done (§11.9). |
-| 10 | Workbench | 2 to 8 as they land | Stories and docs per family, the Application shell example, the three guides |
+| 10 | Workbench | 2 to 8 as they land | Stories and docs per family, the Application shell example, the three guides (forms, focus and overlays, and responsive layouts; the React, Vue, and Svelte guides are package 11). Done (§11.10). |
 | 11 | Integration | 7, 8, 10 | The React, Vue, and Svelte fixtures and guides, `check:frameworks` |
 | 12 | Hardening | 9 | Forced-colors, RTL, 200% zoom, and 375px review of every render; size tuning; docs polish; `SPEC.md` updated |
 
@@ -910,6 +910,21 @@ The gallery, axe, reflow, ARIA, visual, `forms.test.ts`, and consumer typing par
 - **The reflow test has a 60 second limit.** It mounts 32 galleries a width, which with the three fields added came to the default 15 seconds when three engines share a runner, and timed out once in Chromium on Linux with nothing wrong.
 - **Tests:** `perf-shell.test.ts` has 10, `focus.test.ts` 23. The full run in Chromium, Firefox, and WebKit on Linux is 246 files, 5046 tests passed, 36 skipped; `test:visual` 1036 passed, and its self-test passes.
 - **Mutation checks:** four spot checks of the perf gates, each leaking something: the popover's `resize` listener, its observer, the stack's `keydown` removal, and the toast's hover hold. All four were caught.
+
+### 11.10 Work Package 10 Notes
+
+The stories and docs page of each family landed with its package (stack, cluster, accordion, tabs, toolbar, window, dialog, popover, toast, checkbox, switch, slider, and the three fields), and so did the keyboard sections of the accessibility guide and the forms part of the integration guide. What was missing, and is now in:
+
+- **Overview / Application shell** (§9 item 2): `src/lib/application-shell.ts`, shown by a second story in `overview.stories.ts` after the Inventory one, which stays the first screen. It is the SPEC §8 window, `open dismissible movable`, with a toolbar (Start, Pause, Stop, and an Actions button), tabs for Production, Modules, and Settings with their panels beside them, a recipe, a progress bar and status lights, a slot grid of item stacks that reports its selection, a settings form (text field, number field, select, slider, switch, checkbox, Apply, Reset) with a live display of its `FormData`, a confirmation `alertdialog` for Stop whose `data-punk-close="discard"` button zeroes the progress bar, a menu popover on Actions, and a toast stack for each outcome. It is wired from outside with the components' own events, as an application would be, and an "Open the assembler" button brings the window back once it is closed.
+- **It works with the keyboard, and the smoke test says so.** `scripts/smoke.ts` loads the story and drives it with key presses only: an arrow key in the tabs selects Modules and hides Production, the next one shows the live form, Enter on Stop opens the dialog, Escape closes it and focus goes back to Stop, and ArrowDown on Actions opens the menu with Copy recipe focused and Escape returns to Actions. Each assertion was checked to fail when it is made wrong.
+- **A defect in the example, and a note for the docs.** The panels were `<section class="wb-stack">`, and the `display: flex` of that class overrides the `hidden` attribute that tabs hide a panel with, so all three panels showed. The sections are plain now with the layout class on an element inside, and the tabs docs say that a panel's own `display` rule overrides `hidden`.
+- **Three guides** (§9 items 3 to 5) in the sidebar under Guides, in the order Integration, Forms, Focus and overlays, Responsive layouts, Accessibility and layout:
+  - **Forms** (`forms.mdx`): association and what each control submits, values and reset (the attribute is the default, the property is the live value), validation and when a message shows, disabled fieldsets, names and labels, events, and the limits (autofill, the select's open list, number formatting).
+  - **Focus and overlays** (`focus-and-overlays.mdx`): modal behavior, the Escape order, why a backdrop click does nothing, popover focus in both modes, toast announcements and their limit in a modal, and the move mode of a window.
+  - **Responsive layouts** (`responsive-layouts.mdx`, with `responsive-layouts.stories.ts` for its examples): a window and its footer at 560px and 320px, a modal window with a tall body, and a settings row built from `punk-stack`, `punk-cluster`, and a container query. The guide says containers decide, not the viewport.
+- **The responsive examples are tested in the workbench, not the gallery.** §9 asked for the guide's examples to be the code the tests render, but the gallery lives in the package's tests and the workbench imports only the package. The three examples are stories, and the smoke test loads each at 375px and 187px and fails if the page scrolls sideways by more than a pixel; made to fail, it names each story and width.
+- **Smoke test:** 133 entries render without errors (was 126): the shell story, the three guide pages, and the three responsive stories.
+- **Left for later packages:** the React, Vue, and Svelte guides and the plain HTML guide's fixture-backed code, which are package 11.
 
 ## 12. Acceptance Criteria
 

@@ -94,6 +94,13 @@ const preview: Preview = {
             'Select',
           ],
           'Guides',
+          [
+            'Integration',
+            'Forms',
+            'Focus and overlays',
+            'Responsive layouts',
+            'Accessibility and layout',
+          ],
         ],
       },
     },

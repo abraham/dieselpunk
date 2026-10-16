@@ -1,0 +1,91 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Guides/Forms" />
+
+# Forms
+
+The checkbox, switch, slider, text field, number field, and select are form-associated: they take part in a native `<form>` as a native control does, with no wrapper and no hidden input.
+
+```html
+<form id="settings">
+  <punk-text-field name="callsign" label="Callsign" required></punk-text-field>
+  <punk-number-field name="thrust" label="Thrust" min="0" max="10" value="3"></punk-number-field>
+  <punk-select name="squadron" label="Squadron">
+    <option value="a">Alpha</option>
+    <option value="b" selected>Beta</option>
+  </punk-select>
+  <punk-slider name="power" label="Power limit" value="80"></punk-slider>
+  <punk-switch name="restart" checked>Restart automatically</punk-switch>
+  <punk-checkbox name="notify" value="yes">Notify when finished</punk-checkbox>
+  <punk-button type="submit" variant="primary">Apply</punk-button>
+</form>
+```
+
+The **Overview / Application shell** example has a settings tab built this way, with a live display of the `FormData`.
+
+## What is submitted
+
+| Control          | Submits under `name`                                                    |
+| ---------------- | ----------------------------------------------------------------------- |
+| Checkbox, switch | Its `value` (`on` unless you set one) while it is checked, else nothing |
+| Slider           | The number, as text, always inside the range and on a step              |
+| Text field       | The text                                                                |
+| Number field     | The text the user sees; `valueAsNumber` is the number                   |
+| Select           | The `value` of the chosen option, and nothing while none is chosen      |
+
+A control with no `name`, a disabled control, and one inside a disabled `<fieldset>` add nothing. The value is current as soon as the user changes it, so a `FormData` read in an `input` handler is right. A control outside the form is placed in it with `form="id"`.
+
+## Values and reset
+
+`checked`, and the `value` of a slider, a text field, and a number field, are the **default** the markup wrote: the attribute is not updated as the user changes the control, and `form.reset()` goes back to it, as a native control does. A select goes back to the options that have the `selected` attribute, or to the first enabled one.
+
+```ts
+const field = document.querySelector('punk-text-field')!;
+field.value = 'Echo'; // the live value
+field.getAttribute('value'); // still what the markup wrote
+form.reset(); // back to the attribute
+```
+
+Set `value` as a property to change what is shown, and set the attribute to change what reset goes back to. A select takes `value` too, and keeps one it has no option for yet until the option arrives.
+
+The browser also keeps the values across a back navigation and puts them back, which the controls support.
+
+## Validation, and when a message shows
+
+Validation is the platform's. `required`, `minlength`, `maxlength`, `pattern`, and the constraints of a `type` such as `email`, and `min`, `max`, and `step` of a number field, give `validity`, `validationMessage`, `checkValidity()`, and `reportValidity()` as a native control does, and a form's `checkValidity()` and `requestSubmit()` count them.
+
+- **Nothing is shown before the user has had a chance to type.** A message waits until the user has left the field, or until `reportValidity()` or a submit has reported it. After that it follows the value.
+- **A message is the browser's own** (`validationMessage`), in the browser's language. It is drawn in the text color, with a triangle and a frame, never in red text alone. The field is `aria-invalid`, and the message is part of its description.
+- **Your own message** goes through `setCustomValidity(message)`, and an empty string clears it.
+- **A select with a placeholder** is `required` with a first `<option value="">`: the field is missing a value while that option is chosen.
+- `form.reportValidity()` and a blocked submit move focus to the first invalid control.
+
+```ts
+field.setCustomValidity(taken ? 'That callsign is taken.' : '');
+```
+
+## Disabled fieldsets
+
+A control inside a disabled `<fieldset>` is disabled for submission and for interaction, and its own `disabled` property stays `false`. Read `isDisabled` to ask whether either applies.
+
+## Names and labels
+
+Every control needs a name that assistive technology can read.
+
+- A **checkbox** and a **switch** are named by the text between the tags.
+- The **slider** and the three **fields** are named by `label`, which is shown above the control, or by `aria-label`.
+- A `<label for>` that points at the host focuses the control when it is clicked, and its text is used as the name when there is no `label` or `aria-label`. That text is read when the control renders and when it gets focus, and is not live, so prefer `label`.
+- A placeholder is never a name.
+
+A control with no name warns in development.
+
+## Events
+
+`input` is sent while the user types, steps, or drags, and crosses the shadow boundary. `change` is sent when a change is committed, from the host. Neither is sent when your code sets a value. Both are real `Event`s, as native ones are.
+
+## Limits
+
+- **Paste is never blocked**, and `autocomplete` is passed to the native input.
+- **Password managers and autofill do not reliably fill an input inside a shadow root.** If a form needs autofill, such as a sign-in form, use a native `<input>` in the light DOM there.
+- The open list of a select is the platform's, and cannot be themed.
+- A number field shows and parses the number as the engine and the user's locale do; it formats nothing itself.
