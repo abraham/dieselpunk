@@ -68,9 +68,7 @@ export class WbColorTheme extends LitElement {
     const passes = ratio !== null && ratio >= check.required;
     const result = passes
       ? html`<span class="wb-pass">pass</span>`
-      : check.knownGap
-        ? html`<span class="wb-gap" title="Open gap, SPEC-PHASE-1 §6.8">gap</span>`
-        : html`<span class="wb-fail">fail</span>`;
+      : html`<span class="wb-fail">fail</span>`;
     return html`
       <tr>
         <td>${check.foreground}</td>

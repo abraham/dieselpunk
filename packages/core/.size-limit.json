@@ -9,11 +9,19 @@
       "dist/utilities/localize.js",
       "dist/utilities/locale.js",
       "dist/utilities/warn.js",
-      "dist/styles/*.js"
+      "dist/styles/*.js",
+      "!dist/styles/receptacle.js"
     ],
     "ignore": ["lit"],
     "gzip": true,
     "limit": "12 kB"
+  },
+  {
+    "name": "Selectable base and receptacle (shared by slot and item stack)",
+    "path": ["dist/internal/selectable-base.js", "dist/styles/receptacle.js"],
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
   },
   {
     "name": "punk-panel",
@@ -39,6 +47,48 @@
   {
     "name": "punk-progress-bar",
     "path": "dist/components/progress-bar/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-slot",
+    "path": "dist/components/slot/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-item-stack (receptacle, durability, quality, and number formatting)",
+    "path": "dist/components/item-stack/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
+    "name": "punk-slot-grid",
+    "path": "dist/components/slot-grid/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-recipe",
+    "path": "dist/components/recipe/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-meter",
+    "path": "dist/components/meter/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-status-light",
+    "path": "dist/components/status-light/register.js",
     "ignore": ["lit"],
     "gzip": true,
     "limit": "5 kB"

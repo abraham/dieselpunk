@@ -203,6 +203,41 @@ describe('contrast gate', () => {
     assert.ok(failures.some((f) => f.rule === 'text' && f.theme === 'dim'));
   });
 
+  it('fails a theme whose control edge is too dim on any surface', () => {
+    const industrial: Record<string, string> = themes.industrial.tokens;
+    for (const surface of ['canvas', 'panel', 'panel-raised', 'panel-inset']) {
+      const dim = {
+        colorScheme: 'dark',
+        tokens: { ...industrial, 'color-control-edge': industrial[`color-${surface}`] ?? '' },
+      } as const;
+      const failures = evaluateContrast({ dim });
+      assert.ok(
+        failures.some((f) => f.rule === 'control-edge' && f.background === surface),
+        surface,
+      );
+    }
+  });
+
+  it('fails a theme whose selection or highlight outline is lost on a raised surface', () => {
+    for (const outline of ['accent', 'warning']) {
+      const lost = {
+        colorScheme: 'dark',
+        tokens: {
+          ...themes.industrial.tokens,
+          [`color-${outline}`]: themes.industrial.tokens['color-panel-raised'],
+        },
+      } as const;
+      const failures = evaluateContrast({ lost });
+      assert.ok(
+        failures.some(
+          (f) =>
+            f.rule === 'outline' && f.foreground === outline && f.background === 'panel-raised',
+        ),
+        outline,
+      );
+    }
+  });
+
   it('requires 7:1 text contrast in the high-contrast theme', () => {
     const almost = {
       ...themes['high-contrast'],

@@ -9,8 +9,15 @@ import '../../../src/components/button/register.ts';
 import '../../../src/components/icon-button/register.ts';
 import '../../../src/components/progress-bar/register.ts';
 import '../../../src/components/tooltip/register.ts';
+import '../../../src/components/slot/register.ts';
+import '../../../src/components/item-stack/register.ts';
+import '../../../src/components/slot-grid/register.ts';
+import '../../../src/components/recipe/register.ts';
+import '../../../src/components/meter/register.ts';
+import '../../../src/components/status-light/register.ts';
 
-export const componentNames = [
+// The visual matrix renders one group per run, so each group has its own page and baselines.
+export const foundationNames = [
   'panel',
   'divider',
   'button',
@@ -18,7 +25,22 @@ export const componentNames = [
   'progress-bar',
   'tooltip',
 ] as const;
+export const inventoryNames = [
+  'slot',
+  'item-stack',
+  'slot-grid',
+  'recipe',
+  'meter',
+  'status-light',
+] as const;
+export const componentNames = [...foundationNames, ...inventoryNames] as const;
 export type ComponentName = (typeof componentNames)[number];
+
+export const galleryGroups = {
+  foundation: foundationNames,
+  inventory: inventoryNames,
+} as const;
+export type GalleryGroup = keyof typeof galleryGroups;
 
 export const contentVariants = ['short', 'long', 'unlabeled', 'rtl'] as const;
 export type ContentVariant = (typeof contentVariants)[number];
@@ -36,6 +58,13 @@ interface Copy {
   progress: string;
   settings: string;
   tip: string;
+  slot: string;
+  item: string;
+  recipe: string;
+  needs: string;
+  makes: string;
+  meter: string;
+  statuses: [string, string, string, string, string];
 }
 
 const copy: Record<ContentVariant, Copy> = {
@@ -52,6 +81,13 @@ const copy: Record<ContentVariant, Copy> = {
     progress: 'Crafting',
     settings: 'Settings',
     tip: 'Starts the assembler',
+    slot: 'Module slot 1',
+    item: 'Speed module',
+    recipe: 'Precision gear',
+    needs: '2 iron plates',
+    makes: 'Precision gear',
+    meter: 'Reactor heat',
+    statuses: ['Idle', 'Scheduled', 'Running', 'Low on fuel', 'Offline'],
   },
   long: {
     lang: 'de',
@@ -66,6 +102,19 @@ const copy: Record<ContentVariant, Copy> = {
     progress: 'Getriebe wird gefertigt',
     settings: 'Einstellungen der Maschine öffnen',
     tip: 'Startet die Montagemaschine und nimmt die Produktion sofort auf',
+    slot: 'Steckplatz für Verstärkungsmodule, Reihe zwei, Position drei',
+    item: 'Geschwindigkeitsmodul der dritten Generation',
+    recipe: 'Präzisionszahnrad für schwere Industriegetriebe, Baureihe zwei',
+    needs: '2 Eisenplatten und 1 Schmierstoffkartusche',
+    makes: 'Präzisionszahnrad',
+    meter: 'Reaktorwärme im Primärkreislauf des Nordwerks',
+    statuses: [
+      'Wartet auf Rohstoffe',
+      'Für die nächste Schicht eingeplant',
+      'Produktion läuft ohne Unterbrechung',
+      'Brennstoff wird knapp',
+      'Anlage vollständig abgeschaltet',
+    ],
   },
   unlabeled: {
     lang: 'en',
@@ -80,6 +129,13 @@ const copy: Record<ContentVariant, Copy> = {
     progress: '',
     settings: 'Settings',
     tip: 'Starts the assembler',
+    slot: '',
+    item: '',
+    recipe: '',
+    needs: '2 iron plates',
+    makes: 'Precision gear',
+    meter: '',
+    statuses: ['Idle', 'Scheduled', 'Running', 'Low on fuel', 'Offline'],
   },
   rtl: {
     lang: 'he',
@@ -94,6 +150,13 @@ const copy: Record<ContentVariant, Copy> = {
     progress: 'מייצר גלגלי שיניים',
     settings: 'הגדרות',
     tip: 'מפעיל את מכונת ההרכבה',
+    slot: 'חריץ מודול 1',
+    item: 'מודול מהירות',
+    recipe: 'גלגל שיניים מדויק',
+    needs: '2 לוחות ברזל',
+    makes: 'גלגל שיניים',
+    meter: 'חום הראקטור',
+    statuses: ['ממתין', 'מתוזמן', 'פועל', 'דלק נמוך', 'מנותק'],
   },
 };
 
@@ -188,6 +251,159 @@ const builders: Record<ComponentName, Builder> = {
       <punk-tooltip for="gallery-anchor" placement="bottom" describe="false">${c.tip}</punk-tooltip>
     `)}
   `,
+
+  slot: (c) => {
+    // Without a visible label the slots take an aria-label, since a name is required.
+    const name = c.slot ? `label="${c.slot}"` : 'aria-label="Module slot"';
+    return `
+      ${row(`
+        <punk-slot ${name}></punk-slot>
+        <punk-slot ${name}>${gear}</punk-slot>
+        <punk-slot ${name} selected>${gear}</punk-slot>
+        <punk-slot ${name} highlighted>${gear}</punk-slot>
+        <punk-slot ${name} invalid>${gear}</punk-slot>
+        <punk-slot ${name} disabled>${gear}</punk-slot>
+      `)}
+      ${row(`
+        <punk-slot ${name} selected highlighted invalid>${gear}</punk-slot>
+        <punk-slot ${name} selected></punk-slot>
+        <punk-slot ${name} invalid></punk-slot>
+        <punk-slot ${name} disabled></punk-slot>
+      `)}
+      ${row(sizes.map((size) => `<punk-slot ${name} size="${size}">${gear}</punk-slot>`).join(''))}
+      ${row(`
+        <punk-slot ${name}>${gear}<span slot="badge" aria-hidden="true">+</span></punk-slot>
+        <punk-slot ${name}>${gear}<span slot="overlay" aria-hidden="true">×</span></punk-slot>
+      `)}
+    `;
+  },
+
+  'item-stack': (c) => {
+    // The name is never visible, so the unlabeled variant still uses it; an aria-label would
+    // replace the visible count in the accessible name.
+    const name = `name="${c.item || 'Item'}"`;
+    const art = gear.replace('<svg', '<svg slot="icon"');
+    return `
+      ${row(`
+        <punk-item-stack ${name} count="1">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="99">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="1234">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="1234567">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="1234" compact-count>${art}</punk-item-stack>
+        <punk-item-stack ${name} count="1234567" compact-count>${art}</punk-item-stack>
+        <punk-item-stack ${name} count="75" capacity="100">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="0">${art}</punk-item-stack>
+      `)}
+      ${row(`
+        <punk-item-stack ${name} durability="0.8">${art}</punk-item-stack>
+        <punk-item-stack ${name} durability="0.4" count="12">${art}</punk-item-stack>
+        <punk-item-stack ${name} durability="0.1" count="3">${art}</punk-item-stack>
+        <punk-item-stack ${name} quality="3">${art}</punk-item-stack>
+        <punk-item-stack ${name} quality="5" durability="0.6" count="999">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="1"></punk-item-stack>
+      `)}
+      ${row(`
+        <punk-item-stack ${name} count="8" selected>${art}</punk-item-stack>
+        <punk-item-stack ${name} count="8" highlighted>${art}</punk-item-stack>
+        <punk-item-stack ${name} count="8" invalid>${art}</punk-item-stack>
+        <punk-item-stack ${name} count="8" disabled>${art}</punk-item-stack>
+        <punk-item-stack ${name} count="8" selected highlighted invalid>${art}</punk-item-stack>
+      `)}
+      ${row(
+        sizes
+          .map(
+            (size) =>
+              `<punk-item-stack ${name} size="${size}" count="24" durability="0.5" quality="2">${art}</punk-item-stack>`,
+          )
+          .join(''),
+      )}
+      ${row(`
+        <punk-item-stack ${name} count="5">${art}<span slot="badge" aria-hidden="true">+</span></punk-item-stack>
+        <punk-item-stack ${name} count="5">${art}<span slot="overlay" aria-hidden="true">×</span></punk-item-stack>
+      `)}
+    `;
+  },
+
+  'slot-grid': (c) => {
+    // Grids are named by the application, so the unlabeled variant still has an aria-label.
+    const label = `aria-label="${c.item || 'Module slots'}"`;
+    const slotName = c.slot || 'Slot';
+    const itemName = c.item || 'Item';
+    const slots = (disabled: number[] = []) =>
+      [1, 2, 3, 4, 5, 6]
+        .map(
+          (n) =>
+            `<punk-slot label="${slotName} ${n}" value="s${n}"${disabled.includes(n) ? ' disabled' : ''}>${n === 5 ? '' : gear}</punk-slot>`,
+        )
+        .join('');
+    const stacks = [1, 2, 3, 4, 5, 6]
+      .map(
+        (n) =>
+          `<punk-item-stack name="${itemName} ${n}" value="i${n}" count="${n * 12}"${n === 4 ? ' disabled' : ''}>${gear.replace('<svg', '<svg slot="icon"')}</punk-item-stack>`,
+      )
+      .join('');
+    return `
+      <punk-slot-grid ${label} selection="single" columns="4" data-values="s2">${slots([3])}</punk-slot-grid>
+      <punk-slot-grid ${label} selection="multiple" columns="3" data-values="i1,i3">${stacks}</punk-slot-grid>
+      <punk-slot-grid ${label}>${slots()}</punk-slot-grid>
+      <punk-slot-grid ${label} selection="single" disabled data-values="s1">${slots()}</punk-slot-grid>
+    `;
+  },
+
+  recipe: (c) => {
+    // An aria-label would replace the visible text in the accessible name, so the name is `name`.
+    const name = `name="${c.recipe || 'Recipe'}"`;
+    const icon = gear.replace('<svg', '<svg slot="icon"');
+    const needs = `<span slot="ingredients">${c.needs}</span>`;
+    const makes = `<span slot="products">${c.makes}</span>`;
+    return `
+      <div class="stack">
+        <punk-recipe ${name} duration="0.5" available craftable-count="3">${icon}${needs}${makes}</punk-recipe>
+        <punk-recipe ${name} duration="12" available selected>${icon}${needs}${makes}</punk-recipe>
+        <punk-recipe ${name} duration="1.25">${icon}${needs}${makes}</punk-recipe>
+        <punk-recipe ${name} duration="3" available disabled>${icon}${needs}${makes}</punk-recipe>
+        <punk-recipe ${name} available>${needs}</punk-recipe>
+        <punk-recipe ${name} available>${makes}</punk-recipe>
+        <punk-recipe ${name} available craftable-count="1200">${icon}</punk-recipe>
+        <punk-recipe ${name}></punk-recipe>
+      </div>
+    `;
+  },
+
+  meter: (c) => {
+    // Without a visible label the meters take an aria-label, since a name is required.
+    const name = c.meter ? `label="${c.meter}"` : 'aria-label="Reactor heat"';
+    const zones = 'low="30" high="70"';
+    return `
+      <div class="stack">
+        ${[0, 64, 100].map((value) => `<punk-meter ${name} value="${value}" show-value></punk-meter>`).join('')}
+        <punk-meter ${name} ${zones} optimum="50" value="50" show-value></punk-meter>
+        <punk-meter ${name} ${zones} optimum="50" value="15" show-value></punk-meter>
+        <punk-meter ${name} ${zones} optimum="10" value="90" show-value></punk-meter>
+        <punk-meter ${name} ${zones} optimum="50" value="85" segments="5" show-value></punk-meter>
+        <punk-meter ${name} label-hidden value="40"></punk-meter>
+      </div>
+      ${row(`
+        <punk-meter ${name} orientation="vertical" value="70" show-value></punk-meter>
+        <punk-meter ${name} orientation="vertical" ${zones} optimum="50" value="20" show-value></punk-meter>
+        <punk-meter ${name} orientation="vertical" ${zones} optimum="10" value="90" segments="6" show-value></punk-meter>
+      `)}
+    `;
+  },
+
+  'status-light': (c) => {
+    const [idle, scheduled, running, low, offline] = c.statuses;
+    return `
+      <div class="stack">
+        <punk-status-light>${idle}</punk-status-light>
+        <punk-status-light variant="info">${scheduled}</punk-status-light>
+        <punk-status-light variant="success">${running}</punk-status-light>
+        <punk-status-light variant="warning">${low}</punk-status-light>
+        <punk-status-light variant="danger" announce>${offline}</punk-status-light>
+        <punk-status-light variant="success"><span slot="icon" aria-hidden="true">${plus}</span>${running}</punk-status-light>
+      </div>
+    `;
+  },
 };
 
 /** HTML for one component's states. */
@@ -215,6 +431,45 @@ export function buildGallery(
       `,
     )
     .join('');
+  applyGridValues(root);
+  return root;
+}
+
+/** A grid takes its selection as a property, which markup cannot carry. */
+function applyGridValues(root: ParentNode): void {
+  for (const grid of root.querySelectorAll<HTMLElementTagNameMap['punk-slot-grid']>(
+    'punk-slot-grid[data-values]',
+  )) {
+    grid.values = (grid.dataset['values'] ?? '').split(',');
+  }
+}
+
+/**
+ * Grids of 100 slots, one for each selection mode, for the visual matrix. They are too many
+ * elements for the axe and reflow suites, which would repeat them across every theme.
+ */
+export function buildLargeGrids(variant: ContentVariant): HTMLElement {
+  const { lang, dir } = copy[variant];
+  const root = document.createElement('div');
+  root.className = 'gallery';
+  root.lang = lang;
+  root.dir = dir;
+  const slots = Array.from(
+    { length: 100 },
+    (_, index) =>
+      `<punk-slot label="Slot ${index + 1}" value="s${index + 1}"${index % 17 === 5 ? ' disabled' : ''}>${index % 11 === 0 ? '' : gear}</punk-slot>`,
+  ).join('');
+  const grid = (selection: string, values: string) =>
+    `<punk-slot-grid aria-label="Slots, ${selection}" selection="${selection}" columns="10"${values ? ` data-values="${values}"` : ''}>${slots}</punk-slot-grid>`;
+  root.innerHTML = `
+    <section data-component="large-grids" class="stack">
+      <h2 class="caption">punk-slot-grid, 100 slots</h2>
+      ${grid('none', '')}
+      ${grid('single', 's42')}
+      ${grid('multiple', 's3,s4,s5,s37,s60')}
+    </section>
+  `;
+  applyGridValues(root);
   return root;
 }
 

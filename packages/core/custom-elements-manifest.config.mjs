@@ -1,5 +1,11 @@
 export default {
-  globs: ['src/components/*/*.ts', 'src/internal/punk-element.ts', 'src/internal/button-base.ts'],
+  globs: [
+    'src/components/*/*.ts',
+    'src/internal/punk-element.ts',
+    'src/internal/button-base.ts',
+    'src/internal/selectable-base.ts',
+    'src/internal/receptacle-base.ts',
+  ],
   exclude: [
     '**/*.test.ts',
     '**/*.styles.ts',

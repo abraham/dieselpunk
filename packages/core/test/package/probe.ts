@@ -8,11 +8,24 @@ export function probeConsumer() {
     'punk-icon-button',
     'punk-progress-bar',
     'punk-tooltip',
+    'punk-slot',
+    'punk-item-stack',
+    'punk-slot-grid',
+    'punk-recipe',
+    'punk-meter',
+    'punk-status-light',
   ];
   const bar = document
     .querySelector('punk-progress-bar')
     ?.shadowRoot?.querySelector('[role="progressbar"]');
   const inner = document.querySelector('punk-icon-button')?.shadowRoot?.querySelector('button');
+  // Clicking an item of the grid selects it, and the event carries the value.
+  const grid = document.querySelector('punk-slot-grid');
+  let changed: string[] | null = null;
+  grid?.addEventListener('punk-selection-change', (event) => {
+    changed = event.detail.values;
+  });
+  grid?.querySelector('punk-slot')?.click();
   return {
     defined: tags.filter((tag) => customElements.get(tag) !== undefined),
     upgraded: Boolean(
@@ -25,6 +38,9 @@ export function probeConsumer() {
     ready: document.documentElement.dataset['consumer'] ?? null,
     valuenow: bar?.getAttribute('aria-valuenow') ?? null,
     name: inner?.getAttribute('aria-label') ?? inner?.textContent?.trim() ?? null,
+    gridRole: grid?.getAttribute('role') ?? null,
+    itemRole: grid?.querySelector('punk-slot')?.getAttribute('role') ?? null,
+    changed: changed as string[] | null,
   };
 }
 

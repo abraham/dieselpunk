@@ -32,8 +32,11 @@ const TEXT_SURFACES = ['canvas', 'panel', 'panel-raised', 'panel-inset'];
 const MUTED_TEXT_SURFACES = ['canvas', 'panel', 'panel-inset'];
 const FILLS = ['accent', 'accent-strong', 'warning', 'danger', 'success', 'info'];
 const FOCUS_SURFACES = TEXT_SURFACES;
+// Selection and highlight outlines; panel-inset is already covered by the fill rule.
+const OUTLINES = ['accent', 'warning'];
+const OUTLINE_SURFACES = ['canvas', 'panel', 'panel-raised'];
 
-/** Checks every theme against the rules in SPEC-PHASE-1.md section 6.8. */
+/** Checks every theme against the rules in SPEC-PHASE-1.md section 6.8 and SPEC-PHASE-2.md section 6.3. */
 export function evaluateContrast(
   themeMap: Readonly<Record<string, Theme>> = themes,
 ): ContrastFailure[] {
@@ -67,6 +70,10 @@ export function evaluateContrast(
       check('text-muted', 'text-muted', surface, textRequired);
     }
     for (const fill of FILLS) check('fill', fill, 'panel-inset', 3);
+    for (const outline of OUTLINES) {
+      for (const surface of OUTLINE_SURFACES) check('outline', outline, surface, 3);
+    }
+    for (const surface of TEXT_SURFACES) check('control-edge', 'control-edge', surface, 3);
     check('accent-text', 'accent-text', 'accent', textRequired);
     check('danger-text', 'danger-text', 'danger', textRequired);
     for (const surface of FOCUS_SURFACES) check('focus-outer', 'focus', surface, 3);

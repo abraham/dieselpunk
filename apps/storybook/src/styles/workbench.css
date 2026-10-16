@@ -132,8 +132,7 @@ wb-scales .wb-table td > span {
 }
 
 .wb-pass,
-.wb-fail,
-.wb-gap {
+.wb-fail {
   display: inline-block;
   min-inline-size: 4.5em;
   padding: 1px 6px;
@@ -150,10 +149,6 @@ wb-scales .wb-table td > span {
 
 .wb-fail {
   color: var(--punk-color-danger);
-}
-
-.wb-gap {
-  color: var(--punk-color-warning);
 }
 
 .wb-bar-sample {

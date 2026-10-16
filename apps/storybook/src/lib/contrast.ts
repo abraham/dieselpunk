@@ -32,20 +32,15 @@ export interface ContrastCheck {
   background: string;
   /** Minimum ratio for this theme. */
   required: number;
-  /** A known gap in the spec that the contrast gate does not yet enforce. */
-  knownGap?: boolean;
 }
 
-/**
- * The pairs the contrast gate enforces (SPEC-PHASE-1 §6.8), plus the control-edge pairs that
- * the spec records as an open gap. Names are tokens without the `color-` prefix.
- */
+/** The pairs the contrast gate enforces (SPEC-PHASE-1 §6.8, SPEC-PHASE-2 §6.3), as tokens without the `color-` prefix. */
 export function checksFor(theme: string): ContrastCheck[] {
   const text = theme === 'high-contrast' ? 7 : 4.5;
   const checks: ContrastCheck[] = [];
-  const add = (foreground: string, backgrounds: string[], required: number, knownGap = false) => {
+  const add = (foreground: string, backgrounds: string[], required: number) => {
     for (const background of backgrounds) {
-      checks.push({ foreground, background, required, knownGap });
+      checks.push({ foreground, background, required });
     }
   };
 
@@ -59,10 +54,10 @@ export function checksFor(theme: string): ContrastCheck[] {
   add('danger', ['panel-inset'], 3);
   add('success', ['panel-inset'], 3);
   add('info', ['panel-inset'], 3);
+  add('accent', ['canvas', 'panel', 'panel-raised'], 3);
+  add('warning', ['canvas', 'panel', 'panel-raised'], 3);
+  add('control-edge', ['canvas', 'panel', 'panel-raised', 'panel-inset'], 3);
   add('focus', ['canvas', 'panel', 'panel-raised', 'panel-inset'], 3);
   add('focus-inner', ['focus'], 3);
-  add('edge-dark', ['panel'], 3, true);
-  add('edge-light', ['panel'], 3, true);
-  add('panel-raised', ['panel'], 3, true);
   return checks;
 }
