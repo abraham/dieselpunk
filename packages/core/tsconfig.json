@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": [],
+    "paths": { "#dev": ["./src/utilities/dev.ts"] }
+  },
+  "include": [
+    "src/**/*.ts",
+    "test/browser/**/*.ts",
+    "test/package/probe.ts",
+    "test/visual/matrix.ts",
+    "test/visual/css.d.ts"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["ESNext"],
+    "types": ["node"],
+    "noEmit": true,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "experimentalDecorators": false
+  },
+  "include": [
+    "scripts/**/*.ts",
+    "packages/core/scripts/**/*.ts",
+    "apps/storybook/scripts/**/*.ts",
+    "packages/core/test/*.ts",
+    "packages/core/test/visual/*.spec.ts",
+    "packages/core/playwright.config.ts",
+    "packages/core/vitest.config.ts",
+    "packages/core/src/tokens/base.ts",
+    "packages/core/src/tokens/themes.ts",
+    "packages/core/src/tokens/density.ts"
+  ]
+}

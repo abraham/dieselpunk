@@ -1,0 +1,60 @@
+[
+  {
+    "name": "Shared runtime and tokens",
+    "path": [
+      "dist/internal/punk-element.js",
+      "dist/internal/slot-presence.js",
+      "dist/tokens/*.js",
+      "dist/utilities/register-element.js",
+      "dist/utilities/localize.js",
+      "dist/utilities/locale.js",
+      "dist/utilities/warn.js",
+      "dist/styles/*.js"
+    ],
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "12 kB"
+  },
+  {
+    "name": "punk-panel",
+    "path": "dist/components/panel/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-divider",
+    "path": "dist/components/divider/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-button",
+    "path": "dist/components/button/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-progress-bar",
+    "path": "dist/components/progress-bar/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-tooltip",
+    "path": "dist/components/tooltip/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-icon-button (includes the tooltip)",
+    "path": "dist/components/icon-button/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "7.5 kB"
+  }
+]

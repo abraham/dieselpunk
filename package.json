@@ -1,0 +1,38 @@
+{
+  "name": "dieselpunk",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "storybook": "npm run build -w @dieselpunk/core && npm run dev -w @dieselpunk/storybook",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present && tsc -p tsconfig.scripts.json",
+    "lint": "eslint .",
+    "format:check": "prettier --check .",
+    "check:contrast": "npm run check:contrast --workspace @dieselpunk/core",
+    "check:package": "npm run check:package --workspace @dieselpunk/core",
+    "check:size": "npm run check:size --workspace @dieselpunk/core",
+    "check:consumer": "npm run check:consumer --workspace @dieselpunk/core",
+    "test:visual": "npm run test:visual --workspace @dieselpunk/core",
+    "test:smoke": "npm run test:smoke --workspace @dieselpunk/storybook",
+    "check:toolchain": "node scripts/check-toolchain.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.5",
+    "eslint": "^10.12.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.2"
+  },
+  "overrides": {
+    "typescript": "$typescript"
+  }
+}

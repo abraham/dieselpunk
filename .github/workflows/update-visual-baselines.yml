@@ -1,0 +1,28 @@
+name: Update visual baselines
+
+# Baselines are only valid when rendered on the Linux image CI checks with (SPEC-PHASE-1.md section 10.3).
+# Run this manually, download the artifact, and commit it under packages/core/test/visual/__screenshots__.
+on:
+  workflow_dispatch:
+
+jobs:
+  baselines:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Start from nothing so baselines for removed tests do not linger and never fail.
+      - run: rm -rf packages/core/test/visual/__screenshots__
+      - run: npm run test:visual:update --workspace @dieselpunk/core
+      - uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines
+          path: packages/core/test/visual/__screenshots__/
+          if-no-files-found: error

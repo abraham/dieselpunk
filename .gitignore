@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+.vitest/
+test-results/
+.DS_Store
+custom-elements.json
+*.core
