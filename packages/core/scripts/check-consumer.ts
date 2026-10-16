@@ -39,13 +39,26 @@ interface Report {
   ready: string | null;
   valuenow: string | null;
   name: string | null;
+  gridRole: string | null;
+  itemRole: string | null;
+  changed: string[] | null;
 }
 
 // What each page registers: the plain page imports panel and button; the TypeScript page imports
-// the icon button, which brings the tooltip, and the progress bar.
+// the icon button, which brings the tooltip, the progress bar, and the inventory components.
 const expectedTags: Record<string, string[]> = {
   plain: ['punk-button', 'punk-panel'],
-  app: ['punk-icon-button', 'punk-progress-bar', 'punk-tooltip'],
+  app: [
+    'punk-icon-button',
+    'punk-item-stack',
+    'punk-meter',
+    'punk-progress-bar',
+    'punk-recipe',
+    'punk-slot',
+    'punk-slot-grid',
+    'punk-status-light',
+    'punk-tooltip',
+  ],
 };
 
 const run = (command: string, args: string[], cwd: string): string =>
@@ -138,6 +151,14 @@ async function checkPages(outDir: string): Promise<void> {
           problems.push(`app.html: progress bar valuenow is ${report.valuenow}`);
         }
         if (!report.name) problems.push('app.html: the icon button has no accessible name');
+        if (report.gridRole !== 'listbox' || report.itemRole !== 'option') {
+          problems.push(
+            `app.html: the grid is ${report.gridRole} with ${report.itemRole} items, expected listbox and option`,
+          );
+        }
+        if (JSON.stringify(report.changed) !== '["engine"]') {
+          problems.push(`app.html: clicking a slot reported ${JSON.stringify(report.changed)}`);
+        }
       }
       if (messages.length > 0) problems.push(`${page}.html logged: ${messages.join(' | ')}`);
       await tab.close();

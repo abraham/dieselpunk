@@ -16,7 +16,7 @@ import '../../../src/components/recipe/register.ts';
 import '../../../src/components/meter/register.ts';
 import '../../../src/components/status-light/register.ts';
 
-// The visual matrix renders the foundation set only, until its baselines include the inventory.
+// The visual matrix renders one group per run, so each group has its own page and baselines.
 export const foundationNames = [
   'panel',
   'divider',
@@ -35,6 +35,12 @@ export const inventoryNames = [
 ] as const;
 export const componentNames = [...foundationNames, ...inventoryNames] as const;
 export type ComponentName = (typeof componentNames)[number];
+
+export const galleryGroups = {
+  foundation: foundationNames,
+  inventory: inventoryNames,
+} as const;
+export type GalleryGroup = keyof typeof galleryGroups;
 
 export const contentVariants = ['short', 'long', 'unlabeled', 'rtl'] as const;
 export type ContentVariant = (typeof contentVariants)[number];
@@ -280,8 +286,10 @@ const builders: Record<ComponentName, Builder> = {
     return `
       ${row(`
         <punk-item-stack ${name} count="1">${art}</punk-item-stack>
-        <punk-item-stack ${name} count="64">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="99">${art}</punk-item-stack>
         <punk-item-stack ${name} count="1234">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="1234567">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="1234" compact-count>${art}</punk-item-stack>
         <punk-item-stack ${name} count="1234567" compact-count>${art}</punk-item-stack>
         <punk-item-stack ${name} count="75" capacity="100">${art}</punk-item-stack>
         <punk-item-stack ${name} count="0">${art}</punk-item-stack>
@@ -423,12 +431,45 @@ export function buildGallery(
       `,
     )
     .join('');
-  // A grid takes its selection as a property, which markup cannot carry.
+  applyGridValues(root);
+  return root;
+}
+
+/** A grid takes its selection as a property, which markup cannot carry. */
+function applyGridValues(root: ParentNode): void {
   for (const grid of root.querySelectorAll<HTMLElementTagNameMap['punk-slot-grid']>(
     'punk-slot-grid[data-values]',
   )) {
     grid.values = (grid.dataset['values'] ?? '').split(',');
   }
+}
+
+/**
+ * Grids of 100 slots, one for each selection mode, for the visual matrix. They are too many
+ * elements for the axe and reflow suites, which would repeat them across every theme.
+ */
+export function buildLargeGrids(variant: ContentVariant): HTMLElement {
+  const { lang, dir } = copy[variant];
+  const root = document.createElement('div');
+  root.className = 'gallery';
+  root.lang = lang;
+  root.dir = dir;
+  const slots = Array.from(
+    { length: 100 },
+    (_, index) =>
+      `<punk-slot label="Slot ${index + 1}" value="s${index + 1}"${index % 17 === 5 ? ' disabled' : ''}>${index % 11 === 0 ? '' : gear}</punk-slot>`,
+  ).join('');
+  const grid = (selection: string, values: string) =>
+    `<punk-slot-grid aria-label="Slots, ${selection}" selection="${selection}" columns="10"${values ? ` data-values="${values}"` : ''}>${slots}</punk-slot-grid>`;
+  root.innerHTML = `
+    <section data-component="large-grids" class="stack">
+      <h2 class="caption">punk-slot-grid, 100 slots</h2>
+      ${grid('none', '')}
+      ${grid('single', 's42')}
+      ${grid('multiple', 's3,s4,s5,s37,s60')}
+    </section>
+  `;
+  applyGridValues(root);
   return root;
 }
 

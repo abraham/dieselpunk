@@ -1,6 +1,6 @@
 # Phase 2: Inventory — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), 3 (slot and item stack), 4 (slot grid), 5 (recipe), and 6 (meter and status light) are implemented.
+**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), 3 (slot and item stack), 4 (slot grid), 5 (recipe), 6 (meter and status light), and 7 (test infrastructure) are implemented.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 2
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md)
 **Package:** `@dieselpunk/core`
@@ -447,7 +447,7 @@ Additions to Phase 1 §9:
 
 Each component has `*.test.ts` and `*.registration.test.ts` as in Phase 1, covering the criteria in §12, run on all three engines. These apply to the whole phase:
 
-- **Accessibility tree.** Roles, names, and states are asserted with Playwright's ARIA snapshot of the rendered tree, not only by reading attributes, because the name comes from shadow content. It covers a slot alone, a slot in each grid mode, and an item stack with every state.
+- **Accessibility tree.** Roles, names, and states are asserted with Playwright's ARIA snapshot of the rendered tree, not only by reading attributes, because the name comes from shadow content. It covers a slot alone, a slot in each grid mode, and an item stack with every state. These are `test/visual/aria.spec.ts`, which uses the visual matrix page with its content replaced (so every component is registered) and runs on Chromium, Firefox, and WebKit with the expected trees written out inline. It also covers a recipe, a meter, and a status light. Work package 7 mutation-checked it by changing the grid's `listbox` role.
 - **Keyboard and focus.** Every key in §8.3, in `ltr` and `rtl`, including that focus and selection stay separate and that one item is a tab stop.
 - **Both directions of every property.** A property set before and after connection, and an attribute added and removed, behave the same.
 - **Each state is checked against its non-color cue**, by forcing every status color to one value and requiring the states to remain different, as Phase 1 does for the progress bar.
@@ -460,11 +460,11 @@ The shared gallery (`fixtures/gallery.ts`) gains every new component in its stat
 
 The matrix of Phase 1 §10.3 applies, with these changes:
 
-- Until the matrix covers the inventory, the shared gallery exports `foundationNames` (what the matrix renders) and `inventoryNames` beside `componentNames` (everything, which the axe, manifest, and reflow suites use). Work package 3 added the slot and item stack to the gallery for those three suites without changing any baseline.
-- The gallery takes a `group` parameter (`foundation` or `inventory`), and the matrix runs once per group (§2 decision 13). Each group has its own folder of baselines.
-- The inventory group renders every state in the table in §8.1, an item stack with a count of 1, 99, 1,234, and 1,234,567 (plain and compact), with and without durability and quality, a grid of 100 slots in each selection mode, a meter in each state and both orientations, and a status light in each variant.
-- Hover, focus-visible, and active are driven with real input on a slot, and a grid is captured with keyboard focus on an interior item.
-- The forced-colors project covers the inventory group at one theme, as for the foundation group.
+- The gallery exports `foundationNames` and `inventoryNames` beside `componentNames` (everything, which the axe, manifest, and reflow suites use), and `galleryGroups` maps each group to its names. The matrix page takes a `group` query parameter and renders that group.
+- The matrix runs once per group (§2 decision 13). Each group has its own folder of baselines under each project, `__screenshots__/<project>/foundation/` and `__screenshots__/<project>/inventory/`; the spec passes the name as path segments, since Playwright turns a `/` in a string into `-`. The 160 foundation baselines were moved into `foundation/` unchanged (checked by checksum, and by the check passing against them).
+- The inventory group renders every state in the table in §8.1, an item stack with a count of 1, 99, 1,234, and 1,234,567 (plain and compact), with and without durability and quality, a meter in each state and both orientations, and a status light in each variant. It also renders a grid of 100 slots in each selection mode (`buildLargeGrids`, used only by the matrix page, since the axe and reflow suites would repeat 300 slots across every theme). The grids are in the `short` content only, because their layout does not depend on the words, which keeps the baselines near 20 MB for the group.
+- Hover, focus-visible, and active are driven with real input on a slot (`interaction-slot-*`), and a grid is captured with keyboard focus on an interior item (`interaction-slot-grid-focus`), which is Slot 4 after Tab and one `ArrowRight` past the disabled Slot 3.
+- The forced-colors project covers the inventory group at one theme, as for the foundation group. Firefox and WebKit run the same reduced set of combinations for both groups.
 - Content variants: short, long (German), missing optional labels, and RTL. Names and labels wrap rather than clip.
 
 ### 10.5 Performance Gate
@@ -482,7 +482,7 @@ SPEC §14.3 requires a 100-slot grid to stay responsive. Frame times on a CI run
 
 The gates of Phase 1 §10.4 apply, with each component's register entry measured on its own and gzip-compressed:
 
-- Each entry is at most 5 kB. The shared selectable base is imported by three components, so it counts toward each of them; if an entry would pass 5 kB, the base is split before any limit is raised, and any exception is documented as `punk-icon-button`'s was.
+- Each entry is at most 5 kB. The shared selectable base is imported by `punk-slot`, `punk-item-stack`, and `punk-recipe`, so it counts toward each of them; if an entry would pass 5 kB, the base is split before any limit is raised, and any exception is documented as `punk-icon-button`'s was.
 - Measured in work package 6: `punk-meter` 4.47 kB and `punk-status-light` 2.67 kB.
 - Measured in work package 5: `punk-recipe` 4.86 kB, which is close: it does not use the receptacle styles, but it has its own tile styles and the number formatting. The shared base entry is named for the slot and the item stack, the two that use the receptacle.
 - Measured in work package 4: `punk-slot-grid` 4.66 kB, with the shared runtime. The selectable base is not part of it, since the grid never imports an item class.
@@ -492,7 +492,9 @@ The gates of Phase 1 §10.4 apply, with each component's register entry measured
 
 ### 10.7 CI
 
-The stages of Phase 1 §10.5 are unchanged. The "Update visual baselines" workflow is run once after the matrix is extended, and its artifact committed.
+The stages of Phase 1 §10.5 are unchanged. The "Update visual baselines" workflow is run once after the matrix is extended, and its artifact committed. Work package 7 generated the inventory baselines (164 PNGs) with the same script, `PUNK_VISUAL_FORCE_UPDATE=1 npm run test:visual:update`, in the pinned image on arm64, because the 160 CI baselines already pass there unchanged. `node scripts/visual.ts selftest` passes (two renders identical), and the check passes on all four projects. The workflow can be run to regenerate them on amd64; it should produce identical files.
+
+The consumer check (`check-consumer.ts`) also covers the inventory: its TypeScript fixture registers all six components, builds a grid of a slot and a stack, and listens for `punk-selection-change` and `punk-activate` with typed details and no casts, under TypeScript 5.0.4 and the newest. A closed-union `@ts-expect-error` guards `selection`, and the page probe clicks a slot and requires the grid's `listbox` and `option` roles and the event's `values`. Mutation-checked by renaming the grid's event-map entry, which fails type-checking.
 
 ## 11. Work Packages
 
@@ -504,7 +506,7 @@ The stages of Phase 1 §10.5 are unchanged. The "Update visual baselines" workfl
 | 4 | Slot grid | 2, 3 | Component, keyboard and selection tests, performance gate. Done. |
 | 5 | Recipe | 2 | Component, tests. Done. |
 | 6 | Meter and status light | 1 | Two components, tests. Done. |
-| 7 | Test infrastructure | 3 to 6 as they land | Gallery group, axe and reflow coverage, ARIA snapshots, visual matrix, consumer typing, baselines |
+| 7 | Test infrastructure | 3 to 6 as they land | Gallery group, axe and reflow coverage, ARIA snapshots, visual matrix, consumer typing, baselines. Done. |
 | 8 | Workbench | 3 to 6 as they land | Inventory overview, stories, docs pages, demo art |
 | 9 | Hardening | 7 | Forced-colors, RTL, 200% zoom review of the renders; size tuning; docs polish |
 
