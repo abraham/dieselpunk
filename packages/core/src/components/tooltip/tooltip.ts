@@ -3,6 +3,9 @@ import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { PunkElement } from '../../internal/punk-element.ts';
+import { describeAnchor, resolveAnchor } from '../../internal/anchor.ts';
+import { overlayStack } from '../../internal/overlays.ts';
+import type { OverlayEntry } from '../../internal/overlay-stack.ts';
 import { computePosition } from '../../utilities/position.ts';
 import type { TooltipPlacement } from '../../utilities/position.ts';
 import { devWarn } from '../../utilities/warn.ts';
@@ -20,19 +23,10 @@ const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]:not([tab
 // At most one tooltip is open; a tooltip closed moments ago lets the next open without a delay.
 let current: PunkTooltip | null = null;
 let lastClosedAt = Number.NEGATIVE_INFINITY;
-let nextId = 0;
 
 /** Forgets that a tooltip recently closed, so the next one waits its full delay. For tests. */
 export function resetTooltipWarmup(): void {
   lastClosedAt = Number.NEGATIVE_INFINITY;
-}
-
-interface DescribableAnchor extends HTMLElement {
-  setExternalDescription(text: string | null): void;
-}
-
-function isDescribable(element: Element): element is DescribableAnchor {
-  return typeof (element as Partial<DescribableAnchor>).setExternalDescription === 'function';
 }
 
 /**
@@ -118,17 +112,8 @@ export class PunkTooltip extends PunkElement {
     else if (changed.has('placement') && this.open) this.#reposition();
   }
 
-  #resolveAnchor(): HTMLElement | null {
-    if (this.for) {
-      const root = this.getRootNode() as Document | ShadowRoot;
-      return root.getElementById(this.for);
-    }
-    const previous = this.previousElementSibling;
-    return previous instanceof HTMLElement ? previous : null;
-  }
-
   #attach(): void {
-    const next = this.#resolveAnchor();
+    const next = resolveAnchor(this, this.for);
     // Only a found, unchanged anchor means there is nothing to do: `null` equals the initial
     // anchor, so comparing first would swallow the "no anchor" warning.
     if (next && next === this.#anchor) return;
@@ -169,45 +154,9 @@ export class PunkTooltip extends PunkElement {
     this.#unwireDescription = undefined;
     const anchor = this.#anchor;
     if (!anchor || !this.describe) return;
-
-    if (isDescribable(anchor)) {
-      // An id reference cannot cross the anchor's shadow boundary, so hand it the text instead.
-      const push = (): void => anchor.setExternalDescription(this.textContent?.trim() ?? '');
-      push();
-      const observer = new MutationObserver(push);
-      observer.observe(this, { childList: true, characterData: true, subtree: true });
-      this.#unwireDescription = () => {
-        observer.disconnect();
-        anchor.setExternalDescription(null);
-      };
-      return;
-    }
-
-    if (anchor.localName.includes('-') && !customElements.get(anchor.localName)) {
-      // The anchor may be a punk component that has not been defined yet.
-      void customElements.whenDefined(anchor.localName).then(() => {
-        if (this.#anchor === anchor) this.#wireDescription();
-      });
-      return;
-    }
-
-    const ownedId = !this.id;
-    if (ownedId) this.id = `punk-tooltip-${++nextId}`;
-    const ownedRole = !this.hasAttribute('role');
-    if (ownedRole) this.setAttribute('role', 'tooltip');
-    const id = this.id;
-    const tokens = (anchor.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean);
-    anchor.setAttribute('aria-describedby', [...tokens, id].join(' '));
-
-    this.#unwireDescription = () => {
-      const remaining = (anchor.getAttribute('aria-describedby') ?? '')
-        .split(/\s+/)
-        .filter((token) => token && token !== id);
-      if (remaining.length > 0) anchor.setAttribute('aria-describedby', remaining.join(' '));
-      else anchor.removeAttribute('aria-describedby');
-      if (ownedRole) this.removeAttribute('role');
-      if (ownedId) this.removeAttribute('id');
-    };
+    this.#unwireDescription = describeAnchor(this, anchor, () => {
+      if (this.#anchor === anchor) this.#wireDescription();
+    });
   }
 
   #clearTimers(): void {
@@ -330,12 +279,8 @@ export class PunkTooltip extends PunkElement {
     const surface = this.#surface;
     if (!anchor || !surface) return;
 
-    const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key !== 'Escape') return;
-      // Stop here so Escape closes only the topmost overlay, and leave focus where it is.
-      event.stopPropagation();
-      this.hide();
-    };
+    // Escape closes only the topmost overlay, and focus stays where it is.
+    const entry: OverlayEntry = { dismissible: true, close: () => this.hide() };
     let frame = 0;
     const schedule = (): void => {
       if (frame) return;
@@ -347,12 +292,12 @@ export class PunkTooltip extends PunkElement {
     const observer = new ResizeObserver(schedule);
     observer.observe(anchor);
     observer.observe(surface);
-    document.addEventListener('keydown', onKeyDown, true);
+    overlayStack.push(entry);
     window.addEventListener('scroll', schedule, { capture: true, passive: true });
     window.addEventListener('resize', schedule);
 
     this.#stopOpenWork = () => {
-      document.removeEventListener('keydown', onKeyDown, true);
+      overlayStack.remove(entry);
       window.removeEventListener('scroll', schedule, true);
       window.removeEventListener('resize', schedule);
       observer.disconnect();

@@ -1,0 +1,82 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Examples from './responsive-layouts.stories';
+
+<Meta of={Examples} />
+
+# Responsive layouts
+
+The components size themselves to the container you put them in, and nothing forces horizontal scrolling down to a layout 187px wide, which is a 375px window at 200% zoom (WCAG 2.2 SC 1.4.10). This guide shows the three patterns an application shell needs. Each example below is loaded at 375px and at 187px by the workbench's smoke test, and fails it if the page scrolls sideways.
+
+## The rule
+
+- **Containers decide, not the viewport.** The window's footer and a settings row react to the width of the element they are in, with a container query, so they work the same in a narrow side panel on a wide screen.
+- **Components set no widths of their own.** They fill their container. Put them in something that can shrink: a block, or a flex item with `min-inline-size: 0`.
+- **Text wraps.** A label, a heading, or a hint breaks onto more lines, and a word too long for a line breaks only when it cannot fit on one.
+- **Toolbars are the exception.** A toolbar scrolls inside itself, or hands items to an overflow control, or wraps with `wrap`.
+
+## A window and its footer
+
+A window is at most `--punk-window-max-width` wide (640px) and never wider than its container. At container widths of 480px and below its footer stacks the actions, full width and in the order they were written, so the primary action is first and a touch target is never squeezed.
+
+<Canvas of={Examples.WindowFooter} />
+
+```html
+<punk-window heading="Assembler 03" open>
+  <p>Crafting speed 0.75</p>
+  <punk-button slot="footer" variant="primary">Start production</punk-button>
+  <punk-button slot="footer">Pause</punk-button>
+</punk-window>
+```
+
+## A modal window at 375px and 200% zoom
+
+A modal window is at most the height of the viewport less twice `--punk-space-4`, so it fits at 200% zoom. The body scrolls when the content is taller, and becomes a focusable scroll region while it does, so a keyboard user can scroll it. Resize the preview to 375px to see it.
+
+<Canvas of={Examples.ModalWindow} />
+
+## A settings row
+
+A row has a description and a control. Beside each other above 480px, one above the other below. The container is the setting, and the row inside it changes direction when the container is wide enough. `punk-stack` spaces the rows, and `punk-cluster` keeps the form's actions together and wraps them.
+
+<Canvas of={Examples.SettingsRow} />
+
+```html
+<style>
+  .setting {
+    container-type: inline-size;
+  }
+  .setting-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--punk-space-2);
+  }
+  @container (min-inline-size: 480px) {
+    .setting-row {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .setting-row > :first-child {
+      flex: 1 1 0;
+      min-inline-size: 0;
+    }
+  }
+</style>
+
+<punk-stack gap="3">
+  <div class="setting">
+    <div class="setting-row">
+      <span>The most the machine may draw from the grid</span>
+      <punk-number-field label="Power limit" value="80"></punk-number-field>
+    </div>
+  </div>
+</punk-stack>
+```
+
+A container that is itself the query container cannot be styled by its own container query, which is why the row is inside the `.setting` element.
+
+## Checks
+
+- Each example fits at 375px and at 187px.
+- Spacing follows the density (`data-punk-density`) through the spacing tokens, and the same layout works in `dir="rtl"`, since every rule above uses logical properties.
+- A toolbar that does not fit is described in the accessibility guide.

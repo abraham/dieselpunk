@@ -54,37 +54,44 @@ function overflowOf(element: Element, frame: HTMLElement, rtl: boolean): number 
 }
 
 describe('reflow without horizontal scrolling', () => {
-  it.each(widths)('keeps every component inside a %ipx container', async (width) => {
-    const problems: string[] = [];
-    for (const theme of themeNames) {
-      for (const density of densities) {
-        for (const variant of contentVariants) {
-          const { frame, gallery } = mountAt(variant, theme, density, width);
-          await settle(frame);
-          const rtl = gallery.dir === 'rtl';
-          const where = `${theme}/${density}/${variant}@${width}`;
-          for (const name of componentNames) {
-            // An open tooltip is placed against the viewport, so it is checked separately.
-            if (name === 'tooltip') continue;
-            for (const element of gallery.querySelectorAll(
-              `[data-component="${name}"] punk-${name}`,
-            )) {
-              const over = overflowOf(element, frame, rtl);
-              if (over > 0.5) {
-                const kind = element.getAttribute('variant') ?? '';
-                problems.push(`${where}: <punk-${name} ${kind}> is ${over.toFixed(1)}px too wide`);
+  it.each(widths)(
+    'keeps every component inside a %ipx container',
+    async (width) => {
+      const problems: string[] = [];
+      for (const theme of themeNames) {
+        for (const density of densities) {
+          for (const variant of contentVariants) {
+            const { frame, gallery } = mountAt(variant, theme, density, width);
+            await settle(frame);
+            const rtl = gallery.dir === 'rtl';
+            const where = `${theme}/${density}/${variant}@${width}`;
+            for (const name of componentNames) {
+              // An open tooltip is placed against the viewport, so it is checked separately.
+              if (name === 'tooltip') continue;
+              for (const element of gallery.querySelectorAll(
+                `[data-component="${name}"] punk-${name}`,
+              )) {
+                const over = overflowOf(element, frame, rtl);
+                if (over > 0.5) {
+                  const kind = element.getAttribute('variant') ?? '';
+                  problems.push(
+                    `${where}: <punk-${name} ${kind}> is ${over.toFixed(1)}px too wide`,
+                  );
+                }
               }
             }
+            if (frame.scrollWidth > frame.clientWidth + 1) {
+              problems.push(`${where}: the container scrolls (${frame.scrollWidth}px)`);
+            }
+            frame.remove();
           }
-          if (frame.scrollWidth > frame.clientWidth + 1) {
-            problems.push(`${where}: the container scrolls (${frame.scrollWidth}px)`);
-          }
-          frame.remove();
         }
       }
-    }
-    expect(problems).toEqual([]);
-  });
+      expect(problems).toEqual([]);
+      // 32 galleries a width is near the default limit when three engines share a runner.
+    },
+    60_000,
+  );
 
   it('keeps an open tooltip narrower than the viewport', async () => {
     const { frame } = mountAt('long', 'industrial', 'compact', 256);

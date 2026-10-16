@@ -67,15 +67,46 @@ Importing a class never registers its element. Register it with the matching `re
 
 `punk-button` is form-associated. Its `type` defaults to `button`, so set `type="submit"` or `type="reset"` explicitly. It submits the enclosing form without a submitter.
 
+The checkbox, switch, slider, text field, number field, and select are form-associated too. Each submits its value under its `name`, takes `required` and `disabled` (a disabled `<fieldset>` around them also counts), puts its value back to what the markup wrote on a form reset, and has the native `validity`, `validationMessage`, `checkValidity()`, `reportValidity()`, and `setCustomValidity()`. A text field and a number field submit the text the user sees; a select submits the chosen option's `value`, and nothing while none is chosen.
+
+```html
+<form>
+  <punk-text-field name="callsign" label="Callsign" required></punk-text-field>
+  <punk-number-field name="thrust" label="Thrust" min="0" max="10"></punk-number-field>
+  <punk-select name="squadron" label="Squadron">
+    <option value="a">Alpha</option>
+    <option value="b">Beta</option>
+  </punk-select>
+</form>
+```
+
+The fields send `input` while the user types or steps and `change` when a change is committed, on the host. A form control inside a shadow root is not filled by every password manager.
+
 ## Translating built-in text
 
-Components contain one built-in string, the loading announcement. Replace it before components render.
+Components contain a few built-in words, such as the loading announcement and the state words in an accessible name. Replace them before components render. A string may hold `{name}` placeholders, which the component fills with values already formatted for the page's language, so a translation can reorder them.
 
 ```ts
 import { setStrings } from '@dieselpunk/core';
 
-setStrings({ loading: 'Laden' });
+setStrings({ loading: 'Laden', stackCapacity: '{count} von {capacity}' });
 ```
+
+| Key             | Default                 | Used by              |
+| --------------- | ----------------------- | -------------------- |
+| `loading`       | `Loading`               | Button, icon button  |
+| `invalid`       | `invalid`               | Slot, item stack     |
+| `stackCount`    | `{count}`               | Item stack           |
+| `stackCapacity` | `{count} of {capacity}` | Item stack           |
+| `durability`    | `durability {percent}`  | Item stack           |
+| `quality`       | `quality {level}`       | Item stack           |
+| `unavailable`   | `unavailable`           | Recipe               |
+| `craftable`     | `can craft {count}`     | Recipe               |
+| `meterWarning`  | `warning`               | Meter                |
+| `meterCritical` | `critical`              | Meter                |
+| `invalidField`  | `invalid`               | Text, number, select |
+| `increase`      | `Increase`              | Number field         |
+| `decrease`      | `Decrease`              | Number field         |
 
 ## Development warnings
 

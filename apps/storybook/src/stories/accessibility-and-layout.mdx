@@ -71,6 +71,94 @@ A slot grid is one tab stop. Tab enters it at the item that last had focus, else
 
 A grid with selection is a `listbox` of `option` items, and with none a `group` of buttons. It is not `role="grid"`, since a wrapping layout has no rows and cells. The automated checks cover this tree in all three engines, but it has not yet been checked by hand with a screen reader.
 
+## Accordion keyboard model
+
+Each enabled accordion heading is its own tab stop, so Tab moves through them like any other buttons. Arrow keys are a shortcut between headings, and they only act while focus is on a heading, so arrows inside an expanded panel (a text field, a slider) are left alone.
+
+| Key          | Action                                                    |
+| ------------ | --------------------------------------------------------- |
+| Enter, Space | Expand or collapse the item                               |
+| Down, Up     | Focus the next or previous enabled heading; nothing wraps |
+| Home, End    | Focus the first or last enabled heading                   |
+
+A heading is `role="heading"` with an `aria-level` that the page chooses (`level`, default 3), holding a button with `aria-expanded` and `aria-controls`. The panel is a `region` named by that button. The plus or minus drawn beside the heading says the same thing as `aria-expanded`, so state is not color alone.
+
+## Tabs and toolbar keyboard model
+
+One tab of a tab list, and one item of a toolbar, is the tab stop. Arrow keys move between the others, and nothing wraps. Horizontal arrows swap in right-to-left languages, and vertical tabs use Up and Down. Disabled tabs and items are skipped.
+
+| Key          | Tabs                                                                          | Toolbar                    |
+| ------------ | ----------------------------------------------------------------------------- | -------------------------- |
+| Left, Right  | Previous and next tab; with automatic activation, also selects it             | Previous and next item     |
+| Home, End    | First and last enabled tab; with automatic activation, also selects it        | First and last item        |
+| Enter, Space | With manual activation, selects the focused tab                               | Activates the focused item |
+| Tab          | To the selected panel if it has something to reach or a `tabindex`, else past | Leaves the toolbar         |
+
+A tab list is `role="tablist"` with `role="tab"` children, `aria-selected`, and `aria-controls`; its panels are `role="tabpanel"` and named by their tab. A toolbar is `role="toolbar"` with the application's `aria-label`. A select, text field, number field, or slider in a toolbar is its own tab stop, since it needs the arrow keys. The selected tab differs from the rest by a bar on the edge facing its panel, as well as a pressed-in surface.
+
+## Windows and dialogs
+
+A modal window or dialog makes the rest of the page inert, traps Tab and Shift+Tab inside, starts focus on the content (never on the close or move button), and gives focus back to what opened it. It also holds the page's scroll while it is open. A click on the backdrop closes nothing.
+
+| Key        | Action                                                                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Escape     | Closes the topmost overlay if it is dismissible; a `persistent` dialog or non-dismissible window takes it and does nothing |
+| Arrow keys | In a window's move mode, move it by 8px, or 32px with Shift                                                                |
+| Enter      | In move mode, places the window                                                                                            |
+| Escape     | In move mode, puts the window back, and leaves the window open                                                             |
+
+Dragging a window by its titlebar has a single-pointer alternative, the move button (WCAG 2.5.7). Overlays are named by their heading, or by an `aria-label`, and a dialog with `alert` is an `alertdialog` described by its content. A window never leaves the viewport, and a modal window fits it at 375px and at 200% zoom: its body scrolls, and is a focusable region while it does.
+
+## Popovers and menus
+
+A popover's trigger has `aria-expanded`, and `aria-haspopup="menu"` for a menu. Focus moves into a content popover only for a keyboard open; a menu always moves focus to its first enabled item. Whatever closes it, focus that was inside goes back to the trigger.
+
+| Key                | Content popover                                                                              | Menu                                           |
+| ------------------ | -------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Enter, Space       | On the trigger: toggles, and moves focus in                                                  | On the trigger: toggles; on an item: activates |
+| ArrowDown          | Nothing                                                                                      | On the trigger: opens; on an item: next item   |
+| ArrowUp, Home, End | Nothing                                                                                      | Previous, first, and last item; no wrapping    |
+| Tab                | Past the last element (Shift+Tab before the first) closes it and carries on from the trigger | Closes it and carries on from the trigger      |
+| Escape             | Closes the topmost overlay, and focus goes back to the trigger                               | Same                                           |
+
+Menu items must be focusable and carry `role="menuitem"`, `menuitemcheckbox`, or `menuitemradio`. Inside a modal window or dialog the trigger must be in the same one, since the rest of the page is inert.
+
+## Toasts
+
+A toast stack has two live regions that exist before any toast does: `role="alert"` for `warning` and `danger` toasts, and `role="status"` for `info` and `success` ones. A region added together with its content is not reliably announced, so the regions stay, and the stack moves each toast into the right one. A toast outside a stack is shown but not announced.
+
+A toast never takes focus, and has a dismiss button reachable with Tab. Its countdown pauses while the pointer is over it, while focus is inside it, and while the page is hidden, and it resumes with the time that was left. An `info` or `success` toast closes after 5 seconds; a `warning`, a `danger`, and any toast with an action stay until dismissed. Each variant is a shape as well as a color, and the text is always in the text color.
+
+A modal window or dialog makes everything outside it inert, a toast stack included, so put a stack inside the dialog when its toasts must be usable while it is open. A toast shown behind a modal still counts down.
+
+## Checkboxes, switches, and sliders
+
+A checkbox, a switch, and a slider each have their role, state, and tab stop as attributes on the host: `role`, `aria-checked` (`mixed` for an indeterminate checkbox), `aria-required`, `aria-disabled`, and `tabindex` for the first two, and `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, and `aria-valuetext` for a slider. The name of a checkbox or a switch is its text; the name of a slider is its `label`, or an `aria-label`. An outside `<label for>` focuses the control and toggles a checkbox or switch, but does not name it.
+
+| Key              | Checkbox            | Switch              | Slider                                              |
+| ---------------- | ------------------- | ------------------- | --------------------------------------------------- |
+| Space            | Toggles, on release | Toggles, on release | Nothing                                             |
+| Enter            | Nothing             | Toggles             | Nothing                                             |
+| Arrow keys       | Nothing             | Nothing             | One step; Left and Right swap in right-to-left text |
+| Home, End        | Nothing             | Nothing             | The first and last value                            |
+| PageUp, PageDown | Nothing             | Nothing             | A tenth of the range                                |
+
+In a toolbar a checkbox and a switch are items of the arrow-key group, and a slider is its own tab stop outside it, since it needs the arrow keys. Each state is a shape as well as a color: a check, a dash, or nothing for a checkbox; the thumb's side and a bar or a ring for a switch; and the thumb's position on a slider.
+
+## Text fields, number fields, and selects
+
+These three have a native control in their shadow tree, so the role, the value, and the keys are the platform's: a textbox (a searchbox for `type="search"`), a spinbutton, and a combobox. The host takes the focus and passes it to the native control, which is the anchor a form focuses when it reports a field. The name is the `label`, rendered as text above the field and tied to the control; without one it is `aria-label`, and failing that the text of a `<label for>` that points at the host, read when the field renders and when it gets focus. A placeholder is never the name. A hint is the description, through `aria-describedby`.
+
+A validation message waits until the user has left the field, or a form has reported it, so nobody is told they are wrong before they have typed. Then the field is `aria-invalid`, and the message joins its description. The message is the browser's, written in the text color with a triangle, and the box gets a frame: color alone is not the signal, and the danger color is below 3:1 on the panel surfaces. Under forced colors an invalid box is dashed and a read-only one dotted.
+
+| Key                | Text field    | Number field | Select (platform's)  |
+| ------------------ | ------------- | ------------ | -------------------- |
+| Up, Down           | Nothing       | One step     | Chooses the next one |
+| Space, Alt+Down    | Types a space | Types        | Opens the list       |
+| Letters, Home, End | Types, moves  | Types, moves | Jumps to a match     |
+
+The two steppers of a number field are for a pointer only: they are out of the tab order and the accessibility tree, since Up and Down already serve everyone else. Each is 24px wide and 12px tall; the keys are the equivalent control (WCAG 2.2, SC 2.5.8). In a toolbar these fields are their own tab stop, since they need the arrow keys.
+
 ## Keyboard focus
 
 The focus ring appears on `:focus-visible`, so keyboard users always get one, and it is never removed without a replacement. A tooltip opens when its anchor receives keyboard focus, and Escape closes it without moving focus.

@@ -58,6 +58,14 @@ describe('computePosition', () => {
     expect(computePosition(nearLeft).side).toBe('right');
   });
 
+  it('moves above or below when neither side of a beside placement fits', () => {
+    const narrow = { ...base, placement: 'end' as const, viewport: { width: 150, height: 800 } };
+    expect(computePosition({ ...narrow, anchor: { ...narrow.anchor, left: 40 } })).toMatchObject({
+      side: 'bottom',
+      left: 10,
+    });
+  });
+
   it('keeps the requested side when neither side fits', () => {
     const tall = { ...base, surface: { width: 100, height: 900 } };
     expect(computePosition(tall).side).toBe('top');

@@ -238,6 +238,22 @@ describe('contrast gate', () => {
     }
   });
 
+  it('fails a theme whose muted text, such as a placeholder, is lost on the inset surface', () => {
+    const lost = {
+      colorScheme: 'dark',
+      tokens: {
+        ...themes.industrial.tokens,
+        'color-text-muted': themes.industrial.tokens['color-panel-inset'],
+      },
+    } as const;
+    const failures = evaluateContrast({ lost });
+    assert.ok(
+      failures.some(
+        (f) => f.rule === 'text-muted' && f.background === 'panel-inset' && f.required === 4.5,
+      ),
+    );
+  });
+
   it('requires 7:1 text contrast in the high-contrast theme', () => {
     const almost = {
       ...themes['high-contrast'],

@@ -41,7 +41,22 @@ const sentinels: Record<string, string> = {
   'slot-grid': '--punk-slot-gap',
   recipe: 'can craft {count}',
   meter: '--punk-meter-length',
-  'status-light': 'variant-neutral',
+  'status-light': '"announce"',
+  stack: '--punk-stack-gap',
+  cluster: '--punk-cluster-gap',
+  accordion: '"punk-accordion-item"',
+  tabs: '"punk-tab"',
+  toolbar: 'data-punk-toolbar-item',
+  window: 'punk-move-start',
+  dialog: '"data-punk-close"',
+  popover: 'data-punk-close-on-activate',
+  toast: '"punk-dismiss"',
+  checkbox: '"mixed"',
+  switch: '"switch"',
+  slider: '--_thumb',
+  'text-field': '-webkit-search-cancel-button',
+  'number-field': '-webkit-inner-spin-button',
+  select: 'optgroup',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };

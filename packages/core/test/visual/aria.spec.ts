@@ -143,4 +143,191 @@ test.describe('ARIA snapshots', () => {
       - status: Offline
     `);
   });
+
+  test('tabs, with panels inside and beside', async ({ page }) => {
+    await render(
+      page,
+      `<punk-tabs aria-label="Machine">
+         <punk-tab slot="tab" panel="inside-a">Inputs</punk-tab>
+         <punk-tab slot="tab" panel="inside-b">Outputs</punk-tab>
+         <punk-tab slot="tab" panel="beside-c" disabled>Locked</punk-tab>
+         <div id="inside-a"><p>Iron plates</p></div>
+         <div id="inside-b"><p>Gears</p></div>
+       </punk-tabs>
+       <div id="beside-c"><p>Hidden</p></div>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - tablist "Machine":
+        - tab "Inputs" [selected]
+        - tab "Outputs"
+        - tab "Locked" [disabled]
+      - tabpanel "Inputs":
+        - paragraph: Iron plates
+    `);
+  });
+
+  test('toolbar', async ({ page }) => {
+    await render(
+      page,
+      `<punk-toolbar aria-label="Tools">
+         <punk-button>Start</punk-button>
+         <punk-icon-button label="Settings">${art}</punk-icon-button>
+         <button type="button" disabled>Stop</button>
+       </punk-toolbar>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - toolbar "Tools":
+        - button "Start"
+        - button "Settings"
+        - button "Stop" [disabled]
+    `);
+  });
+
+  test('window and dialog, open', async ({ page }) => {
+    await render(
+      page,
+      `<punk-window heading="Assembler" open dismissible movable>
+         <p>Crafting speed 0.75</p>
+         <punk-button slot="footer">Start</punk-button>
+       </punk-window>
+       <punk-dialog heading="Discard the run?" alert open>
+         <p>This cannot be undone.</p>
+         <punk-button slot="footer">Discard</punk-button>
+       </punk-dialog>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - dialog "Assembler":
+        - button "Move window" [pressed=false]
+        - button "Close"
+        - paragraph: Crafting speed 0.75
+        - button "Start"
+      - alertdialog "Discard the run?":
+        - paragraph: This cannot be undone.
+        - button "Discard"
+    `);
+  });
+
+  test('popover in each mode', async ({ page }) => {
+    await render(
+      page,
+      `<punk-button>Details</punk-button>
+       <punk-popover open><p>Iron plates</p></punk-popover>
+       <punk-button>Actions</punk-button>
+       <punk-popover mode="menu" open>
+         <button role="menuitem">Rename</button>
+         <button role="menuitem" disabled>Delete</button>
+       </punk-popover>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - button "Details" [expanded]
+      - paragraph: Iron plates
+      - button "Actions" [expanded]
+      - menu:
+        - menuitem "Rename"
+        - menuitem "Delete" [disabled]
+    `);
+  });
+
+  test('toast stack with a polite and an assertive toast', async ({ page }) => {
+    await render(
+      page,
+      `<punk-toast-stack>
+         <punk-toast duration="0">Saved</punk-toast>
+         <punk-toast variant="danger" heading="Offline" duration="0">Reactor lost power</punk-toast>
+       </punk-toast-stack>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - region "Notifications":
+        - status:
+          - text: Saved
+          - button "Dismiss"
+        - alert:
+          - text: Offline Reactor lost power
+          - button "Dismiss"
+    `);
+  });
+
+  test('checkbox, switch, and slider in each state', async ({ page }) => {
+    await render(
+      page,
+      `<punk-checkbox>Fuel</punk-checkbox>
+       <punk-checkbox checked required>Pump</punk-checkbox>
+       <punk-checkbox indeterminate>Belt</punk-checkbox>
+       <punk-checkbox disabled>Lamp</punk-checkbox>
+       <punk-switch>Power</punk-switch>
+       <punk-switch checked aria-label="Cooling"></punk-switch>
+       <punk-slider label="Speed" value="40"></punk-slider>
+       <punk-slider aria-label="Heat" min="10" max="20" value="15" aria-valuetext="Warm"></punk-slider>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - checkbox "Fuel"
+      - checkbox "Pump" [checked]
+      - checkbox "Belt" [checked=mixed]
+      - checkbox "Lamp" [disabled]
+      - switch "Power"
+      - switch "Cooling" [checked]
+      - slider "Speed"
+      - slider "Heat"
+    `);
+  });
+
+  test('text, number, and select fields', async ({ page }) => {
+    await render(
+      page,
+      `<punk-text-field label="Callsign" value="Echo"><span slot="hint">Three letters</span></punk-text-field>
+       <punk-text-field aria-label="Search" type="search"></punk-text-field>
+       <punk-text-field label="Locked" value="Fixed" disabled></punk-text-field>
+       <punk-text-field label="Required name" required></punk-text-field>
+       <punk-number-field label="Thrust" value="3" min="0" max="10"></punk-number-field>
+       <punk-select label="Squadron"><option value="a">Alpha</option><option value="b">Beta</option></punk-select>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - text: Callsign
+      - textbox "Callsign"
+      - searchbox "Search"
+      - text: Locked
+      - textbox "Locked" [disabled]
+      - text: Required name
+      - textbox "Required name"
+      - text: Thrust
+      - spinbutton "Thrust"
+      - text: Squadron
+      - combobox "Squadron"
+    `);
+    await expect(page.getByRole('textbox', { name: 'Callsign' })).toHaveAccessibleDescription(
+      'Three letters',
+    );
+    await expect(page.getByRole('textbox', { name: 'Callsign' })).toHaveValue('Echo');
+  });
+
+  test('a field names its message once the user has left it', async ({ page }) => {
+    await render(page, '<punk-text-field label="Required name" required></punk-text-field>');
+    const field = page.getByRole('textbox', { name: 'Required name' });
+    await expect(field).not.toHaveAttribute('aria-invalid', 'true');
+    await field.focus();
+    await field.blur();
+    await expect(field).toHaveAttribute('aria-invalid', 'true');
+    await expect(field).toHaveAccessibleDescription(/invalid/i);
+  });
+
+  test('accordion', async ({ page }) => {
+    await render(
+      page,
+      `<punk-accordion>
+         <punk-accordion-item heading="Inputs" expanded><p>Iron plates</p></punk-accordion-item>
+         <punk-accordion-item heading="Outputs" level="2"><p>Gears</p></punk-accordion-item>
+         <punk-accordion-item heading="Locked" disabled><p>Hidden</p></punk-accordion-item>
+       </punk-accordion>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - heading "Inputs" [level=3]:
+        - button "Inputs" [expanded]
+      - region "Inputs":
+        - paragraph: Iron plates
+      - heading "Outputs" [level=2]:
+        - button "Outputs"
+      - heading "Locked" [level=3]:
+        - button "Locked" [disabled]
+    `);
+  });
 });

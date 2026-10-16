@@ -450,7 +450,7 @@ describe('describing the anchor (12.7.7)', () => {
     expect(tooltip.hasAttribute('id')).toBe(false);
   });
 
-  it('describes a punk-button through setExternalDescription', async () => {
+  it('describes a punk-button through setExternalAria', async () => {
     const wrapper = track(document.createElement('div'));
     const button = document.createElement('punk-button') as PunkButton;
     button.textContent = 'Save';
@@ -500,8 +500,8 @@ describe('describing the anchor (12.7.7)', () => {
     customElements.define(
       'punk-late-anchor',
       class extends HTMLElement {
-        setExternalDescription(text: string | null) {
-          described(text);
+        setExternalAria(aria: { description?: string | null }) {
+          described(aria.description);
         }
       },
     );

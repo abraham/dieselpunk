@@ -12,7 +12,16 @@ export type StringKey =
   | 'unavailable'
   | 'craftable'
   | 'meterWarning'
-  | 'meterCritical';
+  | 'meterCritical'
+  | 'close'
+  | 'dismiss'
+  | 'moveWindow'
+  | 'moving'
+  | 'increase'
+  | 'decrease'
+  | 'notifications'
+  | 'invalidField'
+  | 'moreActions';
 
 export type StringValues = Readonly<Record<string, string | number>>;
 

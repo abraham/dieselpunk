@@ -1,6 +1,4 @@
 node_modules/
 dist/
 package-lock.json
-SPEC.md
-SPEC-PHASE-1.md
-SPEC-PHASE-2.md
+SPEC*

@@ -18,10 +18,33 @@ updates:
         patterns: ['eslint', '@eslint/*', 'typescript-eslint', 'prettier']
       fonts:
         patterns: ['@fontsource/*']
+      # The framework fixtures (SPEC-PHASE-3.md §10.9) each bump their own conventions for custom
+      # elements, so they come in one pull request that is read before it is merged.
+      frameworks:
+        patterns:
+          [
+            'react',
+            'react-dom',
+            '@types/react',
+            '@types/react-dom',
+            'vue',
+            '@vue/*',
+            'svelte',
+            'esbuild-svelte',
+          ]
     ignore:
       # TypeScript is held at 6.0 until typescript-eslint supports a newer release (SPEC-PHASE-1.md §3.1).
       - dependency-name: typescript
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # A new major of a framework is a change to its guide, and is made by hand.
+      - dependency-name: react
+        update-types: ['version-update:semver-major']
+      - dependency-name: react-dom
+        update-types: ['version-update:semver-major']
+      - dependency-name: vue
+        update-types: ['version-update:semver-major']
+      - dependency-name: svelte
+        update-types: ['version-update:semver-major']
       # The types follow the Node major in .nvmrc.
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']

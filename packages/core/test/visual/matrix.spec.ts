@@ -6,7 +6,9 @@ import type { Page } from '@playwright/test';
 // `industrial-light` at low density, at 100% only. The forced-colors project ignores themes, so
 // it runs one theme at 100% zoom. The baselines of a group are in a folder of that name.
 
-const groups = ['foundation', 'inventory'] as const;
+const groups = ['foundation', 'inventory', 'shell', 'forms', 'overlays'] as const;
+// An overlay is open on a page of its own, so each is a page, and only two contents are captured.
+const overlayPages = ['dialog', 'window', 'popover', 'toast-stack'] as const;
 const themes = ['industrial', 'industrial-light', 'high-contrast', 'reduced-texture'] as const;
 const densities = ['compact', 'low'] as const;
 const containers = [
@@ -18,6 +20,7 @@ const zooms = [
   { name: '200', scale: 2 },
 ] as const;
 const contents = ['short', 'long', 'unlabeled', 'rtl'] as const;
+const overlayContents = ['short', 'rtl'] as const;
 
 const crossEngineCombos = new Set(['industrial/compact', 'industrial-light/low']);
 
@@ -36,30 +39,38 @@ for (const group of groups) {
         for (const theme of themes) {
           for (const density of densities) {
             for (const container of containers) {
-              for (const content of contents) {
-                const id = `${theme}-${density}-${container.name}-${zoom.name}-${content}`;
-                test(id, async ({ page, browserName }, testInfo) => {
-                  const forced = testInfo.project.name === 'chromium-forced';
-                  const reduced =
-                    crossEngineCombos.has(`${theme}/${density}`) &&
-                    zoom.name === '100' &&
-                    container.name === 'desktop' &&
-                    content === 'short';
-                  test.skip(
-                    forced
-                      ? theme !== 'industrial' || zoom.name !== '100'
-                      : browserName !== 'chromium' && !reduced,
-                    forced
-                      ? 'Forced colors ignore the theme'
-                      : 'Firefox and WebKit run the reduced matrix',
-                  );
-                  await page.setViewportSize({
-                    width: Math.round(container.width / zoom.scale),
-                    height: 900,
+              for (const content of group === 'overlays' ? overlayContents : contents) {
+                for (const component of group === 'overlays' ? overlayPages : [null]) {
+                  const id = `${component ? `${component}-` : ''}${theme}-${density}-${container.name}-${zoom.name}-${content}`;
+                  test(id, async ({ page, browserName }, testInfo) => {
+                    const forced = testInfo.project.name === 'chromium-forced';
+                    const reduced =
+                      crossEngineCombos.has(`${theme}/${density}`) &&
+                      zoom.name === '100' &&
+                      container.name === 'desktop' &&
+                      content === 'short';
+                    test.skip(
+                      forced
+                        ? theme !== 'industrial' || zoom.name !== '100'
+                        : browserName !== 'chromium' && !reduced,
+                      forced
+                        ? 'Forced colors ignore the theme'
+                        : 'Firefox and WebKit run the reduced matrix',
+                    );
+                    await page.setViewportSize({
+                      width: Math.round(container.width / zoom.scale),
+                      height: 900,
+                    });
+                    await open(page, {
+                      group,
+                      theme,
+                      density,
+                      content,
+                      ...(component ? { component } : {}),
+                    });
+                    await expect(page).toHaveScreenshot([group, `${id}.png`], { fullPage: true });
                   });
-                  await open(page, { group, theme, density, content });
-                  await expect(page).toHaveScreenshot([group, `${id}.png`], { fullPage: true });
-                });
+                }
               }
             }
           }
@@ -145,5 +156,64 @@ test.describe('interaction states', () => {
         'interaction-slot-grid-focus.png',
       ]);
     });
+  });
+
+  test.describe('form controls', () => {
+    const first = (page: Page, tag: string) => page.locator(`${tag}:not([disabled])`).first();
+
+    test('checkbox hover', async ({ page }) => {
+      await open(page, { theme: 'industrial', density: 'compact', component: 'checkbox' });
+      await first(page, 'punk-checkbox').hover();
+      await expect(gallery(page)).toHaveScreenshot(['forms', 'interaction-checkbox-hover.png']);
+    });
+
+    // The checkbox's hover is above; the rest of the controls are hovered in the same way.
+    for (const tag of ['switch', 'slider', 'text-field', 'number-field', 'select']) {
+      test(`${tag} hover`, async ({ page }) => {
+        await open(page, { theme: 'industrial', density: 'compact', component: tag });
+        await first(page, `punk-${tag}`).hover();
+        await expect(gallery(page)).toHaveScreenshot(['forms', `interaction-${tag}-hover.png`]);
+      });
+    }
+
+    // Pressed, with the pointer still down; a field has no pressed look of its own.
+    for (const tag of ['checkbox', 'switch', 'slider']) {
+      test(`${tag} active`, async ({ page }) => {
+        await open(page, { theme: 'industrial', density: 'compact', component: tag });
+        await first(page, `punk-${tag}`).hover();
+        await page.mouse.down();
+        await expect(gallery(page)).toHaveScreenshot(['forms', `interaction-${tag}-active.png`]);
+        await page.mouse.up();
+      });
+    }
+
+    for (const tag of ['checkbox', 'switch', 'slider', 'text-field', 'number-field', 'select']) {
+      test(`${tag} focus-visible`, async ({ page }) => {
+        await open(page, { theme: 'industrial', density: 'compact', component: tag });
+        await page.keyboard.press('Tab');
+        await expect(first(page, `punk-${tag}`)).toBeFocused();
+        await expect(gallery(page)).toHaveScreenshot(['forms', `interaction-${tag}-focus.png`]);
+      });
+    }
+  });
+});
+
+// A window in move mode, with the keyboard: the pressed move button and the offset window.
+test.describe('window mid-move', () => {
+  test('after the move button and four arrow keys', async ({ page }) => {
+    await open(page, {
+      group: 'overlays',
+      theme: 'industrial',
+      density: 'compact',
+      content: 'short',
+      component: 'window',
+    });
+    const move = page.locator('punk-window [part="move-button"]');
+    await move.click();
+    await expect(move).toHaveAttribute('aria-pressed', 'true');
+    for (const key of ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown']) {
+      await page.keyboard.press(key);
+    }
+    await expect(page).toHaveScreenshot(['overlays', 'interaction-window-moving.png']);
   });
 });

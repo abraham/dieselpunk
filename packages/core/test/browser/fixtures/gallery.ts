@@ -15,6 +15,21 @@ import '../../../src/components/slot-grid/register.ts';
 import '../../../src/components/recipe/register.ts';
 import '../../../src/components/meter/register.ts';
 import '../../../src/components/status-light/register.ts';
+import '../../../src/components/stack/register.ts';
+import '../../../src/components/cluster/register.ts';
+import '../../../src/components/accordion/register.ts';
+import '../../../src/components/tabs/register.ts';
+import '../../../src/components/toolbar/register.ts';
+import '../../../src/components/window/register.ts';
+import '../../../src/components/dialog/register.ts';
+import '../../../src/components/popover/register.ts';
+import '../../../src/components/toast/register.ts';
+import '../../../src/components/checkbox/register.ts';
+import '../../../src/components/switch/register.ts';
+import '../../../src/components/slider/register.ts';
+import '../../../src/components/text-field/register.ts';
+import '../../../src/components/number-field/register.ts';
+import '../../../src/components/select/register.ts';
 
 // The visual matrix renders one group per run, so each group has its own page and baselines.
 export const foundationNames = [
@@ -33,12 +48,45 @@ export const inventoryNames = [
   'meter',
   'status-light',
 ] as const;
-export const componentNames = [...foundationNames, ...inventoryNames] as const;
+export const shellNames = [
+  'stack',
+  'cluster',
+  'accordion',
+  'accordion-item',
+  'tabs',
+  'tab',
+  'toolbar',
+  'window',
+] as const;
+// Overlays open on a page of their own, since the top layer covers everything else.
+// Every form control in every state, in flow: no top layer, so one page holds them all.
+export const formNames = [
+  'checkbox',
+  'switch',
+  'slider',
+  'text-field',
+  'number-field',
+  'select',
+] as const;
+export const overlayNames = ['dialog', 'window', 'popover', 'toast-stack'] as const;
+export const componentNames = [
+  ...foundationNames,
+  ...inventoryNames,
+  ...shellNames,
+  ...formNames,
+  'dialog',
+  'popover',
+  'toast-stack',
+  'toast',
+] as const;
 export type ComponentName = (typeof componentNames)[number];
 
 export const galleryGroups = {
   foundation: foundationNames,
   inventory: inventoryNames,
+  shell: shellNames,
+  forms: formNames,
+  overlays: overlayNames,
 } as const;
 export type GalleryGroup = keyof typeof galleryGroups;
 
@@ -167,11 +215,27 @@ const variants = ['default', 'primary', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
 const row = (content: string) => `<div class="row">${content}</div>`;
 
+// Toasts in the gallery never close by themselves, or a long page would lose them.
+function toasts(c: Copy): string {
+  const [, scheduled, running, low, offline] = c.statuses;
+  return `
+    <punk-toast variant="info" duration="0">${scheduled}</punk-toast>
+    <punk-toast variant="success" duration="0" heading="${c.title}">${running}</punk-toast>
+    <punk-toast variant="warning" duration="0"><punk-button slot="action" size="sm">${c.start}</punk-button>${low}</punk-toast>
+    <punk-toast variant="danger" duration="0" heading="${c.title}">${offline}</punk-toast>
+  `;
+}
+
 function slot(name: string, text: string): string {
   return text ? `<span slot="${name}">${text}</span>` : '';
 }
 
-type Builder = (text: Copy) => string;
+/** `open` is for a page that holds one overlay: it opens modal, and the others stay closed. */
+export interface BuildOptions {
+  open?: boolean;
+}
+
+type Builder = (text: Copy, options: BuildOptions) => string;
 
 const builders: Record<ComponentName, Builder> = {
   panel: (c) =>
@@ -404,17 +468,275 @@ const builders: Record<ComponentName, Builder> = {
       </div>
     `;
   },
+
+  stack: (c) => {
+    const block = (text: string, width?: number) =>
+      `<punk-panel variant="flat" style="${width ? `inline-size: ${width}px; ` : ''}min-inline-size: 0">${text}</punk-panel>`;
+    return `
+      ${['0', '1', '2', '3', '4', '5']
+        .map(
+          (gap) =>
+            `<punk-stack gap="${gap}" style="max-inline-size: 320px">${block(c.start)}${block(c.pause)}${block(c.stop)}</punk-stack>`,
+        )
+        .join('')}
+      ${['stretch', 'start', 'center', 'end']
+        .map(
+          (align) =>
+            `<punk-stack align="${align}" style="max-inline-size: 320px">${block(c.start, 120)}${block(c.body)}</punk-stack>`,
+        )
+        .join('')}
+      <punk-stack>${block(c.body)}<punk-stack gap="1">${block(c.pause)}${block(c.stop)}</punk-stack></punk-stack>
+    `;
+  },
+
+  cluster: (c) => {
+    const buttons = `<punk-button>${c.start}</punk-button><punk-button>${c.pause}</punk-button><punk-button variant="danger">${c.stop}</punk-button>`;
+    return `
+      ${['0', '1', '2', '3', '4', '5'].map((gap) => `<punk-cluster gap="${gap}">${buttons}</punk-cluster>`).join('')}
+      ${['start', 'center', 'end', 'between']
+        .map(
+          (justify) =>
+            `<punk-cluster justify="${justify}" style="max-inline-size: 640px">${buttons}</punk-cluster>`,
+        )
+        .join('')}
+      ${['start', 'center', 'end', 'baseline', 'stretch']
+        .map(
+          (align) =>
+            `<punk-cluster align="${align}"><punk-button size="lg">${c.start}</punk-button><punk-button size="sm">${c.pause}</punk-button><span>${c.footer || c.body}</span></punk-cluster>`,
+        )
+        .join('')}
+    `;
+  },
+
+  accordion: (c) => {
+    const items = (expanded: number) =>
+      [c.settings, c.pause, c.stop]
+        .map(
+          (heading, index) =>
+            `<punk-accordion-item heading="${heading}"${index === expanded ? ' expanded' : ''}${index === 2 ? ' disabled' : ''}><p style="margin: 0">${c.body}</p></punk-accordion-item>`,
+        )
+        .join('');
+    return `
+      <punk-accordion style="max-inline-size: 480px">${items(0)}</punk-accordion>
+      <punk-accordion multiple style="max-inline-size: 480px">
+        <punk-accordion-item heading="${c.settings}" expanded><p style="margin: 0">${c.body}</p></punk-accordion-item>
+        <punk-accordion-item heading="${c.pause}" expanded><p style="margin: 0">${c.body}</p></punk-accordion-item>
+        <punk-accordion-item heading="${c.stop}"><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      </punk-accordion>
+      <punk-accordion style="max-inline-size: 480px">${items(-1)}</punk-accordion>
+    `;
+  },
+
+  tabs: (c) => {
+    const labels = [c.settings, c.pause, c.stop];
+    const tabs = (prefix: string, selected: number) =>
+      labels
+        .map(
+          (label, index) =>
+            `<punk-tab slot="tab" panel="${prefix}${index}"${index === selected ? ' selected' : ''}${index === 2 ? ' disabled' : ''}>${label}</punk-tab>`,
+        )
+        .join('');
+    const panels = (prefix: string) =>
+      labels
+        .map(
+          (_, index) =>
+            `<div id="${prefix}${index}" style="overflow-wrap: break-word">${c.body}</div>`,
+        )
+        .join('');
+    return `
+      <punk-tabs aria-label="${c.settings}">${tabs('g-tabs-a', -1)}${panels('g-tabs-a')}</punk-tabs>
+      <punk-tabs aria-label="${c.settings}" orientation="vertical" style="max-inline-size: 480px">${tabs('g-tabs-b', 1)}${panels('g-tabs-b')}</punk-tabs>
+      <div class="stack">
+        <punk-tabs aria-label="${c.settings}" activation="manual">
+          <punk-tab slot="tab" panel="g-tabs-c0"><span slot="icon">${gear}</span>${c.settings}</punk-tab>
+          <punk-tab slot="tab" panel="g-tabs-c1">${c.pause}</punk-tab>
+        </punk-tabs>
+        <div id="g-tabs-c0" style="overflow-wrap: break-word">${c.body}</div>
+        <div id="g-tabs-c1" style="overflow-wrap: break-word">${c.body}</div>
+      </div>
+    `;
+  },
+
+  tab: (c) => `
+    <div role="tablist" aria-label="${c.settings}" class="row">
+      <punk-tab>${c.settings}</punk-tab>
+      <punk-tab selected>${c.pause}</punk-tab>
+      <punk-tab disabled>${c.stop}</punk-tab>
+      <punk-tab selected disabled>${c.start}</punk-tab>
+      <punk-tab><span slot="icon">${gear}</span>${c.settings}</punk-tab>
+    </div>
+    <div role="tablist" aria-orientation="vertical" aria-label="${c.settings}" class="stack" style="max-inline-size: 240px">
+      <punk-tab orientation="vertical">${c.settings}</punk-tab>
+      <punk-tab selected>${c.pause}</punk-tab>
+    </div>
+  `,
+
+  toolbar: (c) => {
+    const actions = `
+      <punk-button>${c.start}</punk-button>
+      <punk-button>${c.pause}</punk-button>
+      <punk-divider orientation="vertical"></punk-divider>
+      <punk-icon-button label="${c.settings}">${gear}</punk-icon-button>
+      <punk-button variant="danger">${c.stop}</punk-button>
+    `;
+    const more = `<punk-icon-button slot="overflow" label="${c.settings}">${plus}</punk-icon-button>`;
+    return `
+      <punk-toolbar aria-label="${c.settings}">${actions}</punk-toolbar>
+      <punk-toolbar aria-label="${c.settings}" wrap style="max-inline-size: 320px">${actions}</punk-toolbar>
+      <punk-toolbar aria-label="${c.settings}" style="max-inline-size: 150px">${actions}${more}</punk-toolbar>
+    `;
+  },
+
+  checkbox: (c) => `
+    <div class="stack">
+      <punk-checkbox>${c.start}</punk-checkbox>
+      <punk-checkbox checked>${c.pause}</punk-checkbox>
+      <punk-checkbox indeterminate>${c.stop}</punk-checkbox>
+      <punk-checkbox disabled>${c.start}</punk-checkbox>
+      <punk-checkbox checked disabled>${c.pause}</punk-checkbox>
+      <punk-checkbox indeterminate disabled>${c.stop}</punk-checkbox>
+      <punk-checkbox required>${c.settings}</punk-checkbox>
+      <punk-checkbox checked aria-label="${c.settings}"></punk-checkbox>
+      <punk-checkbox>${c.body}</punk-checkbox>
+    </div>
+  `,
+
+  switch: (c) => `
+    <div class="stack">
+      <punk-switch>${c.start}</punk-switch>
+      <punk-switch checked>${c.pause}</punk-switch>
+      <punk-switch disabled>${c.stop}</punk-switch>
+      <punk-switch checked disabled>${c.start}</punk-switch>
+      <punk-switch required>${c.settings}</punk-switch>
+      <punk-switch checked aria-label="${c.settings}"></punk-switch>
+      <punk-switch>${c.body}</punk-switch>
+    </div>
+  `,
+
+  slider: (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-slider label="${c.settings}" value="40" show-value></punk-slider>
+      <punk-slider label="${c.pause}" value="0" min="0" max="10" show-value ticks></punk-slider>
+      <punk-slider label="${c.stop}" value="100" show-value ticks></punk-slider>
+      <punk-slider aria-label="${c.settings}" value="60"></punk-slider>
+      <punk-slider label="${c.start}" value="0.3" min="0" max="1" step="0.1" show-value ticks></punk-slider>
+      <punk-slider label="${c.pause}" value="30" show-value disabled></punk-slider>
+    </div>
+  `,
+
+  // A field marked `data-touched` shows its message, as if the user had been and left.
+  'text-field': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-text-field label="${c.settings}"></punk-text-field>
+      <punk-text-field label="${c.settings}" value="${c.body}"></punk-text-field>
+      <punk-text-field label="${c.settings}" placeholder="${c.start}"><span slot="hint">${c.footer}</span></punk-text-field>
+      <punk-text-field label="${c.settings}" value="${c.pause}" readonly></punk-text-field>
+      <punk-text-field label="${c.settings}" value="${c.pause}" disabled><span slot="hint">${c.footer}</span></punk-text-field>
+      <punk-text-field label="${c.settings}" required data-touched><span slot="hint">${c.footer}</span></punk-text-field>
+      <punk-text-field aria-label="${c.settings}" placeholder="${c.start}" type="search"></punk-text-field>
+      <punk-text-field label="${c.settings}" value="${c.stop}"><span slot="prefix">${plus}</span><span slot="suffix">${c.pause}</span></punk-text-field>
+      <punk-text-field label="${c.settings}" type="email" value="${c.stop}" data-touched></punk-text-field>
+    </div>
+  `,
+
+  'number-field': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-number-field label="${c.settings}" value="3" min="0" max="10"></punk-number-field>
+      <punk-number-field label="${c.settings}" placeholder="0"><span slot="hint">${c.footer}</span></punk-number-field>
+      <punk-number-field label="${c.settings}" value="40" step="5"><span slot="suffix">${c.pause}</span></punk-number-field>
+      <punk-number-field label="${c.settings}" value="3" hide-steppers></punk-number-field>
+      <punk-number-field label="${c.settings}" value="3" readonly></punk-number-field>
+      <punk-number-field label="${c.settings}" value="3" disabled><span slot="hint">${c.footer}</span></punk-number-field>
+      <punk-number-field label="${c.settings}" required data-touched></punk-number-field>
+      <punk-number-field label="${c.settings}" value="11" max="10" data-touched></punk-number-field>
+      <punk-number-field aria-label="${c.settings}" value="3"></punk-number-field>
+    </div>
+  `,
+
+  select: (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-select label="${c.settings}"><option value="a">${c.start}</option><option value="b">${c.pause}</option><option value="c">${c.stop}</option></punk-select>
+      <punk-select label="${c.settings}" value="b"><option value="a">${c.start}</option><option value="b">${c.pause}</option><option value="c" disabled>${c.stop}</option></punk-select>
+      <punk-select label="${c.settings}"><optgroup label="${c.divider}"><option value="a">${c.start}</option><option value="b">${c.pause}</option></optgroup><optgroup label="${c.title}"><option value="c">${c.stop}</option></optgroup><span slot="hint">${c.footer}</span></punk-select>
+      <punk-select label="${c.settings}" disabled><option value="a">${c.start}</option></punk-select>
+      <punk-select label="${c.settings}" required data-touched><option value="">${c.divider}</option><option value="a">${c.start}</option><span slot="hint">${c.footer}</span></punk-select>
+      <punk-select aria-label="${c.settings}"><option value="a">${c.start}</option><option value="b">${c.pause}</option></punk-select>
+    </div>
+  `,
+
+  window: (c, { open }) => {
+    const name = `heading="${c.title}" aria-label="${c.settings}"`;
+    const footer = `<punk-button slot="footer" variant="primary">${c.start}</punk-button><punk-button slot="footer">${c.stop}</punk-button>`;
+    const text = `<p style="margin: 0">${c.body}</p>`;
+    if (open) {
+      return `<punk-window ${name} modal open dismissible movable>${text}${footer}</punk-window>`;
+    }
+    return `
+      <punk-window ${name} open>${text}</punk-window>
+      <punk-window ${name} open dismissible movable><span slot="icon">${gear}</span>${text}${footer}</punk-window>
+      <punk-window ${name} open dismissible style="--punk-window-max-width: 320px">${text}${footer}</punk-window>
+    `;
+  },
+
+  popover: (c, { open }) => {
+    const item = (text: string, extra = '') =>
+      `<button role="menuitem" ${extra} style="display: block; inline-size: 100%; padding: 8px 12px; border: 0; background: transparent; color: inherit; font: inherit; text-align: start${extra ? '; opacity: 0.55' : ''}">${text}</button>`;
+    // Both modes open side by side on an overlay page, since manual popovers do not close each other.
+    return `
+      <div class="row" style="align-items: flex-start; min-block-size: 260px">
+        <punk-button>${c.start}</punk-button>
+        <punk-popover${open ? ' open' : ''}><p style="margin: 0">${c.body}</p></punk-popover>
+        <punk-button>${c.settings}</punk-button>
+        <punk-popover mode="menu" placement="end"${open ? ' open' : ''}>
+          ${item(c.pause)}${item(c.stop, 'disabled')}${item(c.start)}
+        </punk-popover>
+      </div>
+    `;
+  },
+
+  // The stack is empty in the default gallery: it is always in the top layer, in a corner, and
+  // would cover the page. The overlays page fills it, one toast of each variant.
+  'toast-stack': (c, { open }) =>
+    open
+      ? `<punk-toast-stack label="${c.settings}">${toasts(c)}</punk-toast-stack>`
+      : `<punk-toast-stack label="${c.settings}"></punk-toast-stack>`,
+
+  toast: (c) => `<div class="stack" style="max-inline-size: 420px">${toasts(c)}</div>`,
+
+  dialog: (c, { open }) => `
+    <punk-dialog heading="${c.title}" aria-label="${c.settings}"${open ? ' open' : ''}>
+      <p style="margin: 0">${c.body}</p>
+      <punk-button slot="footer" variant="danger">${c.stop}</punk-button>
+      <punk-button slot="footer">${c.pause}</punk-button>
+    </punk-dialog>
+  `,
+
+  'accordion-item': (c) => `
+    <div class="stack" style="max-inline-size: 480px">
+      <punk-accordion-item heading="${c.settings}"><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      <punk-accordion-item heading="${c.settings}" expanded><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      <punk-accordion-item heading="${c.pause}" disabled><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      <punk-accordion-item heading="${c.pause}" expanded disabled><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      <punk-accordion-item heading="${c.stop}" level="2" expanded><span slot="icon">${gear}</span><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      <punk-accordion-item expanded><span slot="heading">${c.settings} <b>${c.pause}</b></span><p style="margin: 0">${c.body}</p></punk-accordion-item>
+    </div>
+  `,
 };
 
 /** HTML for one component's states. */
-export function componentHtml(name: ComponentName, variant: ContentVariant): string {
-  return builders[name](copy[variant]);
+export function componentHtml(
+  name: ComponentName,
+  variant: ContentVariant,
+  options: BuildOptions = {},
+): string {
+  return builders[name](copy[variant], options);
 }
 
 /** A container holding a section for each requested component, language and direction set. */
 export function buildGallery(
   variant: ContentVariant,
   names: readonly ComponentName[] = componentNames,
+  options: BuildOptions = {},
 ): HTMLElement {
   const { lang, dir } = copy[variant];
   const root = document.createElement('div');
@@ -426,13 +748,21 @@ export function buildGallery(
       (name) => `
         <section data-component="${name}" class="stack">
           <h2 class="caption">punk-${name}</h2>
-          ${componentHtml(name, variant)}
+          ${componentHtml(name, variant, options)}
         </section>
       `,
     )
     .join('');
   applyGridValues(root);
+  touchFields(root);
   return root;
+}
+
+/** A field marked `data-touched` behaves as if the user had left it, so its message shows. */
+function touchFields(root: ParentNode): void {
+  for (const field of root.querySelectorAll('[data-touched]')) {
+    field.dispatchEvent(new FocusEvent('focusout', { bubbles: true, composed: true }));
+  }
 }
 
 /** A grid takes its selection as a property, which markup cannot carry. */
@@ -483,5 +813,6 @@ export const galleryCss = `
   .gallery { display: flex; flex-direction: column; gap: 24px; padding: 16px; box-sizing: border-box; }
   .gallery .stack { display: flex; flex-direction: column; gap: 12px; }
   .gallery .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .gallery punk-toast::part(toast) { animation: none; }
   .gallery .caption { margin: 0; font: 12px/1.2 var(--punk-font-mono, monospace); color: var(--punk-color-text-muted, #b8b4a7); }
 `;

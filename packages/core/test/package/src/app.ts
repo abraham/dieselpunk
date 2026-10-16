@@ -2,26 +2,69 @@ import { setStrings } from '@dieselpunk/core';
 import type {
   ButtonVariant,
   GridSelection,
+  PunkAccordion,
+  PunkAccordionItem,
   PunkActivateDetail,
   PunkButton,
+  PunkCheckbox,
+  PunkCloseDetail,
+  PunkCloseReason,
+  PunkCluster,
+  PunkDialog,
+  PunkDismissDetail,
+  PunkDismissReason,
   PunkIconButton,
   PunkItemStack,
   PunkMeter,
+  PunkMoveDetail,
+  PunkNumberField,
+  PunkOverflowDetail,
+  PunkPopover,
   PunkProgressBar,
   PunkRecipe,
+  PunkSelect,
   PunkSelectionChangeDetail,
+  PunkSlider,
   PunkSlot,
   PunkSlotGrid,
+  PunkStack,
   PunkStatusLight,
+  PunkSwitch,
+  PunkTab,
+  PunkTabChangeDetail,
+  PunkTabs,
+  PunkTextField,
+  PunkToast,
+  PunkToastStack,
+  PunkToggleDetail,
+  PunkToolbar,
+  PunkWindow,
+  StackGap,
   StatusVariant,
+  TextFieldType,
 } from '@dieselpunk/core';
+import '@dieselpunk/core/accordion/register.js';
+import '@dieselpunk/core/checkbox/register.js';
+import '@dieselpunk/core/cluster/register.js';
+import '@dieselpunk/core/dialog/register.js';
 import '@dieselpunk/core/icon-button/register.js';
 import '@dieselpunk/core/item-stack/register.js';
 import '@dieselpunk/core/meter/register.js';
+import '@dieselpunk/core/popover/register.js';
 import '@dieselpunk/core/progress-bar/register.js';
+import '@dieselpunk/core/number-field/register.js';
 import '@dieselpunk/core/recipe/register.js';
+import '@dieselpunk/core/select/register.js';
 import '@dieselpunk/core/slot/register.js';
+import '@dieselpunk/core/slider/register.js';
 import '@dieselpunk/core/slot-grid/register.js';
+import '@dieselpunk/core/stack/register.js';
+import '@dieselpunk/core/switch/register.js';
+import '@dieselpunk/core/tabs/register.js';
+import '@dieselpunk/core/text-field/register.js';
+import '@dieselpunk/core/toast/register.js';
+import '@dieselpunk/core/toolbar/register.js';
+import '@dieselpunk/core/window/register.js';
 import '@dieselpunk/core/status-light/register.js';
 
 setStrings({ loading: 'Laden' });
@@ -93,4 +136,181 @@ light.variant = status;
 light.textContent = 'Low fuel';
 
 document.body.append(iconButton, bar, loading, grid, recipe, meter, light);
+
+// The shell: layout primitives and an accordion, with a typed toggle event.
+const layout: PunkStack = document.createElement('punk-stack');
+const gap: StackGap = '3';
+layout.gap = gap;
+// @ts-expect-error The gaps are a closed union.
+layout.gap = '9';
+layout.gap = gap;
+const cluster: PunkCluster = document.createElement('punk-cluster');
+cluster.justify = 'between';
+cluster.append(loading.cloneNode());
+const accordion: PunkAccordion = document.createElement('punk-accordion');
+accordion.multiple = false;
+const section: PunkAccordionItem = document.createElement('punk-accordion-item');
+section.heading = 'Inputs';
+section.level = 3;
+section.textContent = 'Iron plates';
+section.addEventListener('punk-toggle', (event) => {
+  const detail: PunkToggleDetail = event.detail;
+  // @ts-expect-error The detail carries `expanded` only.
+  void detail.open;
+});
+accordion.append(section);
+layout.append(cluster, accordion);
+
+// Tabs with a panel, and a toolbar, with typed events.
+const tabs: PunkTabs = document.createElement('punk-tabs');
+tabs.setAttribute('aria-label', 'Machine');
+// @ts-expect-error The activation modes are a closed union.
+tabs.activation = 'sometimes';
+tabs.activation = 'manual';
+const inputs: PunkTab = document.createElement('punk-tab');
+inputs.slot = 'tab';
+inputs.panel = 'inputs';
+inputs.textContent = 'Inputs';
+const outputs: PunkTab = document.createElement('punk-tab');
+outputs.slot = 'tab';
+outputs.panel = 'outputs';
+outputs.textContent = 'Outputs';
+const inputsPanel = document.createElement('div');
+inputsPanel.id = 'inputs';
+const outputsPanel = document.createElement('div');
+outputsPanel.id = 'outputs';
+tabs.addEventListener('punk-tab-change', (event) => {
+  const detail: PunkTabChangeDetail = event.detail;
+  const shown: HTMLElement | null = detail.panel;
+  // @ts-expect-error The detail carries `value`, `tab`, and `panel`, not an index.
+  void detail.index;
+  void [detail.value, detail.tab, shown];
+});
+tabs.append(inputs, outputs, inputsPanel, outputsPanel);
+
+const toolbar: PunkToolbar = document.createElement('punk-toolbar');
+toolbar.setAttribute('aria-label', 'Tools');
+toolbar.wrap = false;
+toolbar.addEventListener('punk-overflow-change', (event) => {
+  const detail: PunkOverflowDetail = event.detail;
+  const hidden: HTMLElement[] = detail.hidden;
+  // @ts-expect-error The detail lists the hidden items only.
+  void detail.visible;
+  void hidden;
+});
+toolbar.append(loading.cloneNode(true));
+layout.append(tabs, toolbar);
+
+// A window and a dialog, with typed open, close, and move events.
+const assembler: PunkWindow = document.createElement('punk-window');
+assembler.heading = 'Assembler';
+assembler.movable = true;
+assembler.dismissible = true;
+assembler.addEventListener('punk-move-end', (event) => {
+  const detail: PunkMoveDetail = event.detail;
+  // @ts-expect-error The detail is an offset, `x` and `y` only.
+  void detail.z;
+  void [detail.x, detail.y];
+});
+const confirm: PunkDialog = document.createElement('punk-dialog');
+confirm.heading = 'Discard the run?';
+confirm.persistent = false;
+confirm.addEventListener('punk-close', (event) => {
+  const detail: PunkCloseDetail = event.detail;
+  const reason: PunkCloseReason = detail.reason;
+  // @ts-expect-error The reasons are a closed union.
+  const unknown: PunkCloseReason = 'sulking';
+  void [reason, unknown, detail.returnValue];
+});
+
+// A popover menu, with a typed close event.
+const menuTrigger = document.createElement('button');
+menuTrigger.textContent = 'Actions';
+const menu: PunkPopover = document.createElement('punk-popover');
+menu.mode = 'menu';
+// @ts-expect-error The modes are a closed union.
+menu.mode = 'tree';
+menu.mode = 'menu';
+menu.placement = 'end';
+menu.addEventListener('punk-close', (event) => {
+  const detail: PunkCloseDetail = event.detail;
+  void detail.reason;
+});
+layout.append(assembler, confirm, menuTrigger, menu);
+
+// A toast stack, with typed options and a typed dismiss event.
+const notifications: PunkToastStack = document.createElement('punk-toast-stack');
+notifications.placement = 'top-end';
+// @ts-expect-error The corners are a closed union.
+notifications.placement = 'middle';
+notifications.addEventListener('punk-dismiss', (event) => {
+  const detail: PunkDismissDetail = event.detail;
+  const reason: PunkDismissReason = detail.reason;
+  // @ts-expect-error The reasons are a closed union.
+  const unknown: PunkDismissReason = 'bored';
+  void [reason, unknown];
+});
+const saved: PunkToast = notifications.show({ message: 'Saved', variant: 'success', duration: 0 });
+// @ts-expect-error A toast needs a message.
+notifications.show({ variant: 'info' });
+void saved;
+layout.append(notifications);
+
+// Form controls, typed, and in a form of their own.
+const agree: PunkCheckbox = document.createElement('punk-checkbox');
+agree.name = 'agree';
+agree.textContent = 'Agree';
+agree.indeterminate = true;
+// @ts-expect-error `checked` is a boolean.
+agree.checked = 'yes';
+agree.checked = false;
+const power: PunkSwitch = document.createElement('punk-switch');
+power.name = 'power';
+power.textContent = 'Power';
+const speed: PunkSlider = document.createElement('punk-slider');
+speed.name = 'speed';
+speed.label = 'Speed';
+speed.max = 10;
+speed.value = 4;
+// @ts-expect-error The value is a number.
+speed.value = 'fast';
+speed.value = 4;
+speed.addEventListener('change', (event) => {
+  const target = event.target as PunkSlider;
+  void target.value.toFixed(1);
+});
+const callsign: PunkTextField = document.createElement('punk-text-field');
+callsign.name = 'callsign';
+callsign.label = 'Callsign';
+const kind: TextFieldType = 'email';
+callsign.type = kind;
+// @ts-expect-error `search` is a type, and `color` is not.
+callsign.type = 'color';
+callsign.type = 'search';
+callsign.maxlength = 8;
+callsign.addEventListener('input', (event) => {
+  void (event.target as PunkTextField).value.trim();
+});
+const thrust: PunkNumberField = document.createElement('punk-number-field');
+thrust.name = 'thrust';
+thrust.label = 'Thrust';
+thrust.min = 0;
+thrust.max = 10;
+thrust.value = '4';
+// @ts-expect-error The value is the text the user sees.
+thrust.value = 4;
+thrust.value = '4';
+void thrust.valueAsNumber.toFixed(1);
+const squadron: PunkSelect = document.createElement('punk-select');
+squadron.name = 'squadron';
+squadron.label = 'Squadron';
+squadron.innerHTML = '<option value="a">Alpha</option><option value="b">Beta</option>';
+squadron.value = 'a';
+// @ts-expect-error The index is a number.
+squadron.selectedIndex = 'first';
+const settings = document.createElement('form');
+settings.append(agree, power, speed, callsign, thrust, squadron);
+layout.append(settings);
+
+document.body.append(layout);
 document.documentElement.dataset['consumer'] = 'ready';

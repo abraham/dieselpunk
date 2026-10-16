@@ -53,8 +53,8 @@ function clamp(value: number, min: number, max: number): number {
 
 /**
  * Places a surface beside an anchor: on the requested side, flipped to the opposite side when it
- * does not fit but the opposite does, then shifted along the other axis to stay inside the
- * viewport margin. `start` and `end` follow the writing direction.
+ * does not fit but the opposite does (or above or below when neither side fits), then shifted to
+ * stay inside the viewport margin. `start` and `end` follow the writing direction.
  */
 export function computePosition(input: PositionInput): PositionResult {
   const { anchor, surface, viewport, offset, margin } = input;
@@ -85,14 +85,17 @@ export function computePosition(input: PositionInput): PositionResult {
 
   let side = toSide(input.placement, input.rtl);
   if (!fits(side) && fits(opposite[side])) side = opposite[side];
+  // Beside the anchor on a viewport too narrow for either side: use above or below instead.
+  if ((side === 'left' || side === 'right') && !fits(side)) {
+    const stacked = (['bottom', 'top'] as const).find(fits);
+    if (stacked) side = stacked;
+  }
 
   const placed = place(side);
   const vertical = side === 'top' || side === 'bottom';
   return {
     side,
-    left: vertical
-      ? clamp(placed.left, margin, viewport.width - margin - surface.width)
-      : placed.left,
+    left: clamp(placed.left, margin, viewport.width - margin - surface.width),
     top: vertical
       ? placed.top
       : clamp(placed.top, margin, viewport.height - margin - surface.height),

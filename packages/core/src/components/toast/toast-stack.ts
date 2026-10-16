@@ -1,0 +1,161 @@
+import { html } from 'lit';
+import type { PropertyValues } from 'lit';
+import { property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { PunkElement } from '../../internal/punk-element.ts';
+import { t } from '../../utilities/localize.ts';
+import { PunkToast, isDismissing } from './toast.ts';
+import type { ToastOwner, ToastVariant } from './toast.ts';
+import { toastStackStyles } from './toast.styles.ts';
+
+export type ToastPlacement = 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
+
+export interface PunkToastOptions {
+  message: string;
+  heading?: string;
+  variant?: ToastVariant;
+  /** Milliseconds, as `duration` on the toast. */
+  duration?: number;
+  /** An element for the toast's `action` slot, such as a button. */
+  action?: HTMLElement;
+}
+
+const placements: readonly string[] = ['top-start', 'top-end', 'bottom-start', 'bottom-end'];
+const DEFAULT_LIMIT = 5;
+
+/**
+ * Where toasts appear, and what announces them. It has two live regions that exist before any toast
+ * does, because a region that is added together with its content is not reliably announced:
+ * `role="alert"` for `warning` and `danger`, and `role="status"` for `info` and `success`. It puts
+ * each toast in the right one by writing its `slot`, and gives the author's `slot` back when the
+ * toast leaves. It stays in the top layer even when empty, since a hidden region is not in the
+ * accessibility tree, and lets clicks through everywhere there is no toast.
+ *
+ * A modal window or dialog makes everything outside it inert, a stack included. Put a stack inside
+ * the dialog when its toasts must be usable while it is open.
+ *
+ * @tagname punk-toast-stack
+ *
+ * @slot - The toasts. The stack moves each into `polite` or `assertive`.
+ * @slot polite - Toasts announced politely. Filled by the stack.
+ * @slot assertive - Toasts announced at once. Filled by the stack.
+ *
+ * @csspart stack - The region that holds the toasts.
+ */
+export class PunkToastStack extends PunkElement implements ToastOwner {
+  static override styles = toastStackStyles;
+
+  /** The corner. `start` and `end` follow the writing direction. Unknown values use `bottom-end`. */
+  @property({ reflect: true }) placement: ToastPlacement = 'bottom-end';
+
+  /** The most toasts it shows. A new toast past it dismisses the oldest, with the reason `limit`. */
+  @property({ type: Number, reflect: true }) limit = DEFAULT_LIMIT;
+
+  /** The name of the region. Without it, the localized "Notifications". */
+  @property({ reflect: true }) label = '';
+
+  readonly #authorSlots = new WeakMap<PunkToast, string | null>();
+
+  /** Creates a toast, shows it, and returns it. */
+  show(options: PunkToastOptions): PunkToast {
+    const toast = document.createElement('punk-toast');
+    if (options.heading) toast.heading = options.heading;
+    if (options.variant) toast.variant = options.variant;
+    if (options.duration !== undefined) toast.duration = options.duration;
+    toast.textContent = options.message;
+    if (options.action) {
+      options.action.slot = 'action';
+      toast.append(options.action);
+    }
+    this.#place(toast);
+    this.append(toast);
+    this.#enforceLimit();
+    return toast;
+  }
+
+  /** Dismisses every toast. */
+  clear(): void {
+    for (const toast of this.#toasts) toast.dismiss('method');
+  }
+
+  toastChanged(toast: PunkToast): void {
+    this.#place(toast);
+  }
+
+  toastLeft(toast: PunkToast): void {
+    if (toast.owner === this) toast.owner = null;
+    if (!this.#authorSlots.has(toast)) return;
+    const authored = this.#authorSlots.get(toast) ?? null;
+    this.#authorSlots.delete(toast);
+    if (authored === null) toast.removeAttribute('slot');
+    else toast.setAttribute('slot', authored);
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    if (this.hasUpdated) this.#showSurface();
+  }
+
+  protected override firstUpdated(): void {
+    this.#showSurface();
+  }
+
+  protected override updated(changed: PropertyValues<this>): void {
+    if (changed.has('limit') && changed.get('limit') !== undefined) this.#enforceLimit();
+  }
+
+  get #toasts(): PunkToast[] {
+    return [...this.children].filter((child): child is PunkToast => child instanceof PunkToast);
+  }
+
+  #place(toast: PunkToast): void {
+    if (!this.#authorSlots.has(toast)) this.#authorSlots.set(toast, toast.getAttribute('slot'));
+    toast.owner = this;
+    const slot = toast.variant === 'warning' || toast.variant === 'danger' ? 'assertive' : 'polite';
+    if (toast.getAttribute('slot') !== slot) toast.setAttribute('slot', slot);
+  }
+
+  #enforceLimit(): void {
+    const limit = Number.isFinite(this.limit) ? Math.max(1, Math.floor(this.limit)) : DEFAULT_LIMIT;
+    const showing = this.#toasts.filter((toast) => !isDismissing(toast));
+    for (const toast of showing.slice(0, Math.max(0, showing.length - limit))) {
+      toast.dismiss('limit');
+    }
+  }
+
+  #showSurface(): void {
+    const surface = this.renderRoot.querySelector<HTMLElement>('.stack');
+    // Disabling showPopover is how the fixed-position fallback is exercised.
+    if (typeof surface?.showPopover === 'function' && !surface.matches(':popover-open')) {
+      surface.showPopover();
+    }
+  }
+
+  // Only toasts with no `slot` of their own arrive here; the rest were placed already.
+  readonly #handleSlotChange = (): void => {
+    for (const toast of this.#toasts) this.#place(toast);
+    this.#enforceLimit();
+  };
+
+  protected override render() {
+    const placement = placements.includes(this.placement) ? this.placement : 'bottom-end';
+    const [side, edge] = placement.split('-') as ['top' | 'bottom', 'start' | 'end'];
+    return html`
+      <div
+        part="stack"
+        class=${classMap({ stack: true, [side]: true, [edge]: true })}
+        popover="manual"
+        role="region"
+        aria-label=${this.label || t('notifications', 'Notifications')}
+      >
+        <div class="region" role="status" aria-atomic="false">
+          <slot name="polite"></slot>
+        </div>
+        <div class="region" role="alert" aria-atomic="false">
+          <slot name="assertive"></slot>
+        </div>
+        <slot hidden @slotchange=${this.#handleSlotChange}></slot>
+      </div>
+    `;
+  }
+}

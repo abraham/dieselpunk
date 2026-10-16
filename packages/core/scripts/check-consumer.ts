@@ -14,6 +14,7 @@ import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { chromium } from 'playwright';
+import type { Browser } from 'playwright';
 
 // Installs the packed tarball into throwaway projects, the way a consumer would, then type-checks
 // the fixture under the oldest and newest supported TypeScript and runs it in a browser.
@@ -42,6 +43,17 @@ interface Report {
   gridRole: string | null;
   itemRole: string | null;
   changed: string[] | null;
+  toggled: boolean | null;
+  tabbed: string | null;
+  closed: string | null;
+  menuClosed: string | null;
+  dismissed: string | null;
+  toastSlot: string | null;
+  agree: string | null;
+  speed: string | null;
+  callsign: string | null;
+  thrust: string | null;
+  squadron: string | null;
 }
 
 // What each page registers: the plain page imports panel and button; the TypeScript page imports
@@ -49,15 +61,33 @@ interface Report {
 const expectedTags: Record<string, string[]> = {
   plain: ['punk-button', 'punk-panel'],
   app: [
+    'punk-accordion',
+    'punk-accordion-item',
+    'punk-checkbox',
+    'punk-cluster',
+    'punk-dialog',
     'punk-icon-button',
     'punk-item-stack',
     'punk-meter',
+    'punk-number-field',
+    'punk-popover',
     'punk-progress-bar',
     'punk-recipe',
+    'punk-select',
+    'punk-slider',
     'punk-slot',
     'punk-slot-grid',
+    'punk-stack',
     'punk-status-light',
+    'punk-switch',
+    'punk-tab',
+    'punk-tabs',
+    'punk-text-field',
+    'punk-toast',
+    'punk-toast-stack',
+    'punk-toolbar',
     'punk-tooltip',
+    'punk-window',
   ],
 };
 
@@ -112,6 +142,89 @@ async function probeScript(): Promise<string> {
   return result.outputFiles.map((file) => file.text).join('\n');
 }
 
+// SPEC §19: the assembler built from the registration entries, driven with real input.
+async function checkShell(browser: Browser, port: number): Promise<void> {
+  const tab = await browser.newPage();
+  const messages: string[] = [];
+  tab.on('console', (message) => {
+    if (['error', 'warning'].includes(message.type())) messages.push(message.text());
+  });
+  tab.on('pageerror', (error) => messages.push(error.message));
+  await tab.goto(`http://localhost:${port}/shell.html`);
+  await tab.waitForSelector('html[data-shell="ready"]');
+  // This script is type-checked without DOM types, so what runs in the page is a string.
+  const attribute = (name: string) =>
+    tab.evaluate(`document.documentElement.dataset[${JSON.stringify(name)}] ?? null`) as Promise<
+      string | null
+    >;
+
+  const expected = [
+    'punk-button',
+    'punk-item-stack',
+    'punk-progress-bar',
+    'punk-recipe',
+    'punk-slot',
+    'punk-slot-grid',
+    'punk-switch',
+    'punk-tab',
+    'punk-tabs',
+    'punk-window',
+  ];
+  const tags = [
+    ...expected,
+    'punk-dialog',
+    'punk-popover',
+    'punk-toast',
+    'punk-toolbar',
+    'punk-tooltip',
+  ];
+  const defined = (await tab.evaluate(
+    `${JSON.stringify(tags)}.filter((tag) => customElements.get(tag) !== undefined)`,
+  )) as string[];
+  if (JSON.stringify([...defined].sort()) !== JSON.stringify(expected)) {
+    problems.push(`shell.html defines [${defined}], expected [${expected}]`);
+  }
+
+  const assembler = tab.getByRole('dialog', { name: 'Assembler 03' });
+  if (!(await assembler.isVisible())) problems.push('shell.html: the window is not open and named');
+  if ((await attribute('events'))?.split(' ')[0] !== 'open') {
+    problems.push(`shell.html: the window opened with ${await attribute('events')}`);
+  }
+  if (!(await tab.getByRole('progressbar', { name: 'Crafting precision gear' }).isVisible())) {
+    problems.push('shell.html: the progress bar is not shown and named');
+  }
+
+  await tab.getByRole('tab', { name: 'Modules' }).click();
+  const production = await tab.locator('#production').isVisible();
+  const modules = await tab.locator('#modules').isVisible();
+  if (production || !modules) {
+    problems.push(
+      `shell.html: after a tab switch production is ${production} and modules is ${modules}`,
+    );
+  }
+
+  await tab.getByRole('tab', { name: 'Production' }).click();
+  await tab.getByRole('option', { name: /Speed module/ }).click();
+  if (!(await attribute('events'))?.includes('select:speed')) {
+    problems.push(`shell.html: clicking an item reported ${await attribute('events')}`);
+  }
+
+  await tab.getByRole('tab', { name: 'Modules' }).click();
+  await tab.getByRole('switch', { name: 'Overclock' }).click();
+  await tab.getByRole('button', { name: 'Apply' }).click();
+  const submitted = await attribute('submitted');
+  if (submitted !== JSON.stringify([['overclock', 'on']])) {
+    problems.push(`shell.html: the form submitted ${submitted}`);
+  }
+
+  await tab.keyboard.press('Escape');
+  if (!(await attribute('events'))?.includes('close:escape') || (await assembler.isVisible())) {
+    problems.push('shell.html: Escape did not close the window');
+  }
+  if (messages.length > 0) problems.push(`shell.html logged: ${messages.join(' | ')}`);
+  await tab.close();
+}
+
 async function checkPages(outDir: string): Promise<void> {
   const probe = await probeScript();
   const server = createServer((request, response) => {
@@ -126,6 +239,7 @@ async function checkPages(outDir: string): Promise<void> {
   const port = (server.address() as { port: number }).port;
   const browser = await chromium.launch();
   try {
+    await checkShell(browser, port);
     for (const page of ['plain', 'app']) {
       const tab = await browser.newPage();
       const messages: string[] = [];
@@ -159,6 +273,33 @@ async function checkPages(outDir: string): Promise<void> {
         if (JSON.stringify(report.changed) !== '["engine"]') {
           problems.push(`app.html: clicking a slot reported ${JSON.stringify(report.changed)}`);
         }
+        if (report.toggled !== true) {
+          problems.push(`app.html: clicking a heading reported ${report.toggled}`);
+        }
+        if (report.tabbed !== 'outputs') {
+          problems.push(`app.html: clicking a tab reported ${report.tabbed}`);
+        }
+        if (report.closed !== 'method:done') {
+          problems.push(`app.html: closing a dialog reported ${report.closed}`);
+        }
+        if (report.menuClosed !== 'method') {
+          problems.push(`app.html: closing a popover reported ${report.menuClosed}`);
+        }
+        if (report.agree !== 'on' || report.speed !== '10') {
+          problems.push(
+            `app.html: the form submitted agree=${report.agree} and speed=${report.speed}`,
+          );
+        }
+        if (report.callsign !== 'Echo' || report.thrust !== '5' || report.squadron !== 'b') {
+          problems.push(
+            `app.html: the fields submitted callsign=${report.callsign}, thrust=${report.thrust}, and squadron=${report.squadron}`,
+          );
+        }
+        if (report.dismissed !== 'method' || report.toastSlot !== 'assertive') {
+          problems.push(
+            `app.html: a toast was placed in ${report.toastSlot} and dismissed for ${report.dismissed}`,
+          );
+        }
       }
       if (messages.length > 0) problems.push(`${page}.html logged: ${messages.join(' | ')}`);
       await tab.close();
@@ -187,7 +328,12 @@ try {
   const outDir = join(work, 'out');
   await build({
     absWorkingDir: newest,
-    entryPoints: { plain: 'src/plain.js', app: 'src/app.ts' },
+    entryPoints: {
+      plain: 'src/plain.js',
+      app: 'src/app.ts',
+      shell: 'src/shell.ts',
+      'shell-style': 'src/shell-style.js',
+    },
     bundle: true,
     format: 'esm',
     outdir: outDir,
@@ -195,6 +341,7 @@ try {
   });
   cpSync(join(fixtureDir, 'plain.html'), join(outDir, 'plain.html'));
   cpSync(join(fixtureDir, 'app.html'), join(outDir, 'app.html'));
+  cpSync(join(fixtureDir, 'shell.html'), join(outDir, 'shell.html'));
   await checkPages(outDir);
 } catch (error) {
   problems.push(String((error as { stderr?: string }).stderr ?? error));

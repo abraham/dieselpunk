@@ -13,6 +13,7 @@ import '@dieselpunk/core/meter/register.js';
 import '@dieselpunk/core/status-light/register.js';
 import { icon } from '../icons/icons.ts';
 import { item, itemLabels, itemNames } from '../icons/items.ts';
+import { applicationShell } from '../lib/application-shell.ts';
 
 const meta: Meta = {
   title: 'Overview',
@@ -161,4 +162,9 @@ export const Inventory: Story = {
       </punk-panel>
     </div>
   `,
+};
+
+export const ApplicationShell: Story = {
+  name: 'Application shell',
+  render: () => applicationShell(),
 };
