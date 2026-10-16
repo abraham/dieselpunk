@@ -17,7 +17,7 @@
     "limit": "12 kB"
   },
   {
-    "name": "Selectable base and receptacle (shared by slot, item stack, recipe)",
+    "name": "Selectable base and receptacle (shared by slot and item stack)",
     "path": ["dist/internal/selectable-base.js", "dist/styles/receptacle.js"],
     "ignore": ["lit"],
     "gzip": true,
@@ -68,6 +68,13 @@
   {
     "name": "punk-slot-grid",
     "path": "dist/components/slot-grid/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-recipe",
+    "path": "dist/components/recipe/register.js",
     "ignore": ["lit"],
     "gzip": true,
     "limit": "5 kB"

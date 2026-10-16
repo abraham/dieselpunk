@@ -1,6 +1,6 @@
 # Phase 2: Inventory — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), 3 (slot and item stack), and 4 (slot grid) are implemented.
+**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), 3 (slot and item stack), 4 (slot grid), and 5 (recipe) are implemented.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 2
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md)
 **Package:** `@dieselpunk/core`
@@ -364,6 +364,14 @@ A selectable recipe tile.
 - **Slots:** `icon`, `ingredients`, `products`.
 - **Parts:** `recipe`, `icon`, `name`, `duration`, `status`, `ingredients`, `products`.
 - **Events:** `punk-activate`.
+- Details settled in implementation:
+  - **Base.** `PunkRecipe` extends `PunkSelectableBase` directly, not the receptacle base: it is a tile, not a square receptacle, so it has no `highlighted`, `invalid`, or `size`, and its own styles (a raised tile with the button's bevel, pressed in and ringed when selected).
+  - **Status.** The word "unavailable" for a recipe that cannot be made, "can craft N" for one that can with a count above zero, and nothing for one that can with a count of zero, so availability is a word present or absent, never dimming or color. An unavailable recipe ignores its count. The chip is solid when it can be made and dashed when it cannot, which also tells them apart without color.
+  - **Duration** is in seconds, shown with `unit: 'second'` and `unitDisplay: 'short'` ("0.5 sec" in English, "12 Sek." in German), at most two decimals. Zero is shown as a time, and unset shows none. A negative value is clamped and warns, and a value that is not a number shows nothing and warns.
+  - **Count.** `craftable-count` is rounded down. Removing the attribute reads as zero without a warning, and a negative or non-numeric value is zero with one.
+  - **Name.** The tile's text in reading order (icon alt text, name, duration, status, ingredients, products), so naming it with `aria-label` would replace the ingredients: the JSDoc and the gallery use `name`. It warns once when there is no `name`, no `aria-label` or `aria-labelledby`, and nothing in the icon, ingredients, or products slots.
+  - **Layout.** The icon plate is `--punk-slot-size` square and hidden when empty. The ingredients, an arrow, and the products sit on one wrapping row; the arrow shows only when both are present, is hidden from assistive technology, and flips for right-to-left. The text column can shrink below its widest unbreakable content, and a long word breaks.
+  - **Selected** is a 3px ring and a pressed-in bevel, no fill change, since the text keeps its contrast on the tile. Under forced colors it is a 3px `Highlight` outline.
 - The tile is `role="button"` with `aria-pressed` for `selected` (§2 decision 4). Its name is the browser's name from content: the name, the duration, the availability word, the craftable count, and the text of the `ingredients` and `products` slots. Nothing in the tile is hidden from the name, so an ingredient list is read.
 - The duration is formatted as a unit with `Intl.NumberFormat` (for example "0.5 s"), and the count and the word "unavailable" are shown as text, so availability never depends on dimming or color.
 - The tile grows with its content. A long name wraps, and the tile keeps a minimum size, as Phase 1's controls do (§10.7 of that spec).
@@ -467,6 +475,7 @@ SPEC §14.3 requires a 100-slot grid to stay responsive. Frame times on a CI run
 The gates of Phase 1 §10.4 apply, with each component's register entry measured on its own and gzip-compressed:
 
 - Each entry is at most 5 kB. The shared selectable base is imported by three components, so it counts toward each of them; if an entry would pass 5 kB, the base is split before any limit is raised, and any exception is documented as `punk-icon-button`'s was.
+- Measured in work package 5: `punk-recipe` 4.86 kB, which is close: it does not use the receptacle styles, but it has its own tile styles and the number formatting. The shared base entry is named for the slot and the item stack, the two that use the receptacle.
 - Measured in work package 4: `punk-slot-grid` 4.66 kB, with the shared runtime. The selectable base is not part of it, since the grid never imports an item class.
 - Measured in work package 3: `punk-slot` 4.27 kB. `punk-item-stack` is 5.83 kB, so it has a documented exception of 6 kB, as `punk-icon-button` has 7. There was nothing left to split: the receptacle styles and base (about 4.2 kB with the shared runtime) are used by both components, and the rest of the item stack is its own code, which is the durability patterns, the quality diamonds, and the number formatting. The way to bring it under 5 kB is to cut features or shrink the receptacle CSS, and neither seemed worth it for 0.8 kB. English defaults live beside the component that renders them (§7.4), which kept the Phase 1 bundles from growing.
 - `check-package.ts` gains a sentinel string for each new component and requires that no register entry brings another component with it.
@@ -484,7 +493,7 @@ The stages of Phase 1 §10.5 are unchanged. The "Update visual baselines" workfl
 | 2 | Shared internals | 1 | `SelectionModel`, `grid-navigation`, `PunkSelectableBase`, `receptacle` styles, `hostFocusRing`, localization with interpolation; logic tests. Done. |
 | 3 | Slot and item stack | 2 | Two components, tests. Done. |
 | 4 | Slot grid | 2, 3 | Component, keyboard and selection tests, performance gate. Done. |
-| 5 | Recipe | 2 | Component, tests |
+| 5 | Recipe | 2 | Component, tests. Done. |
 | 6 | Meter and status light | 1 | Two components, tests |
 | 7 | Test infrastructure | 3 to 6 as they land | Gallery group, axe and reflow coverage, ARIA snapshots, visual matrix, consumer typing, baselines |
 | 8 | Workbench | 3 to 6 as they land | Inventory overview, stories, docs pages, demo art |

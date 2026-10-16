@@ -12,6 +12,7 @@ import '../../../src/components/tooltip/register.ts';
 import '../../../src/components/slot/register.ts';
 import '../../../src/components/item-stack/register.ts';
 import '../../../src/components/slot-grid/register.ts';
+import '../../../src/components/recipe/register.ts';
 
 // The visual matrix renders the foundation set only, until its baselines include the inventory.
 export const foundationNames = [
@@ -22,7 +23,7 @@ export const foundationNames = [
   'progress-bar',
   'tooltip',
 ] as const;
-export const inventoryNames = ['slot', 'item-stack', 'slot-grid'] as const;
+export const inventoryNames = ['slot', 'item-stack', 'slot-grid', 'recipe'] as const;
 export const componentNames = [...foundationNames, ...inventoryNames] as const;
 export type ComponentName = (typeof componentNames)[number];
 
@@ -44,6 +45,9 @@ interface Copy {
   tip: string;
   slot: string;
   item: string;
+  recipe: string;
+  needs: string;
+  makes: string;
 }
 
 const copy: Record<ContentVariant, Copy> = {
@@ -62,6 +66,9 @@ const copy: Record<ContentVariant, Copy> = {
     tip: 'Starts the assembler',
     slot: 'Module slot 1',
     item: 'Speed module',
+    recipe: 'Precision gear',
+    needs: '2 iron plates',
+    makes: 'Precision gear',
   },
   long: {
     lang: 'de',
@@ -78,6 +85,9 @@ const copy: Record<ContentVariant, Copy> = {
     tip: 'Startet die Montagemaschine und nimmt die Produktion sofort auf',
     slot: 'Steckplatz für Verstärkungsmodule, Reihe zwei, Position drei',
     item: 'Geschwindigkeitsmodul der dritten Generation',
+    recipe: 'Präzisionszahnrad für schwere Industriegetriebe, Baureihe zwei',
+    needs: '2 Eisenplatten und 1 Schmierstoffkartusche',
+    makes: 'Präzisionszahnrad',
   },
   unlabeled: {
     lang: 'en',
@@ -94,6 +104,9 @@ const copy: Record<ContentVariant, Copy> = {
     tip: 'Starts the assembler',
     slot: '',
     item: '',
+    recipe: '',
+    needs: '2 iron plates',
+    makes: 'Precision gear',
   },
   rtl: {
     lang: 'he',
@@ -110,6 +123,9 @@ const copy: Record<ContentVariant, Copy> = {
     tip: 'מפעיל את מכונת ההרכבה',
     slot: 'חריץ מודול 1',
     item: 'מודול מהירות',
+    recipe: 'גלגל שיניים מדויק',
+    needs: '2 לוחות ברזל',
+    makes: 'גלגל שיניים',
   },
 };
 
@@ -298,6 +314,26 @@ const builders: Record<ComponentName, Builder> = {
       <punk-slot-grid ${label} selection="multiple" columns="3" data-values="i1,i3">${stacks}</punk-slot-grid>
       <punk-slot-grid ${label}>${slots()}</punk-slot-grid>
       <punk-slot-grid ${label} selection="single" disabled data-values="s1">${slots()}</punk-slot-grid>
+    `;
+  },
+
+  recipe: (c) => {
+    // An aria-label would replace the visible text in the accessible name, so the name is `name`.
+    const name = `name="${c.recipe || 'Recipe'}"`;
+    const icon = gear.replace('<svg', '<svg slot="icon"');
+    const needs = `<span slot="ingredients">${c.needs}</span>`;
+    const makes = `<span slot="products">${c.makes}</span>`;
+    return `
+      <div class="stack">
+        <punk-recipe ${name} duration="0.5" available craftable-count="3">${icon}${needs}${makes}</punk-recipe>
+        <punk-recipe ${name} duration="12" available selected>${icon}${needs}${makes}</punk-recipe>
+        <punk-recipe ${name} duration="1.25">${icon}${needs}${makes}</punk-recipe>
+        <punk-recipe ${name} duration="3" available disabled>${icon}${needs}${makes}</punk-recipe>
+        <punk-recipe ${name} available>${needs}</punk-recipe>
+        <punk-recipe ${name} available>${makes}</punk-recipe>
+        <punk-recipe ${name} available craftable-count="1200">${icon}</punk-recipe>
+        <punk-recipe ${name}></punk-recipe>
+      </div>
     `;
   },
 };
