@@ -1,6 +1,6 @@
 # Phase 1: Foundation — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), and 4 (`punk-panel`, `punk-divider`) are implemented, as are `token()`, the base styles, surfaces, texture, forced-colors helper, density helper, slot presence, registration helper, the dev flag and `devWarn`, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), and 12.3 (Divider) are complete.
+**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), and the button part of 6 (`PunkButtonBase`, `punk-button`) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, the dev flag and `devWarn`, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), and 12.4 (Button) are complete. `punk-button` shipped with the boundary-contrast gap in §6.8 still open, by decision.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases)
 **Package:** `@dieselpunk/core`
 **Prefix:** `punk-`
@@ -325,7 +325,7 @@ Compact is the default. Font sizes do not change with density.
 - `accent-text` on accent, or `danger-text` on danger, is below the text threshold;
 - the outer focus color is below 3:1 against canvas, panel, panel-raised, or panel-inset, or the inner focus color is below 3:1 against the outer one.
 
-**Known gap.** The gate does not check control boundaries. In the `industrial` palette from SPEC §6.2, `edge-dark` on panel is 1.78:1 and `edge-light` on panel is 2.22:1, below the 3:1 SPEC §10 requires for non-text controls (`industrial-light` and `high-contrast` pass for `edge-dark`). Raised surfaces differ from panel by only 1.41:1. Before the button component ships, either the dark palette's edges must be strengthened or the spec must define which boundary satisfies the requirement; the gate then gains a matching rule.
+**Known gap.** The gate does not check control boundaries. In the `industrial` palette from SPEC §6.2, `edge-dark` on panel is 1.78:1 and `edge-light` on panel is 2.22:1, below the 3:1 SPEC §10 requires for non-text controls (`industrial-light` and `high-contrast` pass for `edge-dark`). Raised surfaces differ from panel by only 1.41:1. Either the dark palette's edges must be strengthened or the spec must define which boundary satisfies the requirement; the gate then gains a matching rule. **Status: open.** `punk-button` shipped without resolving it, by decision, and the gap must be closed before Phase 1 is complete (§13).
 
 **Scope of the gap.** It blocks `punk-button` and the other interactive controls, whose boundaries identify them as components (WCAG 1.4.11). It does not block `punk-panel`, `punk-divider`, or `punk-progress-bar`'s trough: a static container is not a user interface component, and its text is covered by the text rules above. The panel therefore shipped before the gap was resolved.
 
@@ -352,21 +352,23 @@ Phase 1 components emit no custom events, but `emit` is defined here so Phase 2 
 
 All surfaces use `--punk-radius` (maximum 4px). No blur, glow, or soft shadows (SPEC §6.3).
 
+`surfaces.ts` also exports the `box-shadow` value lists (`raisedShadow`, `raisedHoverShadow`, `insetShadow`, `outlineShadow`) so a control can swap bevels on hover and press without restating the surface. `raisedHoverShadow` adds a half-strength second ring to the raised bevel, which increases edge contrast in every theme without introducing colors.
+
 ### 7.3 Texture
 
 `texture.ts` exports a tiled 128x128 SVG noise image (feTurbulence) as a data URI. It is original, procedural, and rasterized once as a background image. It applies only to `punk-panel` in Phase 1, through a `pointer-events: none` pseudo-element with opacity `--punk-texture-opacity`. Buttons use gradients only, to keep paint cost low in dense interfaces.
 
 ### 7.4 Focus
 
-`focus.ts` provides a `:focus-visible` rule that draws a two-tone ring from `--punk-color-focus-inner` and `--punk-color-focus` (§6.4). Ring offset must not be clipped by the host; hosts use `overflow: visible`.
+`focus.ts` exports `focusRing(selector)`, a `:focus-visible` rule that draws a two-tone ring from `--punk-color-focus-inner` and `--punk-color-focus` (§6.4) on the selector's `::after`. Drawing it on a pseudo-element means it never competes with the element's own bevel `box-shadow`. The selector must be `position: relative`, and the host must not clip it (`overflow: visible`). The default outline is removed only for `:focus-visible`, and the ring replaces it. Under forced colors the ring becomes a `2px solid Highlight` outline.
 
 ### 7.5 Forced Colors
 
-`forced-colors.ts` exports `forcedColorsSurface(selector)`, which returns an `@media (forced-colors: active)` block for one surface. Each component applies it to its own surfaces and adds any component-specific rules. The block replaces gradients, textures, and bevels with 2px solid `ButtonText` or `CanvasText` borders, uses `Highlight` for selected/active emphasis, `GrayText` for disabled, and `Highlight` outlines for focus.
+`forced-colors.ts` exports `forcedColorsSurface(selector, colors?)`, which returns an `@media (forced-colors: active)` block for one surface. `colors` names the system colors for the fill and for text and border, and defaults to `Canvas`/`CanvasText`; a control passes `ButtonFace`/`ButtonText`. Each component applies it to its own surfaces and adds any component-specific rules. The block replaces gradients, textures, and bevels with 2px solid borders, uses `Highlight` for selected/active emphasis, `GrayText` for disabled, and `Highlight` outlines for focus.
 
 ### 7.6 Localization
 
-`localize.ts` exports `setStrings(partial)` and an internal `t(key)`. Phase 1 has one key, `loading` (default `"Loading"`). Components never contain other hard-coded user-facing strings.
+`localize.ts` exports `setStrings(partial)`, `resetStrings()`, and an internal `t(key)`. `setStrings` is part of the public API (exported from the package root). Phase 1 has one key, `loading` (default `"Loading"`). Components read strings when they render and are not updated when strings change, so `setStrings` must be called before components render. Components never contain other hard-coded user-facing strings.
 
 ### 7.7 Slot Presence
 
@@ -439,9 +441,11 @@ An etched separator.
 
 Implementation:
 
-- Renders a native `<button>` filling the host, through `shadowRootOptions` with `delegatesFocus: true`.
+- Renders a native `<button type="button">` filling the host, through `shadowRootOptions` with `delegatesFocus: true`. The inner button never submits on its own, because a button in a shadow tree has no form owner; the component submits or resets the form itself.
+- Shared behavior lives in `PunkButtonBase` (`internal/button-base.ts`), which `punk-icon-button` also extends. Subclasses supply `renderContent()` and may override the accessible name.
 - The class is form-associated (`static formAssociated = true`). On click with `type="submit"` it calls `internals.form?.requestSubmit()`; with `type="reset"` it calls `internals.form?.reset()`. No submitter is passed, so `SubmitEvent.submitter` is `null`; this is a documented limitation in Phase 1.
-- The host mirrors its `aria-label` attribute onto the inner button. No other host ARIA attributes are forwarded in Phase 1.
+- The host mirrors its `aria-label` attribute onto the inner button. No other host ARIA attributes are forwarded in Phase 1. A host `aria-label` on an element with no role may be flagged by axe's `aria-prohibited-attr` rule; the accessibility suite (work package 9) decides whether the host needs a role.
+- A disabled `<fieldset>` ancestor disables the button, except inside the fieldset's first `<legend>`. This is read live on every render rather than cached from `formDisabledCallback`, which also fires for the host's own `disabled` attribute and lagged one update behind the property.
 - Height comes from `--punk-control-height-<size>`. Icon boxes use `--punk-icon-size-<size>`.
 
 Visual states:
@@ -463,7 +467,9 @@ Behavior:
 - `loading` sets `aria-disabled="true"` and `aria-busy="true"` on the inner button. It does not set `disabled`, so keyboard focus is retained. Clicks are suppressed as above. The accessible name is unchanged.
 - The spinner is a CSS-only rotating mechanical gear shape; with reduced motion it is static.
 - While loading, a visually hidden `role="status"` element, a sibling of the inner button (not inside it), contains the localized `loading` string. This announces the state without changing the button's accessible name.
-- Under `@media (pointer: coarse)`, a `::before` pseudo-element extends the hit area to at least 40px block size (§2 item 7).
+- Under `@media (pointer: coarse)`, a `::before` pseudo-element extends the hit area to at least 40px block size (§2 item 7): `inset-block: min(0px, calc((var(--_h) - 40px) / 2))`, so a 28px button grows by 6px each side, a 36px button by 2px, and a 44px button not at all. A test cannot emulate a coarse pointer per test, so it extracts this rule from the component's own stylesheet, applies it unconditionally, and hit-tests the result; a separate assertion checks the media condition.
+- Hover and press apply only while the button is neither disabled nor loading. Hover adds `raisedHoverShadow`. Press swaps to `insetShadow` and shifts the content 1px down and toward the inline end; a default button also takes the inset fill, while primary and danger keep their fill.
+- `--_h` and `--_icon` are private custom properties set per size class. They are internal aliases, not API.
 - Exposes the tooltip anchor protocol (§8.6): `setExternalDescription(text: string | null)`, which renders the text into a visually hidden element referenced by the inner button's `aria-describedby`.
 
 ### 8.4 `punk-icon-button`
@@ -609,7 +615,7 @@ Packages are ordered by dependency. Each ends with the CI gates that apply to wh
 | 3 | Internals and shared styles | 2 | `PunkElement`, `token()`, surfaces, focus, texture, forced-colors, localize, dev flag, registration helper. Done: `PunkElement`, `token()`, base styles, surfaces, texture, forced-colors helper, density helper, slot presence, registration helper, dev flag and `devWarn`. Remaining: focus, localize. |
 | 4 | Panel and divider | 3 | Two components, tests, fixtures. Done. |
 | 5 | Tooltip | 3 | Component, `position.ts`, tests |
-| 6 | Button base, button, icon button | 3, 5 | Components, form behavior, anchor protocol, tests |
+| 6 | Button base, button, icon button | 3, 5 | Components, form behavior, anchor protocol, tests. Done: `PunkButtonBase`, `punk-button`, including `setExternalDescription`. Remaining: `punk-icon-button`. The tooltip side of the anchor protocol belongs to work package 5. |
 | 7 | Progress bar | 3 | Component, tests |
 | 8 | Storybook workbench | 3 (stories added per component as 4–7 land) | App, foundations, stories, API tables |
 | 9 | Test infrastructure | 4–7 | Visual matrix, axe suite, size and package gates, fixture consumer |
@@ -702,7 +708,8 @@ Phase 1 is complete when:
 4. Importing any component class has no registration side effect, and the tree-shaking gate passes.
 5. The package contains no assets or code derived from Factorio files, and bundled textures and icons (core texture; workbench icons) are documented as original.
 6. `SPEC.md` is updated for the decisions in §2 that change its wording.
-7. Every script runs as `node <file>.ts` on Node 26 with no TypeScript runner, and `npm ls typescript` reports exactly one version, 6.0.x.
+7. The boundary-contrast gap in §6.8 is closed: control edges meet 3:1 or the spec defines the qualifying boundary, and the gate checks it.
+8. Every script runs as `node <file>.ts` on Node 26 with no TypeScript runner, and `npm ls typescript` reports exactly one version, 6.0.x.
 
 ## 14. Risks and Mitigations
 

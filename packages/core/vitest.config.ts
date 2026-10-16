@@ -28,6 +28,20 @@ const setForcedColors = defineBrowserCommand<[mode: 'active' | null]>(async (con
   await context.page.emulateMedia({ forcedColors: mode });
 });
 
+const setReducedMotion = defineBrowserCommand<[mode: 'reduce' | null]>(async (context, mode) => {
+  await context.page.emulateMedia({ reducedMotion: mode });
+});
+
+// Press and hold a real pointer, which is the only way to reach `:active` in a test.
+const holdPointer = defineBrowserCommand<[selector: string]>(async (context, selector) => {
+  await context.iframe.locator(selector).hover();
+  await context.page.mouse.down();
+});
+
+const releasePointer = defineBrowserCommand<[]>(async (context) => {
+  await context.page.mouse.up();
+});
+
 export default defineConfig({
   // Tests always run with development warnings, and need no built dist/ to resolve #dev.
   resolve: {
@@ -40,7 +54,12 @@ export default defineConfig({
   },
   // Pre-bundling Lit entry points up front avoids a mid-run reload that loads Lit twice on a cold cache.
   optimizeDeps: {
-    include: ['lit', 'lit/decorators.js', 'lit/directives/class-map.js'],
+    include: [
+      'lit',
+      'lit/decorators.js',
+      'lit/directives/class-map.js',
+      'lit/directives/if-defined.js',
+    ],
   },
   test: {
     include: ['src/**/*.test.ts', 'test/browser/**/*.test.ts'],
@@ -49,7 +68,7 @@ export default defineConfig({
       headless: true,
       provider: playwright(),
       instances: selectedEngines().map((browser) => ({ browser })),
-      commands: { setColorScheme, setForcedColors },
+      commands: { setColorScheme, setForcedColors, setReducedMotion, holdPointer, releasePointer },
     },
   },
 });
