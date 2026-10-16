@@ -2,7 +2,7 @@
 
 **Status:** Draft 1
 **Target:** Web applications and browser-based games
-**Implementation:** TypeScript, Lit 3, Web Components
+**Implementation:** TypeScript 6, ESNext, Lit 3, Web Components
 **Package name:** `@dieselpunk/core`
 **Element prefix:** `punk-`
 
@@ -63,10 +63,11 @@ Counts, progress, warnings, labels, and selection state must remain readable at 
 
 ### 5.1 Runtime
 
-- TypeScript with strict mode enabled.
+- TypeScript 6.0 with strict mode enabled, targeting ESNext. Version 6 is required for compatibility with `typescript-eslint`.
+- Node.js 26 for development tooling. Repository scripts are written in TypeScript and run directly by Node without a separate compile step.
 - Lit 3 and `LitElement` for rendering and lifecycle management.
 - Native Shadow DOM by default.
-- ES modules with per-component exports.
+- ES modules (ESNext output) with per-component exports. Emitted code is not downleveled, so source may use only syntax and APIs available in the browser baseline below.
 - No global stylesheet requirement.
 - Browser baseline: current and previous major versions of Chrome, Edge, Firefox, and Safari.
 
