@@ -131,6 +131,7 @@ Text must use `letter-spacing: 0`. Labels use medium or semibold weight rather t
   --punk-color-panel-inset: #292b28;
   --punk-color-edge-light: #747870;
   --punk-color-edge-dark: #171815;
+  --punk-color-control-edge: #b8b5ac;
   --punk-color-text: #f0ead8;
   --punk-color-text-muted: #b8b4a7;
   --punk-color-accent: #f59b23;
@@ -406,6 +407,7 @@ Selection and focus are separate states. A focused slot may be unselected, and a
 The release target is WCAG 2.2 AA.
 
 - Normal text contrast is at least 4.5:1; large text and non-text controls are at least 3:1.
+- A control with no visible text or icon of its own, such as an empty slot, has a boundary of at least 3:1 (`--punk-color-control-edge`). A control identified by its label or icon needs no boundary, and inactive controls are exempt (WCAG 2.2 SC 1.4.11).
 - Texture and bevel effects degrade cleanly in forced-colors mode.
 - Every control is operable by keyboard and assistive technology.
 - Components use native elements internally whenever their semantics fit.

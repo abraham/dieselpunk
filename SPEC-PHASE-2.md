@@ -1,6 +1,6 @@
 # Phase 2: Inventory — Implementation Specification
 
-**Status:** Draft 1. Not started.
+**Status:** Draft 1. Work package 1 (contrast and tokens) is implemented.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 2
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md)
 **Package:** `@dieselpunk/core`
@@ -157,7 +157,7 @@ All ratios are measured against the four surfaces a control can sit on (`canvas`
 `check-contrast.ts` (§6.8 of Phase 1) gains these rules, for every theme:
 
 - `control-edge` against `canvas`, `panel`, `panel-raised`, and `panel-inset` is at least 3:1.
-- `accent` (the selection outline) and `warning` (the highlight outline) against the same four surfaces are at least 3:1.
+- `accent` (the selection outline) and `warning` (the highlight outline) against `canvas`, `panel`, and `panel-raised` are at least 3:1. `panel-inset` is covered by the fill rule below.
 - The existing fill rules stay: `accent`, `accent-strong`, `warning`, `danger`, `success`, and `info` against `panel-inset` are at least 3:1.
 
 ### 6.4 Closing the Phase 1 Gap

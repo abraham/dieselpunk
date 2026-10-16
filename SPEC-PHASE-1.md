@@ -1,6 +1,6 @@
 # Phase 1: Foundation — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), 5 (`punk-tooltip`), 6 (`PunkButtonBase`, `punk-button`, `punk-icon-button`), 7 (`punk-progress-bar`), and 8 (the Storybook workbench, with manifest generation) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, locale resolution, the dev flag and `devWarn`, positioning, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), 12.4 (Button), 12.5 (Icon Button), 12.6 (Progress Bar), and 12.7 (Tooltip) pass on Chromium, Firefox, and WebKit. Section 12.8 (Workbench) is implemented and verified by a build and a smoke test of every entry. Work package 9 (test infrastructure) is implemented: the manifest assertions, the axe suite, the package, size, and consumer gates, the story smoke test, and the visual harness. The visual baselines are committed, rendered by CI on all three engines, plus forced colors in Chromium (160 screenshots). Work package 10 (hardening) is implemented: reflow at 200% zoom, forced-colors cues, a smaller bundle, and the accessibility guide. Phase 1 is complete except for the dark palette's control-edge contrast gap in §6.8, which is open by decision.
+**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), 5 (`punk-tooltip`), 6 (`PunkButtonBase`, `punk-button`, `punk-icon-button`), 7 (`punk-progress-bar`), and 8 (the Storybook workbench, with manifest generation) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, locale resolution, the dev flag and `devWarn`, positioning, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), 12.4 (Button), 12.5 (Icon Button), 12.6 (Progress Bar), and 12.7 (Tooltip) pass on Chromium, Firefox, and WebKit. Section 12.8 (Workbench) is implemented and verified by a build and a smoke test of every entry. Work package 9 (test infrastructure) is implemented: the manifest assertions, the axe suite, the package, size, and consumer gates, the story smoke test, and the visual harness. The visual baselines are committed, rendered by CI on all three engines, plus forced colors in Chromium (160 screenshots). Work package 10 (hardening) is implemented: reflow at 200% zoom, forced-colors cues, a smaller bundle, and the accessibility guide. Phase 1 is complete; the control-edge contrast gap that §6.8 recorded was closed in Phase 2 work package 1.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases)
 **Package:** `@dieselpunk/core`
 **Prefix:** `punk-`
@@ -289,6 +289,7 @@ Phase 1 keeps every token in SPEC §6.2 and adds:
 |-------|---------|
 | `--punk-color-focus` | Outer focus ring color |
 | `--punk-color-focus-inner` | Inner focus ring color |
+| `--punk-color-control-edge` | Boundary of a control with no other visible content (added in Phase 2, §6.8) |
 | `--punk-color-accent-text` | Text/icon color on accent fills |
 | `--punk-color-danger-text` | Text/icon color on danger fills |
 | `--punk-color-disabled-fill` / `--punk-color-disabled-text` | Disabled surface and label |
@@ -339,13 +340,13 @@ Compact is the default. Font sizes do not change with density.
 
 - `text` on canvas, panel, panel-raised, or panel-inset is below 4.5:1 (7:1 for `high-contrast`);
 - `text-muted` on canvas, panel, or panel-inset is below the same threshold. It is not checked on panel-raised: raised surfaces carry controls, which use `text`;
-- accent, accent-strong, warning, danger, success, and info fills against panel-inset are below 3:1. Inset troughs are the only Phase 1 surface that carries these fills; Phase 2 must extend this check to the surfaces status components use;
+- accent, accent-strong, warning, danger, success, and info fills against panel-inset are below 3:1. Inset troughs are the only Phase 1 surface that carries these fills;
 - `accent-text` on accent, or `danger-text` on danger, is below the text threshold;
-- the outer focus color is below 3:1 against canvas, panel, panel-raised, or panel-inset, or the inner focus color is below 3:1 against the outer one.
+- the outer focus color is below 3:1 against canvas, panel, panel-raised, or panel-inset, or the inner focus color is below 3:1 against the outer one;
+- `control-edge` is below 3:1 against canvas, panel, panel-raised, or panel-inset;
+- accent or warning, which draw selection and highlight outlines, is below 3:1 against canvas, panel, or panel-raised (panel-inset is covered by the fill rule).
 
-**Known gap.** The gate does not check control boundaries. In the `industrial` palette from SPEC §6.2, `edge-dark` on panel is 1.78:1 and `edge-light` on panel is 2.22:1, below the 3:1 SPEC §10 requires for non-text controls (`industrial-light` and `high-contrast` pass for `edge-dark`). Raised surfaces differ from panel by only 1.41:1. Either the dark palette's edges must be strengthened or the spec must define which boundary satisfies the requirement; the gate then gains a matching rule. **Status: open.** `punk-button` shipped without resolving it, by decision, and the gap must be closed before Phase 1 is complete (§13).
-
-**Scope of the gap.** It blocks `punk-button` and the other interactive controls, whose boundaries identify them as components (WCAG 1.4.11). It does not block `punk-panel`, `punk-divider`, or `punk-progress-bar`'s trough: a static container is not a user interface component, and its text is covered by the text rules above. The panel therefore shipped before the gap was resolved.
+**Control boundaries (closed in Phase 2).** WCAG 2.2 SC 1.4.11 requires a 3:1 boundary only for a control that has no other visible way to be identified, and exempts inactive controls. A control with a visible label or a sufficiently contrasting icon, such as `punk-button` and `punk-icon-button`, is identified by that content, which the text and focus rules above already check, so its edges are not gated. A control with no text or icon, such as an empty slot, needs a boundary, and `control-edge` is that boundary. It is defined in every theme (`#b8b5ac` in `industrial` and `reduced-texture`, `#4a4840` in `industrial-light`, `#ffffff` in `high-contrast`) and gated as above. The decorative bevel edges (`edge-light`, `edge-dark`) are not gated. This closes §13 item 7 by the second route that item allows.
 
 ## 7. Shared Styles and Internals
 
@@ -589,7 +590,7 @@ Implementation notes:
 
 - **Manifest.** `npm run build:manifest` runs `@custom-elements-manifest/analyzer` with its Lit support. Classes never call `customElements.define`, so each component declares its tag with a `@tagname` JSDoc tag, which is what `@wc-toolkit/storybook-helpers` looks up. Manifest assertions (§10.1) remain in work package 9.
 - **Controls.** Slot content is a string arg named `<slot>-slot` (`default-slot`, `header-slot`), which the helpers render, so slots are editable in the Controls panel. The demo icons are therefore SVG strings.
-- **Foundations data is measured.** Contrast is computed in the browser from each theme's computed custom properties, and the scale pages are parsed from the shipped `tokens.css`, so they show what a consumer gets rather than a copy of the TypeScript sources. The contrast table repeats the pairs of the gate (§6.8) and adds the three control-edge pairs, labeled `gap` while the open gap in §6.8 remains.
+- **Foundations data is measured.** Contrast is computed in the browser from each theme's computed custom properties, and the scale pages are parsed from the shipped `tokens.css`, so they show what a consumer gets rather than a copy of the TypeScript sources. The contrast table repeats the pairs of the gate (§6.8).
 - **Development warnings** are on in every build of the workbench: `main.ts` adds the `development` export condition, so misuse such as an unlabeled icon button is visible.
 - **Tooltip matrix.** Only one tooltip can be open at a time, so the tooltip's theme and density matrix shows one hoverable anchor per cell, and its state story shows placement, delay, `describe`, and `for`.
 - Hover, focus, and pressed states are interactive and not drawn in the static matrices.
@@ -723,7 +724,7 @@ Work package 10 was a review of the visual matrix and the forced-colors renderin
 
 **Docs.** The workbench has an "Accessibility and layout" guide covering reflow, right-to-left, forced colors, reduced motion, and keyboard focus. Every statement in it was checked. One was not true when first drafted: the indeterminate stripes scroll the same way in both directions (a barber-pole decoration, stopped under reduced motion), and the page says so instead of claiming they follow the writing direction.
 
-**Not changed.** The dark palette's control-edge contrast gap (§6.8) is a design decision and is still open.
+**Not changed.** The dark palette's control-edge contrast gap (§6.8) was a design decision at the time; it was closed in Phase 2 work package 1.
 
 ## 11. Work Packages
 

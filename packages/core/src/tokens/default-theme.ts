@@ -9,6 +9,7 @@ export const darkTokens = {
   'color-panel-inset': '#292b28',
   'color-edge-light': '#747870',
   'color-edge-dark': '#171815',
+  'color-control-edge': '#b8b5ac',
   'color-text': '#f0ead8',
   'color-text-muted': '#b8b4a7',
   'color-accent': '#f59b23',
