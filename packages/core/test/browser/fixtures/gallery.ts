@@ -13,6 +13,8 @@ import '../../../src/components/slot/register.ts';
 import '../../../src/components/item-stack/register.ts';
 import '../../../src/components/slot-grid/register.ts';
 import '../../../src/components/recipe/register.ts';
+import '../../../src/components/meter/register.ts';
+import '../../../src/components/status-light/register.ts';
 
 // The visual matrix renders the foundation set only, until its baselines include the inventory.
 export const foundationNames = [
@@ -23,7 +25,14 @@ export const foundationNames = [
   'progress-bar',
   'tooltip',
 ] as const;
-export const inventoryNames = ['slot', 'item-stack', 'slot-grid', 'recipe'] as const;
+export const inventoryNames = [
+  'slot',
+  'item-stack',
+  'slot-grid',
+  'recipe',
+  'meter',
+  'status-light',
+] as const;
 export const componentNames = [...foundationNames, ...inventoryNames] as const;
 export type ComponentName = (typeof componentNames)[number];
 
@@ -48,6 +57,8 @@ interface Copy {
   recipe: string;
   needs: string;
   makes: string;
+  meter: string;
+  statuses: [string, string, string, string, string];
 }
 
 const copy: Record<ContentVariant, Copy> = {
@@ -69,6 +80,8 @@ const copy: Record<ContentVariant, Copy> = {
     recipe: 'Precision gear',
     needs: '2 iron plates',
     makes: 'Precision gear',
+    meter: 'Reactor heat',
+    statuses: ['Idle', 'Scheduled', 'Running', 'Low on fuel', 'Offline'],
   },
   long: {
     lang: 'de',
@@ -88,6 +101,14 @@ const copy: Record<ContentVariant, Copy> = {
     recipe: 'Präzisionszahnrad für schwere Industriegetriebe, Baureihe zwei',
     needs: '2 Eisenplatten und 1 Schmierstoffkartusche',
     makes: 'Präzisionszahnrad',
+    meter: 'Reaktorwärme im Primärkreislauf des Nordwerks',
+    statuses: [
+      'Wartet auf Rohstoffe',
+      'Für die nächste Schicht eingeplant',
+      'Produktion läuft ohne Unterbrechung',
+      'Brennstoff wird knapp',
+      'Anlage vollständig abgeschaltet',
+    ],
   },
   unlabeled: {
     lang: 'en',
@@ -107,6 +128,8 @@ const copy: Record<ContentVariant, Copy> = {
     recipe: '',
     needs: '2 iron plates',
     makes: 'Precision gear',
+    meter: '',
+    statuses: ['Idle', 'Scheduled', 'Running', 'Low on fuel', 'Offline'],
   },
   rtl: {
     lang: 'he',
@@ -126,6 +149,8 @@ const copy: Record<ContentVariant, Copy> = {
     recipe: 'גלגל שיניים מדויק',
     needs: '2 לוחות ברזל',
     makes: 'גלגל שיניים',
+    meter: 'חום הראקטור',
+    statuses: ['ממתין', 'מתוזמן', 'פועל', 'דלק נמוך', 'מנותק'],
   },
 };
 
@@ -333,6 +358,41 @@ const builders: Record<ComponentName, Builder> = {
         <punk-recipe ${name} available>${makes}</punk-recipe>
         <punk-recipe ${name} available craftable-count="1200">${icon}</punk-recipe>
         <punk-recipe ${name}></punk-recipe>
+      </div>
+    `;
+  },
+
+  meter: (c) => {
+    // Without a visible label the meters take an aria-label, since a name is required.
+    const name = c.meter ? `label="${c.meter}"` : 'aria-label="Reactor heat"';
+    const zones = 'low="30" high="70"';
+    return `
+      <div class="stack">
+        ${[0, 64, 100].map((value) => `<punk-meter ${name} value="${value}" show-value></punk-meter>`).join('')}
+        <punk-meter ${name} ${zones} optimum="50" value="50" show-value></punk-meter>
+        <punk-meter ${name} ${zones} optimum="50" value="15" show-value></punk-meter>
+        <punk-meter ${name} ${zones} optimum="10" value="90" show-value></punk-meter>
+        <punk-meter ${name} ${zones} optimum="50" value="85" segments="5" show-value></punk-meter>
+        <punk-meter ${name} label-hidden value="40"></punk-meter>
+      </div>
+      ${row(`
+        <punk-meter ${name} orientation="vertical" value="70" show-value></punk-meter>
+        <punk-meter ${name} orientation="vertical" ${zones} optimum="50" value="20" show-value></punk-meter>
+        <punk-meter ${name} orientation="vertical" ${zones} optimum="10" value="90" segments="6" show-value></punk-meter>
+      `)}
+    `;
+  },
+
+  'status-light': (c) => {
+    const [idle, scheduled, running, low, offline] = c.statuses;
+    return `
+      <div class="stack">
+        <punk-status-light>${idle}</punk-status-light>
+        <punk-status-light variant="info">${scheduled}</punk-status-light>
+        <punk-status-light variant="success">${running}</punk-status-light>
+        <punk-status-light variant="warning">${low}</punk-status-light>
+        <punk-status-light variant="danger" announce>${offline}</punk-status-light>
+        <punk-status-light variant="success"><span slot="icon" aria-hidden="true">${plus}</span>${running}</punk-status-light>
       </div>
     `;
   },

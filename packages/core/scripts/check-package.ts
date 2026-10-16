@@ -40,6 +40,8 @@ const sentinels: Record<string, string> = {
   'item-stack': 'durability-fill',
   'slot-grid': '--punk-slot-gap',
   recipe: 'can craft {count}',
+  meter: '--punk-meter-length',
+  'status-light': 'variant-neutral',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };

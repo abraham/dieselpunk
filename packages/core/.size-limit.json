@@ -80,6 +80,20 @@
     "limit": "5 kB"
   },
   {
+    "name": "punk-meter",
+    "path": "dist/components/meter/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-status-light",
+    "path": "dist/components/status-light/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
     "name": "punk-tooltip",
     "path": "dist/components/tooltip/register.js",
     "ignore": ["lit"],

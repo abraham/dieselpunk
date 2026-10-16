@@ -1,6 +1,6 @@
 # Phase 2: Inventory — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), 3 (slot and item stack), 4 (slot grid), and 5 (recipe) are implemented.
+**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), 3 (slot and item stack), 4 (slot grid), 5 (recipe), and 6 (meter and status light) are implemented.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 2
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md)
 **Package:** `@dieselpunk/core`
@@ -86,6 +86,7 @@ packages/core/test/
   selection-model.test.ts       node:test, no browser
   grid-navigation.test.ts       node:test, no browser
   localize.test.ts              node:test, no browser
+  meter-state.test.ts           node:test, no browser: the meter's state, clamping, and segments
   browser/
     perf.test.ts                100-slot grid gate (§10.5)
     fixtures/gallery.ts         gains the inventory components and a `group` parameter
@@ -402,6 +403,12 @@ A segmented gauge for power, fluid, heat, durability, or capacity.
 - The segments are a CSS pattern on the track and not one element per segment, so a meter costs a fixed number of nodes. The lit length snaps to a whole number of segments, at least one when the value is above the minimum, and full only at the maximum.
 - Fills are drawn in an inset trough, so they meet the fill rule (§2 decision 2).
 - The fill animates `inline-size` or `block-size` over `--punk-duration-normal`, which reduced motion removes. ARIA values update immediately.
+- Details settled in implementation:
+  - **Logic.** `meter-state.ts` holds all the arithmetic and has no DOM: `resolveMeter` clamps the value and boundaries, runs the HTML `<meter>` algorithm for the state, snaps the lit segments, and lists what it repaired. It is tested with every combination of where the value and the optimum sit.
+  - **State.** With none of `low`, `high`, `optimum` set there is no state and the fill is solid `accent`. With any set, the missing ones default as in HTML (`low` is `min`, `high` is `max`, `optimum` is the middle), so `optimum` alone makes everything optimal. The words are the strings `meterWarning` and `meterCritical`; the best state adds none, so the value text is "64%" or "15%, warning", and the same text is shown with `show-value`.
+  - **Repairs.** A range where `max` is not above `min`, or not finite, becomes 0 to 100. A value that is not a number becomes `min`, and one outside the range is clamped. Boundaries are clamped, a `high` below `low` is raised to it, and `segments` is rounded and kept between 2 and 100. Each warns once. Removing a number attribute reads as its default, silently.
+  - **Segments.** The cuts are trough-colored lines over the fill and the trough, drawn by one repeating gradient, so the node count is fixed (checked for 2, 10, and 100 segments). The fill grows from the inline start, and from the bottom when vertical, and the gradient flips for right-to-left. The header wraps, so a long label and the value text stack in a narrow container.
+  - **Name.** `aria-labelledby` points at the rendered label, with `aria-label` as the fallback, as in the progress bar, and one warning when neither exists.
 
 ### 8.6 `punk-status-light`
 
@@ -419,6 +426,7 @@ A compact indicator with a shape and text.
 - The text carries the meaning, and a light with no text warns. The shape is decorative and hidden from assistive technology.
 - By default the host has no role. With `announce` it is `role="status"`, a polite live region, for a light whose value changes while the user is elsewhere.
 - Under forced colors the shapes keep their outlines in system colors.
+- Details settled in implementation: the `icon` slot has the built-in shape as its fallback content, so slotting an icon replaces it with no extra bookkeeping. An unknown `variant` draws as `neutral`. The neutral ring uses `text` so it meets 3:1 on the lens like the others. `announce` remembers a role the author had set and gives it back when `announce` is turned off. The warning for no text fires when the text goes away as well as when it was never there, and an icon alone counts as no text. Under forced colors the ring stays a 2px border and the other shapes fill with `CanvasText`, so they stay apart by shape.
 
 ## 9. Documentation Workbench
 
@@ -475,6 +483,7 @@ SPEC §14.3 requires a 100-slot grid to stay responsive. Frame times on a CI run
 The gates of Phase 1 §10.4 apply, with each component's register entry measured on its own and gzip-compressed:
 
 - Each entry is at most 5 kB. The shared selectable base is imported by three components, so it counts toward each of them; if an entry would pass 5 kB, the base is split before any limit is raised, and any exception is documented as `punk-icon-button`'s was.
+- Measured in work package 6: `punk-meter` 4.47 kB and `punk-status-light` 2.67 kB.
 - Measured in work package 5: `punk-recipe` 4.86 kB, which is close: it does not use the receptacle styles, but it has its own tile styles and the number formatting. The shared base entry is named for the slot and the item stack, the two that use the receptacle.
 - Measured in work package 4: `punk-slot-grid` 4.66 kB, with the shared runtime. The selectable base is not part of it, since the grid never imports an item class.
 - Measured in work package 3: `punk-slot` 4.27 kB. `punk-item-stack` is 5.83 kB, so it has a documented exception of 6 kB, as `punk-icon-button` has 7. There was nothing left to split: the receptacle styles and base (about 4.2 kB with the shared runtime) are used by both components, and the rest of the item stack is its own code, which is the durability patterns, the quality diamonds, and the number formatting. The way to bring it under 5 kB is to cut features or shrink the receptacle CSS, and neither seemed worth it for 0.8 kB. English defaults live beside the component that renders them (§7.4), which kept the Phase 1 bundles from growing.
@@ -494,7 +503,7 @@ The stages of Phase 1 §10.5 are unchanged. The "Update visual baselines" workfl
 | 3 | Slot and item stack | 2 | Two components, tests. Done. |
 | 4 | Slot grid | 2, 3 | Component, keyboard and selection tests, performance gate. Done. |
 | 5 | Recipe | 2 | Component, tests. Done. |
-| 6 | Meter and status light | 1 | Two components, tests |
+| 6 | Meter and status light | 1 | Two components, tests. Done. |
 | 7 | Test infrastructure | 3 to 6 as they land | Gallery group, axe and reflow coverage, ARIA snapshots, visual matrix, consumer typing, baselines |
 | 8 | Workbench | 3 to 6 as they land | Inventory overview, stories, docs pages, demo art |
 | 9 | Hardening | 7 | Forced-colors, RTL, 200% zoom review of the renders; size tuning; docs polish |
