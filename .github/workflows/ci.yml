@@ -36,6 +36,9 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --ipc=host
+    env:
+      # Firefox refuses to start as root when $HOME belongs to another user, as it does by default here.
+      HOME: /root
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
