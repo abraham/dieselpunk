@@ -32,6 +32,7 @@ export abstract class PunkButtonBase extends PunkElement {
   /** Unknown values render as `md`. */
   @property({ reflect: true }) size: ButtonSize = 'md';
 
+  /** Blocks activation and focus. A disabled `<fieldset>` ancestor disables the button too. */
   @property({ type: Boolean, reflect: true }) disabled = false;
 
   /** Keeps focus and the accessible name, blocks activation, and shows a spinner. */

@@ -1,6 +1,6 @@
 # Phase 1: Foundation — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), 5 (`punk-tooltip`), 6 (`PunkButtonBase`, `punk-button`, `punk-icon-button`), 7 (`punk-progress-bar`), and 8 (the Storybook workbench, with manifest generation) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, locale resolution, the dev flag and `devWarn`, positioning, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), 12.4 (Button), 12.5 (Icon Button), 12.6 (Progress Bar), and 12.7 (Tooltip) are complete. Section 12.8 (Workbench) is implemented and verified by a build and a sweep of every entry, with automated checks still to come in work package 9. Remaining: test infrastructure (work package 9) and hardening (10). `punk-button` and `punk-icon-button` shipped with the boundary-contrast gap in §6.8 still open, by decision.
+**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), 5 (`punk-tooltip`), 6 (`PunkButtonBase`, `punk-button`, `punk-icon-button`), 7 (`punk-progress-bar`), and 8 (the Storybook workbench, with manifest generation) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, locale resolution, the dev flag and `devWarn`, positioning, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), 12.4 (Button), 12.5 (Icon Button), 12.6 (Progress Bar), and 12.7 (Tooltip) are complete. Section 12.8 (Workbench) is implemented and verified by a build and a smoke test of every entry. Work package 9 (test infrastructure) is implemented: the manifest assertions, the axe suite, the package, size, and consumer gates, the story smoke test, and the visual harness. The visual baselines themselves are not committed yet, because they are written by CI (§10.3); until the first run of the "Update visual baselines" workflow is committed, the `visual` job fails with an instruction to do so. Remaining: that first baseline run and hardening (work package 10). `punk-button` and `punk-icon-button` shipped with the boundary-contrast gap in §6.8 still open, by decision.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases)
 **Package:** `@dieselpunk/core`
 **Prefix:** `punk-`
@@ -120,7 +120,13 @@ packages/core/
     build-css.ts                tokens → dist/css/*.css (run as: node scripts/build-css.ts)
     render-css.ts               pure CSS renderers shared by build-css.ts and tests
     check-contrast.ts           theme contrast gate (§6.8)
-    check-package.ts            exports/side-effect/tree-shake gate
+    check-package.ts            exports/side-effect/tree-shake gate; run with publint and attw (§10.4)
+    check-consumer.ts           packs the package, installs it into throwaway projects, type-checks and runs the fixture (§10.4)
+    build-visual.ts             bundles test/visual/matrix.ts into static files; runs on the host, never in the container
+    serve-visual.ts             static server for that output
+    visual.ts                   check, update, and selftest for the visual tests, in the Playwright image (§10.3)
+  .size-limit.json              size budgets (§10.4)
+  playwright.config.ts          visual tests: Chromium, Firefox, WebKit
   src/
     index.ts                    class exports only; no registration
     tokens/
@@ -154,17 +160,21 @@ packages/core/
       progress-bar/
       tooltip/
   test/
-    visual/         matrix.html, matrix.spec.ts, __screenshots__/
-    a11y/           axe helpers and fixtures
+    visual/         matrix.html, matrix.ts, matrix.spec.ts, __screenshots__/ (written by CI)
+    visual-ci.test.ts   node:test check that the workflows' Playwright image matches the installed version
     tokens.test.ts  node:test suite for token sources, emitted CSS, and the contrast gate
     browser/
       foundations.test.ts   criteria 12.1.3 to 12.1.5 in real browsers (§12.1)
+      a11y.test.ts          axe over the gallery in every theme, density, and content variant; forced colors (§10.2)
+      manifest.test.ts      the manifest checked against what actually renders (§10.1)
       commands.ts           types for custom Vitest browser commands
       helpers.ts            track/cleanup, addStylesheets, rgb for browser tests
       fixtures/probe.ts     PunkProbe, a test-only element built like a component
-    package/        fixture consumer app for packaging tests
+      fixtures/gallery.ts   every component's states in four content variants; shared by axe, manifest, and visual tests
+    package/        fixture consumer: plain.html, app.html, src/, probe.ts, tsconfig.json
 apps/storybook/
-  package.json                  private workspace; dev, build, and typecheck scripts
+  package.json                  private workspace; dev, build, typecheck, and test:smoke scripts
+  scripts/smoke.ts              loads every story and docs page in the built output
   tsconfig.json                 browser code; noEmit
   .storybook/
     main.ts                     Vite config, including the `development` condition
@@ -201,7 +211,7 @@ apps/storybook/
 
 `./*/register.js` is the longer pattern and must win over `./*`; `check-package.ts` asserts this resolution for every component.
 
-`tsc` rewrites `.ts` import specifiers to `.js` in emitted JavaScript but leaves them in the `.d.ts` files. This was checked against a consumer on TypeScript 5.0, 5.4, and 6.0 with `skipLibCheck: false` and `types: []`: all resolve the declarations and type-check, so it is harmless and needs no post-processing. `check-package.ts` repeats that consumer check for the oldest and newest supported versions.
+`tsc` rewrites `.ts` import specifiers to `.js` in emitted JavaScript but leaves them in the `.d.ts` files. This was checked against a consumer on TypeScript 5.0, 5.4, and 6.0 with `skipLibCheck: false` and `types: []`: all resolve the declarations and type-check, so it is harmless and needs no post-processing. `check-consumer.ts` repeats that consumer check for the oldest and newest supported versions.
 
 ### 5.2 Registration
 
@@ -596,9 +606,22 @@ Component tests run in Chromium, Firefox, and WebKit. Local runs default to Chro
 - Every `part` attribute rendered in a component's shadow DOM appears in its manifest `csspart` list, and vice versa.
 - Every documented slot, attribute, and CSS property appears in the manifest.
 
+The manifest assertions are in `test/browser/manifest.test.ts`. They compare the manifest with what the components do, not with the JSDoc it was generated from, so it cannot agree with itself while being wrong:
+
+- Parts and slots are read from the rendered shadow DOM of every gallery state, in every content variant.
+- Attributes are compared with the class's `observedAttributes`.
+- A `--punk-*` property a component reads, in its styles or its class, must be listed unless it is a shared token, and every listed property must really be read. The icon button is the one explicit exception: the shared base reads `--punk-button-padding-inline`, but the icon button zeroes that padding, so it is not part of its API.
+- Every component, attribute, slot, part, and CSS property has a non-empty description, and each component's tag name is recorded (a `@tagname` JSDoc tag, since the classes never call `define`).
+
+The manifest is regenerated by `pretest:browser`, so `npm test` never reads a stale one. Importing the class entry check lives with each component, in `*.registration.test.ts`.
+
 ### 10.2 Accessibility
 
 `axe-core` runs against every component fixture in all four themes and both densities. Serious or critical violations fail CI. A forced-colors run (Chromium `forcedColors: 'active'`) verifies borders and focus indicators remain visible.
+
+Implemented in `test/browser/a11y.test.ts`, over the shared gallery (`fixtures/gallery.ts`), which renders every component's states (variants, sizes, disabled, loading, an open tooltip, and the like) in four content variants: short, long German, missing optional labels, and RTL Hebrew. That is 32 scans, and each runs in all three engines in CI. Two further tests keep a clean result meaningful: one inserts a real violation and requires axe to report it, and one makes text unreadable inside a progress bar and requires a contrast violation whose target is inside the shadow root. The `region` rule is off, because landmarks are the page's job. The forced-colors checks run only in Chromium, the one engine that emulates the mode, and assert a visible border on each surface and a solid focus outline of at least 2px on both button types.
+
+Axe finds no serious or critical violation in any combination, on Chromium and WebKit, which are the engines that could run on the development machine; Firefox could not launch there, so its first run is in CI. A host `aria-label` on `punk-progress-bar`, which the unlabeled content variant sets, is not flagged. The question left open in §8.3 for `punk-button` is not answered, because the gallery sets no host `aria-label` on buttons.
 
 ### 10.3 Visual Regression
 
@@ -614,6 +637,16 @@ Component tests run in Chromium, Firefox, and WebKit. Local runs default to Chro
 
 Chromium runs the full matrix. Firefox and WebKit run default and `industrial-light` + `low` at 100%. Baselines are generated and committed only from the Linux CI image, since local macOS rendering differs and is not authoritative. Hover, focus-visible, and active states are forced through Playwright interactions, not CSS class hooks.
 
+Implementation:
+
+- `test/visual/matrix.ts` builds the page from the same gallery and the same CSS renderers as the shipped stylesheets, picking theme, density, content, and optionally one component from the query string. `scripts/build-visual.ts` bundles it with esbuild into `test-results/visual-site`, and `playwright.config.ts` serves that. The bundle is built on the host or runner, because esbuild's binary is platform-specific, so the container needs no `node_modules` of its own.
+- Chromium has 128 matrix screenshots plus 3 interaction screenshots (hover, focus-visible, and active on the primary button); Firefox and WebKit have 5 each. The focus test asserts that the button really has focus before it takes the screenshot.
+- `matrix.ts` throws if any component is not registered. A page of unregistered elements would otherwise screenshot cleanly and become a baseline of nothing. This was a real failure: esbuild honored the package's `sideEffects` field, which describes `dist/`, and dropped every `register.ts` import from the source build until `ignoreAnnotations` was set.
+- Rendering happens on `mcr.microsoft.com/playwright:v<version>-noble`, where `<version>` is the installed `@playwright/test`. `scripts/visual.ts` runs it in Docker off Linux, and runs Playwright directly on Linux. In CI the job runs inside that image. `test/visual-ci.test.ts` fails if a workflow pins a different image than the installed Playwright, since a version bump silently invalidates every baseline.
+- `node scripts/visual.ts selftest` renders the whole matrix twice into a scratch folder and requires the second pass to match the first exactly. It proves the harness is deterministic on all three engines without any committed baseline, and it passed.
+- Baselines are never written locally. `visual.ts update` refuses outside CI, because a container on Apple Silicon is arm64, and emulating amd64 there crashes Chromium. The "Update visual baselines" workflow deletes the old folder, regenerates everything on the pinned image, and uploads it as an artifact to commit, so baselines for removed tests cannot linger and never fail.
+- The tolerance is `maxDiffPixelRatio: 0.002`, with animations disabled and reduced motion on. A one-pixel change to the success fill's tick pattern fails 24 Chromium screenshots.
+
 ### 10.4 Size, Packaging, and Manifest Gates
 
 | Gate | Threshold |
@@ -625,9 +658,33 @@ Chromium runs the full matrix. Firefox and WebKit run default and `industrial-li
 | Manifest | Generated, valid, and every public component has a description |
 | Contrast gate | Passes (§6.8) |
 
+Measured sizes (gzip, Lit excluded, from `npm run check:size`):
+
+| Entry | Size | Budget |
+|-------|------|--------|
+| Shared runtime and tokens | 9.5 kB | 12 kB |
+| `punk-divider` | 2.6 kB | 5 kB |
+| `punk-panel` | 3.5 kB | 5 kB |
+| `punk-progress-bar` | 4.1 kB | 5 kB |
+| `punk-button` | 4.6 kB | 5 kB |
+| `punk-tooltip` | 4.8 kB | 5 kB |
+| `punk-icon-button` | 7.1 kB | 7.5 kB |
+
+Each component's figure includes the shared code it imports, which is the stricter reading of "each component". `punk-icon-button` is the documented exception: its register entry also contains the tooltip and the button base. `size-limit` measures gzip because the spec says so; its default is brotli, which reports smaller numbers.
+
+The gates and how they are checked:
+
+- **`check-package.ts`** resolves `<package>/<component>/register.js` and `<package>/<component>` through the real exports map and requires the first to win over the wildcard. It requires `sideEffects` to list exactly the register entries and stylesheets, and requires that nothing but a register entry calls `customElements.define`. It bundles every register entry and requires each bundle to hold its own component, only the documented dependencies, and nothing else. Each component has a string only its own code contains; for the button that is `icon-start`, because `--punk-button-padding-inline` is also read by the shared base and would have hidden that the icon button does not bring the button with it. It also bundles a class-only import and requires no registration.
+- **`publint --strict`** and **`attw`**, with the `esm-only` profile: this is a browser package with no CommonJS build. `attw` only understands JavaScript and types, so `tokens.css` and `themes.css` are excluded from it and verified by `check-package.ts` instead.
+- **`check-consumer.ts`** packs the real tarball, installs it into throwaway projects with TypeScript 5.0.4 and the root's `~6.0` pin, and type-checks the fixture in both with `skipLibCheck: false`. A `@ts-expect-error` line makes sure the package's types are real and not `any`. It then bundles `plain.html` and `app.html` and loads them in Chromium: each must define exactly the elements it imported (the icon button brings the tooltip, and the plain page defines no tooltip), upgrade them, apply `tokens.css`, expose a progress bar with `aria-valuenow`, and log no warnings.
+
+TypeScript 5.0 comes from an install into the throwaway project, not from an alias in the repo: an aliased copy installed its own `tsc` binary over the real one and silently made every typecheck run on 5.0.
+
 ### 10.5 CI
 
-Pipeline stages, all required, all running on Node 26: install, toolchain check (`npm ls typescript` reports a single 6.0.x version), lint, typecheck, build (modules, CSS, manifest), contrast gate, unit tests (3 browsers), axe, visual regression, size and packaging gates, Storybook build.
+Pipeline stages, all required, all running on Node 26: install, toolchain check (`npm ls typescript` reports a single 6.0.x version), lint, typecheck, build (modules, CSS, manifest, Storybook), contrast gate, unit tests (3 browsers, including the manifest and axe suites), package, size, and consumer gates, the Storybook smoke test, and visual regression.
+
+Visual regression is its own job, in the pinned Playwright container. The "Update visual baselines" workflow is manual and uploads new baselines as an artifact. The story smoke test loads every story and docs page in the built workbench and fails on a render error or any console warning or error other than Lit's one-time dev-mode notice. It fails for a story that throws and for a story that misuses a component, such as an icon button without a label, which only logs a development warning.
 
 ## 11. Work Packages
 
@@ -643,7 +700,7 @@ Packages are ordered by dependency. Each ends with the CI gates that apply to wh
 | 6 | Button base, button, icon button | 3, 5 | Components, form behavior, anchor protocol, tests. Done. |
 | 7 | Progress bar | 3 | Component, `locale.ts`, tests. Done. |
 | 8 | Storybook workbench | 3 (stories added per component as 4–7 land) | App, foundations, stories, API tables, manifest generation. Done. |
-| 9 | Test infrastructure | 4–7 | Visual matrix, axe suite, size and package gates, fixture consumer |
+| 9 | Test infrastructure | 4–7 | Visual matrix, axe suite, size and package gates, fixture consumer. Done, except that the first visual baselines have yet to be generated by CI. |
 | 10 | Hardening | 9 | Forced-colors, RTL, 200% zoom fixes; budget tuning; docs polish |
 
 Work packages 4, 5, and 7 can proceed in parallel after package 3. Package 8 starts after package 3 so the workbench is available for visual review while components are built.

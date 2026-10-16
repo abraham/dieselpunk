@@ -17,6 +17,11 @@
     "lint": "eslint .",
     "format:check": "prettier --check .",
     "check:contrast": "npm run check:contrast --workspace @dieselpunk/core",
+    "check:package": "npm run check:package --workspace @dieselpunk/core",
+    "check:size": "npm run check:size --workspace @dieselpunk/core",
+    "check:consumer": "npm run check:consumer --workspace @dieselpunk/core",
+    "test:visual": "npm run test:visual --workspace @dieselpunk/core",
+    "test:smoke": "npm run test:smoke --workspace @dieselpunk/storybook",
     "check:toolchain": "node scripts/check-toolchain.ts"
   },
   "devDependencies": {

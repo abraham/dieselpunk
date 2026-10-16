@@ -11,5 +11,7 @@ declare module 'vitest/browser' {
     /** Hovers the element matching `selector` and presses the primary button without releasing. */
     holdPointer: (selector: string) => Promise<void>;
     releasePointer: () => Promise<void>;
+    /** The generated Custom Elements Manifest, parsed. */
+    readManifest: () => Promise<unknown>;
   }
 }
