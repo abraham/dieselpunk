@@ -27,6 +27,8 @@ export const panelStyles = css`
   .surface {
     position: relative;
     border-radius: ${token('radius')};
+    /* A long unbreakable word wraps instead of spilling out of the panel. */
+    overflow-wrap: break-word;
   }
 
   .variant-raised {

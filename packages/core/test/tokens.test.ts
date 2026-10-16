@@ -10,6 +10,7 @@ import { renderThemesCss, renderTokensCss } from '../scripts/render-css.ts';
 import { baseTokens } from '../src/tokens/base.ts';
 import type { TokenMap } from '../src/tokens/base.ts';
 import { density, densityModes } from '../src/tokens/density.ts';
+import { darkTokens } from '../src/tokens/default-theme.ts';
 import { autoLightThemeName, defaultThemeName, themeNames, themes } from '../src/tokens/themes.ts';
 
 interface ParsedRule {
@@ -71,6 +72,10 @@ function findRule(rules: ParsedRule[], selector: string, media?: string): Parsed
 }
 
 describe('token sources', () => {
+  it('fall back to the default theme, which components import on its own to stay small', () => {
+    assert.deepEqual(darkTokens, themes[defaultThemeName].tokens);
+  });
+
   it('give every theme the same token names', () => {
     const reference = Object.keys(themes[defaultThemeName].tokens).sort();
     for (const name of themeNames) {

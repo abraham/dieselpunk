@@ -1,6 +1,6 @@
 # Phase 1: Foundation — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), 5 (`punk-tooltip`), 6 (`PunkButtonBase`, `punk-button`, `punk-icon-button`), 7 (`punk-progress-bar`), and 8 (the Storybook workbench, with manifest generation) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, locale resolution, the dev flag and `devWarn`, positioning, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), 12.4 (Button), 12.5 (Icon Button), 12.6 (Progress Bar), and 12.7 (Tooltip) pass on Chromium, Firefox, and WebKit. Section 12.8 (Workbench) is implemented and verified by a build and a smoke test of every entry. Work package 9 (test infrastructure) is implemented: the manifest assertions, the axe suite, the package, size, and consumer gates, the story smoke test, and the visual harness. The visual baselines are committed, rendered by CI on all three engines. Remaining: hardening (work package 10). `punk-button` and `punk-icon-button` shipped with the boundary-contrast gap in §6.8 still open, by decision.
+**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), 5 (`punk-tooltip`), 6 (`PunkButtonBase`, `punk-button`, `punk-icon-button`), 7 (`punk-progress-bar`), and 8 (the Storybook workbench, with manifest generation) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, locale resolution, the dev flag and `devWarn`, positioning, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), 12.4 (Button), 12.5 (Icon Button), 12.6 (Progress Bar), and 12.7 (Tooltip) pass on Chromium, Firefox, and WebKit. Section 12.8 (Workbench) is implemented and verified by a build and a smoke test of every entry. Work package 9 (test infrastructure) is implemented: the manifest assertions, the axe suite, the package, size, and consumer gates, the story smoke test, and the visual harness. The visual baselines are committed, rendered by CI on all three engines, plus forced colors in Chromium (160 screenshots). Work package 10 (hardening) is implemented: reflow at 200% zoom, forced-colors cues, a smaller bundle, and the accessibility guide. Phase 1 is complete except for the dark palette's control-edge contrast gap in §6.8, which is open by decision.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases)
 **Package:** `@dieselpunk/core`
 **Prefix:** `punk-`
@@ -647,11 +647,11 @@ Chromium runs the full matrix. Firefox and WebKit run default and `industrial-li
 Implementation:
 
 - `test/visual/matrix.ts` builds the page from the same gallery and the same CSS renderers as the shipped stylesheets, picking theme, density, content, and optionally one component from the query string. `scripts/build-visual.ts` bundles it with esbuild into `test-results/visual-site`, and `playwright.config.ts` serves that. The bundle is built on the host or runner, because esbuild's binary is platform-specific, so the container needs no `node_modules` of its own.
-- Chromium has 128 matrix screenshots plus 3 interaction screenshots (hover, focus-visible, and active on the primary button); Firefox and WebKit have 5 each. The focus test asserts that the button really has focus before it takes the screenshot.
+- Chromium has 128 matrix screenshots plus 3 interaction screenshots (hover, focus-visible, and active on the primary button); Firefox and WebKit have 5 each. A fourth project, `chromium-forced`, runs Chromium with forced colors active and adds 19 more: one theme (it has no effect in this mode) at 100% zoom, in both densities, both widths, and all four content variants, plus the same three interaction states. The focus test asserts that the button really has focus before it takes the screenshot.
 - `matrix.ts` throws if any component is not registered. A page of unregistered elements would otherwise screenshot cleanly and become a baseline of nothing. This was a real failure: esbuild honored the package's `sideEffects` field, which describes `dist/`, and dropped every `register.ts` import from the source build until `ignoreAnnotations` was set.
 - Rendering happens on `mcr.microsoft.com/playwright:v<version>-noble`, where `<version>` is the installed `@playwright/test`. `scripts/visual.ts` runs it in Docker off Linux, and runs Playwright directly on Linux. In CI the job runs inside that image, with `HOME=/root` set on the job: GitHub starts container jobs with `$HOME` owned by another user, and Firefox then refuses to launch as root (the first baseline run failed all 131 Firefox tests this way, while Chromium and WebKit rendered 136 screenshots). `test/visual-ci.test.ts` fails if a workflow pins a different image than the installed Playwright, since a version bump silently invalidates every baseline.
 - `node scripts/visual.ts selftest` renders the whole matrix twice into a scratch folder and requires the second pass to match the first exactly. It proves the harness is deterministic on all three engines without any committed baseline, and it passed.
-- Baselines are never written locally. `visual.ts update` refuses outside CI, because a container on Apple Silicon is arm64, and emulating amd64 there crashes Chromium. The "Update visual baselines" workflow deletes the old folder, regenerates everything on the pinned image, and uploads it as an artifact to commit, so baselines for removed tests cannot linger and never fail. The first set (141 screenshots, from Chromium, Firefox, and WebKit) is committed. A local `test:visual` on Apple Silicon passes against it, so it works as a quick check, but CI stays authoritative.
+- Baselines are never written locally. `visual.ts update` refuses outside CI, because a container on Apple Silicon is arm64, and emulating amd64 there crashes Chromium. The "Update visual baselines" workflow deletes the old folder, regenerates everything on the pinned image, and uploads it as an artifact to commit, so baselines for removed tests cannot linger and never fail. The first set (141 screenshots, from Chromium, Firefox, and WebKit) is committed, and the set after hardening (160, adding forced colors) replaced it. A local `test:visual` on Apple Silicon passes against it, with no tolerance at all for the Chromium and forced-colors projects: the arm64 render matches the amd64 one pixel for pixel, so the 0.2% tolerance does no hidden work, and a local run is a precise check. CI stays authoritative.
 - The tolerance is `maxDiffPixelRatio: 0.002`, with animations disabled and reduced motion on. A one-pixel change to the success fill's tick pattern fails 24 Chromium screenshots.
 
 ### 10.4 Size, Packaging, and Manifest Gates
@@ -669,15 +669,15 @@ Measured sizes (gzip, Lit excluded, from `npm run check:size`):
 
 | Entry | Size | Budget |
 |-------|------|--------|
-| Shared runtime and tokens | 9.5 kB | 12 kB |
-| `punk-divider` | 2.6 kB | 5 kB |
-| `punk-panel` | 3.5 kB | 5 kB |
-| `punk-progress-bar` | 4.1 kB | 5 kB |
-| `punk-button` | 4.6 kB | 5 kB |
-| `punk-tooltip` | 4.8 kB | 5 kB |
-| `punk-icon-button` | 7.1 kB | 7.5 kB |
+| Shared runtime and tokens | 8.1 kB | 12 kB |
+| `punk-divider` | 2.2 kB | 5 kB |
+| `punk-panel` | 3.2 kB | 5 kB |
+| `punk-progress-bar` | 3.7 kB | 5 kB |
+| `punk-button` | 4.4 kB | 5 kB |
+| `punk-tooltip` | 4.4 kB | 5 kB |
+| `punk-icon-button` | 6.9 kB | 7 kB |
 
-Each component's figure includes the shared code it imports, which is the stricter reading of "each component". `punk-icon-button` is the documented exception: its register entry also contains the tooltip and the button base. `size-limit` measures gzip because the spec says so; its default is brotli, which reports smaller numbers.
+Each component's figure includes the shared code it imports, which is the stricter reading of "each component". `punk-icon-button` is the documented exception: its register entry also contains the tooltip and the button base. `size-limit` measures gzip because the spec says so; its default is brotli, which reports smaller numbers. The limits in the first table are policy and stay as they are; only the icon button's own exception was tightened, from 7.5 kB to 7 kB, so that a regression of more than a few hundred bytes fails.
 
 The gates and how they are checked:
 
@@ -701,6 +701,30 @@ Visual regression is its own job, in the pinned Playwright container. The "Updat
 - **`@types/node`** takes no major updates, since it follows the Node major in `.nvmrc`.
 - **Playwright** takes no automatic updates. Every version changes the browser builds, which invalidates every visual baseline (§10.3), and the version is also written in the image tag of both workflows, which Dependabot does not edit. To upgrade it, change the package versions and both image tags together, then run the "Update visual baselines" workflow and commit its artifact. `test/visual-ci.test.ts` fails if the tags and the installed version disagree.
 
+### 10.7 Hardening
+
+Work package 10 was a review of the visual matrix and the forced-colors rendering for defects, not a feature. The renders were checked by eye, and every finding was then measured and given a test.
+
+**Reflow (WCAG 1.4.10).** At 200% zoom a 375px window is 187 CSS pixels wide. With long German content, buttons were 191 to 225px wide, panel text overflowed its box, and the document scrolled sideways (342px in a 187px viewport). Causes and fixes:
+
+- `PunkButtonBase` had a fixed height and `white-space: nowrap`. Its height is now a minimum, the label wraps (`overflow-wrap: break-word`), and the host is `max-inline-size: 100%`. The icon button stays a fixed square.
+- The divider label was `nowrap`, and a panel never broke a long word. Both wrap now.
+- The tooltip's maximum width was a fixed 320px, which exceeds a narrow viewport. It is now `min(--punk-tooltip-max-width, 100vw - 16px)`.
+
+`overflow-wrap: break-word` was chosen over `anywhere`: the second breaks German compound words far more eagerly in flex layouts, and the first was enough to remove every overflow.
+
+`test/browser/reflow.test.ts` renders the gallery in every theme, density, and content variant at 187, 256, 375, and 512px, and fails when any component's box passes the container's edge in the writing direction or the container scrolls. It runs on all three engines, and it fails on the previous CSS with messages such as `<punk-button default> is 34.8px too wide`. The tooltip is checked separately, since it is placed against the viewport. RTL was checked in the same test and in the baselines, and needed no change.
+
+**Single-line sizes must not change.** The first version of the button fix added padding around the label, which made the compact `sm` button 29px instead of 28px. That regression appeared only under forced colors (the 2px border takes space from the content box) and only with the real font, so no unit test could see it. The padding was removed, and sizes were verified against the earlier values for all three sizes and both densities, with and without forced colors. The visual baselines are what guard this, because only they load the fonts. A test that compares heights with and without forced colors is kept, but it does not catch that regression, which was checked by putting the padding back.
+
+**Forced colors.** The three button variants were indistinguishable, so a destructive action had no cue. `primary` now has a 4px border and `danger` a dashed border, which is checked by a test. Forced colors is now part of the visual matrix (the `chromium-forced` project, §10.3). The divider needs no rule: the browser maps both of its edge colors to `CanvasText`, and its lines stay visible.
+
+**Bundle size.** Every component carried about 2 kB of palette data for themes it never uses, because `token()` imported the whole `themes` object to read the default one. The dark palette is now its own module (`tokens/default-theme.ts`), which `token()` imports and `themes.ts` reuses. Each component is about 0.36 kB smaller, and the shared runtime fell from 9.5 to 8.1 kB. `tokens.test.ts` pins that module to the default theme, so changing one without the other fails. The budgets in §10.4 are unchanged policy, apart from the icon button's own exception.
+
+**Docs.** The workbench has an "Accessibility and layout" guide covering reflow, right-to-left, forced colors, reduced motion, and keyboard focus. Every statement in it was checked. One was not true when first drafted: the indeterminate stripes scroll the same way in both directions (a barber-pole decoration, stopped under reduced motion), and the page says so instead of claiming they follow the writing direction.
+
+**Not changed.** The dark palette's control-edge contrast gap (§6.8) is a design decision and is still open.
+
 ## 11. Work Packages
 
 Packages are ordered by dependency. Each ends with the CI gates that apply to what it added.
@@ -716,7 +740,7 @@ Packages are ordered by dependency. Each ends with the CI gates that apply to wh
 | 7 | Progress bar | 3 | Component, `locale.ts`, tests. Done. |
 | 8 | Storybook workbench | 3 (stories added per component as 4–7 land) | App, foundations, stories, API tables, manifest generation. Done. |
 | 9 | Test infrastructure | 4–7 | Visual matrix, axe suite, size and package gates, fixture consumer. Done. |
-| 10 | Hardening | 9 | Forced-colors, RTL, 200% zoom fixes; budget tuning; docs polish |
+| 10 | Hardening | 9 | Forced-colors, RTL, 200% zoom fixes; budget tuning; docs polish. Done (§10.7). |
 
 Work packages 4, 5, and 7 can proceed in parallel after package 3. Package 8 starts after package 3 so the workbench is available for visual review while components are built.
 

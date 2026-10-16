@@ -31,5 +31,7 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    // Chromium is the one engine that emulates forced colors. The theme has no effect in this mode.
+    { name: 'chromium-forced', use: { ...devices['Desktop Chrome'], forcedColors: 'active' } },
   ],
 });

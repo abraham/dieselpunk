@@ -1,10 +1,10 @@
 import { unsafeCSS } from 'lit';
 import type { CSSResult } from 'lit';
 import { baseTokens } from './base.ts';
-import { defaultThemeName, themes } from './themes.ts';
+import { darkTokens } from './default-theme.ts';
 
 /** Defaults are the compact density and the default (dark) theme. */
-const defaults = { ...baseTokens, ...themes[defaultThemeName].tokens };
+const defaults = { ...baseTokens, ...darkTokens };
 
 export type TokenName = keyof typeof defaults;
 

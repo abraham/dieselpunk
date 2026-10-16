@@ -16,6 +16,8 @@ export const buttonBaseStyles = css`
     display: inline-flex;
     position: relative;
     vertical-align: middle;
+    /* A long label wraps instead of widening the page, which would fail reflow at 200% zoom. */
+    max-inline-size: 100%;
   }
 
   /* An author display value would otherwise defeat the UA rule for [hidden]. */
@@ -44,7 +46,7 @@ export const buttonBaseStyles = css`
     align-items: center;
     justify-content: center;
     gap: ${token('space-2')};
-    block-size: var(--_h);
+    min-block-size: var(--_h);
     margin: 0;
     padding-block: 0;
     padding-inline: var(--punk-button-padding-inline, ${token('space-3')});
@@ -53,7 +55,7 @@ export const buttonBaseStyles = css`
     appearance: none;
     font: inherit;
     font-weight: 600;
-    white-space: nowrap;
+    overflow-wrap: break-word;
     user-select: none;
     cursor: pointer;
   }
@@ -79,6 +81,8 @@ export const buttonBaseStyles = css`
     align-items: center;
     justify-content: center;
     gap: ${token('space-2')};
+    min-inline-size: 0;
+    text-align: center;
   }
 
   /* The label keeps its width while loading so the button does not resize. */
@@ -186,6 +190,15 @@ export const buttonBaseStyles = css`
     .disabled {
       color: GrayText;
       border-color: GrayText;
+    }
+
+    /* Colors are not available here, so the variants differ by border instead. */
+    .variant-primary {
+      border-width: 4px;
+    }
+
+    .variant-danger {
+      border-style: dashed;
     }
   }
 `;

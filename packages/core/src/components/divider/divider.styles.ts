@@ -38,7 +38,9 @@ export const dividerStyles = css`
   }
 
   .label {
+    min-inline-size: 0;
     color: ${token('color-text-muted')};
-    white-space: nowrap;
+    text-align: center;
+    overflow-wrap: break-word;
   }
 `;

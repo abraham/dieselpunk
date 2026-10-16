@@ -5,6 +5,7 @@ export const iconButtonStyles = css`
   .button {
     flex: none;
     inline-size: var(--_h);
+    block-size: var(--_h);
     padding-inline: 0;
   }
 

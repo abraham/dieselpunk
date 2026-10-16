@@ -55,6 +55,6 @@
     "path": "dist/components/icon-button/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "7.5 kB"
+    "limit": "7 kB"
   }
 ]
