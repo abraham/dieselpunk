@@ -9,11 +9,19 @@
       "dist/utilities/localize.js",
       "dist/utilities/locale.js",
       "dist/utilities/warn.js",
-      "dist/styles/*.js"
+      "dist/styles/*.js",
+      "!dist/styles/receptacle.js"
     ],
     "ignore": ["lit"],
     "gzip": true,
     "limit": "12 kB"
+  },
+  {
+    "name": "Selectable base and receptacle (shared by slot, item stack, recipe)",
+    "path": ["dist/internal/selectable-base.js", "dist/styles/receptacle.js"],
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
   },
   {
     "name": "punk-panel",

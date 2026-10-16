@@ -1,6 +1,6 @@
 # Phase 2: Inventory — Implementation Specification
 
-**Status:** Draft 1. Work package 1 (contrast and tokens) is implemented.
+**Status:** Draft 1. Work packages 1 (contrast and tokens) and 2 (shared internals) are implemented.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 2
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md)
 **Package:** `@dieselpunk/core`
@@ -72,7 +72,9 @@ Additions to Phase 1 §4:
 packages/core/src/
   internal/
     selection-model.ts          pure selection logic: single, multiple, anchor, range (no DOM)
-    selectable-base.ts          PunkSelectableBase: role, tabindex, keys, activation, name text
+    selectable-base.ts          PunkSelectableBase: role, tabindex, keys, activation
+    selectable-base.styles.ts   its host styles: cursor, touch, 40px coarse-pointer minimum
+    selectable-base.test.ts     browser tests, through a minimal subclass that uses receptacle.ts
     grid-navigation.ts          pure functions: next index for a key, from item rectangles
   styles/
     focus.ts                    gains hostFocusRing() for elements that are themselves focused
@@ -83,6 +85,7 @@ packages/core/src/
 packages/core/test/
   selection-model.test.ts       node:test, no browser
   grid-navigation.test.ts       node:test, no browser
+  localize.test.ts              node:test, no browser
   browser/
     perf.test.ts                100-slot grid gate (§10.5)
     fixtures/gallery.ts         gains the inventory components and a `group` parameter
@@ -177,16 +180,19 @@ A pure class with no DOM access, so it is tested with `node --test` and no brows
 | `extendTo(key)` | Same as `select` | Selects every key between the anchor and `key`, inclusive |
 | `selectAll()` | No effect | Selects every enabled key |
 | `clear()` | Clears | Clears |
+| `set(keys)` | Selects the first valid key | Selects exactly the valid keys; the last one becomes the anchor |
+| `setItems(keys, disabled)` | Drops selected keys that left the list | Same |
+| `setMode(mode)` | Keeps the first selected key when narrowing from `multiple` | `none` clears; widening keeps the selection |
 
-It never selects a disabled key, drops keys that no longer exist, and returns the new selection and whether it changed, so the grid emits `punk-selection-change` only for real changes.
+In `none` mode every operation but `clear` and `setItems` does nothing. A key that appears twice in `setItems` counts once, at its first position. It never selects a disabled key, drops keys that no longer exist, and returns `{ selected, changed }`: the selection in item order, and whether it differs as a set from before, so the grid emits `punk-selection-change` only for real changes and reordering the items alone is not one. A selected key that becomes disabled stays selected until an operation replaces the selection.
 
 ### 7.2 Grid Navigation
 
-`grid-navigation.ts` exports pure functions from a key, a direction (`ltr` or `rtl`), the focused index, and a list of item rectangles. It returns the next index, or the same index when there is nowhere to go. It does not wrap.
+`grid-navigation.ts` exports `nextIndex(key, from, items, { direction, ctrl })`. Items are `{ left, right, top, bottom, disabled }` in any one coordinate space, since only comparisons between them matter. It returns the next index, or `from` when there is nowhere to go. It does not wrap.
 
 - Horizontal keys move by one item, and swap in `rtl`.
-- Vertical keys move to the item in the adjacent row whose horizontal center is nearest; rows are found by grouping rectangles by their top edge, so a grid whose column count changes with its width needs no stored column count.
-- `Home` and `End` move to the first and last item of the focused row. `Ctrl+Home` and `Ctrl+End` move to the first and last item of the grid.
+- Vertical keys move to the item in the adjacent row whose horizontal center is nearest; rows are runs of items in document order that start within half an item height of the run's first item, so a grid whose column count changes with its width needs no stored column count, and a common offset, scale, or sub-pixel jitter does not matter. A tie between two equally near items goes to the earlier one. Rows with no enabled item are passed over.
+- `Home` and `End` move to the first and last enabled item of the focused row, in document order, so in `rtl` `Home` is the row's visually rightmost item. `Ctrl+Home` and `Ctrl+End` move to the first and last enabled item of the grid.
 - Disabled items are skipped.
 
 The grid reads rectangles once per vertical keypress and not at all for horizontal ones (§10.5).
@@ -195,17 +201,18 @@ The grid reads rectangles once per vertical keypress and not at all for horizont
 
 The base of `punk-slot`, `punk-item-stack`, and `punk-recipe`, in the way `PunkButtonBase` serves the buttons.
 
-- Properties: `selected`, `disabled`, `value`.
-- It is a host-level widget: the host has the role and the `tabindex`. A native `<button>` cannot be an `option`, and a grid needs to own both. The host is `role="button"` outside a grid and is given `option` or `button` by the grid (§2 decision 3).
-- Keyboard: `Enter` activates on key down and `Space` on key up, as a native button does, and `Space` never scrolls the page. A disabled item is not focusable and does nothing.
-- It emits `punk-activate` with `{ value, item }`.
+- Properties: `selected`, `disabled`, `value`, and an internal `managed` flag that a grid sets. `selected` is an accessor so the base can tell that it has been set, even to `false`.
+- It is a host-level widget: the host has the role and the `tabindex`, written as attributes (not `ElementInternals`) so that tooling that reads the DOM sees what users get. A native `<button>` cannot be an `option`, and a grid needs to own both. The host is `role="button"` outside a grid. While `managed`, the base leaves `role`, `tabindex`, and `aria-selected` to the grid and writes no `aria-pressed`; when the flag clears it restores its own `role`, removes `aria-selected`, and resets `tabindex` (§2 decision 3).
+- `tabindex="0"` is added unless the author set one, and is removed again only if the base added it, so a disabled item is not focusable unless the author made it so.
+- Keyboard: `Enter` activates on key down, once per press, and `Space` on key up if it was also pressed on this item, as a native button does; `Space` never scrolls the page. Keys with Ctrl, Alt, or Meta, keys pressed in focusable content slotted into the item, and keys whose default is already prevented are ignored. The last rule is how a grid claims the keys it handles: it prevents the default in a capture listener before the item sees the event. A disabled item does nothing, and its click is hidden from later listeners.
+- It emits `punk-activate` with `{ value, item }` from a click or from those keys. Keys do not synthesize a `click` event, so a grid that selects on click does not select on `Enter`.
 - `aria-pressed` follows §2 decision 4; `aria-selected` is set only by the grid.
-- The accessible name is text in the shadow tree (§2 decision 6): the label, the count and state words, and the localized word for each state that applies (`invalid`, and so on).
-- A coarse-pointer rule sets a minimum rendered size of 40px (§2 decision 10).
+- The accessible name is text in the shadow tree (§2 decision 6): the label, the count and state words, and the localized word for each state that applies (`invalid`, and so on). Subclasses render it; `receptacle.ts` exports a `visuallyHidden` rule for the text that is not shown.
+- A coarse-pointer rule in `selectable-base.styles.ts` sets a minimum rendered size of 40px (§2 decision 10).
 
 ### 7.4 Localization
 
-`localize.ts` (Phase 1 §7.6, which has one key, `loading`) gains `{name}` interpolation, `t(key, values?)`, and these keys, with their English defaults. `setStrings` accepts them like any other key:
+`localize.ts` (Phase 1 §7.6, which has one key, `loading`) gains these keys and `{name}` interpolation. The English default lives beside the component that renders it, not in `localize.ts`: `t(key, fallback)` returns the string set by `setStrings`, else `fallback`, and `format(key, fallback, values)` also fills the placeholders. A table of defaults in the shared module would add about 90 bytes to every bundle, including the buttons that never use them. `setStrings` accepts the keys like any other:
 
 | Key | Default |
 |-----|---------|
@@ -223,7 +230,7 @@ Numbers are formatted with `Intl.NumberFormat` and the nearest `lang` (`resolveL
 
 ### 7.5 Focus and Forced Colors
 
-`focus.ts` gains `hostFocusRing()` for an element that is itself the focus target, since `focusRing(selector)` assumes an inner element. Under forced colors a selected receptacle draws a 3px `Highlight` outline, a highlighted one a 2px dotted outline, and an invalid one a dashed outline, so the three states stay different when colors are replaced.
+`focus.ts` gains `hostFocusRing(selector)` for a host that is itself the focus target: the ring is drawn on `selector`, a positioned element inside the shadow tree that fills the host, while the host has `:focus-visible`, and under forced colors the 2px `Highlight` outline goes on the host. `focusRing` and `hostFocusRing` share one implementation. `receptacle.ts` exports `receptacleStyles`, the slot surface for `.slot > .content > slot` with optional `.badge` and `.overlay`, and the `empty` class while the default slot has no content. Each state owns one channel, so they combine and stay apart without color: selected is the outer ring and a darker fill, highlighted a dotted outline, invalid an inner frame and a hatched corner. Under forced colors a selected receptacle draws a 3px `Highlight` outline, a highlighted one a dotted border, and an invalid one a dashed border, so the three states stay different when colors are replaced.
 
 ## 8. Components
 
@@ -448,7 +455,7 @@ The gates of Phase 1 §10.4 apply, with each component's register entry measured
 
 - Each entry is at most 5 kB. The shared selectable base is imported by three components, so it counts toward each of them; if an entry would pass 5 kB, the base is split before any limit is raised, and any exception is documented as `punk-icon-button`'s was.
 - `check-package.ts` gains a sentinel string for each new component and requires that no register entry brings another component with it.
-- The shared runtime stays at or below 12 kB.
+- The shared runtime stays at or below 12 kB. The inventory-only base is measured as its own entry, "Selectable base and receptacle", at 4.23 kB against a 5 kB limit (measured in work package 2, with the shared runtime at 8.27 kB). It includes the shared runtime, so a component built on it has under 0.8 kB of its own before it reaches 5 kB; `punk-item-stack`, the largest, is the likely first entry to need the base split.
 
 ### 10.7 CI
 
@@ -458,8 +465,8 @@ The stages of Phase 1 §10.5 are unchanged. The "Update visual baselines" workfl
 
 | # | Package | Depends on | Output |
 |---|---------|------------|--------|
-| 1 | Contrast and tokens | Phase 1 | `control-edge` in every theme, new gate rules, the workbench table updated, Phase 1 §6.8 and §13 item 7 closed, `SPEC.md` updated |
-| 2 | Shared internals | 1 | `SelectionModel`, `grid-navigation`, `PunkSelectableBase`, `receptacle` styles, `hostFocusRing`, localization with interpolation; logic tests |
+| 1 | Contrast and tokens | Phase 1 | `control-edge` in every theme, new gate rules, the workbench table updated, Phase 1 §6.8 and §13 item 7 closed, `SPEC.md` updated. Done. |
+| 2 | Shared internals | 1 | `SelectionModel`, `grid-navigation`, `PunkSelectableBase`, `receptacle` styles, `hostFocusRing`, localization with interpolation; logic tests. Done. |
 | 3 | Slot and item stack | 2 | Two components, tests |
 | 4 | Slot grid | 2, 3 | Component, keyboard and selection tests, performance gate |
 | 5 | Recipe | 2 | Component, tests |

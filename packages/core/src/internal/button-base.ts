@@ -154,7 +154,9 @@ export abstract class PunkButtonBase extends PunkElement {
           ? nothing
           : html`<span id="description" class="visually-hidden">${this.#description}</span>`
       }
-      <span class="visually-hidden" role="status">${this.loading ? t('loading') : ''}</span>
+      <span class="visually-hidden" role="status"
+        >${this.loading ? t('loading', 'Loading') : ''}</span
+      >
     `;
   }
 }
