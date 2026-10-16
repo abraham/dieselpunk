@@ -1,0 +1,900 @@
+# Phase 3: Application Shell — Implementation Specification
+
+**Status:** Draft 1. Not started.
+**Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 3
+**Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md), [SPEC-PHASE-2.md](SPEC-PHASE-2.md)
+**Package:** `@dieselpunk/core`
+**Prefix:** `punk-`
+
+References written `SPEC §N` point to `SPEC.md`. References written `Phase 1 §N` point to `SPEC-PHASE-1.md`, and `Phase 2 §N` to `SPEC-PHASE-2.md`. Bare `§N` references point to this document.
+
+## 1. Scope
+
+### 1.1 Deliverables
+
+1. Shared internals for form association, modal behavior, anchored overlays, roving focus, and the Escape stack (§7).
+2. Eighteen components in fifteen registration entries (§5.1, §8):
+   - layout and disclosure: `punk-stack`, `punk-cluster`, `punk-accordion` and `punk-accordion-item`, `punk-tabs` and `punk-tab`, `punk-toolbar`;
+   - overlays and feedback: `punk-window`, `punk-dialog`, `punk-popover`, `punk-toast-stack` and `punk-toast`;
+   - form controls: `punk-checkbox`, `punk-switch`, `punk-slider`, `punk-select`, `punk-text-field`, `punk-number-field`.
+3. Responsive layout behavior for windows, footers, toolbars, and settings rows, checked at 375px and 200% zoom (SPEC §11).
+4. Integration guides for plain HTML, React, Vue, and Svelte, each backed by a built and tested fixture app (§10.9).
+5. A workbench with a docs page and story set for each component, an application-shell example that completes the SPEC §19 acceptance scenario, and guides for forms, focus and overlays, and responsive layout (§9).
+6. Test coverage across themes, densities, engines, writing directions, zoom levels, and forced colors; form-participation tests; focus and modality tests; and performance and size gates (§10).
+
+### 1.2 Out of Scope
+
+- `punk-production-stat`, `punk-connection-row`, locale packs, the sound adapter, and performance tuning of production views; Phase 4.
+- A searchable combobox. SPEC §7.2 defers it until its accessibility behavior is specified and tested on its own.
+- A multiline text field, radio group, date and time inputs, file input, a menu component (`punk-popover` supplies the surface and focus behavior, §8.7), a data table, a tree, a vertical slider, and drag-to-resize windows.
+- Framework wrapper packages. Phase 3 ships integration guides, and verifies them with fixture apps (§2 decision 19).
+- Server-side rendering and hydration.
+- A window manager: z-order beyond the top layer and focus-raising, snapping, minimizing, and persistence of window positions. Applications own those.
+- Item art and application state, as in Phase 2.
+
+### 1.3 Outcome
+
+A developer can import the registration modules for window, tabs, toolbar, the form controls, slot grid, item stack, button, and progress bar, and build the assembler interface in SPEC §8 and SPEC §19 with their own item art. It supports mouse, touch, keyboard, and screen readers; its form controls take part in native forms; its dialogs and popovers manage focus; and it needs no React, Vue, or Svelte runtime. With Phase 2, this meets every acceptance point in SPEC §19.
+
+## 2. Resolved Ambiguities
+
+These decisions close gaps in `SPEC.md` and the earlier phase specs that affect Phase 3. Where one changes parent-spec wording or adds API, `SPEC.md` is updated when the package that needs it starts. Decisions 2, 8, and 12 change documented API and need the owner's confirmation before their packages start.
+
+| # | Topic | Decision |
+|---|-------|----------|
+| 1 | Components SPEC §7 lists but SPEC §17 does not place | `punk-accordion`, `punk-stack`, and `punk-cluster` are in Section 7 and in the 1.0 definition of done (SPEC §18 item 1), but no phase lists them, and Phase 1 left stack and cluster out. They are Phase 3 components. `punk-accordion-item`, `punk-tab`, and `punk-toast` are the child tags those components imply. |
+| 2 | `open` on `punk-window` (SPEC §7.1, §8) | A boolean attribute cannot default to true, and `<dialog>` and the popover API both default to closed. `open` defaults to `false`, and the SPEC §8 markup becomes `<punk-window heading="Assembler 03" open dismissible>`. `SPEC.md` is updated. |
+| 3 | Registration entries | One `register.js` per family: `tabs` registers `punk-tabs` and `punk-tab`, `accordion` registers both of its tags, and `toast` registers both of its. Every other entry registers one tag. No entry registers a tag of another family, and no component renders another `punk-` component in its shadow tree: windows, toasts, and number fields draw their own native buttons from shared styles (§7.7), so the entries stay independent (Phase 2 §5.1). |
+| 4 | Form association | Controls are form-associated custom elements: `static formAssociated = true`, `ElementInternals` for `setFormValue`, `setValidity`, and `labels`, and the form callbacks (§7.1). Roles on checkbox, switch, and slider are written as host attributes, not through `ElementInternals`, as in Phase 2 §7.3, so DOM tooling sees what users get. A text field, number field, and select render a native control in the shadow tree and delegate focus to it. |
+| 5 | Names of fields | The accessible name comes from text in the shadow tree (Phase 2 §2 decision 6): checkbox and switch from their default slot, and the others from `label` or, failing that, `aria-label`, which the component copies to its inner control. An external `<label for>` focuses the control when clicked, which `delegatesFocus` and `ElementInternals.labels` provide, but does not name it: an ID reference cannot cross into the shadow tree. If no `label` or `aria-label` exists, the component reads the text of `internals.labels` when it renders and on `focusin`, and uses it as the name; this is not live, and the docs say to use `label`. A control with no name warns. |
+| 6 | Boundary contrast for fields (Phase 2 §2 decision 1) | A text field, number field, and select have no visible text while empty, and a checkbox, switch, and slider track are identified by their shape alone, so their boundaries are 3:1 non-text contrast under WCAG 2.2 SC 1.4.11. They use `--punk-color-control-edge`, which the gate already checks on all four surfaces. No new color token is needed. Placeholder text uses `text-muted` and must reach 4.5:1 on `panel-inset`, which is a new gate rule (§6.2). |
+| 7 | Error and status text | `danger` is below 3:1 on `panel` and `panel-raised` (Phase 2 §2 decision 2), so validation messages and toast text are drawn in `text`, never `danger`. The state is carried by a shape (a triangle for a message, the status-light shape for a toast), a `danger` frame drawn on `panel-inset`, and the word. The shapes are shared with `punk-status-light` (§7.7). |
+| 8 | Moving a window (WCAG 2.2 SC 2.5.7 Dragging Movements) | Dragging a titlebar is functionality that needs a single-pointer alternative, so `movable` adds a `move-button` part (an addition to SPEC §7.1's parts). Activating it starts move mode: the arrow keys move the window by 8px (32px with Shift), a click anywhere puts the window's titlebar center at that point, Enter confirms, and Escape cancels. This also gives keyboard users a way to move it. Dragging stays, and is the quick way for a pointer. |
+| 9 | Modal mechanics | Native `<dialog>` with `showModal()`, which makes the rest of the document inert and puts the dialog in the top layer. The library adds what the platform leaves out: a reference-counted `overflow: hidden` on `<html>` while any modal is open, initial focus on content rather than on a titlebar button, a restore of focus to the opener, and the Escape rule in decision 10. A backdrop click never closes a modal: these are task surfaces, and an accidental click must not discard work. |
+| 10 | Escape (SPEC §9.1: "Escape closes the topmost dismissible overlay") | One module-level stack of open dismissible overlays (§7.2) with one `keydown` listener on `document`, present only while the stack is not empty, as the tooltip does (Phase 1 §8.6). Escape closes the topmost entry and stops propagation. A tooltip is topmost over everything that opened before it. `persistent` dialogs and non-`dismissible` windows join the stack as non-closing entries, so Escape does not fall through them to a window underneath. |
+| 11 | Anchors and the ARIA protocol | `punk-popover` finds its trigger as the tooltip does (`for`, else the previous sibling) and sets `aria-expanded`, and `aria-haspopup` for menus. An IDREF cannot reach the inner `<button>` of a `punk-button`, so the Phase 1 `setExternalDescription` protocol grows into one `setExternalAria({ describedby?, expanded?, haspopup? })`, which `PunkButtonBase` implements (§7.3). `setExternalDescription` stays as a deprecated alias for one minor release. |
+| 12 | Toolbar overflow (SPEC §11: "overflow into a menu supplied by the consumer") | The toolbar has an `overflow` slot for the consumer's trigger. Items that do not fit get `data-punk-overflow` and are hidden; the slot is shown only while some are; and `punk-overflow-change` reports them so the consumer can fill its menu. The toolbar builds no menu. Without an `overflow` slot nothing is hidden, the toolbar scrolls inside itself, and it warns once. Toolbars are an accepted exception to WCAG 1.4.10 reflow. |
+| 13 | Arrow-key conflicts in a toolbar | Buttons, icon buttons, checkboxes, switches, and links are in the roving group. A select, text field, number field, and slider use the arrow keys themselves, so each stays its own tab stop outside the group (APG toolbar guidance). |
+| 14 | Tab panels | A `punk-tab` names its panel by id in `panel`, resolved in the tab's root node, so a panel can be inside `punk-tabs` or beside it, as in SPEC §8. The tabs component owns `role="tabpanel"`, `aria-labelledby`, `hidden`, and, when the panel has no tabbable content, `tabindex="0"` on the panels it manages, restoring them when a tab is removed, as the slot grid does for its items (Phase 2 §2 decision 5). The tab list wraps and never scrolls sideways. |
+| 15 | Toast announcements | The stack renders two persistent live regions, `role="status"` for `info` and `success` and `role="alert"` for `warning` and `danger`, and puts each toast in the matching slot. A live region that is added together with its content is not reliably announced, which is why the regions exist before any toast. The stack stays in the top layer even when empty, since a hidden region is not in the accessibility tree. |
+| 16 | Toast timing (WCAG 2.2 SC 2.2.1) | Every toast has a dismiss button. A toast's timer pauses while it is hovered, has focus inside, or the document is hidden, and resumes with the time that was left. Default duration is 5000ms for `info` and `success`, and no timeout for `warning` and `danger` or when the toast has an `action`. A toast shown while a modal is open is inert, like everything outside the dialog; the docs say to put a stack inside the dialog when it must be usable. |
+| 17 | Slider | A custom control with `role="slider"` on the host, not a native range input: pointer capture is required (SPEC §9.2) and a native range cannot be styled the same in all three engines. Its keyboard behavior is checked against a native `<input type="range">` in each engine (§10.5). It is operable by click on the track and by keyboard, so it needs no drag. A vertical slider is deferred. `input` and `change` are real `Event`s, as native ones are. |
+| 18 | Number field and select | The number field uses a native `<input type="number">`, for its validity, `step` rounding, and spinbutton semantics. Its stepper buttons are for pointers: native buttons with `tabindex="-1"` and `aria-hidden`, since the arrow keys and typing already serve everyone else. The select uses a native `<select>` filled with copies of the host's light DOM `<option>` and `<optgroup>` children, kept current by one `MutationObserver` on the host. The open list is the platform's, and cannot be themed. |
+| 19 | Frameworks (SPEC §17: "wrappers or integration guides") | Integration guides, no wrappers. Each guide is backed by a small fixture app in its framework, built in CI and run in a browser, so a guide cannot describe something that does not work (§10.9). The fixtures are the only place React, Vue, and Svelte appear, as dev dependencies. |
+| 20 | Visual matrix size | Three groups, run separately as in Phase 2 §2 decision 13: `shell`, `forms`, and `overlays`. Overlays are captured open, each on its own page, since the top layer covers everything else (§10.4). |
+| 21 | Localized strings | `localize.ts` gains the keys in §7.6. As before, the English default lives beside the component that renders it. |
+| 22 | New tokens | `--punk-z-modal` (`1100`) and `--punk-z-toast` (`1200`), used only where the top layer is not available (§5.4). No new color tokens. `--punk-window-max-width` is a component property (§8.5), not a token. |
+
+## 3. Constraints Carried Over
+
+The toolchain, package contract, and conventions of Phase 1 §3 to §5 and §7, and of Phase 2, apply unchanged. These findings from the earlier phases shape this one:
+
+- **Test for the three engines on Linux**, in the pinned image, from a Linux `npm ci` (Phase 1 §10.1). Emulation commands wait for the frame to report the change, `focusWithKeyboard` focuses the window first, and a test that toggles `prefers-reduced-motion` has its own file.
+- **Every gate is mutation-checked.** A new test is run against a deliberately broken implementation first (Phase 1 §10.7).
+- **Reflow, forced colors, and RTL are tested from the start** through the shared gallery, not left to hardening (Phase 1 §10.7).
+- **Roles, tab stops, and states that a parent owns are written as attributes**, and given back when the owner lets go (Phase 2 §7.3).
+- **Names come from text in the shadow tree** (Phase 2 §2 decision 6). A name that must reach a control inside a shadow root is copied, never referenced.
+- **Phase 2's baseline note stands:** committed baselines are written by CI. Phase 2 generated its baselines locally in the pinned image because the CI-made ones already passed there unchanged; Phase 3 follows that practice only if the same check still passes, and says so.
+- **Sizes are measured before limits are set** (Phase 2 §10.6). Entries are at most 5 kB gzip, an exception needs a documented reason, and the shared runtime stays at or below 12 kB.
+- **Dev warnings are once per occurrence** and gated by the development export condition (Phase 1 §5.4).
+- **Declare each tag with `@tagname`**, and each event, slot, part, and CSS property in JSDoc, so the manifest gates and the API tables find them (Phase 1 §9).
+- **A control's host is not always its focus target.** Phase 1 learned this with `punk-button`; every roving or anchoring protocol in this phase asks the control, instead of assuming `tabindex` on the host.
+
+## 4. Repository Layout
+
+Additions to Phase 1 §4 and Phase 2 §4:
+
+```text
+packages/core/src/
+  internal/
+    form-control.ts           PunkFormControl: form association, validity, reset, restore
+    modal.ts                  ModalController: showModal, focus in and out, scroll lock
+    overlay-stack.ts          the Escape stack (§7.2)
+    anchor.ts                 anchor resolution and setExternalAria (§7.3), shared with the tooltip
+    roving.ts                 RovingController: one tab stop, arrow keys, in either direction
+    tab-navigation.ts         pure: next tab for a key, from a list of tab states
+    slider-math.ts            pure: clamp, snap to step, key to value, pointer to value
+    window-position.ts        pure: clamp a window's translation to the viewport
+    toast-timer.ts            pure: a pausable countdown, driven by an injected clock
+    ids.ts                    uid('punk') for ARIA relationships
+  styles/
+    close-button.ts           the native close or dismiss button drawn by windows and toasts
+    status-shape.ts           the five status shapes, moved out of status-light
+    field.ts                  the inset field surface, boundary, label, hint, and message
+  components/
+    stack/  cluster/  accordion/  tabs/  toolbar/  window/  dialog/  popover/  toast/
+    checkbox/  switch/  slider/  select/  text-field/  number-field/
+      <name>.ts, <name>.styles.ts, index.ts, register.ts, <name>.test.ts, <name>.registration.test.ts
+packages/core/test/
+  tab-navigation.test.ts      node:test, no browser
+  slider-math.test.ts         node:test, no browser
+  window-position.test.ts     node:test, no browser
+  toast-timer.test.ts         node:test, no browser
+  overlay-stack.test.ts       node:test, no browser
+  browser/
+    forms.test.ts             form participation across every control (§10.5)
+    focus.test.ts             modality, focus return, and the Escape order (§10.6)
+    perf-shell.test.ts        observer and listener gates (§10.7)
+    fixtures/gallery.ts       gains the shell, forms, and overlays groups
+  visual/
+    overlays.spec.ts          open overlays, one page each (§10.4)
+  frameworks/
+    react/  vue/  svelte/     fixture apps for the guides (§10.9)
+  package/
+    src/shell.ts              the SPEC §8 assembler, built from the registration entries
+apps/storybook/src/
+  stories/                    a stories file for each family, the Application shell example, the guides
+  stories/integration-*.mdx   one guide each for React, Vue, and Svelte
+```
+
+## 5. Package Contract
+
+### 5.1 Exports and Registration
+
+Each entry follows Phase 1 §5.1 and §5.2: a class entry with no side effects, and a `register.js` that defines the elements.
+
+| Entry | Tags |
+|-------|------|
+| `stack` | `punk-stack` |
+| `cluster` | `punk-cluster` |
+| `accordion` | `punk-accordion`, `punk-accordion-item` |
+| `tabs` | `punk-tabs`, `punk-tab` |
+| `toolbar` | `punk-toolbar` |
+| `window` | `punk-window` |
+| `dialog` | `punk-dialog` |
+| `popover` | `punk-popover` |
+| `toast` | `punk-toast-stack`, `punk-toast` |
+| `checkbox` | `punk-checkbox` |
+| `switch` | `punk-switch` |
+| `slider` | `punk-slider` |
+| `select` | `punk-select` |
+| `text-field` | `punk-text-field` |
+| `number-field` | `punk-number-field` |
+
+`check-package.ts` gains a sentinel string for each tag and requires that no entry registers a tag outside its own row (decision 3). The tooltip stays registered by `icon-button/register.js` only, as in Phase 1.
+
+The package root exports the classes (`PunkStack`, `PunkCluster`, `PunkAccordion`, `PunkAccordionItem`, `PunkTabs`, `PunkTab`, `PunkToolbar`, `PunkWindow`, `PunkDialog`, `PunkPopover`, `PunkToastStack`, `PunkToast`, `PunkCheckbox`, `PunkSwitch`, `PunkSlider`, `PunkSelect`, `PunkTextField`, `PunkNumberField`), their option types, and the event types:
+
+```ts
+export type PunkCloseReason = 'escape' | 'close-button' | 'method' | 'action' | 'outside' | 'tab';
+export type PunkCloseDetail = { reason: PunkCloseReason; returnValue?: string };
+export type PunkMoveDetail = { x: number; y: number };
+export type PunkTabChangeDetail = { value: string; tab: HTMLElement; panel: HTMLElement | null };
+export type PunkToggleDetail = { expanded: boolean };
+export type PunkOverflowDetail = { hidden: HTMLElement[] };
+export type PunkDismissDetail = { reason: 'user' | 'timeout' | 'method' | 'limit' };
+
+declare global {
+  interface HTMLElementEventMap {
+    'punk-open': CustomEvent<undefined>;
+    'punk-close': CustomEvent<PunkCloseDetail>;
+    'punk-move-start': CustomEvent<PunkMoveDetail>;
+    'punk-move-end': CustomEvent<PunkMoveDetail>;
+    'punk-tab-change': CustomEvent<PunkTabChangeDetail>;
+    'punk-toggle': CustomEvent<PunkToggleDetail>;
+    'punk-overflow-change': CustomEvent<PunkOverflowDetail>;
+    'punk-dismiss': CustomEvent<PunkDismissDetail>;
+  }
+}
+```
+
+The fixture consumer (Phase 1 §10.4) gains a typed listener for each of these, so a missing declaration fails type checking under both supported TypeScript versions.
+
+### 5.2 Naming
+
+Class names are `Punk` followed by the PascalCase tag name without the prefix, as in §5.1.
+
+### 5.3 Development Warnings
+
+Each warns once per occurrence when:
+
+- a window or dialog has no `heading` and no `aria-label`; a toolbar, tabs, or accordion with no accessible name where one is required (toolbar and tabs: `aria-label`); a form control with no name (decision 5);
+- a `punk-tab` names a panel that does not exist, or two tabs name the same one;
+- a `punk-popover` has no resolvable trigger, or a `menu` popover has no `menuitem` descendants;
+- a toolbar's items overflow and it has no `overflow` slot content (decision 12), or an item in it cannot take focus;
+- a dialog has no focusable content, and it is not `persistent` (a touch user could not dismiss it);
+- `value`, `min`, `max`, or `step` are inconsistent on a slider or number field (clamped), or a `punk-select` has no options;
+- a toast has no text.
+
+### 5.4 Top Layer and Fallbacks
+
+Windows and dialogs use `<dialog>`, popovers and the toast stack use the Popover API, and all of them therefore sit in the top layer. Where `showModal` or `showPopover` is missing, the surface is `position: fixed` with `--punk-z-modal`, `--punk-z-overlay`, or `--punk-z-toast`, and the tests disable the API to cover that path, as the tooltip's do.
+
+## 6. Contrast and Tokens
+
+### 6.1 Tokens
+
+`--punk-z-modal` (`1100`) and `--punk-z-toast` (`1200`) join the base tokens (§2 decision 22). The tokens test that every theme has the same names is unaffected, since these are not color tokens.
+
+### 6.2 Contrast Gate
+
+`check-contrast.ts` gains, for every theme:
+
+- `text-muted` against `panel-inset` is at least 4.5:1 (placeholder and hint text on a field).
+- `text` against `panel-inset` stays covered by the existing text rule, which also covers validation messages and the toast text on its lens (decision 7).
+- `control-edge` against the four surfaces is already gated (Phase 2 §6.3), and covers every field boundary, checkbox box, switch track, and slider track.
+- `accent` against `panel-inset` is already gated (Phase 2 §6.3), and covers the slider fill and the checked checkbox fill.
+
+Disabled controls are exempt (Phase 2 §2 decision 1). If `text-muted` fails on a theme, the token is changed, not the rule.
+
+## 7. Shared Internals
+
+### 7.1 `PunkFormControl`
+
+The base of the six form controls. It sets `static formAssociated = true` and holds an `ElementInternals`, and provides:
+
+- `name`, `disabled`, and `required` properties, the read-only `form`, `labels`, `type`, `validity`, `validationMessage`, and `willValidate`, and `checkValidity()`, `reportValidity()`, and `setCustomValidity(message)`, with the behavior of a native control.
+- `value` handling through each subclass's `formValue()`, passed to `setFormValue` whenever it changes. A control with no `name`, or that is disabled, adds nothing to the form.
+- `formResetCallback()`, which restores the **default**: the `checked` or `value` attribute as it was authored, not the live property. `formDisabledCallback(disabled)`, which reflects a disabled ancestor `<fieldset>` without touching the control's own `disabled`. `formStateRestoreCallback(state)`, which restores a value the browser kept across navigation.
+- A `touched` flag, set on blur, on `invalid`, and on `reportValidity()`, so a message is not shown before the user has had a chance to type. Validation is always run, and the message is only shown when touched.
+- The name protocol of decision 5: `aria-label` mirroring and the `internals.labels` fallback.
+
+Subclasses implement `formValue()`, `validate()` (which calls `setValidity` with an anchor inside the shadow tree, so `reportValidity` focuses and scrolls to the right element), and the default restoration.
+
+### 7.2 Modal Behavior and the Escape Stack
+
+`ModalController` (`modal.ts`) is a reactive controller for a component with a `<dialog>` in its shadow tree. It owns:
+
+- opening: `showModal()` or `show()`, and the fallback in §5.4;
+- the reference-counted `overflow: hidden` on `<html>`, which restores the author's inline value, not an empty one;
+- initial focus: an element marked `autofocus`, else the first tabbable element of the body and footer, else the dialog itself with `tabindex="-1"`. Never a titlebar button;
+- restoring focus to the element that was focused when it opened, if it is still connected, else to `document.body`;
+- turning a native `cancel` event into a `punk-close` with reason `escape`, or cancelling it for a persistent dialog;
+- `punk-open` and `punk-close`, once each per change.
+
+`overlay-stack.ts` is a pure module with `push(entry)`, `remove(entry)`, and `top()`. Entries have `{ dismissible, close(reason) }`. While the stack has an entry it holds one capturing `keydown` listener on `document` that closes the topmost dismissible entry on Escape and calls `stopPropagation()`; a non-dismissible entry still stops Escape from reaching entries beneath it. With an empty stack there is no listener. The tooltip is moved onto this module in work package 1, with its tests unchanged.
+
+### 7.3 Anchors and `setExternalAria`
+
+`anchor.ts` exports `resolveAnchor(host)` (the `for` rule of Phase 1 §8.6), and the wiring that adds and removes ARIA on an anchor and puts back only what it added. It extracts what `punk-tooltip` does today, and the tooltip uses it afterward. `setExternalAria({ describedby, expanded, haspopup })` is implemented by `PunkButtonBase` (so `punk-button` and `punk-icon-button`) by writing to the inner `<button>`. For any other anchor the wiring writes to the anchor itself.
+
+### 7.4 `RovingController`
+
+Used by tabs, the toolbar, and accordion headers. Given a list of items and a direction, it keeps exactly one tab stop, moves focus with the arrow keys (swapping in `rtl`), `Home` and `End`, and skips disabled and hidden items. An item takes part by implementing `{ focusItem(), setTabStop(on), isDisabled }`; `PunkButtonBase` gains these, since its host is not the focus target. It reads no layout and creates no observers.
+
+`tab-navigation.ts` is the pure part: `nextTab(key, from, tabs, { orientation, direction, activation })` over `{ disabled }`. It does not wrap, as the slot grid does not (Phase 2 §7.2).
+
+### 7.5 Ids
+
+`uid(prefix)` returns a document-unique id for ARIA relationships that stay inside one tree: a tab and its panel, a toast's label, a window's title. Ids the author set are kept.
+
+### 7.6 Localization
+
+`localize.ts` gains these keys. English defaults live beside the component:
+
+| Key | Default | Used by |
+|-----|---------|---------|
+| `close` | `Close` | window |
+| `dismiss` | `Dismiss` | toast |
+| `moveWindow` | `Move window` | window |
+| `moving` | `Moving. Use the arrow keys, Enter to place, Escape to cancel.` | window |
+| `increase` | `Increase` | number field (the visible stepper, not announced) |
+| `decrease` | `Decrease` | number field |
+| `notifications` | `Notifications` | toast stack |
+| `invalidField` | `invalid` | text field, number field, select (a prefix to a message) |
+| `moreActions` | `More` | none by default; the toolbar's overflow trigger is supplied by the consumer |
+
+Validation messages come from the browser (`validationMessage`), so they follow the browser's language. A consumer message set with `setCustomValidity` is shown as given.
+
+### 7.7 Shared Styles
+
+- `close-button.ts` is the native button with a drawn X, a 2px focus ring from `hostFocusRing`-style rules, a 40px hit area under a coarse pointer, and forced-colors rules. It carries the localized label as `aria-label`.
+- `status-shape.ts` holds the five shapes now inside `punk-status-light`: ring, diamond, circle, triangle, square, with their forced-colors rules. The status light, the toast, and a field message use it.
+- `field.ts` is the inset surface and boundary for text, number, and select fields, the label, hint, and message layout, and the states (hover, focus, invalid, disabled, read-only). The checkbox, switch, and slider reuse its boundary.
+
+## 8. Components
+
+All components follow Phase 1 §8 and Phase 2 §8: Shadow DOM, logical properties, tokens only, complete JSDoc with `@tagname`, and reduced-motion handling. None uses continuous animation.
+
+### 8.1 `punk-stack` and `punk-cluster`
+
+Layout primitives with no industrial decoration, no role, and no parts.
+
+| Tag | Property | Attribute | Type | Default |
+|-----|----------|-----------|------|---------|
+| `punk-stack` | `gap` | `gap` | `'0' \| '1' \| '2' \| '3' \| '4' \| '5'` | `'2'` |
+| `punk-stack` | `align` | `align` | `'start' \| 'center' \| 'end' \| 'stretch'` | `'stretch'` |
+| `punk-cluster` | `gap` | `gap` | as above | `'2'` |
+| `punk-cluster` | `justify` | `justify` | `'start' \| 'center' \| 'end' \| 'between'` | `'start'` |
+| `punk-cluster` | `align` | `align` | `'start' \| 'center' \| 'end' \| 'baseline' \| 'stretch'` | `'center'` |
+
+- **Slots:** default.
+- **CSS properties:** `--punk-stack-gap` and `--punk-cluster-gap`, which override `gap`. The gap values map to `0` and `--punk-space-1` to `--punk-space-5`, so density follows.
+- The host is the flex container. A stack is a column; a cluster is a row that wraps. Children may shrink below their content (`min-inline-size: 0`), so a long word breaks and nothing forces horizontal scrolling.
+- Both reflect their properties and ignore unknown values.
+
+### 8.2 `punk-accordion` and `punk-accordion-item`
+
+An etched disclosure group.
+
+`punk-accordion`:
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `multiple` | `multiple` | `boolean` | `false` | yes |
+
+- **Slots:** default (`punk-accordion-item` children).
+- **Parts:** `accordion`.
+- Single mode: expanding an item collapses the others. If several are expanded at connection, the first stays and the rest collapse, with one warning. The user may collapse the open item, so none can be open.
+- **Keyboard** (on a header trigger): `Up` and `Down` move focus between enabled triggers without wrapping, `Home` and `End` go to the first and last. Enter and Space are native.
+
+`punk-accordion-item`:
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `heading` | `heading` | `string` | `''` | yes |
+| `level` | `level` | `number` (1 to 6) | `3` | yes |
+| `expanded` | `expanded` | `boolean` | `false` | yes |
+| `disabled` | `disabled` | `boolean` | `false` | yes |
+
+- **Slots:** default (the panel), `heading` (rich heading content, replacing the property), `icon`.
+- **Parts:** `item`, `heading`, `trigger`, `indicator`, `panel`.
+- **Events:** `punk-toggle` with `{ expanded }`, sent for changes the user makes and not when the application sets `expanded`, as `punk-selection-change` is not (Phase 2 §8.3).
+- The heading is an `<h{level}>` that holds a native `<button aria-expanded>`. The panel is `role="region"` with `aria-labelledby` the button; both are in the item's shadow tree, so the references work. A collapsed panel is `hidden`. There is no height animation.
+- The indicator is a plus when collapsed and a minus when expanded, so state is a shape and not a color. A disabled item uses the native `disabled` on the button.
+- An out-of-range `level` is clamped and warns once.
+
+### 8.3 `punk-tabs` and `punk-tab`
+
+`punk-tabs`:
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `orientation` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | yes |
+| `activation` | `activation` | `'auto' \| 'manual'` | `'auto'` | yes |
+| `value` | none | `string` | selected tab's `panel` | no |
+
+- **Slots:** `tab` (the tabs), default (panels, optionally).
+- **Parts:** `tablist`.
+- **Events:** `punk-tab-change` with `{ value, tab, panel }` for changes the user makes.
+- The tab list is `role="tablist"` with `aria-orientation`, and the tabs are its flattened children. The application supplies `aria-label` on `punk-tabs`, which the component copies to the tab list, and a missing one warns.
+- The first enabled tab is selected when none is. A removed selected tab selects the nearest enabled one.
+- The list wraps onto more rows and never scrolls sideways (decision 14).
+
+`punk-tab`:
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `panel` | `panel` | `string` | `''` | yes |
+| `selected` | `selected` | `boolean` | `false` | yes |
+| `disabled` | `disabled` | `boolean` | `false` | yes |
+
+- **Slots:** default (the label), `icon`.
+- **Parts:** `tab`, `icon`, `label`.
+- The host is `role="tab"`, with `aria-selected`, `aria-controls` (the panel's id), and a roving `tabindex` written by `punk-tabs`. A tab with no id gets one from `uid`. The name is its text.
+- The selected tab uses an inset surface with an `accent` bar along the edge facing the panel, 3px against 0 for the others, so it differs without color.
+
+Keyboard (the horizontal keys swap in `rtl`; vertical tabs use `Up` and `Down`):
+
+| Key | Effect |
+|-----|--------|
+| `Left`, `Right` (or `Up`, `Down`) | Move focus to the previous or next enabled tab; in `auto`, also select it. No wrapping |
+| `Home`, `End` | First and last enabled tab; in `auto`, also select it |
+| `Enter`, `Space` | In `manual`, select the focused tab |
+| `Tab` | From a tab, moves to the selected panel if it has tabbable content or `tabindex`, else past the tabs |
+
+Panels: the selected tab's panel is shown, the rest are `hidden`, and each panel the tabs manage has `role="tabpanel"` and `aria-labelledby`. A panel with no tabbable content gets `tabindex="0"`. Everything written to a panel is put back when its tab is removed or the tabs element disconnects.
+
+### 8.4 `punk-toolbar`
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `wrap` | `wrap` | `boolean` | `false` | yes |
+
+- **Slots:** default (items and separators), `overflow` (the consumer's overflow trigger).
+- **Parts:** `toolbar`.
+- **Events:** `punk-overflow-change` with `{ hidden }`, the items now hidden, in order.
+- `role="toolbar"`, `aria-orientation="horizontal"`, a fixed-height strip with a minimum, and the application's `aria-label` copied from the host. A missing one warns.
+- **Items** are direct children that are a `punk-button`, `punk-icon-button`, `punk-checkbox`, `punk-switch`, `button`, or `a[href]`, or that have `data-punk-toolbar-item`. A `punk-divider`, `hr`, or `[role="separator"]` is a separator and is skipped. A select, text field, number field, and slider are tab stops of their own (decision 13). Anything else is ignored.
+- **Roving:** `RovingController` keeps one tab stop among the items, moves with `Left` and `Right` (swapped in `rtl`), `Home`, and `End`, and does not wrap. Tab enters at the item that last had focus, else the first. The key handling reads no layout.
+- **Overflow:** unless `wrap`, one `ResizeObserver` on the toolbar and a measurement on `slotchange` decide which trailing items do not fit; they get `data-punk-overflow` and are hidden and left out of the roving group, and the `overflow` slot is shown. Items never reorder. `wrap` lets the strip grow taller, with no observer.
+- A hidden item that has focus when it overflows hands focus to the overflow trigger.
+- Slotted `punk-button` and the other roving items are asked, not assumed (§7.4).
+
+### 8.5 `punk-window`
+
+A titled application window, optionally modal, movable, and dismissible.
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `heading` | `heading` | `string` | `''` | yes |
+| `open` | `open` | `boolean` | `false` | yes |
+| `modal` | `modal` | `boolean` | `false` | yes |
+| `movable` | `movable` | `boolean` | `false` | yes |
+| `dismissible` | `dismissible` | `boolean` | `false` | yes |
+
+- **Slots:** `icon`, default, `footer`.
+- **Parts:** `window`, `titlebar`, `title`, `close-button`, `move-button`, `body`, `footer`.
+- **CSS properties:** `--punk-window-max-width` (default `640px`). The window is `max-inline-size: min(100%, var(--punk-window-max-width))` (SPEC §11).
+- **Events:** `punk-open`, `punk-close` with `{ reason }`, `punk-move-start` and `punk-move-end` with `{ x, y }`, the translation from the window's layout position.
+- **Methods:** `show()`, `close()`, `resetPosition()`.
+
+Structure and semantics:
+
+- The window is a `<dialog>`, with `aria-labelledby` the title, which is `heading`. Modal windows call `showModal()` through the `ModalController`, and non-modal ones call `show()`, so they stay in the flow of the page and its container. A closed window renders nothing.
+- `dismissible` adds the close button (a native button, localized `close`) and joins the Escape stack as a closing entry. Without it the window joins as a non-closing entry (decision 10), and a modal's `cancel` is prevented.
+- Content wider than the window wraps. The body scrolls when it is taller than the window allows, and becomes a focusable scroll region (`tabindex="0"`) when it does, checked on open and on window resize while open.
+- A modal window is at most the viewport height less 2 times `--punk-space-4`, so it fits at 200% zoom.
+- At container widths of 480px and below the footer stacks its actions, full width and in order, by container query on the window.
+- Opening a window while another modal is open is allowed, and the top layer stacks them.
+
+Moving (`movable`):
+
+- Dragging starts on the titlebar with pointer capture and `touch-action: none`, and never from `button`, `a`, `input`, `select`, `textarea`, `[tabindex]`, `[contenteditable]`, or `[data-punk-no-drag]` descendants. The window moves by `translate` and is clamped each move by `window-position.ts` so its rectangle stays in the viewport, and on an axis where it is larger than the viewport its start edge is pinned, so the titlebar stays reachable.
+- The `move-button` (localized `moveWindow`, `aria-pressed`) starts move mode (decision 8). Entering it announces `moving` through a visually hidden status. Arrow keys move by 8px, 32px with Shift; a click moves the titlebar center to the pointer; Enter places the window; Escape returns it to where it was.
+- A `resize` listener exists only while the window has a nonzero offset, and re-clamps it.
+- A focused movable window is raised over its siblings with `z-index`; the application owns any stacking beyond that.
+
+Details: opening a window that is already open does nothing; setting `open` before the element is defined opens it when it is; a window removed while open releases the scroll lock and its Escape entry.
+
+### 8.6 `punk-dialog`
+
+A modal confirmation or task surface. It is not movable and has no titlebar close button; its actions are in its footer.
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `heading` | `heading` | `string` | `''` | yes |
+| `open` | `open` | `boolean` | `false` | yes |
+| `persistent` | `persistent` | `boolean` | `false` | yes |
+| `alert` | `alert` | `boolean` | `false` | yes |
+
+- **Slots:** default, `footer`.
+- **Parts:** `dialog`, `header`, `title`, `body`, `footer`.
+- **CSS properties:** `--punk-dialog-max-width` (default `480px`).
+- **Events:** `punk-open`, `punk-close` with `{ reason, returnValue }`.
+- **Methods:** `show()`, `close(returnValue?)`, and a `returnValue` property.
+- It traps focus through the native modal and restores it on close. It labels itself from `heading`; `alert` makes it `role="alertdialog"` and describes it by its body.
+- Escape closes it unless `persistent`, which also keeps Escape from reaching anything beneath it. A backdrop click does nothing.
+- An element in the light DOM with `data-punk-close` closes the dialog on click and sets `returnValue` to its `data-punk-close` value (reason `action`). Application code can call `close()` instead.
+- The footer stacks its actions at container widths of 480px and below, as the window's does.
+- A dialog with no focusable content warns when it is not `persistent`.
+
+### 8.7 `punk-popover`
+
+An interactive anchored surface.
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `for` | `for` | `string` | `''` | no |
+| `placement` | `placement` | `'top' \| 'bottom' \| 'start' \| 'end'` | `'bottom'` | yes |
+| `mode` | `mode` | `'content' \| 'menu'` | `'content'` | yes |
+| `open` | `open` | `boolean` | `false` | yes |
+
+- **Slots:** default.
+- **Parts:** `surface`.
+- **CSS properties:** `--punk-popover-max-width` (default `min(320px, 100vw - 16px)`), `--punk-popover-offset` (default `8px`).
+- **Events:** `punk-open`, `punk-close` with `{ reason }`.
+- **Methods:** `show()`, `hide()`, `toggle()`.
+- The trigger is resolved as the tooltip's anchor is and is wired with `setExternalAria` (`aria-expanded`, and `aria-haspopup="menu"` in menu mode). A click, Enter, or Space on the trigger toggles the popover, and `ArrowDown` opens it in menu mode.
+- The surface is `popover="auto"`, so it is in the top layer and light-dismissed by Escape and by a press outside. Where unsupported, §5.4 applies, with the same light dismissal implemented by one `pointerdown` and the Escape stack while open. Positioning is `computePosition` (Phase 1 §8.6), with the same flip, shift, and listeners only while open.
+- **Focus in content mode:** a pointer open leaves focus where it is. A keyboard open (Enter, Space, or an arrow on the trigger) moves focus to an `autofocus` element, else the first tabbable element, else the surface (`tabindex="-1"`). Closing from inside returns focus to the trigger.
+- **Focus in menu mode:** the host is `role="menu"`, and opening always moves focus to the first enabled `menuitem`, `menuitemcheckbox`, or `menuitemradio` (set by the application). `Up`, `Down`, `Home`, and `End` move among them without wrapping, `Escape` closes and returns focus to the trigger, and `Tab` closes (below). Activating an item does not close the menu by itself; the application calls `hide()`, or sets `data-punk-close-on-activate` on the popover to close on any item's click.
+- **Tab** inside the popover at its last tabbable element (or `Shift+Tab` at its first) closes it and puts focus on the trigger before the default action, so the next Tab continues from the trigger.
+- Inside a modal, a popover's trigger must be inside the same dialog; this is documented, since the rest of the page is inert.
+
+### 8.8 `punk-toast-stack` and `punk-toast`
+
+`punk-toast-stack`:
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `placement` | `placement` | `'top-start' \| 'top-end' \| 'bottom-start' \| 'bottom-end'` | `'bottom-end'` | yes |
+| `limit` | `limit` | `number` | `5` | yes |
+| `label` | `label` | `string` | `''` | yes |
+
+- **Slots:** `polite` and `assertive` are filled by the stack, and the default slot takes `punk-toast` children, which the stack moves to the right slot by writing `slot` (decision 15) and gives back when a toast leaves.
+- **Parts:** `stack`.
+- **Methods:** `show(options)`, which creates and appends a toast and returns it (`options`: `message`, `heading`, `variant`, `duration`, `action` as an element), and `clear()`.
+- The stack is `popover="manual"`, shown while connected, `pointer-events: none` apart from the toasts, and placed in the corner by `placement`. Its region is labeled with `label`, or the localized `notifications`.
+- Past `limit`, the oldest toast is dismissed with reason `limit`. The newest is nearest the screen edge.
+
+`punk-toast`:
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `variant` | `variant` | `'info' \| 'success' \| 'warning' \| 'danger'` | `'info'` | yes |
+| `duration` | `duration` | `number` (ms) | see below | yes |
+| `heading` | `heading` | `string` | `''` | yes |
+
+- **Slots:** default (the message), `action`.
+- **Parts:** `toast`, `indicator`, `heading`, `content`, `action`, `dismiss-button`.
+- **Events:** `punk-dismiss` with `{ reason }`.
+- **Methods:** `dismiss()`.
+- The variant is shown by the status shape on an inset lens, never by color alone, and the text is in `text` (decision 7). The dismiss button is a native button with the localized `dismiss` label.
+- **Duration:** unset means 5000 for `info` and `success`, and none for `warning`, `danger`, or a toast with an `action`. `0` means none. The countdown is `toast-timer.ts`: it pauses on hover, on focus inside, and while the document is hidden, resumes with the time left, and uses one timer. A paused or finished toast leaves no timer behind.
+- A toast with no text warns once. Entering and leaving are a short fade that reduced motion removes.
+
+### 8.9 `punk-checkbox` and `punk-switch`
+
+Both extend `PunkFormControl`.
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `checked` | `checked` | `boolean` | `false` | yes |
+| `indeterminate` | `indeterminate` | `boolean` | `false` | yes (checkbox only) |
+| `disabled` | `disabled` | `boolean` | `false` | yes |
+| `required` | `required` | `boolean` | `false` | yes |
+| `name` | `name` | `string` | `''` | yes |
+| `value` | `value` | `string` | `'on'` | yes |
+
+- **Slots:** default (the label).
+- **Parts:** `control`, `box` (checkbox) or `track` and `thumb` (switch), `mark`, `label`.
+- **Events:** native `input` (composed) and `change` on a user toggle, and `click`.
+- The host is `role="checkbox"` or `role="switch"`, with `aria-checked` (`mixed` while `indeterminate`), `aria-required`, `aria-disabled`, and `tabindex="0"`, removed while disabled. The name is the default slot's text. A control with no text and no `aria-label` warns.
+- `Space` toggles, on key up as a native control does, and never scrolls. A switch also toggles on `Enter`. A click on the label text toggles. A click on a disabled control does nothing.
+- A click on an indeterminate checkbox clears `indeterminate` and toggles `checked`, as native does. `indeterminate` is never submitted.
+- **Form:** when checked and enabled it submits `value` under `name`. `required` and unchecked is `valueMissing`. Reset restores the authored `checked`. `formStateRestoreCallback` restores `checked`.
+- **Look:** the box and the track have a `control-edge` boundary (decision 6). A checked box shows a check mark, an indeterminate one a dash, an unchecked one nothing; a switch shows its thumb at the end with an "on" bar when on, and at the start with an "off" ring when off. Under forced colors the marks use `CanvasText` and `Highlight`, so on and off stay apart.
+
+### 8.10 `punk-slider`
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `min` | `min` | `number` | `0` | yes |
+| `max` | `max` | `number` | `100` | yes |
+| `step` | `step` | `number` | `1` | yes |
+| `value` | `value` | `number` | `min` | yes |
+| `disabled` | `disabled` | `boolean` | `false` | yes |
+| `showValue` | `show-value` | `boolean` | `false` | yes |
+| `ticks` | `ticks` | `boolean` | `false` | yes |
+| `label` | `label` | `string` | `''` | yes |
+| `name` | `name` | `string` | `''` | yes |
+
+- **Parts:** `header`, `label`, `value`, `track`, `fill`, `thumb`, `tick`.
+- **Events:** native `input` while the value changes and `change` when a gesture or key press ends with a changed value.
+- The host is `role="slider"` with `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, `aria-valuetext`, `aria-orientation="horizontal"`, and `tabindex="0"`. `aria-valuetext` is the host's own if it set one, else the number formatted with `Intl.NumberFormat` for the nearest `lang`. The name is the `label`, with an `aria-label` fallback.
+- Values clamp to the range and snap to `step` from `min`, using the decimals of `step` to avoid floating-point drift. An inverted or non-finite range is repaired (0 to 100) and warns once.
+- **Keys** (horizontal; in `rtl` the end of the range is on the left): `Right` and `Up` increase by `step`, `Left` and `Down` decrease, `PageUp` and `PageDown` change by the larger of `step` and 10% of the range snapped to `step`, and `Home` and `End` go to `min` and `max`. The arrow, `Home`, and `End` results match a native `<input type="range">` in the same direction, in every engine.
+- **Pointer:** pointer capture on the track and thumb. `pointerdown` reads the track rectangle once, and every move computes from it, so dragging reads no layout. A click on the track sets the value and starts a drag. `touch-action: pan-y` keeps page scrolling.
+- `ticks` draws a mark at every whole number of steps when there are 20 or fewer, and otherwise every `ceil(steps / 20)` steps.
+- **Form:** submits `value` under `name`. Reset restores the authored `value`.
+- The track is an inset trough with a `control-edge` boundary; the fill is `accent`; the thumb is a raised block with a visible boundary, so the position is read from the thumb, not from color.
+
+### 8.11 `punk-text-field`
+
+Extends `PunkFormControl` and renders a native `<input>` in the shadow tree with `delegatesFocus`.
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `label` | `label` | `string` | `''` | yes |
+| `value` | `value` | `string` | `''` | no |
+| `type` | `type` | `'text' \| 'email' \| 'password' \| 'search' \| 'tel' \| 'url'` | `'text'` | yes |
+| `name` | `name` | `string` | `''` | yes |
+| `placeholder` | `placeholder` | `string` | `''` | yes |
+| `disabled`, `readonly`, `required` | same | `boolean` | `false` | yes |
+| `minlength`, `maxlength` | same | `number` | none | yes |
+| `pattern` | `pattern` | `string` | none | yes |
+| `autocomplete`, `inputmode` | same | `string` | none | yes |
+
+- **Slots:** `prefix`, `suffix`, `hint`.
+- **Parts:** `field`, `label`, `control`, `prefix`, `suffix`, `hint`, `message`.
+- **Events:** native `input` (composed), and `change`, which the field re-dispatches on the host, since a native one does not cross the shadow boundary. `invalid` follows native rules.
+- **Methods:** `focus()`, `select()`, plus those of §7.1.
+- `value` is a property only, like a native input's current value; the `value` attribute is the default that reset restores.
+- The label is rendered text with `<label for>` inside the shadow tree, and the `hint` is the inner control's `aria-describedby`, with the message when it shows. A missing name warns (decision 5).
+- **Validation message:** once touched and invalid, the message part shows `validationMessage` with the triangle shape, and the inner control has `aria-invalid="true"` and the message in its description. The message is `text`, the frame is `danger` on `panel-inset` (decision 7).
+- Paste is never blocked, and `autocomplete` is passed through (WCAG 3.3.8).
+- **Look:** an inset field with a `control-edge` boundary, the prefix and suffix inside it, and a hover edge that gains contrast. The placeholder meets 4.5:1 (§6.2).
+
+### 8.12 `punk-number-field`
+
+Extends `PunkFormControl` and renders a native `<input type="number">`.
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `label`, `name`, `placeholder` | same | `string` | `''` | yes |
+| `value` | `value` | `string` | `''` | no |
+| `min`, `max`, `step` | same | `number` | none, none, `1` | yes |
+| `disabled`, `readonly`, `required` | same | `boolean` | `false` | yes |
+| `hideSteppers` | `hide-steppers` | `boolean` | `false` | yes |
+
+- **Slots:** `prefix`, `suffix` (for example a unit), `hint`.
+- **Parts:** `field`, `label`, `control`, `prefix`, `suffix`, `hint`, `message`, `stepper`.
+- **Events:** as the text field; and `valueAsNumber` is a read-only property.
+- **Keys:** the native ones: `Up` and `Down` step, `PageUp` and `PageDown` where the engine supports them.
+- The steppers call the native `stepUp()` and `stepDown()`, so rounding and bounds are the platform's, and fire `input` and `change`. Pressing and holding repeats after 400ms every 80ms, and stops on release, leave, or blur. They are `tabindex="-1"` and `aria-hidden` (decision 18) and are 40px targets under a coarse pointer.
+- The native spinner is hidden. Validity (`rangeUnderflow`, `rangeOverflow`, `stepMismatch`, `badInput`, `valueMissing`) is native's, passed to `setValidity`.
+- A `min` above `max`, or a `step` that is not above 0, is repaired and warns once.
+- Parsing and display of the number follow the engine and the user's locale settings, which differ between engines, so the docs say it is not formatted by the component.
+
+### 8.13 `punk-select`
+
+Extends `PunkFormControl` and renders a native `<select>`.
+
+| Property | Attribute | Type | Default | Reflects |
+|----------|-----------|------|---------|----------|
+| `label`, `name` | same | `string` | `''` | yes |
+| `value` | `value` | `string` | the first enabled option | no |
+| `disabled`, `required` | same | `boolean` | `false` | yes |
+| `selectedIndex` | none | `number` | `0` | no |
+
+- **Slots:** default (`<option>` and `<optgroup>`), `hint`.
+- **Parts:** `field`, `label`, `control`, `arrow`, `hint`, `message`.
+- **Events:** native `input` and `change` on the host.
+- The options are copied into the inner `<select>` on connect, on `slotchange`, and when one `MutationObserver` on the host (child list, text, and the `value`, `disabled`, `selected`, `label` attributes) reports a change, which is disconnected with the element. The user's choice is written back to the light DOM option's `selected` property, so the host stays the source of truth.
+- Single selection only (decision in §1.2). The arrow is drawn in CSS over `appearance: none`; the open list is the platform's.
+- **Form:** submits the selected option's value. A `required` select whose chosen option has an empty value is `valueMissing`. Reset restores the options' authored `selected`.
+- A select with no options warns once.
+
+## 9. Documentation Workbench
+
+Additions to Phase 2 §9:
+
+1. **A docs page and story set for each family**, with a playground, every state, the theme by density matrix, keyboard tables, and the manifest's API table. Overlays have stories that open them with a button, and the playground controls `open`.
+2. **Application shell** example (`Overview / Application shell`): the SPEC §8 markup, completed. A window with tabs (Production, Modules, Settings), a toolbar, a recipe and progress bar, a slot grid of item stacks, a settings panel built from the form controls with a live display of the submitted `FormData`, a dialog that confirms a destructive action, a popover menu, and toasts. It is the SPEC §19 scenario, and the first screen stays the Inventory overview (SPEC §15).
+3. **Responsive layouts guide:** the window at 375px and at 200% zoom, a footer that stacks, and a settings row (label beside its control above 480px, and above it below) built from `punk-stack`, `punk-cluster`, and a container query. The guide's examples are the same code as the fixtures that the tests render.
+4. **Forms guide:** association, `FormData`, reset, validation and when messages appear, disabled fieldsets, labels (decision 5), and the autofill limit in §14.
+5. **Focus and overlays guide:** modal behavior, focus return, Escape order (decision 10), why backdrop clicks do nothing, toast announcements and their limit in a modal, popover focus modes, and the move mode for windows.
+6. **Accessibility guide** (Phase 1 §10.7, Phase 2 §9) gains each component's keyboard model, forced-colors cues, and the rule on error text (decision 7).
+7. **Integration guides:** the plain HTML guide gains forms, and there is one guide each for React, Vue, and Svelte, each saying how to pass properties versus attributes, listen for `punk-` events and native `input` and `change`, bind a value, and type the elements. Each guide's code is the fixture's code (§10.9).
+8. The workbench's smoke test (Phase 1 §12.8) covers every new entry with no console error or warning.
+
+## 10. Testing and CI
+
+### 10.1 Logic Tests
+
+`tab-navigation.test.ts`, `slider-math.test.ts`, `window-position.test.ts`, `toast-timer.test.ts`, and `overlay-stack.test.ts` run under `node --test` with no browser. They cover every key and orientation in §8.3 and in RTL; clamping, snapping, floating-point steps, Page keys, and pointer mapping, including RTL, for the slider; windows larger than the viewport, on each axis, and at the corners; the toast countdown with an injected clock through pause, resume, and zero time left; and the stack's push, remove, and top, including non-closing entries. Each is mutation-checked.
+
+### 10.2 Component Tests
+
+Each component has `*.test.ts` and `*.registration.test.ts` as in Phase 1, covering the criteria in §12, on all three engines. These apply to the whole phase:
+
+- **Accessibility tree.** Roles, names, and states are asserted with Playwright's ARIA snapshot, in the style of Phase 2 `aria.spec.ts`, for each family: tabs with a panel, an accordion item expanded and collapsed, a toolbar, a window and a dialog open, a popover in each mode, a toast stack with one of each variant, and each form control in each state.
+- **Keyboard.** Every key table in §8, in `ltr` and `rtl`.
+- **Both directions of every property**: set before and after connection, and an attribute added and removed.
+- **Ownership.** Whatever a component writes to children it does not own (tab panels, toast `slot`, toolbar items) is restored when they leave or it disconnects.
+- **Each state against its non-color cue**, by forcing all colors to one value and requiring the states to stay different: checked, indeterminate, on and off, invalid, selected tab, expanded, and each toast variant.
+
+### 10.3 Accessibility
+
+The shared gallery gains the three groups. The axe suite covers them in all themes and both densities, with no serious or critical violation: overlays are opened in their own fixtures, the form controls are named, tabs are checked with a panel, and `aria-required-children` and `aria-allowed-attr` are checked for the `tablist`, `toolbar`, `listbox`-free popover menu, and the live regions. The reflow test (Phase 1 §10.7) covers every in-flow component at 187 to 512px, and a separate test covers each overlay against the viewport.
+
+### 10.4 Visual Regression
+
+The matrix of Phase 1 §10.3 and Phase 2 §10.4 applies, with these changes:
+
+- The gallery exports `shellNames`, `formNames`, and `overlayNames`, and `galleryGroups` gains `shell`, `forms`, and `overlays`. `componentNames` stays the union, for the axe, manifest, and reflow suites.
+- **`shell`** renders the stack and cluster, an accordion with an expanded and a collapsed item, tabs in both orientations and both activation modes, a toolbar with and without overflow, and a non-modal window. **`forms`** renders every control in every state: idle, hover, focus-visible, active, checked, indeterminate, disabled, read-only, invalid, with a message, and a slider with ticks. A select is captured closed, since its list is the platform's.
+- **`overlays`** renders each overlay open, on its own page selected by `component`: a modal window, a dialog, a popover in each mode, and a toast stack with one toast of each variant. They run at the four themes, both densities, both containers, and both zooms, in the `short` and `rtl` contents only, and the page behind them is a fixed neutral so only the overlay varies.
+- Interaction states are driven with real input, as in Phase 2: hover, a keyboard-opened focus ring, and active on each control, and a window mid-move.
+- The forced-colors project covers each group at one theme.
+- Each group's baseline folder is its own, as Phase 2 §10.4 does. If a group passes 25 MB after its first run, the content variants are cut for it, and the spec says so.
+
+### 10.5 Form Participation
+
+`forms.test.ts` runs, for every control, on all three engines:
+
+- `FormData` has the control's value under its `name` when enabled and named, and nothing when disabled or unnamed; a `form="id"` attribute places a control outside the form in it.
+- A disabled ancestor `<fieldset>` disables the control for submission and for interaction, without changing its own `disabled`.
+- `form.reset()` restores authored defaults (`checked`, `value`, the authored `selected` option), not the live value.
+- `required` and `valueMissing`, `form.checkValidity()`, `reportValidity()` focusing the control, `setCustomValidity`, and each native constraint of the text and number fields.
+- `formStateRestoreCallback` is called with a saved state and restores the value.
+- `labels` are populated for a `<label for>`, a click on the label focuses the control, and the name fallback of decision 5 applies.
+- **Slider parity:** every arrow, `Home`, and `End` key gives the same value as a native `<input type="range">` with the same range, step, and direction, in each engine.
+
+### 10.6 Focus and Modality
+
+`focus.test.ts` covers, on all three engines:
+
+- a modal window and a dialog make the rest of the page inert, put initial focus where §7.2 says, trap Tab and Shift+Tab inside, and restore focus to the opener, including when the opener has moved in the DOM and when it was removed;
+- the scroll lock counts: two modals open and closed in either order leave `<html>`'s inline `overflow` as the author had it;
+- Escape closes only the topmost: a tooltip over a popover over a window, then each in turn; `persistent` and non-`dismissible` entries absorb it;
+- a backdrop click closes nothing;
+- popover focus rules in each mode, including the keyboard open, Tab at the boundary, and focus return;
+- a window mid-move, in move mode with the keyboard, with a click, and with Escape; dragging never starts on a titlebar control;
+- a toast's timer pauses on hover and on focus and resumes with the time left, and an `alert` toast sits in the `alert` region and an `info` toast in the `status` region, checked in the accessibility tree.
+
+### 10.7 Performance and Listener Gates
+
+`perf-shell.test.ts` checks what keeps the shell cheap, deterministically:
+
+- With every overlay closed, the library has added no listener to `document` or `window`, and has created no observer. (A hook counts `addEventListener` calls on those targets, and the observer constructors.)
+- An open popover, window, or dialog adds the Escape listener once, and removes it on the last close; a popover adds its scroll and resize listeners and its `ResizeObserver` while open only.
+- A toolbar that is not `wrap` creates one `ResizeObserver` and no more however many items it has; a `wrap` toolbar creates none. An arrow key in it reads no layout.
+- A slider drag reads the track rectangle once, at `pointerdown`, not on each move.
+- A toast stack of ten toasts holds at most ten timers, and none while they are paused.
+- Informational, not asserted: the time to render a form of fifty controls, in the CI log.
+
+### 10.8 Size and Packaging
+
+The gates of Phase 2 §10.6 apply, with each entry measured on its own, gzip-compressed, before any limit is set. The shared form base, the modal controller, and the field styles each get their own size-limit entry. `check-package.ts` requires that no entry brings a tag of another family (§5.1), and that tree-shaken imports of one entry do not include another's component. The forms and the window are the likeliest to pass 5 kB; if one does, the shared base is split before a limit is raised, and any exception is documented with its reason, as Phase 2's was.
+
+### 10.9 CI and Framework Fixtures
+
+The stages of Phase 1 §10.5 are unchanged. `test/frameworks/` holds a React, a Vue, and a Svelte app, each a few components long and bundled with esbuild in a script that `npm run check:frameworks` runs after `build`, in Chromium. Each app renders a form with a text field, a switch, and a slider, a tabs and window example, and a dialog; it binds values, handles `input`, `change`, `punk-tab-change`, and `punk-close`, submits the form, and reports what it received, which the script compares with what it expected. The guides show this code. A broken guide breaks CI. The fixtures' framework versions are held back from automatic updates in the way Playwright's are, since each bumps its own conventions for custom elements, and Dependabot groups them in one pull request.
+
+The consumer check (`check-consumer.ts`) gains `test/package/src/shell.ts`: the SPEC §8 assembler built from the registration entries for window, tabs, slot grid, item stack, recipe, progress bar, button, and a form control, with typed listeners for every event in §5.1, under TypeScript 5.0 and the newest. It checks, in a browser, that the window is open and named, a tab switch changes the visible panel, and a control submits with its form. This is SPEC §19.
+
+## 11. Work Packages
+
+Packages are ordered by dependency.
+
+| # | Package | Depends on | Output |
+|---|---------|------------|--------|
+| 1 | Shared internals | Phase 2 | `form-control`, `modal`, `overlay-stack` (the tooltip moved onto it), `anchor` and `setExternalAria`, `roving` and the roving protocol on `PunkButtonBase`, `ids`, `status-shape` moved out of the status light, `close-button`, `field` styles, the tokens, localization keys, the contrast rule; logic tests |
+| 2 | Layout and disclosure | 1 | `punk-stack`, `punk-cluster`, `punk-accordion`, `punk-accordion-item`, tests |
+| 3 | Tabs and toolbar | 1 | `punk-tabs`, `punk-tab`, `punk-toolbar`, `tab-navigation`, tests |
+| 4 | Window and dialog | 1 | `punk-window`, `punk-dialog`, `window-position`, the modal and Escape tests |
+| 5 | Popover | 1 | `punk-popover`, both focus modes, tests |
+| 6 | Toast | 1 | `punk-toast-stack`, `punk-toast`, `toast-timer`, tests |
+| 7 | Toggles and slider | 1 | `punk-checkbox`, `punk-switch`, `punk-slider`, `slider-math`, the parity test |
+| 8 | Text, number, and select | 1, 7 | `punk-text-field`, `punk-number-field`, `punk-select`, tests |
+| 9 | Test infrastructure | 2 to 8 as they land | Three gallery groups, axe and reflow coverage, ARIA snapshots, the visual matrix and `overlays.spec.ts`, `forms.test.ts`, `focus.test.ts`, `perf-shell.test.ts`, consumer typing and the shell fixture, baselines |
+| 10 | Workbench | 2 to 8 as they land | Stories and docs per family, the Application shell example, the three guides |
+| 11 | Integration | 7, 8, 10 | The React, Vue, and Svelte fixtures and guides, `check:frameworks` |
+| 12 | Hardening | 9 | Forced-colors, RTL, 200% zoom, and 375px review of every render; size tuning; docs polish; `SPEC.md` updated |
+
+Packages 2 to 8 can proceed in parallel after package 1, except that 8 reuses the toggles' boundary styles. The gallery in package 9 is extended as each family lands, so each package's own tests already run against it.
+
+## 12. Acceptance Criteria
+
+### 12.1 Shared Internals
+
+1. The tooltip behaves as before on the Escape stack and `anchor` module: all of its Phase 1 tests pass unchanged.
+2. `punk-button` and `punk-icon-button` implement `setExternalAria` and the roving protocol, and `setExternalDescription` still works.
+3. With the stack empty there is no `keydown` listener on `document`; with one entry there is exactly one.
+4. The contrast gate passes with the rule in §6.2, and fails when a theme's `text-muted` is changed to a color below 4.5:1 on `panel-inset`.
+
+### 12.2 Stack and Cluster
+
+1. Each gap value maps to its spacing token, follows density, and `--punk-stack-gap` or `--punk-cluster-gap` overrides it.
+2. A cluster wraps; a stack never forces horizontal scrolling, with a long word, down to 187px.
+3. The alignment and justification values do what they say in `ltr` and `rtl`, and unknown values are ignored.
+4. Neither has a role, a part, or a visual treatment of its own.
+
+### 12.3 Accordion
+
+1. A trigger is a native button inside a heading of the given `level`, with `aria-expanded`, and the panel is a `region` labeled by it, in the accessibility tree.
+2. In single mode expanding an item collapses the others; in `multiple` mode it does not; several expanded at connection collapse to the first with one warning.
+3. `Up`, `Down`, `Home`, and `End` move between enabled triggers without wrapping.
+4. `punk-toggle` is sent once per user change and not when the application sets `expanded`.
+5. Expanded and collapsed differ by the plus and minus shapes with all colors forced to one value, and under forced colors.
+6. A disabled item cannot be toggled or focused.
+
+### 12.4 Tabs
+
+1. The roles, `aria-selected`, `aria-controls`, `aria-labelledby`, and `hidden` match §8.3, in the accessibility tree, with the panel inside `punk-tabs` and beside it.
+2. Every key in the table works in `ltr` and `rtl`, in horizontal and vertical orientation, with automatic and manual activation, skipping disabled tabs without wrapping.
+3. One tab is the tab stop; Tab from it goes to the panel when the panel has tabbable content or a `tabindex`, else past the tabs; a panel without tabbable content gets `tabindex="0"`.
+4. A tab with no panel, and two tabs with one panel, each warn once.
+5. Adding, removing, and disabling tabs keeps one selected tab and one tab stop; what was written to the panels is restored when the tabs leave.
+6. The tab list wraps and never scrolls sideways at 187px; the selected tab differs from the rest with all colors forced to one value.
+
+### 12.5 Toolbar
+
+1. It is `role="toolbar"` with the application's label; a missing label warns.
+2. One item is the tab stop; the arrow keys, `Home`, and `End` move among the items without wrapping, swap in `rtl`, skip separators and disabled items, and read no layout.
+3. A select, text field, number field, and slider are their own tab stops, outside the group.
+4. When items do not fit, the trailing ones get `data-punk-overflow` and are hidden, the `overflow` slot shows, and `punk-overflow-change` lists them; when they fit again it hides the slot. It creates one `ResizeObserver`, or none with `wrap`.
+5. Focus on an item that overflows moves to the overflow trigger.
+6. With no `overflow` slot content nothing is hidden, the toolbar scrolls inside itself, and it warns once.
+
+### 12.6 Window
+
+1. It is a `dialog` named by its `heading`; `open` shows and hides it, `modal` makes the page inert, and a closed window renders nothing.
+2. A modal window traps focus, starts focus on content (never the close or move button), restores it on close, and holds the scroll lock, as §10.6 checks.
+3. `dismissible` adds the close button and Escape closes it; without it neither does, and a modal's Escape does nothing and does not reach a window beneath.
+4. Dragging by the titlebar moves it, stays inside the viewport (and pins the start edge of an axis it is larger than), and never starts on a titlebar control.
+5. Move mode works with the keyboard and with a single click, `Escape` cancels it, and the move button's state is in `aria-pressed` (WCAG 2.5.7).
+6. `punk-open`, `punk-close` with a reason, `punk-move-start`, and `punk-move-end` with the offset are each sent once.
+7. At container widths of 480px and below the footer stacks its actions; at 200% zoom and 375px a modal fits the viewport and the body scrolls with a focusable scroll region.
+8. A window with no name warns once.
+
+### 12.7 Dialog
+
+1. It is a modal `dialog` (or `alertdialog` with `alert`) named by `heading`, traps focus, and restores it to the opener.
+2. Escape closes it unless `persistent`, and a `persistent` dialog also keeps Escape from reaching anything beneath; a backdrop click closes nothing.
+3. A `data-punk-close` element closes it with the reason `action` and sets `returnValue`; `close(value)` does too.
+4. `punk-open` and `punk-close` are each sent once.
+5. A dialog with no focusable content, and not `persistent`, warns once.
+
+### 12.8 Popover
+
+1. The trigger gets `aria-expanded`, and `aria-haspopup="menu"` in menu mode, including a `punk-button` and `punk-icon-button` trigger, where the inner button gets them.
+2. It opens and closes from the trigger, light-dismisses on Escape and an outside press, and returns focus to the trigger when the focus was inside.
+3. In content mode a pointer open leaves focus alone and a keyboard open moves it in; in menu mode focus always moves to the first item, and `Up`, `Down`, `Home`, and `End` move among the items.
+4. Tab at the last tabbable element, and Shift+Tab at the first, close it and continue from the trigger.
+5. It stays inside the viewport with the tooltip's flip and shift rules, in `ltr` and `rtl`.
+6. With every popover closed there are no listeners or observers (§10.7); with the Popover API disabled it still works.
+7. A missing trigger, and a menu with no items, each warn once.
+
+### 12.9 Toast
+
+1. The stack has an `alert` region and a `status` region before any toast exists, and a `warning` or `danger` toast is placed in the first and an `info` or `success` toast in the second.
+2. A toast's timer pauses on hover, on focus inside, and while the document is hidden, and resumes with the time left; the default durations are as in §8.8, and a toast with an action has none.
+3. The dismiss button works with the keyboard and a pointer, and `punk-dismiss` carries the reason.
+4. Past `limit` the oldest toast is dismissed with the reason `limit`.
+5. Each variant differs by shape with all colors forced to one value and under forced colors, and the text meets 4.5:1 on its lens.
+6. The stack stays in the top layer when empty and does not block clicks beneath it.
+7. Ten toasts hold at most ten timers, and none while paused.
+
+### 12.10 Checkbox and Switch
+
+1. The role, `aria-checked` (with `mixed`), `aria-required`, and the name from the default slot match §8.9, in the accessibility tree.
+2. `Space` toggles on key up without scrolling, a switch also toggles on `Enter`, a click toggles, and a disabled control does nothing and is not focusable.
+3. `input` and `change` are sent once per user toggle and not when the application sets `checked`.
+4. The form rules of §10.5 hold: the value is submitted only when checked, enabled, and named; reset restores the authored `checked`; `required` and unchecked is `valueMissing`.
+5. The box and the track have a boundary that meets 3:1 on each surface in every theme, read from the render.
+6. Checked, indeterminate, and unchecked, and on and off, differ by shape with all colors forced to one value, and under forced colors.
+
+### 12.11 Slider
+
+1. The role, `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, and `aria-valuetext` match §8.10, and the name is the label.
+2. Arrow, `Home`, and `End` keys give the value a native range gives, in `ltr` and `rtl`, in every engine; `PageUp` and `PageDown` follow §8.10.
+3. Values clamp and snap to `step` without floating-point drift (`0.1` steps over `0` to `1`).
+4. A pointer press on the track sets the value, a drag follows it, and `input` and `change` follow §8.10; a drag reads the track rectangle once.
+5. A click on the track and the keyboard are enough to operate it (WCAG 2.5.7).
+6. `ticks`, `show-value`, and the formatted value follow the page's language.
+7. The form rules of §10.5 hold, and a bad range is repaired with one warning.
+
+### 12.12 Text Field
+
+1. The inner control is named by the label, `aria-label`, or the `labels` fallback, in that order, and a missing name warns.
+2. Every native constraint (`required`, `minlength`, `maxlength`, `pattern`, and the type's own, such as `email`) shows in `validity` and `validationMessage`, and the message appears only once the field has been touched.
+3. A shown message has the triangle, the `danger` frame, `aria-invalid`, and the message in the control's description; it is `text` colored and meets 4.5:1 on its surface.
+4. `input` is composed, `change` is re-dispatched on the host, and `focus()` and `select()` reach the inner control.
+5. The prefix, suffix, and hint slots render and are described correctly; the placeholder meets 4.5:1; the boundary meets 3:1.
+6. The form rules of §10.5 hold; paste is never blocked.
+
+### 12.13 Number Field
+
+1. It is a spinbutton named as in §12.12, with `min`, `max`, and `step` honored by the native control.
+2. The steppers step by `step`, respect the bounds, repeat on press and hold, stop on release, and are not in the tab order or the accessibility tree.
+3. `badInput`, `rangeUnderflow`, `rangeOverflow`, `stepMismatch`, and `valueMissing` show in `validity` as native reports them.
+4. `valueAsNumber` matches the native value, and a bad `min`, `max`, or `step` is repaired with one warning.
+5. `hide-steppers` removes them; the form rules of §10.5 hold.
+
+### 12.14 Select
+
+1. It is a combobox or listbox button as the engine exposes a native select, named by the label or `aria-label`.
+2. The options and groups from the light DOM appear, and adding, removing, disabling, relabeling, and selecting an option later keeps the control in step.
+3. `value`, `selectedIndex`, and the user's choice agree, `input` and `change` are sent once per change, and the choice is written back to the light DOM option.
+4. The form rules of §10.5 hold, including `required` with an empty-valued choice.
+5. The arrow and boundary meet their contrast rules, and the observer is disconnected with the element.
+
+### 12.15 Cross-Cutting
+
+1. The manifest assertions (Phase 1 §10.1) pass for every new component: parts, slots, attributes, CSS properties, events, and descriptions.
+2. The reflow test passes for every in-flow component in every theme, density, and content variant at 187 to 512px, and each overlay fits the viewport at 375px and at 200% zoom.
+3. Axe finds no serious or critical violation in any group.
+4. The visual matrix passes in all three engines against CI baselines.
+5. Every component supports the default and `industrial-light` themes, both densities, and their combination, with no loss of function.
+6. Every `register.js` registers only its own family, and the sizes are within §10.8.
+
+### 12.16 Workbench and Integration
+
+1. Every new component has a docs page with a state matrix, keyboard instructions, and an API table from the manifest, and the three new guides exist.
+2. The Application shell example renders the SPEC §8 assembler and works with the keyboard.
+3. The story smoke test loads every entry with no error or console warning.
+4. The React, Vue, and Svelte fixtures build and pass in CI, and each guide shows that fixture's code.
+
+## 13. Definition of Done
+
+Phase 3 is complete when:
+
+1. All acceptance criteria in §12 pass.
+2. All gates in Phase 1 §10, Phase 2 §10, and §10 above pass in CI, with Chromium, Firefox, and WebKit green.
+3. Each new component can be imported on its own from plain HTML and from the TypeScript fixture, with the event types resolving under TypeScript 5.0 and 6.0, and no `register.js` brings a tag from another family.
+4. The SPEC §19 scenario is built and checked by `shell.ts` in the consumer check.
+5. The owner has confirmed decisions 2, 8, and 12 of §2, and `SPEC.md` is updated for them: §7.1 (`open`, the move button, window events), §7.3 (tabs and toolbar behavior), §7.5 (toast regions and timing), §8 (the markup's `open`), and §17 (the phase text, with accordion, stack, and cluster named).
+6. Every script runs as `node <file>.ts` on Node 26, and `npm ls typescript` reports exactly one version, 6.0.x.
+7. No asset or code in the package or the workbench is derived from Factorio files.
+8. The SPEC §18 items that Phase 3 can finish are checked and recorded: item 1 for sections 7.1 to 7.3 and 7.5 and the form controls of 7.2, item 4 for every pattern in this phase, item 6 (consumption from plain HTML and TypeScript), and item 7 (tree-shaken imports).
+
+## 14. Risks and Mitigations
+
+| Risk | Mitigation |
+|------|-----------|
+| Password managers and autofill do not reliably fill an input inside a shadow root | Named as a limit in the Forms guide and in each field's JSDoc, with `autocomplete` passed through. An application that needs autofill uses a native input in the light DOM. Not fixable inside the component |
+| A form-associated element inside a shadow tree is not found by some tools that walk `form.elements` | Covered by the tests in §10.5, which use `FormData` and `form.elements`; `ElementInternals` is the supported route in all three engines |
+| Live regions that hold slotted content may be announced differently by screen readers | The structure is tested in the accessibility tree in all three engines (§10.6); manual screen reader testing is recorded in the workbench, and the polite-or-assertive choice per variant can change without an API change |
+| Toasts are inert while a modal is open (decision 16) | Documented, with the stack-inside-the-dialog pattern in the Focus and overlays guide; the toast timers are not paused, which the guide also says |
+| The move mode (decision 8) is more code than a drag, and an overlay with several modes is where focus bugs hide | It is a separate, tested piece: `window-position.ts` is pure, and §10.6 covers each path. If it cannot be made to work in every engine, the owner decides between dropping `movable` and shipping it with only the keyboard path |
+| Native `<dialog>` focus and `inert` behavior differs between engines and versions | The tests in §10.6 run on the Linux image on all three engines, and the library does only what the platform leaves out (§7.2) |
+| A select's open list cannot be themed | Said in the docs (decision 18). The closed control is themed, and a custom combobox is deferred by SPEC §7.2 |
+| `<input type="number">` parses and displays differently between engines and locales | Said in the docs. Validity and stepping are the platform's, and a text field with `inputmode` is the alternative |
+| The shell group adds many baselines, since overlays are captured per combination | Overlays run in two content variants, groups have their own folders, and the size is checked after the first run (§10.4) |
+| Fifteen new entries could grow the shared runtime | Shared code is measured on its own (§10.8), and the base is split before a limit is raised |
+| Framework fixtures add dependencies that change often | The fixtures use each framework's stable API, are held back from automatic updates, and are updated by hand with the guides |
+| Moving the tooltip onto the Escape stack and the anchor module could change it | Its Phase 1 tests must pass unchanged (§12.1), and that is checked before any new overlay is built on the modules |
+| Eighteen tags in one phase is a lot to review | The work packages (§11) land in order, each with its own gates, and the parent spec's definition of done is checked at the end, not assumed |
