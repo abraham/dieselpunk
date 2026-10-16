@@ -4,14 +4,24 @@
   "description": "Industrial game-style UI Web Components built with Lit.",
   "type": "module",
   "sideEffects": [
+    "./dist/components/*/register.js",
     "./dist/css/*.css"
   ],
   "files": [
     "dist"
   ],
   "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./tokens.css": "./dist/css/tokens.css",
-    "./themes.css": "./dist/css/themes.css"
+    "./themes.css": "./dist/css/themes.css",
+    "./*/register.js": "./dist/components/*/register.js",
+    "./*": {
+      "types": "./dist/components/*/index.d.ts",
+      "default": "./dist/components/*/index.js"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node scripts/build-css.ts",

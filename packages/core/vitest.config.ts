@@ -23,7 +23,15 @@ const setColorScheme = defineBrowserCommand<[scheme: 'light' | 'dark' | null]>(
   },
 );
 
+const setForcedColors = defineBrowserCommand<[mode: 'active' | null]>(async (context, mode) => {
+  await context.page.emulateMedia({ forcedColors: mode });
+});
+
 export default defineConfig({
+  // Pre-bundling Lit entry points up front avoids a mid-run reload that loads Lit twice on a cold cache.
+  optimizeDeps: {
+    include: ['lit', 'lit/decorators.js', 'lit/directives/class-map.js'],
+  },
   test: {
     include: ['src/**/*.test.ts', 'test/browser/**/*.test.ts'],
     browser: {
@@ -31,7 +39,7 @@ export default defineConfig({
       headless: true,
       provider: playwright(),
       instances: selectedEngines().map((browser) => ({ browser })),
-      commands: { setColorScheme },
+      commands: { setColorScheme, setForcedColors },
     },
   },
 });

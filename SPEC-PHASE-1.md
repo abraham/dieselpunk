@@ -1,6 +1,6 @@
 # Phase 1: Foundation — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (scaffolding) and 2 (tokens, themes, density) are implemented, as are `token()`, the base styles, and `PunkElement` from work package 3. Section 12.1 (Foundations) is complete.
+**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), and 4's `punk-panel` are implemented, as are `token()`, the base styles, surfaces, texture, forced-colors helper, slot presence, registration helper, and `PunkElement` from work package 3. Sections 12.1 (Foundations) and 12.2 (Panel) are complete.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases)
 **Package:** `@dieselpunk/core`
 **Prefix:** `punk-`
@@ -114,7 +114,7 @@ packages/core/
   package.json
   tsconfig.json                 library and browser tests, noEmit
   tsconfig.build.json           emits dist/ from src/, excluding tests
-  vitest.config.ts              browser mode, three engines, setColorScheme command
+  vitest.config.ts              browser mode, engines via PUNK_BROWSERS, setColorScheme and setForcedColors commands
   custom-elements-manifest.config.mjs
   scripts/
     build-css.ts                tokens → dist/css/*.css (run as: node scripts/build-css.ts)
@@ -130,6 +130,7 @@ packages/core/
       token.ts                  token() helper (§6.3)
     styles/
       base.ts                   host reset
+      density.ts                lowDensityTokens, compactDensityTokens for a local density property
       surfaces.ts               raised, inset, flat
       focus.ts                  focus ring
       texture.ts                tiled SVG noise data URI
@@ -189,6 +190,8 @@ apps/storybook/
 ```
 
 `./*/register.js` is the longer pattern and must win over `./*`; `check-package.ts` asserts this resolution for every component.
+
+`tsc` rewrites `.ts` import specifiers to `.js` in emitted JavaScript but leaves them in the `.d.ts` files. This was checked against a consumer on TypeScript 5.0, 5.4, and 6.0 with `skipLibCheck: false` and `types: []`: all resolve the declarations and type-check, so it is harmless and needs no post-processing. `check-package.ts` repeats that consumer check for the oldest and newest supported versions.
 
 ### 5.2 Registration
 
@@ -295,7 +298,7 @@ Compact is the default. Font sizes do not change with density.
 ### 6.7 Selecting Theme and Density
 
 - `data-punk-theme` and `data-punk-density` can be set on `<html>` or any subtree. Nested values override outer ones.
-- `punk-panel` exposes a `density` property (§8.1) that applies the low-density token set to its own subtree through `:host([density="low"])`, using the shared `densityLowTokens` stylesheet exported by `tokens/density.ts`.
+- `punk-panel` exposes a `density` property (§8.1) that applies the density token set to its own subtree through `:host([density="low"])` and `:host([density="compact"])`, using `lowDensityTokens` and `compactDensityTokens` from `styles/density.ts`. They live there, not in `tokens/density.ts`, because that module is Node-run and cannot import Lit (§3.1).
 - Theme and density are independent; all eight combinations are supported and tested.
 
 ### 6.8 Contrast Gate
@@ -308,7 +311,9 @@ Compact is the default. Font sizes do not change with density.
 - `accent-text` on accent, or `danger-text` on danger, is below the text threshold;
 - the outer focus color is below 3:1 against canvas, panel, panel-raised, or panel-inset, or the inner focus color is below 3:1 against the outer one.
 
-**Known gap.** The gate does not check control boundaries. In the `industrial` palette from SPEC §6.2, `edge-dark` on panel is 1.78:1 and `edge-light` on panel is 2.22:1, below the 3:1 SPEC §10 requires for non-text controls (`industrial-light` and `high-contrast` pass for `edge-dark`). Raised surfaces differ from panel by only 1.41:1. Before the button and panel components ship, either the dark palette's edges must be strengthened or the spec must define which boundary satisfies the requirement; the gate then gains a matching rule.
+**Known gap.** The gate does not check control boundaries. In the `industrial` palette from SPEC §6.2, `edge-dark` on panel is 1.78:1 and `edge-light` on panel is 2.22:1, below the 3:1 SPEC §10 requires for non-text controls (`industrial-light` and `high-contrast` pass for `edge-dark`). Raised surfaces differ from panel by only 1.41:1. Before the button component ships, either the dark palette's edges must be strengthened or the spec must define which boundary satisfies the requirement; the gate then gains a matching rule.
+
+**Scope of the gap.** It blocks `punk-button` and the other interactive controls, whose boundaries identify them as components (WCAG 1.4.11). It does not block `punk-panel`, `punk-divider`, or `punk-progress-bar`'s trough: a static container is not a user interface component, and its text is covered by the text rules above. The panel therefore shipped before the gap was resolved.
 
 ## 7. Shared Styles and Internals
 
@@ -343,7 +348,7 @@ All surfaces use `--punk-radius` (maximum 4px). No blur, glow, or soft shadows (
 
 ### 7.5 Forced Colors
 
-`forced-colors.ts` provides an `@media (forced-colors: active)` block applied to every component. It replaces gradients, textures, and bevels with 2px solid `ButtonText` or `CanvasText` borders, uses `Highlight` for selected/active emphasis, `GrayText` for disabled, and `Highlight` outlines for focus.
+`forced-colors.ts` exports `forcedColorsSurface(selector)`, which returns an `@media (forced-colors: active)` block for one surface. Each component applies it to its own surfaces and adds any component-specific rules. The block replaces gradients, textures, and bevels with 2px solid `ButtonText` or `CanvasText` borders, uses `Highlight` for selected/active emphasis, `GrayText` for disabled, and `Highlight` outlines for focus.
 
 ### 7.6 Localization
 
@@ -374,6 +379,9 @@ A structural surface.
 - **Parts:** `surface`, `header`, `body`, `footer`.
 - **CSS properties:** `--punk-panel-padding` (default `var(--punk-space-3)`).
 - Header and footer wrappers are rendered with `hidden` when their slots are empty, using slot presence (§7.7).
+- Header and footer strips use `panel-inset`, so their text is covered by the contrast gate in every theme.
+- An unknown `variant` value renders as `raised`.
+- An explicit `density` also overrides an ancestor's `data-punk-density`, including `compact` inside a low-density ancestor.
 - The header has a darker strip with an etched lower edge. The footer mirrors it above.
 - The host is `display: block`; no fixed width or height.
 - The panel has no ARIA role. Consumers add `role="region"` and a label when it is a landmark.
@@ -533,7 +541,7 @@ The workbench consumes the built package through the same exports as an external
 
 Node-run code (token sources, CSS rendering, the contrast gate, scripts) is tested with `node --test` and `node:assert`, with no browser or test framework.
 
-Component tests run in Chromium, Firefox, and WebKit. Local runs default to Chromium only. CI sets `PUNK_BROWSERS=chromium,firefox,webkit` explicitly, so it never depends on a default. `PUNK_BROWSERS` takes a comma-separated list, and the config rejects unknown names. Each component has tests covering the criteria in §12, plus these package-wide assertions:
+Component tests run in Chromium, Firefox, and WebKit. Local runs default to Chromium only. CI sets `PUNK_BROWSERS=chromium,firefox,webkit` explicitly, so it never depends on a default. `PUNK_BROWSERS` takes a comma-separated list, and the config rejects unknown names. The config lists the Lit entry points in `optimizeDeps.include`; without it a cold Vite cache discovers them mid-run, reloads, and loads Lit twice. Each component has tests covering the criteria in §12, plus these package-wide assertions:
 
 - Importing a component's class entry does not define its element; importing `register.js` does; importing it twice does not throw.
 - Every `part` attribute rendered in a component's shadow DOM appears in its manifest `csspart` list, and vice versa.
@@ -580,8 +588,8 @@ Packages are ordered by dependency. Each ends with the CI gates that apply to wh
 |---|---------|------------|--------|
 | 1 | Scaffolding | — | Workspaces, `.nvmrc`, `engines`, tsconfigs (including `tsconfig.scripts.json`), lint, CI skeleton on Node 26, empty `core` package building |
 | 2 | Tokens, themes, density | 1 | `tokens/`, `build-css.ts`, `check-contrast.ts`, emitted CSS |
-| 3 | Internals and shared styles | 2 | `PunkElement`, `token()`, surfaces, focus, texture, forced-colors, localize, dev flag, registration helper. Done: `PunkElement`, `token()`, base styles. |
-| 4 | Panel and divider | 3 | Two components, tests, fixtures |
+| 3 | Internals and shared styles | 2 | `PunkElement`, `token()`, surfaces, focus, texture, forced-colors, localize, dev flag, registration helper. Done: `PunkElement`, `token()`, base styles, surfaces, texture, forced-colors helper, density helper, slot presence, registration helper. Remaining: focus, localize, dev flag. |
+| 4 | Panel and divider | 3 | Two components, tests, fixtures. Done: `punk-panel`. Remaining: `punk-divider`. |
 | 5 | Tooltip | 3 | Component, `position.ts`, tests |
 | 6 | Button base, button, icon button | 3, 5 | Components, form behavior, anchor protocol, tests |
 | 7 | Progress bar | 3 | Component, tests |
@@ -609,6 +617,8 @@ The tests also cover cases beyond the criteria: both stylesheet orders, attribut
 1. Each variant renders the corresponding surface; no fixed width or height is imposed.
 2. Empty `header` and `footer` slots render no strip; adding content later shows it.
 3. `density="low"` on a panel increases spacing for its descendants only.
+
+Verified in `src/components/panel/panel.test.ts`. `panel.registration.test.ts` verifies that importing the class entry does not define the element and that `register.ts` does. The panel's own unstyled-appearance assertion (12.1.3) is in the same file.
 
 ### 12.3 Divider
 
