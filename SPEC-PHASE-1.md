@@ -1,6 +1,6 @@
 # Phase 1: Foundation — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), and the button part of 6 (`PunkButtonBase`, `punk-button`) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, the dev flag and `devWarn`, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), and 12.4 (Button) are complete. `punk-button` shipped with the boundary-contrast gap in §6.8 still open, by decision.
+**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), 5 (`punk-tooltip`), and 6 (`PunkButtonBase`, `punk-button`, `punk-icon-button`) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, the dev flag and `devWarn`, positioning, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), 12.4 (Button), 12.5 (Icon Button), and 12.7 (Tooltip) are complete. Remaining: `punk-progress-bar` (work package 7), the workbench (8), test infrastructure (9), and hardening (10). `punk-button` and `punk-icon-button` shipped with the boundary-contrast gap in §6.8 still open, by decision.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases)
 **Package:** `@dieselpunk/core`
 **Prefix:** `punk-`
@@ -485,10 +485,11 @@ A square, icon-only button. Extends the same base as `punk-button` (`internal/bu
 - **Slots:** default (a single icon element, typically inline SVG using `currentColor`).
 - **Parts:** `button`, `icon`, `spinner`, `tooltip`.
 - Width and height both equal `--punk-control-height-<size>`.
-- The inner button's accessible name comes from `label`. A missing or empty `label` triggers a dev warning.
-- Renders an internal `punk-tooltip` anchored to the inner button, showing `label`. This tooltip is created with `describe = false` so screen readers do not read the name twice.
-- `::slotted(*)` icons are sized to `--punk-icon-size-<size>`.
-- While loading, the icon is hidden and the spinner takes its place; the accessible name stays `label`.
+- The inner button's accessible name comes from `label`, falling back to a host `aria-label`. If neither is set, a dev warning is emitted once, and again if the name is later removed.
+- Renders an internal `punk-tooltip` as the inner button's next sibling, through a `renderAfterButton()` hook in `PunkButtonBase`, so the tooltip's default anchor (its previous sibling) is the button. The tooltip shows `label` and is created with `describe = false` so screen readers do not read the name twice. Its `delay` is 400ms and its `placement` follows `tooltipPlacement`.
+- `::slotted(*)` icons are sized to `--punk-icon-size-<size>`, and the icon is centered.
+- While loading, the icon is hidden and the spinner takes its place; the accessible name stays `label`, the size does not change, and the tooltip still works.
+- `icon-button/register.js` imports `tooltip/register.js`, so using the icon button never requires registering the tooltip separately. Importing the class entry registers neither.
 
 ### 8.5 `punk-progress-bar`
 
@@ -524,7 +525,8 @@ A square, icon-only button. Extends the same base as `punk-button` (`internal/bu
 - **Slots:** default (rich content; no interactive elements).
 - **Parts:** `surface`, `content`.
 - **CSS properties:** `--punk-tooltip-max-width`, `--punk-tooltip-offset` (default `8px`).
-- **Methods:** `show()`, `hide()`.
+- **Methods:** `show()`, `hide()`. `show()` opens immediately, whatever the delay.
+- `describe` is true unless set to the string `"false"` (`describe="false"`), because a plain boolean attribute cannot express a default-true value. Removing the attribute restores `true`.
 
 Anchor resolution:
 
@@ -539,12 +541,15 @@ Behavior:
 - Pointer enter opens after `delay`. Focus (via `:focus-visible` semantics, using `focusin` plus a `matches(':focus-visible')` check) opens immediately. Touch pointers never open a tooltip.
 - Closing: pointer leave and blur close the tooltip after a 100ms grace period, which is cancelled if the pointer enters the tooltip itself. This keeps content hoverable, dismissible, and persistent as WCAG 1.4.13 requires.
 - Escape closes the tooltip. A capturing `keydown` listener exists on `document` only while open; when it closes the tooltip it calls `stopPropagation()` so that Escape closes only the topmost overlay (SPEC §9.1). Focus does not move.
-- At most one tooltip is open at a time; opening one closes the previous. If another tooltip was closed within the last 300ms, the next opens without delay.
+- At most one tooltip is open at a time; opening one closes the previous. If another tooltip was closed within the last 300ms, the next opens without delay. That window is module-level state, so `resetTooltipWarmup()` is exported for tests; without it a test can inherit a shortened delay from the test before it.
 - Rendering uses the Popover API (`popover="manual"` on the surface, `showPopover()`/`hidePopover()`) so the tooltip is in the top layer. Without Popover API support, the surface uses `position: fixed` and `--punk-z-overlay`.
 - Positioning (`utilities/position.ts`) computes the preferred placement, flips to the opposite side if it does not fit, then shifts along the cross axis to stay within an 8px viewport margin. `start` and `end` are logical and respect `dir`.
 - While open, and only then, the tooltip listens for scroll (capture, passive, `requestAnimationFrame`-throttled) and window resize and observes the anchor with `ResizeObserver`. All are removed on close. No document-wide observers exist while closed.
-- Description wiring: when `describe` is true, the tooltip sets `role="tooltip"` and an id on its surface. If the anchor has `setExternalDescription` (the `punk-button` family), the tooltip calls it with the tooltip's `textContent`; otherwise it sets `aria-describedby` on the anchor. Both are removed on disconnect.
-- A dev warning is emitted when the default slot contains focusable descendants or no anchor can be resolved.
+- Description wiring: when `describe` is true, the **tooltip host** (not its surface) gets `role="tooltip"` and an id if it has none. An `aria-describedby` reference cannot point into the tooltip's own shadow root, so a role and id on the surface would never be reachable from a light-DOM anchor; the host sits in the same tree as the anchor. If the anchor has `setExternalDescription` (the `punk-button` family), the tooltip calls it with its trimmed `textContent` instead and keeps it current with a `MutationObserver` on itself. Otherwise it adds its id to the anchor's `aria-describedby`, preserving any ids already there. On disconnect, on a change of anchor, and when `describe` becomes false, it removes only what it added, including the role and id it created. If the anchor is a custom element that is not defined yet, wiring waits for `customElements.whenDefined`.
+- The surface has no ARIA role of its own. The tooltip host uses `display: contents` so its shadow content renders while the host stays out of layout.
+- A dev warning is emitted once when no anchor can be resolved, and once when the default slot contains focusable descendants.
+- Focus opens the tooltip only when the real focused element matches `:focus-visible` (read from the event's composed path, since the anchor may be a shadow host). A tooltip stays open while either the pointer is over the anchor or the tooltip, or the anchor has focus; it closes after the grace period once none of those hold.
+- Positioning is the pure function `computePosition` in `utilities/position.ts`, which has its own unit tests. A surface that fits on neither side keeps the requested side, and one wider than the viewport pins to the margin.
 
 ## 9. Documentation Workbench
 
@@ -614,8 +619,8 @@ Packages are ordered by dependency. Each ends with the CI gates that apply to wh
 | 2 | Tokens, themes, density | 1 | `tokens/`, `build-css.ts`, `check-contrast.ts`, emitted CSS |
 | 3 | Internals and shared styles | 2 | `PunkElement`, `token()`, surfaces, focus, texture, forced-colors, localize, dev flag, registration helper. Done: `PunkElement`, `token()`, base styles, surfaces, texture, forced-colors helper, density helper, slot presence, registration helper, dev flag and `devWarn`. Remaining: focus, localize. |
 | 4 | Panel and divider | 3 | Two components, tests, fixtures. Done. |
-| 5 | Tooltip | 3 | Component, `position.ts`, tests |
-| 6 | Button base, button, icon button | 3, 5 | Components, form behavior, anchor protocol, tests. Done: `PunkButtonBase`, `punk-button`, including `setExternalDescription`. Remaining: `punk-icon-button`. The tooltip side of the anchor protocol belongs to work package 5. |
+| 5 | Tooltip | 3 | Component, `position.ts`, tests. Done. |
+| 6 | Button base, button, icon button | 3, 5 | Components, form behavior, anchor protocol, tests. Done. |
 | 7 | Progress bar | 3 | Component, tests |
 | 8 | Storybook workbench | 3 (stories added per component as 4–7 land) | App, foundations, stories, API tables |
 | 9 | Test infrastructure | 4–7 | Visual matrix, axe suite, size and package gates, fixture consumer |

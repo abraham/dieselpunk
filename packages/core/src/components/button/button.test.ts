@@ -3,7 +3,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { density } from '../../tokens/density.ts';
 import { themeNames, themes } from '../../tokens/themes.ts';
 import { resetStrings, setStrings } from '../../utilities/localize.ts';
-import { addStylesheets, cleanup, rgb, track } from '../../../test/browser/helpers.ts';
+import {
+  addStylesheets,
+  cleanup,
+  focusWithKeyboard,
+  rgb,
+  track,
+} from '../../../test/browser/helpers.ts';
 import '../../../test/browser/commands.ts';
 import './register.ts';
 import type { ButtonSize, ButtonType, ButtonVariant, PunkButton } from './index.ts';
@@ -67,21 +73,6 @@ function countClicks(element: Element): () => number {
   let count = 0;
   element.addEventListener('click', () => count++);
   return () => count;
-}
-
-/**
- * Focuses `button` the way a keyboard user would. WebKit on macOS does not Tab to buttons by
- * default, so there a keypress marks keyboard modality and `focus()` does the rest, which is
- * what makes `:focus-visible` match.
- */
-async function focusWithKeyboard(button: PunkButton): Promise<void> {
-  if (server.browser === 'webkit') {
-    // A modifier alone does not count as keyboard use, so an earlier mouse test would win.
-    await userEvent.keyboard('{Escape}');
-    button.focus();
-  } else {
-    await userEvent.tab();
-  }
 }
 
 function shadowCount(boxShadow: string): number {

@@ -104,6 +104,11 @@ export abstract class PunkButtonBase extends PunkElement {
   /** The button's visible content. */
   protected abstract renderContent(): TemplateResult;
 
+  /** Rendered immediately after the inner button, so it is that button's next sibling. */
+  protected renderAfterButton(): unknown {
+    return nothing;
+  }
+
   readonly #handleClick = (): void => {
     const form = this.#internals.form;
     if (this.type === 'submit') form?.requestSubmit();
@@ -142,6 +147,7 @@ export abstract class PunkButtonBase extends PunkElement {
             : nothing
         }
       </button>
+      ${this.renderAfterButton()}
       ${
         this.#description === null
           ? nothing

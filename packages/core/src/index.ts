@@ -4,4 +4,7 @@ export { PunkDivider } from './components/divider/index.ts';
 export type { DividerOrientation } from './components/divider/index.ts';
 export { PunkButton } from './components/button/index.ts';
 export type { ButtonSize, ButtonType, ButtonVariant } from './components/button/index.ts';
+export { PunkIconButton } from './components/icon-button/index.ts';
+export { PunkTooltip } from './components/tooltip/index.ts';
+export type { TooltipPlacement } from './components/tooltip/index.ts';
 export { setStrings } from './utilities/localize.ts';
