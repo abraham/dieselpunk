@@ -247,6 +247,30 @@ test.describe('ARIA snapshots', () => {
     `);
   });
 
+  test('checkbox, switch, and slider in each state', async ({ page }) => {
+    await render(
+      page,
+      `<punk-checkbox>Fuel</punk-checkbox>
+       <punk-checkbox checked required>Pump</punk-checkbox>
+       <punk-checkbox indeterminate>Belt</punk-checkbox>
+       <punk-checkbox disabled>Lamp</punk-checkbox>
+       <punk-switch>Power</punk-switch>
+       <punk-switch checked aria-label="Cooling"></punk-switch>
+       <punk-slider label="Speed" value="40"></punk-slider>
+       <punk-slider aria-label="Heat" min="10" max="20" value="15" aria-valuetext="Warm"></punk-slider>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - checkbox "Fuel"
+      - checkbox "Pump" [checked]
+      - checkbox "Belt" [checked=mixed]
+      - checkbox "Lamp" [disabled]
+      - switch "Power"
+      - switch "Cooling" [checked]
+      - slider "Speed"
+      - slider "Heat"
+    `);
+  });
+
   test('accordion', async ({ page }) => {
     await render(
       page,

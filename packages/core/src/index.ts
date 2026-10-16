@@ -38,6 +38,9 @@ export { PunkDialog } from './components/dialog/index.ts';
 export type { PunkCloseDetail, PunkCloseReason } from './components/dialog/index.ts';
 export { PunkPopover } from './components/popover/index.ts';
 export type { PopoverMode, PopoverPlacement } from './components/popover/index.ts';
+export { PunkCheckbox } from './components/checkbox/index.ts';
+export { PunkSwitch } from './components/switch/index.ts';
+export { PunkSlider } from './components/slider/index.ts';
 export { PunkToastStack, PunkToast } from './components/toast/index.ts';
 export type {
   PunkDismissDetail,

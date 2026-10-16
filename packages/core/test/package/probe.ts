@@ -26,6 +26,9 @@ export async function probeConsumer() {
     'punk-popover',
     'punk-toast-stack',
     'punk-toast',
+    'punk-checkbox',
+    'punk-switch',
+    'punk-slider',
   ];
   const bar = document
     .querySelector('punk-progress-bar')
@@ -84,6 +87,13 @@ export async function probeConsumer() {
   const alertToast = notifications?.show({ message: 'Offline', variant: 'danger', duration: 0 });
   const toastSlot = alertToast?.getAttribute('slot') ?? null;
   alertToast?.dismiss();
+  // A control toggled by a click, and a slider moved by a key, are what the form submits.
+  const settings = document.querySelector('form');
+  document.querySelector('punk-checkbox')?.click();
+  const speed = document.querySelector('punk-slider');
+  speed?.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+  await speed?.updateComplete;
+  const submitted = settings ? new FormData(settings) : null;
   return {
     defined: tags.filter((tag) => customElements.get(tag) !== undefined),
     upgraded: Boolean(
@@ -105,6 +115,8 @@ export async function probeConsumer() {
     menuClosed: menuClosed as string | null,
     dismissed: dismissed as string | null,
     toastSlot,
+    agree: (submitted?.get('agree') ?? null) as string | null,
+    speed: (submitted?.get('speed') ?? null) as string | null,
   };
 }
 

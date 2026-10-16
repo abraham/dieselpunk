@@ -24,6 +24,9 @@ import '../../../src/components/window/register.ts';
 import '../../../src/components/dialog/register.ts';
 import '../../../src/components/popover/register.ts';
 import '../../../src/components/toast/register.ts';
+import '../../../src/components/checkbox/register.ts';
+import '../../../src/components/switch/register.ts';
+import '../../../src/components/slider/register.ts';
 
 // The visual matrix renders one group per run, so each group has its own page and baselines.
 export const foundationNames = [
@@ -53,11 +56,14 @@ export const shellNames = [
   'window',
 ] as const;
 // Overlays open on a page of their own, since the top layer covers everything else.
+// Every form control in every state, in flow: no top layer, so one page holds them all.
+export const formNames = ['checkbox', 'switch', 'slider'] as const;
 export const overlayNames = ['dialog', 'window', 'popover', 'toast-stack'] as const;
 export const componentNames = [
   ...foundationNames,
   ...inventoryNames,
   ...shellNames,
+  ...formNames,
   'dialog',
   'popover',
   'toast-stack',
@@ -69,6 +75,7 @@ export const galleryGroups = {
   foundation: foundationNames,
   inventory: inventoryNames,
   shell: shellNames,
+  forms: formNames,
   overlays: overlayNames,
 } as const;
 export type GalleryGroup = keyof typeof galleryGroups;
@@ -569,6 +576,43 @@ const builders: Record<ComponentName, Builder> = {
       <punk-toolbar aria-label="${c.settings}" style="max-inline-size: 150px">${actions}${more}</punk-toolbar>
     `;
   },
+
+  checkbox: (c) => `
+    <div class="stack">
+      <punk-checkbox>${c.start}</punk-checkbox>
+      <punk-checkbox checked>${c.pause}</punk-checkbox>
+      <punk-checkbox indeterminate>${c.stop}</punk-checkbox>
+      <punk-checkbox disabled>${c.start}</punk-checkbox>
+      <punk-checkbox checked disabled>${c.pause}</punk-checkbox>
+      <punk-checkbox indeterminate disabled>${c.stop}</punk-checkbox>
+      <punk-checkbox required>${c.settings}</punk-checkbox>
+      <punk-checkbox checked aria-label="${c.settings}"></punk-checkbox>
+      <punk-checkbox>${c.body}</punk-checkbox>
+    </div>
+  `,
+
+  switch: (c) => `
+    <div class="stack">
+      <punk-switch>${c.start}</punk-switch>
+      <punk-switch checked>${c.pause}</punk-switch>
+      <punk-switch disabled>${c.stop}</punk-switch>
+      <punk-switch checked disabled>${c.start}</punk-switch>
+      <punk-switch required>${c.settings}</punk-switch>
+      <punk-switch checked aria-label="${c.settings}"></punk-switch>
+      <punk-switch>${c.body}</punk-switch>
+    </div>
+  `,
+
+  slider: (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-slider label="${c.settings}" value="40" show-value></punk-slider>
+      <punk-slider label="${c.pause}" value="0" min="0" max="10" show-value ticks></punk-slider>
+      <punk-slider label="${c.stop}" value="100" show-value ticks></punk-slider>
+      <punk-slider aria-label="${c.settings}" value="60"></punk-slider>
+      <punk-slider label="${c.start}" value="0.3" min="0" max="1" step="0.1" show-value ticks></punk-slider>
+      <punk-slider label="${c.pause}" value="30" show-value disabled></punk-slider>
+    </div>
+  `,
 
   window: (c, { open }) => {
     const name = `heading="${c.title}" aria-label="${c.settings}"`;

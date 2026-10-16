@@ -31,6 +31,7 @@ export abstract class PunkFormControl extends PunkElement {
   /** Also true while a disabled `<fieldset>` ancestor disables the control (see `isDisabled`). */
   @property({ type: Boolean, reflect: true }) disabled = false;
 
+  /** Marks the control as one the form needs a value from. */
   @property({ type: Boolean, reflect: true }) required = false;
 
   /** Mirrors the host `aria-label`, which cannot reach a control in the shadow tree on its own. */

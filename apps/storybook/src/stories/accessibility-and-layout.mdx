@@ -131,6 +131,20 @@ A toast never takes focus, and has a dismiss button reachable with Tab. Its coun
 
 A modal window or dialog makes everything outside it inert, a toast stack included, so put a stack inside the dialog when its toasts must be usable while it is open. A toast shown behind a modal still counts down.
 
+## Checkboxes, switches, and sliders
+
+A checkbox, a switch, and a slider each have their role, state, and tab stop as attributes on the host: `role`, `aria-checked` (`mixed` for an indeterminate checkbox), `aria-required`, `aria-disabled`, and `tabindex` for the first two, and `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, and `aria-valuetext` for a slider. The name of a checkbox or a switch is its text; the name of a slider is its `label`, or an `aria-label`. An outside `<label for>` focuses the control and toggles a checkbox or switch, but does not name it.
+
+| Key              | Checkbox            | Switch              | Slider                                              |
+| ---------------- | ------------------- | ------------------- | --------------------------------------------------- |
+| Space            | Toggles, on release | Toggles, on release | Nothing                                             |
+| Enter            | Nothing             | Toggles             | Nothing                                             |
+| Arrow keys       | Nothing             | Nothing             | One step; Left and Right swap in right-to-left text |
+| Home, End        | Nothing             | Nothing             | The first and last value                            |
+| PageUp, PageDown | Nothing             | Nothing             | A tenth of the range                                |
+
+In a toolbar a checkbox and a switch are items of the arrow-key group, and a slider is its own tab stop outside it, since it needs the arrow keys. Each state is a shape as well as a color: a check, a dash, or nothing for a checkbox; the thumb's side and a bar or a ring for a switch; and the thumb's position on a slider.
+
 ## Keyboard focus
 
 The focus ring appears on `:focus-visible`, so keyboard users always get one, and it is never removed without a replacement. A tooltip opens when its anchor receives keyboard focus, and Escape closes it without moving focus.

@@ -48,6 +48,8 @@ interface Report {
   menuClosed: string | null;
   dismissed: string | null;
   toastSlot: string | null;
+  agree: string | null;
+  speed: string | null;
 }
 
 // What each page registers: the plain page imports panel and button; the TypeScript page imports
@@ -57,6 +59,7 @@ const expectedTags: Record<string, string[]> = {
   app: [
     'punk-accordion',
     'punk-accordion-item',
+    'punk-checkbox',
     'punk-cluster',
     'punk-dialog',
     'punk-icon-button',
@@ -65,10 +68,12 @@ const expectedTags: Record<string, string[]> = {
     'punk-popover',
     'punk-progress-bar',
     'punk-recipe',
+    'punk-slider',
     'punk-slot',
     'punk-slot-grid',
     'punk-stack',
     'punk-status-light',
+    'punk-switch',
     'punk-tab',
     'punk-tabs',
     'punk-toast',
@@ -188,6 +193,11 @@ async function checkPages(outDir: string): Promise<void> {
         }
         if (report.menuClosed !== 'method') {
           problems.push(`app.html: closing a popover reported ${report.menuClosed}`);
+        }
+        if (report.agree !== 'on' || report.speed !== '10') {
+          problems.push(
+            `app.html: the form submitted agree=${report.agree} and speed=${report.speed}`,
+          );
         }
         if (report.dismissed !== 'method' || report.toastSlot !== 'assertive') {
           problems.push(

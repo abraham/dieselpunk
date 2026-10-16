@@ -6,7 +6,7 @@ import type { Page } from '@playwright/test';
 // `industrial-light` at low density, at 100% only. The forced-colors project ignores themes, so
 // it runs one theme at 100% zoom. The baselines of a group are in a folder of that name.
 
-const groups = ['foundation', 'inventory', 'shell', 'overlays'] as const;
+const groups = ['foundation', 'inventory', 'shell', 'forms', 'overlays'] as const;
 // An overlay is open on a page of its own, so each is a page, and only two contents are captured.
 const overlayPages = ['dialog', 'window', 'popover', 'toast-stack'] as const;
 const themes = ['industrial', 'industrial-light', 'high-contrast', 'reduced-texture'] as const;
@@ -156,5 +156,24 @@ test.describe('interaction states', () => {
         'interaction-slot-grid-focus.png',
       ]);
     });
+  });
+
+  test.describe('form controls', () => {
+    const first = (page: Page, tag: string) => page.locator(`${tag}:not([disabled])`).first();
+
+    test('checkbox hover', async ({ page }) => {
+      await open(page, { theme: 'industrial', density: 'compact', component: 'checkbox' });
+      await first(page, 'punk-checkbox').hover();
+      await expect(gallery(page)).toHaveScreenshot(['forms', 'interaction-checkbox-hover.png']);
+    });
+
+    for (const tag of ['checkbox', 'switch', 'slider']) {
+      test(`${tag} focus-visible`, async ({ page }) => {
+        await open(page, { theme: 'industrial', density: 'compact', component: tag });
+        await page.keyboard.press('Tab');
+        await expect(first(page, `punk-${tag}`)).toBeFocused();
+        await expect(gallery(page)).toHaveScreenshot(['forms', `interaction-${tag}-focus.png`]);
+      });
+    }
   });
 });

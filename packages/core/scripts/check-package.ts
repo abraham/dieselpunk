@@ -51,6 +51,9 @@ const sentinels: Record<string, string> = {
   dialog: '"data-punk-close"',
   popover: 'data-punk-close-on-activate',
   toast: '"punk-dismiss"',
+  checkbox: '"mixed"',
+  switch: '"switch"',
+  slider: '--_thumb',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };

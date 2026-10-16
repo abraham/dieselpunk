@@ -6,6 +6,7 @@ import type {
   PunkAccordionItem,
   PunkActivateDetail,
   PunkButton,
+  PunkCheckbox,
   PunkCloseDetail,
   PunkCloseReason,
   PunkCluster,
@@ -21,10 +22,12 @@ import type {
   PunkProgressBar,
   PunkRecipe,
   PunkSelectionChangeDetail,
+  PunkSlider,
   PunkSlot,
   PunkSlotGrid,
   PunkStack,
   PunkStatusLight,
+  PunkSwitch,
   PunkTab,
   PunkTabChangeDetail,
   PunkTabs,
@@ -37,6 +40,7 @@ import type {
   StatusVariant,
 } from '@dieselpunk/core';
 import '@dieselpunk/core/accordion/register.js';
+import '@dieselpunk/core/checkbox/register.js';
 import '@dieselpunk/core/cluster/register.js';
 import '@dieselpunk/core/dialog/register.js';
 import '@dieselpunk/core/icon-button/register.js';
@@ -46,8 +50,10 @@ import '@dieselpunk/core/popover/register.js';
 import '@dieselpunk/core/progress-bar/register.js';
 import '@dieselpunk/core/recipe/register.js';
 import '@dieselpunk/core/slot/register.js';
+import '@dieselpunk/core/slider/register.js';
 import '@dieselpunk/core/slot-grid/register.js';
 import '@dieselpunk/core/stack/register.js';
+import '@dieselpunk/core/switch/register.js';
 import '@dieselpunk/core/tabs/register.js';
 import '@dieselpunk/core/toast/register.js';
 import '@dieselpunk/core/toolbar/register.js';
@@ -242,6 +248,33 @@ const saved: PunkToast = notifications.show({ message: 'Saved', variant: 'succes
 notifications.show({ variant: 'info' });
 void saved;
 layout.append(notifications);
+
+// Form controls, typed, and in a form of their own.
+const agree: PunkCheckbox = document.createElement('punk-checkbox');
+agree.name = 'agree';
+agree.textContent = 'Agree';
+agree.indeterminate = true;
+// @ts-expect-error `checked` is a boolean.
+agree.checked = 'yes';
+agree.checked = false;
+const power: PunkSwitch = document.createElement('punk-switch');
+power.name = 'power';
+power.textContent = 'Power';
+const speed: PunkSlider = document.createElement('punk-slider');
+speed.name = 'speed';
+speed.label = 'Speed';
+speed.max = 10;
+speed.value = 4;
+// @ts-expect-error The value is a number.
+speed.value = 'fast';
+speed.value = 4;
+speed.addEventListener('change', (event) => {
+  const target = event.target as PunkSlider;
+  void target.value.toFixed(1);
+});
+const settings = document.createElement('form');
+settings.append(agree, power, speed);
+layout.append(settings);
 
 document.body.append(layout);
 document.documentElement.dataset['consumer'] = 'ready';
