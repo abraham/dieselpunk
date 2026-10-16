@@ -240,8 +240,9 @@ describe('placement (12.7.4)', () => {
     tooltip.show();
     await tooltip.updateComplete;
     const s = rect(surface(tooltip));
-    expect(s.right).toBeLessThanOrEqual(document.documentElement.clientWidth - 8);
-    expect(s.left).toBeGreaterThanOrEqual(8);
+    // Firefox lays out to fractions of a pixel, so the margin is checked to within half a pixel.
+    expect(s.right).toBeLessThanOrEqual(document.documentElement.clientWidth - 8 + 0.5);
+    expect(s.left).toBeGreaterThanOrEqual(8 - 0.5);
   });
 
   it('puts start on the left and end on the right in left-to-right text', async () => {

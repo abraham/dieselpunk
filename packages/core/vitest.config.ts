@@ -18,19 +18,44 @@ function selectedEngines(): Engine[] {
   return names as Engine[];
 }
 
-// Tests run in an iframe, and Playwright's page-level emulation applies to it.
+// Tests run in an iframe, and Playwright's page-level emulation applies to it. Firefox applies it a
+// couple of frames after the call returns, so each command waits until the frame reports the change.
 const setColorScheme = defineBrowserCommand<[scheme: 'light' | 'dark' | null]>(
   async (context, scheme) => {
     await context.page.emulateMedia({ colorScheme: scheme });
+    if (scheme) {
+      const frame = await context.frame();
+      await frame.waitForFunction(
+        `matchMedia('(prefers-color-scheme: ${scheme})').matches`,
+        undefined,
+        { timeout: 5000 },
+      );
+    }
   },
 );
 
 const setForcedColors = defineBrowserCommand<[mode: 'active' | null]>(async (context, mode) => {
   await context.page.emulateMedia({ forcedColors: mode });
+  if (mode) {
+    const frame = await context.frame();
+    await frame.waitForFunction(`matchMedia('(forced-colors: active)').matches`, undefined, {
+      timeout: 5000,
+    });
+  }
 });
 
 const setReducedMotion = defineBrowserCommand<[mode: 'reduce' | null]>(async (context, mode) => {
   await context.page.emulateMedia({ reducedMotion: mode });
+  if (mode) {
+    const frame = await context.frame();
+    await frame.waitForFunction(
+      `matchMedia('(prefers-reduced-motion: reduce)').matches`,
+      undefined,
+      {
+        timeout: 5000,
+      },
+    );
+  }
 });
 
 // Press and hold a real pointer, which is the only way to reach `:active` in a test.

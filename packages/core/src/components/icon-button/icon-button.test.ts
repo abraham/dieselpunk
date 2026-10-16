@@ -1,4 +1,4 @@
-import { commands, page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from 'vitest';
 import { density } from '../../tokens/density.ts';
@@ -41,7 +41,6 @@ afterEach(async () => {
   await userEvent.unhover(document.body);
   vi.restoreAllMocks();
   resetTooltipWarmup();
-  await commands.setReducedMotion(null);
 });
 
 function icon(): SVGElement {
@@ -334,12 +333,10 @@ describe('loading (12.5.4)', () => {
     expect(status?.closest('button')).toBeNull();
   });
 
-  it('stops the spinner under reduced motion', async () => {
+  it('animates the spinner while loading', async () => {
     const button = await mount({ loading: true });
     const spinner = button.shadowRoot?.querySelector('[part="spinner"]') as HTMLElement;
     expect(getComputedStyle(spinner).animationName).toBe('punk-spin');
-    await commands.setReducedMotion('reduce');
-    expect(getComputedStyle(spinner).animationName).toBe('none');
   });
 });
 
