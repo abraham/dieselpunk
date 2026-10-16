@@ -6,7 +6,6 @@
       "dist/internal/slot-presence.js",
       "dist/tokens/*.js",
       "dist/utilities/register-element.js",
-      "dist/utilities/localize.js",
       "dist/utilities/locale.js",
       "dist/utilities/warn.js",
       "dist/styles/*.js",
@@ -15,7 +14,8 @@
       "!dist/styles/close-button.js",
       "!dist/styles/status-shape.js",
       "!dist/styles/gap.js",
-      "!dist/styles/modal-surface.js"
+      "!dist/styles/modal-surface.js",
+      "!dist/styles/readout.js"
     ],
     "ignore": ["lit"],
     "gzip": true,
@@ -48,6 +48,13 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "3.75 kB"
+  },
+  {
+    "name": "Localization runtime and locale watcher (shared by components that render a message)",
+    "path": ["dist/internal/locale-watch.js"],
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "0.55 kB"
   },
   {
     "name": "Selectable base and receptacle (shared by slot and item stack)",
@@ -89,14 +96,14 @@
     "path": "dist/components/slot/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "4.75 kB"
+    "limit": "4.8 kB"
   },
   {
     "name": "punk-item-stack (receptacle, durability, quality, and number formatting)",
     "path": "dist/components/item-stack/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6 kB"
+    "limit": "6.5 kB"
   },
   {
     "name": "punk-slot-grid",
@@ -110,14 +117,14 @@
     "path": "dist/components/recipe/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5 kB"
+    "limit": "5.4 kB"
   },
   {
     "name": "punk-meter",
     "path": "dist/components/meter/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "4.75 kB"
+    "limit": "5 kB"
   },
   {
     "name": "punk-status-light",
@@ -173,7 +180,7 @@
     "path": "dist/components/window/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "7.1 kB"
+    "limit": "7.6 kB"
   },
   {
     "name": "punk-dialog",
@@ -194,7 +201,7 @@
     "path": "dist/components/toast/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6 kB"
+    "limit": "6.4 kB"
   },
   {
     "name": "punk-checkbox",
@@ -222,27 +229,27 @@
     "path": "dist/components/text-field/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.5 kB"
+    "limit": "5.7 kB"
   },
   {
     "name": "punk-number-field",
     "path": "dist/components/number-field/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.5 kB"
+    "limit": "6.6 kB"
   },
   {
     "name": "punk-select",
     "path": "dist/components/select/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6 kB"
+    "limit": "6.2 kB"
   },
   {
     "name": "punk-icon-button (includes the tooltip)",
     "path": "dist/components/icon-button/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "7.5 kB"
+    "limit": "7.85 kB"
   }
 ]

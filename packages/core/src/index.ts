@@ -55,4 +55,3 @@ export type {
 } from './components/toast/index.ts';
 export { PunkToolbar } from './components/toolbar/index.ts';
 export type { PunkOverflowDetail } from './components/toolbar/index.ts';
-export { setStrings } from './utilities/localize.ts';

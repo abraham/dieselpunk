@@ -13,6 +13,8 @@
   "include": [
     "scripts/**/*.ts",
     "packages/core/scripts/**/*.ts",
+    "packages/locales/scripts/**/*.ts",
+    "packages/locales/test/*.ts",
     "apps/storybook/scripts/**/*.ts",
     "packages/core/test/*.ts",
     "packages/core/test/visual/*.spec.ts",

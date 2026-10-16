@@ -2,7 +2,7 @@ import { userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { addStylesheets, cleanup, track } from '../../../test/browser/helpers.ts';
 import '../../../test/browser/commands.ts';
-import { resetStrings, setStrings } from '../../utilities/localize.ts';
+import { setLocale } from '../../../test/browser/locale.ts';
 import '../button/register.ts';
 import './register.ts';
 import type { PunkToast, PunkToastStack } from './index.ts';
@@ -12,10 +12,10 @@ beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
-afterEach(() => {
+afterEach(async () => {
   cleanup();
   vi.restoreAllMocks();
-  resetStrings();
+  await setLocale('en');
 });
 
 const flush = () => new Promise((resolve) => setTimeout(resolve));
@@ -137,8 +137,7 @@ describe('the region name', () => {
     await stack.updateComplete;
     expect(surface(stack).getAttribute('aria-label')).toBe('Meldungen');
     stack.label = '';
-    setStrings({ notifications: 'Benachrichtigungen' });
-    stack.requestUpdate();
+    await setLocale('de');
     await stack.updateComplete;
     expect(surface(stack).getAttribute('aria-label')).toBe('Benachrichtigungen');
   });

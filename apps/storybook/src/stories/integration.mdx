@@ -84,29 +84,48 @@ The fields send `input` while the user types or steps and `change` when a change
 
 ## Translating built-in text
 
-Components contain a few built-in words, such as the loading announcement and the state words in an accessible name. Replace them before components render. A string may hold `{name}` placeholders, which the component fills with values already formatted for the page's language, so a translation can reorder them.
+Components contain a few built-in words, such as the loading announcement and the state words in an accessible name. They are written with [Lit Localize](https://lit.dev/docs/localization/overview/)'s `msg()`, so the page configures Lit Localize once and switches locales with `setLocale()`. Without that, the English text shows. Core and the page must use one copy of `@lit/localize`, since the configuration is module state.
 
 ```ts
-import { setStrings } from '@dieselpunk/core';
+import { configureLocalization, str } from '@lit/localize';
 
-setStrings({ loading: 'Laden', stackCapacity: '{count} von {capacity}' });
+const { setLocale } = configureLocalization({
+  sourceLocale: 'en',
+  targetLocales: ['de'],
+  loadLocale: async () => ({
+    templates: {
+      loading: 'Laden',
+      // A message with values: each `${n}` is the position of a value in the English message.
+      stackCapacity: str`${0} von ${1}`,
+    },
+  }),
+});
+
+await setLocale('de');
 ```
 
-| Key             | Default                 | Used by              |
-| --------------- | ----------------------- | -------------------- |
-| `loading`       | `Loading`               | Button, icon button  |
-| `invalid`       | `invalid`               | Slot, item stack     |
-| `stackCount`    | `{count}`               | Item stack           |
-| `stackCapacity` | `{count} of {capacity}` | Item stack           |
-| `durability`    | `durability {percent}`  | Item stack           |
-| `quality`       | `quality {level}`       | Item stack           |
-| `unavailable`   | `unavailable`           | Recipe               |
-| `craftable`     | `can craft {count}`     | Recipe               |
-| `meterWarning`  | `warning`               | Meter                |
-| `meterCritical` | `critical`              | Meter                |
-| `invalidField`  | `invalid`               | Text, number, select |
-| `increase`      | `Increase`              | Number field         |
-| `decrease`      | `Decrease`              | Number field         |
+Mounted components re-render when the locale is ready. A message is found by its id:
+
+| Id              | Default                                                         | Used by              |
+| --------------- | --------------------------------------------------------------- | -------------------- |
+| `loading`       | `Loading`                                                       | Button, icon button  |
+| `invalid`       | `invalid`                                                       | Slot, item stack     |
+| `stackCount`    | `${count}`                                                      | Item stack           |
+| `stackCapacity` | `${count} of ${capacity}`                                       | Item stack           |
+| `durability`    | `durability ${percent}`                                         | Item stack           |
+| `quality`       | `quality ${level}`                                              | Item stack           |
+| `unavailable`   | `unavailable`                                                   | Recipe               |
+| `craftable`     | `can craft ${times}`                                            | Recipe               |
+| `meterWarning`  | `warning`                                                       | Meter                |
+| `meterCritical` | `critical`                                                      | Meter                |
+| `invalidField`  | `invalid`                                                       | Text, number, select |
+| `increase`      | `Increase`                                                      | Number field         |
+| `decrease`      | `Decrease`                                                      | Number field         |
+| `close`         | `Close`                                                         | Window               |
+| `moveWindow`    | `Move window`                                                   | Window               |
+| `moving`        | `Moving. Use the arrow keys, Enter to place, Escape to cancel.` | Window               |
+| `dismiss`       | `Dismiss`                                                       | Toast                |
+| `notifications` | `Notifications`                                                 | Toast stack          |
 
 ## Development warnings
 

@@ -1,10 +1,11 @@
+import { msg, str } from '../../internal/localize.ts';
+import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { PunkSelectableBase } from '../../internal/selectable-base.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
-import { format, t } from '../../utilities/localize.ts';
 import { formatNumber, resolveLang } from '../../utilities/locale.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { recipeStyles } from './recipe.styles.ts';
@@ -35,6 +36,8 @@ import { recipeStyles } from './recipe.styles.ts';
  * @fires punk-activate - The tile was clicked or activated with Enter or Space. `detail` is `{ value, item }`.
  */
 export class PunkRecipe extends PunkSelectableBase {
+  readonly #localeWatcher = new LocaleWatcher(this);
+
   static override styles = recipeStyles;
 
   /** The recipe's name, shown as the tile's title. */
@@ -89,9 +92,17 @@ export class PunkRecipe extends PunkSelectableBase {
 
   /** Words, not color, say whether it can be made: nothing is added for a recipe that can be. */
   #status(count: number, lang: string | undefined): string {
-    if (!this.available) return t('unavailable', 'unavailable');
+    if (!this.available)
+      return msg('unavailable', {
+        id: 'unavailable',
+        desc: 'Says that a recipe cannot be made now.',
+      });
     if (count === 0) return '';
-    return format('craftable', 'can craft {count}', { count: formatNumber(count, lang) });
+    const times = formatNumber(count, lang);
+    return msg(str`can craft ${times}`, {
+      id: 'craftable',
+      desc: 'Says how many times a recipe can be made now.',
+    });
   }
 
   protected override render() {

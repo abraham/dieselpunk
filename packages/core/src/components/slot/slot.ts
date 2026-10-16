@@ -2,7 +2,6 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { PunkReceptacleBase } from '../../internal/receptacle-base.ts';
 import { receptacleStyles } from '../../styles/receptacle.ts';
-import { t } from '../../utilities/localize.ts';
 
 /**
  * A square receptacle for an item, a recipe, a tool, or equipment. It shows slotted artwork, can
@@ -45,7 +44,7 @@ export class PunkSlot extends PunkReceptacleBase {
   }
 
   protected accessibleParts(): string[] {
-    return [this.label, this.invalid ? t('invalid', 'invalid') : ''];
+    return [this.label, this.invalidText()];
   }
 
   protected override render() {

@@ -1,0 +1,23 @@
+{
+  "name": "@dieselpunk/locales",
+  "version": "0.0.0",
+  "description": "Translations of the messages in @dieselpunk/core, for use with Lit Localize.",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "extract": "lit-localize extract",
+    "check:strings": "node scripts/check-strings.ts",
+    "test": "node --test \"test/*.test.ts\""
+  },
+  "peerDependencies": {
+    "@dieselpunk/core": "*",
+    "@lit/localize": "^0.12.0"
+  },
+  "devDependencies": {
+    "@lit/localize": "^0.12.2",
+    "@lit/localize-tools": "^0.8.2"
+  }
+}

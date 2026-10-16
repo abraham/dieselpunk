@@ -39,7 +39,7 @@ const sentinels: Record<string, string> = {
   slot: '"punk-slot"',
   'item-stack': 'durability-fill',
   'slot-grid': '--punk-slot-gap',
-  recipe: 'can craft {count}',
+  recipe: 'can craft ',
   meter: '--punk-meter-length',
   'status-light': '"announce"',
   stack: '--punk-stack-gap',

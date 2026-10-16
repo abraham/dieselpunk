@@ -1,4 +1,4 @@
-import { setStrings } from '@dieselpunk/core';
+import { configureLocalization } from '@lit/localize';
 import type {
   ButtonVariant,
   GridSelection,
@@ -67,7 +67,12 @@ import '@dieselpunk/core/toolbar/register.js';
 import '@dieselpunk/core/window/register.js';
 import '@dieselpunk/core/status-light/register.js';
 
-setStrings({ loading: 'Laden' });
+const { setLocale } = configureLocalization({
+  sourceLocale: 'en',
+  targetLocales: ['de'],
+  loadLocale: async () => ({ templates: { loading: 'Laden' } }),
+});
+void setLocale('de');
 
 const variant: ButtonVariant = 'primary';
 

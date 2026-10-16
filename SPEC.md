@@ -24,7 +24,7 @@ The library must feel:
 2. Preserve the native behavior, accessibility, and composability expected from modern Web Components.
 3. Allow applications to reproduce a convincing industrial game UI using only CSS custom properties and original application assets.
 4. Support plain HTML as a first-class integration target, with optional typed imports for TypeScript applications.
-5. Keep the base package small, tree-shakeable, and free of framework runtime dependencies other than Lit.
+5. Keep the base package small, tree-shakeable, and free of framework runtime dependencies other than Lit and its first-party localization library, `@lit/localize`.
 
 ## 3. Non-Goals
 
@@ -66,6 +66,7 @@ Counts, progress, warnings, labels, and selection state must remain readable at 
 - TypeScript 6.0 with strict mode enabled, targeting ESNext. Version 6 is required for compatibility with `typescript-eslint`.
 - Node.js 26 for development tooling. Repository scripts are written in TypeScript and run directly by Node without a separate compile step.
 - Lit 3 and `LitElement` for rendering and lifecycle management.
+- `@lit/localize`, in runtime mode, for the words components render themselves (§13).
 - Native Shadow DOM by default.
 - ES modules (ESNext output) with per-component exports. Emitted code is not downleveled, so source may use only syntax and APIs available in the browser baseline below.
 - No global stylesheet requirement.
@@ -457,7 +458,7 @@ Example:
 - Components do not hard-code user-facing strings except optional defaults that can be overridden.
 - Labels support arbitrary text direction and use logical CSS properties.
 - Counts and percentages use `Intl.NumberFormat` when formatted by the component.
-- The library ships English locale strings only for generic internal actions such as Close and Loading; locale packs can replace them.
+- Components write the words they render with Lit Localize's `msg()`, in English, each with an id and a description. The English text is the source locale and ships with the components; translations are XLIFF files, built into locale modules in `@dieselpunk/locales`, and an application switches locale with `setLocale()`. Mounted components re-render when the locale is ready.
 - Layout is tested with long German labels, Arabic RTL content, and large compact-number values.
 
 ## 14. Quality and Testing

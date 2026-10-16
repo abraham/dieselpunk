@@ -1,9 +1,10 @@
+import { msg } from '../../internal/localize.ts';
+import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { PunkElement } from '../../internal/punk-element.ts';
-import { t } from '../../utilities/localize.ts';
 import { PunkToast, isDismissing } from './toast.ts';
 import type { ToastOwner, ToastVariant } from './toast.ts';
 import { toastStackStyles } from './toast.styles.ts';
@@ -43,6 +44,8 @@ const DEFAULT_LIMIT = 5;
  * @csspart stack - The region that holds the toasts.
  */
 export class PunkToastStack extends PunkElement implements ToastOwner {
+  readonly #localeWatcher = new LocaleWatcher(this);
+
   static override styles = toastStackStyles;
 
   /** The corner. `start` and `end` follow the writing direction. Unknown values use `bottom-end`. */
@@ -146,7 +149,7 @@ export class PunkToastStack extends PunkElement implements ToastOwner {
         class=${classMap({ stack: true, [side]: true, [edge]: true })}
         popover="manual"
         role="region"
-        aria-label=${this.label || t('notifications', 'Notifications')}
+        aria-label=${this.label || msg('Notifications', { id: 'notifications', desc: 'The name of the region that holds toasts.' })}
       >
         <div class="region" role="status" aria-atomic="false">
           <slot name="polite"></slot>

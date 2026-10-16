@@ -2,7 +2,6 @@ import { commands, page, server, userEvent } from 'vitest/browser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { density } from '../../tokens/density.ts';
 import { themeNames, themes } from '../../tokens/themes.ts';
-import { resetStrings, setStrings } from '../../utilities/localize.ts';
 import {
   addStylesheets,
   cleanup,
@@ -11,6 +10,7 @@ import {
   track,
 } from '../../../test/browser/helpers.ts';
 import '../../../test/browser/commands.ts';
+import { setLocale } from '../../../test/browser/locale.ts';
 import './register.ts';
 import type { ButtonSize, ButtonType, ButtonVariant, PunkButton } from './index.ts';
 
@@ -31,7 +31,7 @@ let pointerHeld = false;
 
 afterEach(async () => {
   cleanup();
-  resetStrings();
+  await setLocale('en');
   if (pointerHeld) {
     pointerHeld = false;
     await commands.releasePointer();
@@ -231,10 +231,10 @@ describe('loading (12.4.3)', () => {
     expect(status.textContent).toBe('');
   });
 
-  it('announces a replaced string', async () => {
-    setStrings({ loading: 'Cargando' });
+  it('announces a translated string', async () => {
+    await setLocale('de');
     const button = await mount({ loading: true });
-    expect(button.shadowRoot?.querySelector('[role="status"]')?.textContent).toBe('Cargando');
+    expect(button.shadowRoot?.querySelector('[role="status"]')?.textContent).toBe('Laden');
   });
 
   it('hides the label and shows a spinner, without moving the layout', async () => {

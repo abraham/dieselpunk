@@ -1,3 +1,4 @@
+import { setLocale } from '../../../test/browser/locale.ts';
 import { commands, page, userEvent } from 'vitest/browser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from 'vitest';
@@ -137,15 +138,14 @@ describe('availability', () => {
   });
 
   it('can be translated', async () => {
-    const { setStrings, resetStrings } = await import('../../utilities/localize.ts');
-    setStrings({ unavailable: 'nicht verfügbar', craftable: '{count}× herstellbar' });
+    await setLocale('de');
     try {
       expect(text(await mount(), 'status')).toBe('nicht verfügbar');
       expect(text(await mount({ available: '', 'craftable-count': '4' }), 'status')).toBe(
         '4× herstellbar',
       );
     } finally {
-      resetStrings();
+      await setLocale('en');
     }
   });
 

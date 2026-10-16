@@ -1,9 +1,10 @@
+import { msg } from './localize.ts';
+import { LocaleWatcher } from './locale-watch.ts';
 import { LitElement, html, nothing } from 'lit';
 import type { PropertyValues, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { t } from '../utilities/localize.ts';
 import { PunkFormControl } from './form-control.ts';
 import type { Validation } from './form-control.ts';
 import { SlotPresence } from './slot-presence.ts';
@@ -28,6 +29,8 @@ export interface FieldParts {
  * one the control takes `aria-label`, or the text of a `<label>` that points at the host.
  */
 export abstract class PunkFieldBase extends PunkFormControl {
+  readonly #localeWatcher = new LocaleWatcher(this);
+
   static override shadowRootOptions = { ...LitElement.shadowRootOptions, delegatesFocus: true };
 
   /** The name of the field, and the text above it. Without it, use `aria-label`. */
@@ -126,8 +129,9 @@ export abstract class PunkFieldBase extends PunkFormControl {
             ><span class="shape"></span
           ></span>
           <span dir="auto"
-            ><span class="word">${t('invalidField', 'invalid')}</span>:
-            ${shown ? this.validationMessage : ''}</span
+            ><span class="word"
+              >${msg('invalid', { id: 'invalidField', desc: 'A word shown before the message of a field that fails validation, for example: invalid: Please fill out this field.' })}</span
+            >: ${shown ? this.validationMessage : ''}</span
           >
         </div>
       </div>

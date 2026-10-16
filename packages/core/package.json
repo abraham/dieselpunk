@@ -36,6 +36,7 @@
     "build": "tsc -p tsconfig.build.json && node scripts/build-css.ts && npm run build:manifest",
     "build:css": "node scripts/build-css.ts",
     "build:manifest": "cem analyze --config custom-elements-manifest.config.mjs",
+    "check:api": "node scripts/check-api.ts",
     "check:contrast": "node scripts/check-contrast.ts",
     "check:consumer": "node scripts/check-consumer.ts",
     "check:package": "node scripts/check-package.ts && publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./tokens.css ./themes.css",
@@ -50,6 +51,7 @@
     "check:frameworks": "node scripts/check-frameworks.ts"
   },
   "dependencies": {
+    "@lit/localize": "^0.12.2",
     "lit": "^3.3.0"
   },
   "devDependencies": {

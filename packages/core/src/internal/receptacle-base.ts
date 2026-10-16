@@ -1,3 +1,5 @@
+import { msg } from './localize.ts';
+import { LocaleWatcher } from './locale-watch.ts';
 import { html } from 'lit';
 import type { TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
@@ -13,11 +15,23 @@ export type ReceptacleSize = 'sm' | 'md' | 'lg';
  * overlay, and the dev warnings. A subclass supplies the content and the words of its name.
  */
 export abstract class PunkReceptacleBase extends PunkSelectableBase {
+  readonly #localeWatcher = new LocaleWatcher(this);
+
   /** Draws a dotted outline. It does not select. */
   @property({ type: Boolean, reflect: true }) highlighted = false;
 
   /** Draws a hatched corner and an inner frame, and adds the word "invalid" to the name. */
   @property({ type: Boolean, reflect: true }) invalid = false;
+
+  /** The word that `invalid` adds to the accessible name, or nothing. */
+  protected invalidText(): string {
+    return this.invalid
+      ? msg('invalid', {
+          id: 'invalid',
+          desc: 'A word added to the name of a slot or an item stack that is marked invalid.',
+        })
+      : '';
+  }
 
   /** Unknown values render as `md`. */
   @property({ reflect: true }) size: ReceptacleSize = 'md';

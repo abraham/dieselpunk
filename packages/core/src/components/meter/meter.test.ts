@@ -1,3 +1,4 @@
+import { setLocale } from '../../../test/browser/locale.ts';
 import { commands, page } from 'vitest/browser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from 'vitest';
@@ -89,13 +90,12 @@ describe('semantics', () => {
     expect(part(german, 'track').getAttribute('aria-valuetext')).toBe(
       new Intl.NumberFormat('de', { style: 'percent' }).format(0.64),
     );
-    const { setStrings, resetStrings } = await import('../../utilities/localize.ts');
-    setStrings({ meterWarning: 'Warnung', meterCritical: 'kritisch' });
+    await setLocale('de');
     try {
       const poor = await mount({ ...zones, value: '15' });
       expect(part(poor, 'track').getAttribute('aria-valuetext')).toBe('15%, Warnung');
     } finally {
-      resetStrings();
+      await setLocale('en');
     }
   });
 
