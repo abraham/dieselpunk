@@ -52,6 +52,20 @@
     "limit": "5 kB"
   },
   {
+    "name": "punk-slot",
+    "path": "dist/components/slot/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-item-stack (receptacle, durability, quality, and number formatting)",
+    "path": "dist/components/item-stack/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
     "name": "punk-tooltip",
     "path": "dist/components/tooltip/register.js",
     "ignore": ["lit"],

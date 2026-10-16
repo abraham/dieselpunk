@@ -306,7 +306,7 @@ describe('receptacle styles', () => {
     const invalid = slotOf(await mount({ invalid: '' }, { content: 'x' }));
 
     expect(getComputedStyle(selected).boxShadow).toContain(
-      `${rgb(tokens['color-accent'])} 0px 0px 0px 2px`,
+      `${rgb(tokens['color-accent'])} 0px 0px 0px 3px`,
     );
     expect(getComputedStyle(selected).backgroundColor).not.toBe(
       getComputedStyle(idle).backgroundColor,
@@ -330,7 +330,7 @@ describe('receptacle styles', () => {
     const tokens = themes.industrial.tokens;
     const slot = slotOf(await mount({ selected: '' }));
     expect(getComputedStyle(slot).boxShadow).toContain(
-      `${rgb(tokens['color-accent'])} 0px 0px 0px 2px`,
+      `${rgb(tokens['color-accent'])} 0px 0px 0px 3px`,
     );
   });
 

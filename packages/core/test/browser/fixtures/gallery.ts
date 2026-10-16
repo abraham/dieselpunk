@@ -9,8 +9,11 @@ import '../../../src/components/button/register.ts';
 import '../../../src/components/icon-button/register.ts';
 import '../../../src/components/progress-bar/register.ts';
 import '../../../src/components/tooltip/register.ts';
+import '../../../src/components/slot/register.ts';
+import '../../../src/components/item-stack/register.ts';
 
-export const componentNames = [
+// The visual matrix renders the foundation set only, until its baselines include the inventory.
+export const foundationNames = [
   'panel',
   'divider',
   'button',
@@ -18,6 +21,8 @@ export const componentNames = [
   'progress-bar',
   'tooltip',
 ] as const;
+export const inventoryNames = ['slot', 'item-stack'] as const;
+export const componentNames = [...foundationNames, ...inventoryNames] as const;
 export type ComponentName = (typeof componentNames)[number];
 
 export const contentVariants = ['short', 'long', 'unlabeled', 'rtl'] as const;
@@ -36,6 +41,8 @@ interface Copy {
   progress: string;
   settings: string;
   tip: string;
+  slot: string;
+  item: string;
 }
 
 const copy: Record<ContentVariant, Copy> = {
@@ -52,6 +59,8 @@ const copy: Record<ContentVariant, Copy> = {
     progress: 'Crafting',
     settings: 'Settings',
     tip: 'Starts the assembler',
+    slot: 'Module slot 1',
+    item: 'Speed module',
   },
   long: {
     lang: 'de',
@@ -66,6 +75,8 @@ const copy: Record<ContentVariant, Copy> = {
     progress: 'Getriebe wird gefertigt',
     settings: 'Einstellungen der Maschine öffnen',
     tip: 'Startet die Montagemaschine und nimmt die Produktion sofort auf',
+    slot: 'Steckplatz für Verstärkungsmodule, Reihe zwei, Position drei',
+    item: 'Geschwindigkeitsmodul der dritten Generation',
   },
   unlabeled: {
     lang: 'en',
@@ -80,6 +91,8 @@ const copy: Record<ContentVariant, Copy> = {
     progress: '',
     settings: 'Settings',
     tip: 'Starts the assembler',
+    slot: '',
+    item: '',
   },
   rtl: {
     lang: 'he',
@@ -94,6 +107,8 @@ const copy: Record<ContentVariant, Copy> = {
     progress: 'מייצר גלגלי שיניים',
     settings: 'הגדרות',
     tip: 'מפעיל את מכונת ההרכבה',
+    slot: 'חריץ מודול 1',
+    item: 'מודול מהירות',
   },
 };
 
@@ -188,6 +203,76 @@ const builders: Record<ComponentName, Builder> = {
       <punk-tooltip for="gallery-anchor" placement="bottom" describe="false">${c.tip}</punk-tooltip>
     `)}
   `,
+
+  slot: (c) => {
+    // Without a visible label the slots take an aria-label, since a name is required.
+    const name = c.slot ? `label="${c.slot}"` : 'aria-label="Module slot"';
+    return `
+      ${row(`
+        <punk-slot ${name}></punk-slot>
+        <punk-slot ${name}>${gear}</punk-slot>
+        <punk-slot ${name} selected>${gear}</punk-slot>
+        <punk-slot ${name} highlighted>${gear}</punk-slot>
+        <punk-slot ${name} invalid>${gear}</punk-slot>
+        <punk-slot ${name} disabled>${gear}</punk-slot>
+      `)}
+      ${row(`
+        <punk-slot ${name} selected highlighted invalid>${gear}</punk-slot>
+        <punk-slot ${name} selected></punk-slot>
+        <punk-slot ${name} invalid></punk-slot>
+        <punk-slot ${name} disabled></punk-slot>
+      `)}
+      ${row(sizes.map((size) => `<punk-slot ${name} size="${size}">${gear}</punk-slot>`).join(''))}
+      ${row(`
+        <punk-slot ${name}>${gear}<span slot="badge" aria-hidden="true">+</span></punk-slot>
+        <punk-slot ${name}>${gear}<span slot="overlay" aria-hidden="true">×</span></punk-slot>
+      `)}
+    `;
+  },
+
+  'item-stack': (c) => {
+    // The name is never visible, so the unlabeled variant still uses it; an aria-label would
+    // replace the visible count in the accessible name.
+    const name = `name="${c.item || 'Item'}"`;
+    const art = gear.replace('<svg', '<svg slot="icon"');
+    return `
+      ${row(`
+        <punk-item-stack ${name} count="1">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="64">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="1234">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="1234567" compact-count>${art}</punk-item-stack>
+        <punk-item-stack ${name} count="75" capacity="100">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="0">${art}</punk-item-stack>
+      `)}
+      ${row(`
+        <punk-item-stack ${name} durability="0.8">${art}</punk-item-stack>
+        <punk-item-stack ${name} durability="0.4" count="12">${art}</punk-item-stack>
+        <punk-item-stack ${name} durability="0.1" count="3">${art}</punk-item-stack>
+        <punk-item-stack ${name} quality="3">${art}</punk-item-stack>
+        <punk-item-stack ${name} quality="5" durability="0.6" count="999">${art}</punk-item-stack>
+        <punk-item-stack ${name} count="1"></punk-item-stack>
+      `)}
+      ${row(`
+        <punk-item-stack ${name} count="8" selected>${art}</punk-item-stack>
+        <punk-item-stack ${name} count="8" highlighted>${art}</punk-item-stack>
+        <punk-item-stack ${name} count="8" invalid>${art}</punk-item-stack>
+        <punk-item-stack ${name} count="8" disabled>${art}</punk-item-stack>
+        <punk-item-stack ${name} count="8" selected highlighted invalid>${art}</punk-item-stack>
+      `)}
+      ${row(
+        sizes
+          .map(
+            (size) =>
+              `<punk-item-stack ${name} size="${size}" count="24" durability="0.5" quality="2">${art}</punk-item-stack>`,
+          )
+          .join(''),
+      )}
+      ${row(`
+        <punk-item-stack ${name} count="5">${art}<span slot="badge" aria-hidden="true">+</span></punk-item-stack>
+        <punk-item-stack ${name} count="5">${art}<span slot="overlay" aria-hidden="true">×</span></punk-item-stack>
+      `)}
+    `;
+  },
 };
 
 /** HTML for one component's states. */

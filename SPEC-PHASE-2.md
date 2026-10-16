@@ -1,6 +1,6 @@
 # Phase 2: Inventory — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (contrast and tokens) and 2 (shared internals) are implemented.
+**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), and 3 (slot and item stack) are implemented.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 2
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md)
 **Package:** `@dieselpunk/core`
@@ -267,9 +267,9 @@ States, each with a cue that does not depend on color:
 | Hover | Brighter edge (an increase in edge contrast, as for a button) |
 | Focus-visible | The two-tone focus ring (§7.5) |
 | Active | Content moves 1px down and toward the inline end |
-| Selected | Solid 2px `accent` outline and a darker inset surface |
-| Highlighted | Dotted 2px `warning` outline |
-| Invalid | `danger` outline and a diagonal hatch in one corner; the word "invalid" is part of the name |
+| Selected | A 3px `accent` ring (the idle ring is 2px) and a darker inset surface |
+| Highlighted | Dotted 2px `warning` outline, 3px clear of the ring |
+| Invalid | An inner 2px `danger` frame and a hatched corner; the word "invalid" is part of the name |
 | Disabled | Flat, desaturated, not focusable, name unchanged |
 
 ### 8.2 `punk-item-stack`
@@ -293,6 +293,8 @@ An item with its count, durability, and quality, in the same receptacle.
 - `durability` is a fraction from 0 to 1, drawn as a thin bar in an inset trough. Its fill uses the same non-color patterns as the progress bar, so a low value is visible without color, and its state is in the accessible text ("durability 40%").
 - `quality` is an integer from 0 to 5, drawn as that many small diamonds; the number is in the accessible text.
 - Invalid input (a negative or non-finite count, a durability outside 0 to 1, a quality outside 0 to 5) is clamped and warns once.
+- Details settled in implementation: a non-finite count is 0, a `capacity` that is not above 0 is ignored, a count above the capacity is shown as written, and quality is rounded. Removing the `count` or `quality` attribute restores the default silently. A `quality` of 0 draws no diamonds and adds nothing to the name. A durability of 0.5 or more draws solid stripes, 0.25 or more diagonal hatching, and less than that cross-hatching. The quality diamonds sit at the inline start of the top edge, the count plate at the inline end of the bottom edge and above the bar when there is one, and a count too long for the item is ellipsized, never wrapped. The item has no `label` property: `name` names it, and an `aria-label` would replace the quantity in the accessible name, so the JSDoc says to use `name`.
+- The slot and the item stack share `PunkReceptacleBase`, which owns `highlighted`, `invalid`, `size`, the receptacle markup, badge and overlay, and the "no accessible name" warning. The item stack warns once for each of: no name, a count below 0 or not a number, a capacity not above 0, a durability outside 0 to 1 or not a number, and a quality that is not a whole number from 0 to 5.
 
 ### 8.3 `punk-slot-grid`
 
@@ -433,6 +435,7 @@ The shared gallery (`fixtures/gallery.ts`) gains every new component in its stat
 
 The matrix of Phase 1 §10.3 applies, with these changes:
 
+- Until the matrix covers the inventory, the shared gallery exports `foundationNames` (what the matrix renders) and `inventoryNames` beside `componentNames` (everything, which the axe, manifest, and reflow suites use). Work package 3 added the slot and item stack to the gallery for those three suites without changing any baseline.
 - The gallery takes a `group` parameter (`foundation` or `inventory`), and the matrix runs once per group (§2 decision 13). Each group has its own folder of baselines.
 - The inventory group renders every state in the table in §8.1, an item stack with a count of 1, 99, 1,234, and 1,234,567 (plain and compact), with and without durability and quality, a grid of 100 slots in each selection mode, a meter in each state and both orientations, and a status light in each variant.
 - Hover, focus-visible, and active are driven with real input on a slot, and a grid is captured with keyboard focus on an interior item.
@@ -454,6 +457,7 @@ SPEC §14.3 requires a 100-slot grid to stay responsive. Frame times on a CI run
 The gates of Phase 1 §10.4 apply, with each component's register entry measured on its own and gzip-compressed:
 
 - Each entry is at most 5 kB. The shared selectable base is imported by three components, so it counts toward each of them; if an entry would pass 5 kB, the base is split before any limit is raised, and any exception is documented as `punk-icon-button`'s was.
+- Measured in work package 3: `punk-slot` 4.27 kB. `punk-item-stack` is 5.83 kB, so it has a documented exception of 6 kB, as `punk-icon-button` has 7. There was nothing left to split: the receptacle styles and base (about 4.2 kB with the shared runtime) are used by both components, and the rest of the item stack is its own code, which is the durability patterns, the quality diamonds, and the number formatting. The way to bring it under 5 kB is to cut features or shrink the receptacle CSS, and neither seemed worth it for 0.8 kB. English defaults live beside the component that renders them (§7.4), which kept the Phase 1 bundles from growing.
 - `check-package.ts` gains a sentinel string for each new component and requires that no register entry brings another component with it.
 - The shared runtime stays at or below 12 kB. The inventory-only base is measured as its own entry, "Selectable base and receptacle", at 4.23 kB against a 5 kB limit (measured in work package 2, with the shared runtime at 8.27 kB). It includes the shared runtime, so a component built on it has under 0.8 kB of its own before it reaches 5 kB; `punk-item-stack`, the largest, is the likely first entry to need the base split.
 
@@ -467,7 +471,7 @@ The stages of Phase 1 §10.5 are unchanged. The "Update visual baselines" workfl
 |---|---------|------------|--------|
 | 1 | Contrast and tokens | Phase 1 | `control-edge` in every theme, new gate rules, the workbench table updated, Phase 1 §6.8 and §13 item 7 closed, `SPEC.md` updated. Done. |
 | 2 | Shared internals | 1 | `SelectionModel`, `grid-navigation`, `PunkSelectableBase`, `receptacle` styles, `hostFocusRing`, localization with interpolation; logic tests. Done. |
-| 3 | Slot and item stack | 2 | Two components, tests |
+| 3 | Slot and item stack | 2 | Two components, tests. Done. |
 | 4 | Slot grid | 2, 3 | Component, keyboard and selection tests, performance gate |
 | 5 | Recipe | 2 | Component, tests |
 | 6 | Meter and status light | 1 | Two components, tests |

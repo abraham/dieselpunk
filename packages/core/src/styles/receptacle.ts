@@ -24,6 +24,8 @@ export const visuallyHidden = css`
 // Expects `.slot > .content > slot`, plus optional `.badge` and `.overlay`, in the shadow tree,
 // and the `empty` class on `.slot` while the default slot has no content.
 export const receptacleStyles = css`
+  ${visuallyHidden}
+
   :host {
     --_scale: 1;
     display: inline-block;
@@ -49,6 +51,7 @@ export const receptacleStyles = css`
     --_bevel:
       inset 1px 1px 0 ${token('color-edge-dark')}, inset -1px -1px 0 ${token('color-edge-light')};
     --_ring: ${token('color-edge-dark')};
+    --_ring-width: ${token('border-width')};
     --_marker: 0 0 0 0 transparent;
     position: relative;
     display: grid;
@@ -58,7 +61,7 @@ export const receptacleStyles = css`
     background: ${token('color-panel-inset')};
     box-shadow:
       var(--_bevel),
-      0 0 0 ${token('border-width')} var(--_ring),
+      0 0 0 var(--_ring-width) var(--_ring),
       var(--_marker);
   }
 
@@ -111,12 +114,13 @@ export const receptacleStyles = css`
 
   :host([selected]) .slot {
     --_ring: ${token('color-accent')};
+    --_ring-width: calc(${token('border-width')} + 1px);
     background: color-mix(in srgb, ${token('color-panel-inset')} 75%, black);
   }
 
   :host([highlighted]) .slot {
     outline: 2px dotted ${token('color-warning')};
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
 
   :host([invalid]) .slot {

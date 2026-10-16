@@ -8,6 +8,7 @@ import {
   buildGallery,
   componentNames,
   contentVariants,
+  foundationNames,
   galleryCss,
   openTooltips,
 } from '../browser/fixtures/gallery.ts';
@@ -35,11 +36,11 @@ document.head.append(style);
 document.documentElement.setAttribute('data-punk-theme', theme);
 document.documentElement.setAttribute('data-punk-density', density);
 
-const gallery = buildGallery(content, only ? [only] : componentNames);
+const gallery = buildGallery(content, only ? [only] : foundationNames);
 document.body.append(gallery);
 
 // A page of unregistered elements would still screenshot cleanly, and become a baseline of nothing.
-for (const name of only ? [only] : componentNames) {
+for (const name of only ? [only] : foundationNames) {
   if (!customElements.get(`punk-${name}`)) throw new Error(`punk-${name} is not registered`);
 }
 document.documentElement.lang = gallery.lang;
