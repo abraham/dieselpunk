@@ -5,3 +5,4 @@ coverage/
 .vitest/
 test-results/
 .DS_Store
+custom-elements.json

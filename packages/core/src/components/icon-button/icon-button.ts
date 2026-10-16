@@ -11,6 +11,8 @@ import { iconButtonStyles } from './icon-button.styles.ts';
  * A square, icon-only button. Its `label` is the accessible name and the text of a tooltip that
  * appears on hover and keyboard focus. Clicks surface as the native `click` event.
  *
+ * @tagname punk-icon-button
+ *
  * @slot - A single icon, typically inline SVG drawn with `currentColor`.
  *
  * @csspart button - The inner native button.

@@ -40,6 +40,8 @@ function isDescribable(element: Element): element is DescribableAnchor {
  * focus, and closes on Escape. Place it as a sibling of its anchor, never inside it, because
  * nested content would join the anchor's accessible name.
  *
+ * @tagname punk-tooltip
+ *
  * @slot - The tooltip content. It must not contain interactive controls.
  *
  * @csspart surface - The floating surface.

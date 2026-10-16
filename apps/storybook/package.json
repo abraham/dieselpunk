@@ -1,0 +1,24 @@
+{
+  "name": "@dieselpunk/storybook",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "storybook dev -p 6006",
+    "build": "storybook build -o dist",
+    "typecheck": "npm run build -w @dieselpunk/core && tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@dieselpunk/core": "^0.0.0",
+    "lit": "^3.3.3"
+  },
+  "devDependencies": {
+    "@fontsource/chakra-petch": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@storybook/addon-docs": "^10.6.2",
+    "@storybook/web-components-vite": "^10.6.2",
+    "@wc-toolkit/storybook-helpers": "^10.7.7",
+    "storybook": "^10.6.2",
+    "vite": "^8.3.4"
+  }
+}

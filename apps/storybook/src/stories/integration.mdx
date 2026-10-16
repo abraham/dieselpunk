@@ -1,0 +1,82 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Guides/Integration" />
+
+# Integration
+
+`@dieselpunk/core` is plain Web Components built with Lit. It needs no framework and no global setup beyond optional CSS imports.
+
+The examples below assume a tool that resolves bare module specifiers, such as Vite, esbuild, or a CDN with an import map. The package is not published yet, so install it from the monorepo.
+
+## Register only what you use
+
+Each component has two entries. The class entry has no side effects. The `register.js` entry defines the element.
+
+```js
+// Define only the elements this page uses.
+import '@dieselpunk/core/button/register.js';
+import '@dieselpunk/core/panel/register.js';
+```
+
+`@dieselpunk/core/icon-button/register.js` also registers `punk-tooltip`, because the icon button renders one.
+
+## Plain HTML
+
+```html
+<link rel="stylesheet" href="/node_modules/@dieselpunk/core/dist/css/tokens.css" />
+<link rel="stylesheet" href="/node_modules/@dieselpunk/core/dist/css/themes.css" />
+
+<script type="module">
+  import '@dieselpunk/core/panel/register.js';
+  import '@dieselpunk/core/button/register.js';
+</script>
+
+<punk-panel>
+  <span slot="header">Assembler</span>
+  <punk-button variant="primary">Start</punk-button>
+</punk-panel>
+```
+
+The stylesheets are optional. Without them every component renders in the default dark, compact appearance. Import `tokens.css` to let ancestors override tokens, and `themes.css` to use themes other than the default.
+
+## Theme and density
+
+Set two attributes on `<html>` or on any element. They apply to everything inside it, and nested values override outer ones.
+
+```html
+<html data-punk-theme="industrial-light" data-punk-density="low"></html>
+```
+
+Themes are `industrial` (default), `industrial-light`, `high-contrast`, `reduced-texture`, and `auto`, which follows the system color scheme. Densities are `compact` (default) and `low`.
+
+## TypeScript
+
+Import classes and types from the package root, or from a component entry.
+
+```ts
+import type { PunkButton, ButtonVariant } from '@dieselpunk/core';
+import '@dieselpunk/core/button/register.js';
+
+const button = document.querySelector('punk-button')!;
+button.addEventListener('click', () => button.setAttribute('loading', ''));
+```
+
+Importing a class never registers its element. Register it with the matching `register.js` entry.
+
+## Forms
+
+`punk-button` is form-associated. Its `type` defaults to `button`, so set `type="submit"` or `type="reset"` explicitly. It submits the enclosing form without a submitter.
+
+## Translating built-in text
+
+Components contain one built-in string, the loading announcement. Replace it before components render.
+
+```ts
+import { setStrings } from '@dieselpunk/core';
+
+setStrings({ loading: 'Laden' });
+```
+
+## Development warnings
+
+The package logs warnings for misuse, such as an icon button with no `label`, when it is resolved with the `development` export condition (Vite does this in dev mode). Production builds drop them.

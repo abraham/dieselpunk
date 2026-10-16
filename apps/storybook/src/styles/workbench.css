@@ -1,0 +1,170 @@
+.wb-stage,
+.wb-cell {
+  box-sizing: border-box;
+  background: var(--punk-color-canvas);
+  color: var(--punk-color-text);
+  font-family: var(--punk-font-family, sans-serif);
+  line-height: 1.4;
+}
+
+.wb-stage {
+  min-height: 100%;
+  padding: 24px;
+}
+
+/* Fill the canvas on a story's own page, but not inside a docs page. */
+body:not(:has(.sbdocs)) .wb-stage {
+  min-height: 100vh;
+}
+
+.wb-stage h2,
+.wb-stage h3 {
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.wb-stage p {
+  margin: 0 0 12px;
+}
+
+.wb-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+wb-color-theme,
+wb-scales {
+  display: block;
+}
+
+.wb-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.wb-section {
+  margin-block-end: 32px;
+}
+
+.wb-section > h3 {
+  padding-block-end: 4px;
+  border-block-end: 1px solid var(--punk-color-edge-light);
+}
+
+.wb-mono,
+.wb-caption {
+  font-family: var(--punk-font-mono, monospace);
+  font-size: 12px;
+  color: var(--punk-color-text-muted);
+}
+
+.wb-matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.wb-cell {
+  padding: 16px;
+  border: 1px solid var(--punk-color-edge-dark);
+}
+
+.wb-cell > .wb-caption {
+  display: block;
+  margin-block-end: 12px;
+}
+
+.wb-grid-head {
+  font-weight: 600;
+}
+
+/* Swatches and tables */
+.wb-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.wb-swatch {
+  border: 1px solid var(--punk-color-edge-dark);
+  font-size: 12px;
+}
+
+.wb-swatch-chip {
+  block-size: 44px;
+  border-block-end: 1px solid var(--punk-color-edge-dark);
+}
+
+.wb-swatch-text {
+  padding: 6px 8px;
+  background: var(--punk-color-panel);
+  font-family: var(--punk-font-mono, monospace);
+}
+
+.wb-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.wb-table th,
+.wb-table td {
+  padding: 6px 10px;
+  border-block-end: 1px solid var(--punk-color-edge-light);
+  text-align: start;
+}
+
+.wb-table td.num {
+  font-family: var(--punk-font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+wb-scales .wb-table {
+  table-layout: fixed;
+}
+
+wb-scales .wb-table td > span {
+  margin-inline-start: 8px;
+  vertical-align: middle;
+}
+
+.wb-pass,
+.wb-fail,
+.wb-gap {
+  display: inline-block;
+  min-inline-size: 4.5em;
+  padding: 1px 6px;
+  border: 1px solid currentColor;
+  font-family: var(--punk-font-mono, monospace);
+  font-size: 11px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.wb-pass {
+  color: var(--punk-color-success);
+}
+
+.wb-fail {
+  color: var(--punk-color-danger);
+}
+
+.wb-gap {
+  color: var(--punk-color-warning);
+}
+
+.wb-bar-sample {
+  display: block;
+  block-size: 12px;
+  background: var(--punk-color-accent);
+}
+
+.wb-surface-sample {
+  display: grid;
+  place-items: center;
+  min-block-size: 96px;
+  padding: 12px;
+}

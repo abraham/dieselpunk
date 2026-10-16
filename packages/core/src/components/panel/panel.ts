@@ -13,6 +13,8 @@ const variants: readonly string[] = ['raised', 'inset', 'flat'];
 /**
  * A structural metal surface. It has no ARIA role; add `role="region"` and a label when it is a landmark.
  *
+ * @tagname punk-panel
+ *
  * @slot - Panel content.
  * @slot header - Optional header strip. Hidden while empty.
  * @slot footer - Optional footer strip. Hidden while empty.

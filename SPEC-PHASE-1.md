@@ -1,6 +1,6 @@
 # Phase 1: Foundation — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), 5 (`punk-tooltip`), 6 (`PunkButtonBase`, `punk-button`, `punk-icon-button`), and 7 (`punk-progress-bar`) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, locale resolution, the dev flag and `devWarn`, positioning, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), 12.4 (Button), 12.5 (Icon Button), 12.6 (Progress Bar), and 12.7 (Tooltip) are complete. Remaining: the workbench (work package 8), test infrastructure (9), and hardening (10). `punk-button` and `punk-icon-button` shipped with the boundary-contrast gap in §6.8 still open, by decision.
+**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), 5 (`punk-tooltip`), 6 (`PunkButtonBase`, `punk-button`, `punk-icon-button`), 7 (`punk-progress-bar`), and 8 (the Storybook workbench, with manifest generation) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, locale resolution, the dev flag and `devWarn`, positioning, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), 12.4 (Button), 12.5 (Icon Button), 12.6 (Progress Bar), and 12.7 (Tooltip) are complete. Section 12.8 (Workbench) is implemented and verified by a build and a sweep of every entry, with automated checks still to come in work package 9. Remaining: test infrastructure (work package 9) and hardening (10). `punk-button` and `punk-icon-button` shipped with the boundary-contrast gap in §6.8 still open, by decision.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases)
 **Package:** `@dieselpunk/core`
 **Prefix:** `punk-`
@@ -96,7 +96,7 @@ Use the current stable major version of each tool when implementation starts, an
 
 **Type checking.** Node does not type-check. `npm run typecheck` runs `tsc` for both `tsconfig.json` (library and browser tests, `noEmit`) and `tsconfig.scripts.json` (Node-run code), and CI fails on errors in either. `tsconfig.build.json` extends `tsconfig.json` to emit `dist/` from `src/` only.
 
-**Version pin.** `typescript` is declared as `~6.0` in the workspace root only, with no other workspace declaring its own copy. TypeScript 7 has no JavaScript API and is incompatible with `typescript-eslint` (peer range `>=4.8.4 <6.1.0`), so it is not used. Other tools that load the TypeScript JavaScript API (Storybook, the Custom Elements Manifest analyzer) must be confirmed against 6.0 in work package 1.
+**Version pin.** `typescript` is declared as `~6.0` in the workspace root only, with no other workspace declaring its own copy. TypeScript 7 has no JavaScript API and is incompatible with `typescript-eslint` (peer range `>=4.8.4 <6.1.0`), so it is not used. Other tools that load the TypeScript JavaScript API (Storybook, the Custom Elements Manifest analyzer) were checked against 6.0 in work package 8: Storybook does not depend on TypeScript, and the analyzer pins `typescript@~5.4`, so the root `package.json` declares `"overrides": { "typescript": "$typescript" }` to force the single 6.0 copy. The analyzer runs correctly on it, and the toolchain gate confirms one version. `npm ls` reports the analyzer's `~5.4` range as invalid, and that is expected.
 
 ## 4. Repository Layout
 
@@ -115,7 +115,7 @@ packages/core/
   tsconfig.json                 library and browser tests, noEmit
   tsconfig.build.json           emits dist/ from src/, excluding tests
   vitest.config.ts              browser mode, engines via PUNK_BROWSERS, setColorScheme and setForcedColors commands
-  custom-elements-manifest.config.mjs
+  custom-elements-manifest.config.mjs   analyzer config; `npm run build:manifest` writes custom-elements.json (git-ignored, published)
   scripts/
     build-css.ts                tokens → dist/css/*.css (run as: node scripts/build-css.ts)
     render-css.ts               pure CSS renderers shared by build-css.ts and tests
@@ -164,9 +164,16 @@ packages/core/
       fixtures/probe.ts     PunkProbe, a test-only element built like a component
     package/        fixture consumer app for packaging tests
 apps/storybook/
+  package.json                  private workspace; dev, build, and typecheck scripts
+  tsconfig.json                 browser code; noEmit
   .storybook/
-  src/stories/
-  src/icons/        original demo-only SVG icons
+    main.ts                     Vite config, including the `development` condition
+    preview.ts                  fonts, CSS, manifest, theme and density toolbar, story order
+  src/
+    stories/                    one `*.stories.ts` per component, Foundations pages, Overview, two `*.mdx` pages
+    lib/                        workbench-only helpers: matrix, contrast math, token parsing, foundations elements
+    styles/workbench.css        stage and layout styles
+    icons/icons.ts              original demo-only SVG icons
 ```
 
 ## 5. Package Contract
@@ -559,14 +566,23 @@ Behavior:
 
 `apps/storybook` includes:
 
-1. **Toolbar controls:** theme (`industrial`, `industrial-light`, `high-contrast`, `reduced-texture`, `auto`) and density (`compact`, `low`). Both set attributes on the preview root so they combine.
+1. **Toolbar controls:** theme (`industrial`, `industrial-light`, `high-contrast`, `reduced-texture`, `auto`) and density (`compact`, `low`). Both set attributes on the story's stage element, a wrapper the preview adds around every story, so they combine. The attributes are not on `<html>`, so each story is themed independently and Storybook's own docs chrome keeps its look.
 2. **Foundations pages:** color swatches per theme with measured contrast ratios; spacing, control-height, and typography scales; surface recipes (raised, inset, flat) rendered; texture on/off; and an asset policy page covering SPEC §4.3.
 3. **One docs page and story set per component:** a playground with controls bound to properties; every state; the theme × density matrix; keyboard instructions beside the example; and a manifest-driven API table (properties, slots, parts, CSS properties).
 4. **Overview (first screen):** a composed "machine panel" using panel, divider, buttons, icon buttons, a progress bar, and tooltips.
 5. **Plain HTML and TypeScript integration page** with copy-paste import examples.
 6. **Demo-only icons** in `src/icons/`: gear, plus, close, info, warning, and check, drawn originally on a 24x24 grid using `currentColor`.
 
-The workbench consumes the built package through the same exports as an external consumer, so it exercises the real `exports` map.
+The workbench consumes the built package through the same exports as an external consumer, so it exercises the real `exports` map. That includes `custom-elements.json`, which therefore must be built first; the workbench's `typecheck` script builds core before it runs, and the root `npm run storybook` does the same before starting the dev server.
+
+Implementation notes:
+
+- **Manifest.** `npm run build:manifest` runs `@custom-elements-manifest/analyzer` with its Lit support. Classes never call `customElements.define`, so each component declares its tag with a `@tagname` JSDoc tag, which is what `@wc-toolkit/storybook-helpers` looks up. Manifest assertions (§10.1) remain in work package 9.
+- **Controls.** Slot content is a string arg named `<slot>-slot` (`default-slot`, `header-slot`), which the helpers render, so slots are editable in the Controls panel. The demo icons are therefore SVG strings.
+- **Foundations data is measured.** Contrast is computed in the browser from each theme's computed custom properties, and the scale pages are parsed from the shipped `tokens.css`, so they show what a consumer gets rather than a copy of the TypeScript sources. The contrast table repeats the pairs of the gate (§6.8) and adds the three control-edge pairs, labeled `gap` while the open gap in §6.8 remains.
+- **Development warnings** are on in every build of the workbench: `main.ts` adds the `development` export condition, so misuse such as an unlabeled icon button is visible.
+- **Tooltip matrix.** Only one tooltip can be open at a time, so the tooltip's theme and density matrix shows one hoverable anchor per cell, and its state story shows placement, delay, `describe`, and `for`.
+- Hover, focus, and pressed states are interactive and not drawn in the static matrices.
 
 ## 10. Testing and CI
 
@@ -626,7 +642,7 @@ Packages are ordered by dependency. Each ends with the CI gates that apply to wh
 | 5 | Tooltip | 3 | Component, `position.ts`, tests. Done. |
 | 6 | Button base, button, icon button | 3, 5 | Components, form behavior, anchor protocol, tests. Done. |
 | 7 | Progress bar | 3 | Component, `locale.ts`, tests. Done. |
-| 8 | Storybook workbench | 3 (stories added per component as 4–7 land) | App, foundations, stories, API tables |
+| 8 | Storybook workbench | 3 (stories added per component as 4–7 land) | App, foundations, stories, API tables, manifest generation. Done. |
 | 9 | Test infrastructure | 4–7 | Visual matrix, axe suite, size and package gates, fixture consumer |
 | 10 | Hardening | 9 | Forced-colors, RTL, 200% zoom fixes; budget tuning; docs polish |
 
@@ -708,6 +724,8 @@ Verified in `src/components/progress-bar/progress-bar.test.ts` and `progress-bar
 2. Every component has a docs page with a state matrix, keyboard instructions, and a manifest-generated API table.
 3. The first screen is the Foundations overview described in §9.
 4. The asset policy page is present.
+
+Verified by `npm run build` (which builds the workbench) and by loading each of the 33 entries in Chromium from the built output, with no render errors and no console warnings. Screenshots of the Overview, Colors, Scales, and component pages were checked in `industrial` / `compact` and `industrial-light` / `low`. There are no automated assertions for these criteria yet; work package 9 adds the axe suite and a story smoke test.
 
 ## 13. Definition of Done
 

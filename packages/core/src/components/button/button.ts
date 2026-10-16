@@ -7,6 +7,8 @@ import { buttonStyles } from './button.styles.ts';
 /**
  * A raised industrial push button. Clicks surface as the native `click` event.
  *
+ * @tagname punk-button
+ *
  * @slot - The label.
  * @slot icon-start - An icon before the label. Hidden while empty.
  * @slot icon-end - An icon after the label. Hidden while empty.

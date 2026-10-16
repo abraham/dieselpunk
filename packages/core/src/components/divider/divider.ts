@@ -12,6 +12,8 @@ export type DividerOrientation = 'horizontal' | 'vertical';
  * An etched separator. The component sets `role` and `aria-orientation` on itself and replaces
  * any values a consumer set.
  *
+ * @tagname punk-divider
+ *
  * @slot - Optional label, centered between two lines. Horizontal dividers only.
  *
  * @csspart line - A line. A labeled divider has two.

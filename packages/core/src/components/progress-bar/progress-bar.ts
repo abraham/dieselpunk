@@ -23,6 +23,8 @@ const valueConverter = {
 /**
  * A progress bar for production, research, or transfer. Without a `value` it is indeterminate.
  *
+ * @tagname punk-progress-bar
+ *
  * @csspart header - The row above the track, holding the label and the value text.
  * @csspart label - The label.
  * @csspart value - The percentage text, shown with `show-value`.
