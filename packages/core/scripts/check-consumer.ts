@@ -44,6 +44,7 @@ interface Report {
   changed: string[] | null;
   toggled: boolean | null;
   tabbed: string | null;
+  closed: string | null;
 }
 
 // What each page registers: the plain page imports panel and button; the TypeScript page imports
@@ -54,6 +55,7 @@ const expectedTags: Record<string, string[]> = {
     'punk-accordion',
     'punk-accordion-item',
     'punk-cluster',
+    'punk-dialog',
     'punk-icon-button',
     'punk-item-stack',
     'punk-meter',
@@ -67,6 +69,7 @@ const expectedTags: Record<string, string[]> = {
     'punk-tabs',
     'punk-toolbar',
     'punk-tooltip',
+    'punk-window',
   ],
 };
 
@@ -173,6 +176,9 @@ async function checkPages(outDir: string): Promise<void> {
         }
         if (report.tabbed !== 'outputs') {
           problems.push(`app.html: clicking a tab reported ${report.tabbed}`);
+        }
+        if (report.closed !== 'method:done') {
+          problems.push(`app.html: closing a dialog reported ${report.closed}`);
         }
       }
       if (messages.length > 0) problems.push(`${page}.html logged: ${messages.join(' | ')}`);

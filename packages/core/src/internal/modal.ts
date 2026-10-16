@@ -136,6 +136,12 @@ export class ModalController {
     const opener = this.#opener;
     this.#opener = null;
     if (opener?.isConnected) opener.focus({ preventScroll: true });
+    else if (dialog) {
+      // Focus that was inside goes to the page, rather than staying on something now hidden.
+      const host = (dialog.getRootNode() as ShadowRoot).host;
+      const active = deepActiveElement();
+      if (active && host?.contains(active)) active.blur();
+    }
     this.#options.onClose(reason, returnValue);
   }
 

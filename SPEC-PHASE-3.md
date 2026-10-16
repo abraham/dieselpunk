@@ -1,6 +1,6 @@
 # Phase 3: Application Shell — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (shared internals), 2 (layout and disclosure), and 3 (tabs and toolbar) are implemented, with their test infrastructure and workbench parts; the rest is not started.
+**Status:** Draft 1. Work packages 1 (shared internals), 2 (layout and disclosure), 3 (tabs and toolbar), and 4 (window and dialog) are implemented, with their test infrastructure and workbench parts; the rest is not started.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 3
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md), [SPEC-PHASE-2.md](SPEC-PHASE-2.md)
 **Package:** `@dieselpunk/core`
@@ -705,7 +705,7 @@ The matrix of Phase 1 §10.3 and Phase 2 §10.4 applies, with these changes:
 
 ### 10.8 Size and Packaging
 
-The gates of Phase 2 §10.6 apply, with each entry measured on its own, gzip-compressed, before any limit is set. The shared form base, the modal controller, and the field styles each get their own size-limit entry. `check-package.ts` requires that no entry brings a tag of another family (§5.1), and that tree-shaken imports of one entry do not include another's component. The forms and the window are the likeliest to pass 5 kB; if one does, the shared base is split before a limit is raised, and any exception is documented with its reason, as Phase 2's was. The icon button's limit is 7.5 kB after work package 1 (§11.1), and the tabs' is 6 kB after work package 3 (§11.3).
+The gates of Phase 2 §10.6 apply, with each entry measured on its own, gzip-compressed, before any limit is set. The shared form base, the modal controller, and the field styles each get their own size-limit entry. `check-package.ts` requires that no entry brings a tag of another family (§5.1), and that tree-shaken imports of one entry do not include another's component. The forms and the window are the likeliest to pass 5 kB; if one does, the shared base is split before a limit is raised, and any exception is documented with its reason, as Phase 2's was. The icon button's limit is 7.5 kB after work package 1 (§11.1), the tabs' is 6 kB after work package 3 (§11.3), and the window's is 7 kB after work package 4 (§11.4).
 
 ### 10.9 CI and Framework Fixtures
 
@@ -722,7 +722,7 @@ Packages are ordered by dependency.
 | 1 | Shared internals | Phase 2 | `form-control`, `modal`, `overlay-stack` (the tooltip moved onto it), `anchor` and `setExternalAria`, `roving` and the roving protocol on `PunkButtonBase`, `ids`, `status-shape` moved out of the status light, `close-button`, `field` styles, the tokens, localization keys, a test of the contrast rule; logic and browser tests. Done (§11.1). |
 | 2 | Layout and disclosure | 1 | `punk-stack`, `punk-cluster`, `punk-accordion`, `punk-accordion-item`, tests. Done (§11.2). |
 | 3 | Tabs and toolbar | 1 | `punk-tabs`, `punk-tab`, `punk-toolbar`, `tab-navigation`, tests. Done (§11.3). |
-| 4 | Window and dialog | 1 | `punk-window`, `punk-dialog`, `window-position`, the modal and Escape tests |
+| 4 | Window and dialog | 1 | `punk-window`, `punk-dialog`, `window-position`, the modal and Escape tests. Done (§11.4). |
 | 5 | Popover | 1 | `punk-popover`, both focus modes, tests |
 | 6 | Toast | 1 | `punk-toast-stack`, `punk-toast`, `toast-timer`, tests |
 | 7 | Toggles and slider | 1 | `punk-checkbox`, `punk-switch`, `punk-slider`, `slider-math`, the parity test |
@@ -784,6 +784,26 @@ What was built, and what implementation changed from the text above:
 - **Sizes** (gzip): tabs with both tags 5.4 kB, over 5 kB, with a limit of 6 kB; toolbar 3.92 kB. The tabs exception has a reason: it holds two components, the panel ownership and activation logic, and the tab and tab list styles, none of which another entry shares, so there was no shared base to split. The shared runtime is 8.37 kB.
 - **Tests:** tabs 45 and toolbar 25 (browser). The full run in Chromium, Firefox, and WebKit on Linux is 159 files, 2706 tests passed, 27 skipped; `test:visual` 502 passed.
 - **Mutation checks:** 17 mutations were each caught: the disabled and selection hooks, the event, auto activation, the rtl swap, forward-first resolution, restoring `hidden`, the `tabindex` rule, the once-only warning, `aria-selected`, the disabled `tabindex`, the focus handoff, the trailing separator, the observer with `wrap`, its disconnect, the trigger reserve, the scroll rule, and the wrap shrink rule.
+
+### 11.4 Work Package 4 Notes
+
+What was built, and what implementation changed from the text above:
+
+- **Files:** `components/window` and `components/dialog`, and three shared files the layout in §4 did not list: `internal/modal-surface.ts`, the base class of both (`heading`, `open`, the `aria-label` copy, the `ModalController` wiring, `punk-open` and `punk-close`, the scroll region, and the footer); `styles/modal-surface.ts`, their shared surface, container query, and fallback; and `internal/window-position.ts`, the pure part (`clampOffset`, `offsetForCenter`, `keyboardStep`). `test/window-position.test.ts` has 11 node tests; the node suite is 147. The base is in the manifest globs, so the inherited attributes are documented.
+- **The `<dialog>` is always in the shadow tree**, so the controller can find it, and a closed one is `display: none`: nothing is shown and nothing is in the accessibility tree. `open` is the source of truth. Setting it from code, from the attribute, or removing it closes with the reason `method`, and `punk-open` and `punk-close` are each sent once for every change however it happened.
+- **A removed opener leaves focus on the page.** The controller used to leave focus on the hidden dialog's content when the opener was gone; `focus.test.ts` found it, and it now blurs focus that was inside the host.
+- **Escape in move mode** is handled by putting a second entry on the overlay stack for as long as the mode lasts, so Escape puts the window back before it reaches the window's own entry, and a second Escape closes the window. A click anywhere (including inside the window) places the titlebar's center there, stops the click from reaching what was under it, and ends the mode; Enter or the move button ends it too. `punk-move-start` and `punk-move-end` are sent for a drag and for move mode, and a cancelled move reports the offset it went back to.
+- **No layout reads while moving.** The window and titlebar rectangles are read once, when a drag or move mode starts, and every step is arithmetic on them (the rectangle with the current translation taken out). A `resize` listener exists while the window has an offset, and the base's own is there while it is open, for the scroll region; both are gone when it closes.
+- **Footer stacking is a container query on the dialog**, so it follows the width the window has, not the viewport. A modal dialog's width follows the viewport, so its test checks only the stacked case, and the window's test checks both.
+- **Look:** the move button reuses the close button's surface with a cross glyph, and while pressed it is `accent`, and `Highlight` under forced colors. The titlebar is an inset strip; under forced colors it has a border in place of the bevel.
+- **Gallery:** `shell` gains `window`: three open, non-modal windows (plain, dismissible and movable with an icon and actions, and a 320px one). `dialog` is in the default gallery closed, since an open modal makes the rest of the page inert, which would hide everything else from the axe and reflow runs; the manifest still finds all its parts, because they are rendered while it is closed. The new `overlays` group (`dialog` and `window`) builds with `open`, which makes each a single open modal. The matrix page blurs whatever focus the overlay took, so no ring is in a baseline.
+- **Visual and axe for overlays:** `matrix.spec.ts` renders the `overlays` group as one page for each overlay, in `short` and `rtl` content only, which makes 152 baselines (about 2 MB); the 148 `shell` baselines were written again, and the foundation and inventory ones are byte-identical. `overlays-a11y.test.ts` scans each open overlay on its own page, in every theme, density, and content variant (64 scans). `aria.spec.ts` has a snapshot of an open window and an alert dialog. The "window mid-move" capture of §10.4 is not in yet.
+- **Consumer typing:** the fixture `app.ts` builds a window and a dialog with `@ts-expect-error` on a field not in the move detail and on a close reason outside the union. The probe is now async: it opens a dialog from code and checks that `punk-close` reports `method` and the `returnValue`.
+- **Workbench:** stories for the window (Playground, States, a Modal that opens from a button, and the matrix) and the dialog (Playground, Alert, Persistent), their place in the sidebar, and a windows and dialogs section in the accessibility guide. The smoke test renders 92 entries (was 83).
+- **Sizes** (gzip): dialog 4.88 kB, against 5 kB; window 6.88 kB, with a limit of 7 kB. The window's exception has a reason: the shared surface, controller, and styles are about the dialog's whole size, and the window adds the close button, dragging, and move mode on top; the shared part is counted in each entry, so splitting it out would not make either smaller. The shared runtime is 8.37 kB, with the surface styles left out of it.
+- **Tests:** window 36, dialog 32, `focus.test.ts` 16 (browser). The full run in Chromium, Firefox, and WebKit on Linux is 177 files, 3180 tests passed, 27 skipped; `test:visual` 657 passed.
+- **Mutation checks:** 22 mutations were each caught: the close hook, the open event, `open` clearing itself, disposing on removal, the scroll region, the resize listener, the once-only warning, the removed-opener blur, dragging without `movable`, the no-drag controls, clamping, the move entry on the stack, restoring on Escape, the resize listener only while moved, ending move mode when the window closes, the placing click's listener, the Shift step, the `action` reason, `persistent`, the fallback rule, and the footer breakpoint. One survived at first, the placing click's listener after move mode ended, and a test now covers it.
+- **Left for later packages:** the popover over the window in the Escape order (work package 5), and the listener gates of §10.7 and `perf-shell.test.ts` (work package 9).
 
 ## 12. Acceptance Criteria
 

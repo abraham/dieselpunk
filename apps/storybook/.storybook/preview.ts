@@ -82,6 +82,8 @@ const preview: Preview = {
             'Accordion',
             'Tabs',
             'Toolbar',
+            'Window',
+            'Dialog',
           ],
           'Guides',
         ],

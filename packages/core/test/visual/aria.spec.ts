@@ -183,6 +183,30 @@ test.describe('ARIA snapshots', () => {
     `);
   });
 
+  test('window and dialog, open', async ({ page }) => {
+    await render(
+      page,
+      `<punk-window heading="Assembler" open dismissible movable>
+         <p>Crafting speed 0.75</p>
+         <punk-button slot="footer">Start</punk-button>
+       </punk-window>
+       <punk-dialog heading="Discard the run?" alert open>
+         <p>This cannot be undone.</p>
+         <punk-button slot="footer">Discard</punk-button>
+       </punk-dialog>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - dialog "Assembler":
+        - button "Move window" [pressed=false]
+        - button "Close"
+        - paragraph: Crafting speed 0.75
+        - button "Start"
+      - alertdialog "Discard the run?":
+        - paragraph: This cannot be undone.
+        - button "Discard"
+    `);
+  });
+
   test('accordion', async ({ page }) => {
     await render(
       page,

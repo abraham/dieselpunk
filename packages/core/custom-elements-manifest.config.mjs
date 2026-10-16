@@ -5,6 +5,7 @@ export default {
     'src/internal/button-base.ts',
     'src/internal/selectable-base.ts',
     'src/internal/receptacle-base.ts',
+    'src/internal/modal-surface.ts',
   ],
   exclude: [
     '**/*.test.ts',

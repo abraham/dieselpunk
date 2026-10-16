@@ -40,7 +40,7 @@ document.head.append(style);
 document.documentElement.setAttribute('data-punk-theme', theme);
 document.documentElement.setAttribute('data-punk-density', density);
 
-const gallery = buildGallery(content, names);
+const gallery = buildGallery(content, names, { open: group === 'overlays' });
 // The 100-slot grids are in the short content only: their layout does not depend on the words.
 if (!only && group === 'inventory' && content === 'short') {
   gallery.append(...buildLargeGrids(content).children);
@@ -65,6 +65,10 @@ for (let round = 0; round < 2; round++) {
   await Promise.all(elements.map((element) => element.updateComplete));
 }
 await document.fonts.ready;
+// An overlay takes focus when it opens, and a ring on it would be in every baseline.
+let focused: Element | null = document.activeElement;
+while (focused?.shadowRoot?.activeElement) focused = focused.shadowRoot.activeElement;
+(focused as HTMLElement | null)?.blur?.();
 // A frame lets the open tooltip position itself before the screenshot.
 await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 document.documentElement.setAttribute('data-ready', '');

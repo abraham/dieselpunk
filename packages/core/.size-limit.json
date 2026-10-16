@@ -14,7 +14,8 @@
       "!dist/styles/field.js",
       "!dist/styles/close-button.js",
       "!dist/styles/status-shape.js",
-      "!dist/styles/gap.js"
+      "!dist/styles/gap.js",
+      "!dist/styles/modal-surface.js"
     ],
     "ignore": ["lit"],
     "gzip": true,
@@ -163,6 +164,20 @@
   {
     "name": "punk-toolbar",
     "path": "dist/components/toolbar/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-window",
+    "path": "dist/components/window/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "7 kB"
+  },
+  {
+    "name": "punk-dialog",
+    "path": "dist/components/dialog/register.js",
     "ignore": ["lit"],
     "gzip": true,
     "limit": "5 kB"

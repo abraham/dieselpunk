@@ -1,7 +1,7 @@
 // Runs inside the consumer pages, injected by check-consumer.ts. It lives in its own file because
 // it needs DOM types, and the Node-run scripts must not have them.
 
-export function probeConsumer() {
+export async function probeConsumer() {
   const tags = [
     'punk-panel',
     'punk-button',
@@ -21,6 +21,8 @@ export function probeConsumer() {
     'punk-tabs',
     'punk-tab',
     'punk-toolbar',
+    'punk-window',
+    'punk-dialog',
   ];
   const bar = document
     .querySelector('punk-progress-bar')
@@ -47,6 +49,17 @@ export function probeConsumer() {
     tabbed = event.detail.value;
   });
   secondTab?.click();
+  // A dialog opened and closed from code reports how it closed.
+  const confirm = document.querySelector('punk-dialog');
+  let closed: string | null = null;
+  confirm?.addEventListener('punk-close', (event) => {
+    closed = `${event.detail.reason}:${event.detail.returnValue}`;
+  });
+  if (confirm) {
+    confirm.show();
+    await confirm.updateComplete;
+    confirm.close('done');
+  }
   return {
     defined: tags.filter((tag) => customElements.get(tag) !== undefined),
     upgraded: Boolean(
@@ -64,6 +77,7 @@ export function probeConsumer() {
     changed: changed as string[] | null,
     toggled: toggled as boolean | null,
     tabbed: tabbed as string | null,
+    closed: closed as string | null,
   };
 }
 

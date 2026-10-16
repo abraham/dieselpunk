@@ -6,10 +6,14 @@ import type {
   PunkAccordionItem,
   PunkActivateDetail,
   PunkButton,
+  PunkCloseDetail,
+  PunkCloseReason,
   PunkCluster,
+  PunkDialog,
   PunkIconButton,
   PunkItemStack,
   PunkMeter,
+  PunkMoveDetail,
   PunkOverflowDetail,
   PunkProgressBar,
   PunkRecipe,
@@ -23,11 +27,13 @@ import type {
   PunkTabs,
   PunkToggleDetail,
   PunkToolbar,
+  PunkWindow,
   StackGap,
   StatusVariant,
 } from '@dieselpunk/core';
 import '@dieselpunk/core/accordion/register.js';
 import '@dieselpunk/core/cluster/register.js';
+import '@dieselpunk/core/dialog/register.js';
 import '@dieselpunk/core/icon-button/register.js';
 import '@dieselpunk/core/item-stack/register.js';
 import '@dieselpunk/core/meter/register.js';
@@ -38,6 +44,7 @@ import '@dieselpunk/core/slot-grid/register.js';
 import '@dieselpunk/core/stack/register.js';
 import '@dieselpunk/core/tabs/register.js';
 import '@dieselpunk/core/toolbar/register.js';
+import '@dieselpunk/core/window/register.js';
 import '@dieselpunk/core/status-light/register.js';
 
 setStrings({ loading: 'Laden' });
@@ -173,6 +180,29 @@ toolbar.addEventListener('punk-overflow-change', (event) => {
 });
 toolbar.append(loading.cloneNode(true));
 layout.append(tabs, toolbar);
+
+// A window and a dialog, with typed open, close, and move events.
+const assembler: PunkWindow = document.createElement('punk-window');
+assembler.heading = 'Assembler';
+assembler.movable = true;
+assembler.dismissible = true;
+assembler.addEventListener('punk-move-end', (event) => {
+  const detail: PunkMoveDetail = event.detail;
+  // @ts-expect-error The detail is an offset, `x` and `y` only.
+  void detail.z;
+  void [detail.x, detail.y];
+});
+const confirm: PunkDialog = document.createElement('punk-dialog');
+confirm.heading = 'Discard the run?';
+confirm.persistent = false;
+confirm.addEventListener('punk-close', (event) => {
+  const detail: PunkCloseDetail = event.detail;
+  const reason: PunkCloseReason = detail.reason;
+  // @ts-expect-error The reasons are a closed union.
+  const unknown: PunkCloseReason = 'sulking';
+  void [reason, unknown, detail.returnValue];
+});
+layout.append(assembler, confirm);
 
 document.body.append(layout);
 document.documentElement.dataset['consumer'] = 'ready';

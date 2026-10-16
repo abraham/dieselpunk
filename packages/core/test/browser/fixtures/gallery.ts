@@ -20,6 +20,8 @@ import '../../../src/components/cluster/register.ts';
 import '../../../src/components/accordion/register.ts';
 import '../../../src/components/tabs/register.ts';
 import '../../../src/components/toolbar/register.ts';
+import '../../../src/components/window/register.ts';
+import '../../../src/components/dialog/register.ts';
 
 // The visual matrix renders one group per run, so each group has its own page and baselines.
 export const foundationNames = [
@@ -46,14 +48,23 @@ export const shellNames = [
   'tabs',
   'tab',
   'toolbar',
+  'window',
 ] as const;
-export const componentNames = [...foundationNames, ...inventoryNames, ...shellNames] as const;
+// Overlays open on a page of their own, since the top layer covers everything else.
+export const overlayNames = ['dialog', 'window'] as const;
+export const componentNames = [
+  ...foundationNames,
+  ...inventoryNames,
+  ...shellNames,
+  'dialog',
+] as const;
 export type ComponentName = (typeof componentNames)[number];
 
 export const galleryGroups = {
   foundation: foundationNames,
   inventory: inventoryNames,
   shell: shellNames,
+  overlays: overlayNames,
 } as const;
 export type GalleryGroup = keyof typeof galleryGroups;
 
@@ -186,7 +197,12 @@ function slot(name: string, text: string): string {
   return text ? `<span slot="${name}">${text}</span>` : '';
 }
 
-type Builder = (text: Copy) => string;
+/** `open` is for a page that holds one overlay: it opens modal, and the others stay closed. */
+export interface BuildOptions {
+  open?: boolean;
+}
+
+type Builder = (text: Copy, options: BuildOptions) => string;
 
 const builders: Record<ComponentName, Builder> = {
   panel: (c) =>
@@ -538,6 +554,28 @@ const builders: Record<ComponentName, Builder> = {
     `;
   },
 
+  window: (c, { open }) => {
+    const name = `heading="${c.title}" aria-label="${c.settings}"`;
+    const footer = `<punk-button slot="footer" variant="primary">${c.start}</punk-button><punk-button slot="footer">${c.stop}</punk-button>`;
+    const text = `<p style="margin: 0">${c.body}</p>`;
+    if (open) {
+      return `<punk-window ${name} modal open dismissible movable>${text}${footer}</punk-window>`;
+    }
+    return `
+      <punk-window ${name} open>${text}</punk-window>
+      <punk-window ${name} open dismissible movable><span slot="icon">${gear}</span>${text}${footer}</punk-window>
+      <punk-window ${name} open dismissible style="--punk-window-max-width: 320px">${text}${footer}</punk-window>
+    `;
+  },
+
+  dialog: (c, { open }) => `
+    <punk-dialog heading="${c.title}" aria-label="${c.settings}"${open ? ' open' : ''}>
+      <p style="margin: 0">${c.body}</p>
+      <punk-button slot="footer" variant="danger">${c.stop}</punk-button>
+      <punk-button slot="footer">${c.pause}</punk-button>
+    </punk-dialog>
+  `,
+
   'accordion-item': (c) => `
     <div class="stack" style="max-inline-size: 480px">
       <punk-accordion-item heading="${c.settings}"><p style="margin: 0">${c.body}</p></punk-accordion-item>
@@ -551,14 +589,19 @@ const builders: Record<ComponentName, Builder> = {
 };
 
 /** HTML for one component's states. */
-export function componentHtml(name: ComponentName, variant: ContentVariant): string {
-  return builders[name](copy[variant]);
+export function componentHtml(
+  name: ComponentName,
+  variant: ContentVariant,
+  options: BuildOptions = {},
+): string {
+  return builders[name](copy[variant], options);
 }
 
 /** A container holding a section for each requested component, language and direction set. */
 export function buildGallery(
   variant: ContentVariant,
   names: readonly ComponentName[] = componentNames,
+  options: BuildOptions = {},
 ): HTMLElement {
   const { lang, dir } = copy[variant];
   const root = document.createElement('div');
@@ -570,7 +613,7 @@ export function buildGallery(
       (name) => `
         <section data-component="${name}" class="stack">
           <h2 class="caption">punk-${name}</h2>
-          ${componentHtml(name, variant)}
+          ${componentHtml(name, variant, options)}
         </section>
       `,
     )
