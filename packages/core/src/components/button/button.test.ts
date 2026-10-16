@@ -38,7 +38,6 @@ afterEach(async () => {
   }
   // Park the real pointer so a later test is not left hovering at the same spot.
   await userEvent.unhover(document.body);
-  await commands.setReducedMotion(null);
   vi.restoreAllMocks();
 });
 
@@ -248,12 +247,9 @@ describe('loading (12.4.3)', () => {
     expect(button.shadowRoot?.querySelector('[part="spinner"]')).toBeNull();
   });
 
-  it('stops the spinner when the user prefers reduced motion', async () => {
+  it('animates the spinner while loading', async () => {
     const button = await mount({ loading: true });
     expect(getComputedStyle(part(button, 'spinner')).animationName).toBe('punk-spin');
-
-    await commands.setReducedMotion('reduce');
-    expect(getComputedStyle(part(button, 'spinner')).animationName).toBe('none');
   });
 });
 

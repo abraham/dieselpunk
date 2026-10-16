@@ -49,7 +49,7 @@ Interactive surfaces communicate state through depth as well as color:
 - pressed controls move inward by 1px and become inset;
 - selected controls use a warm orange outline and darker inset surface;
 - disabled controls flatten, desaturate, and retain readable labels;
-- focus uses a high-contrast outer ring that is not removed in mouse mode.
+- focus uses a high-contrast two-tone ring that is drawn on `:focus-visible`, and a control never loses its focus indication without an equivalent replacement.
 
 ### 4.3 Original Industrial Materials
 
@@ -307,7 +307,7 @@ A selectable recipe tile with icon, title, craft duration, availability, and ing
 Displays determinate or indeterminate production, research, or transfer progress.
 
 - Properties: `value`, `max`, `variant: 'default' | 'success' | 'warning' | 'danger'`, `label`, `showValue`.
-- Uses native progress semantics.
+- Uses the ARIA `progressbar` role with `aria-valuemin`, `aria-valuemax`, and `aria-valuenow`, which is omitted when indeterminate. It renders custom markup instead of the native `<progress>` element, whose styling is inconsistent across engines.
 - Value animation is visual only; accessibility values update immediately.
 
 #### `<punk-meter>`
@@ -392,7 +392,7 @@ Transient system feedback with `info`, `success`, `warning`, and `danger` varian
 
 ### 9.2 Pointer and Touch
 
-- Minimum touch target: 40x40 CSS pixels for primary controls and slots.
+- Minimum touch target: 40x40 CSS pixels for primary controls and slots. Under a coarse pointer, a control shorter than 40px, such as a 36px compact `md` button, extends its hit area to 40px without changing how it looks.
 - Hover may reveal supplemental information but never required actions.
 - Pointer capture is used for slider and optional window-drag interactions.
 - Destructive actions require explicit labels and confirmation when not easily reversible.
@@ -496,7 +496,7 @@ The documentation app must function as a workbench rather than a marketing landi
 - framework integration examples for plain HTML, React, Vue, and Svelte;
 - an asset policy page explaining how to provide original item icons and textures.
 
-The first screen opens directly to the component workbench with the inventory components visible.
+The first screen opens directly to the component workbench with the inventory components visible. Until those components exist, in Phase 2, it opens on a Foundations overview composed of the components that do.
 
 ## 16. Versioning and Compatibility
 

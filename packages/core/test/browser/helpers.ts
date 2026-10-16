@@ -39,6 +39,8 @@ export async function focusWithKeyboard(element: HTMLElement): Promise<void> {
     await userEvent.keyboard('{Escape}');
     element.focus();
   } else {
+    // Headless Firefox starts without page focus, and Tab does nothing until the page has some.
+    if (!document.hasFocus()) window.focus();
     await userEvent.tab();
   }
 }
