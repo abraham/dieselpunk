@@ -3,7 +3,8 @@
   "compilerOptions": {
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "types": []
+    "types": [],
+    "paths": { "#dev": ["./src/utilities/dev.ts"] }
   },
   "include": ["src/**/*.ts", "test/browser/**/*.ts"]
 }

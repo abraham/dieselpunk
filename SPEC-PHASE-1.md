@@ -1,6 +1,6 @@
 # Phase 1: Foundation — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), and 4's `punk-panel` are implemented, as are `token()`, the base styles, surfaces, texture, forced-colors helper, slot presence, registration helper, and `PunkElement` from work package 3. Sections 12.1 (Foundations) and 12.2 (Panel) are complete.
+**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), and 4 (`punk-panel`, `punk-divider`) are implemented, as are `token()`, the base styles, surfaces, texture, forced-colors helper, density helper, slot presence, registration helper, the dev flag and `devWarn`, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), and 12.3 (Divider) are complete.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases)
 **Package:** `@dieselpunk/core`
 **Prefix:** `punk-`
@@ -144,6 +144,7 @@ packages/core/
       localize.ts               default strings + setStrings()
       position.ts               tooltip placement/flip/shift
       dev.ts / dev.dev.ts       PUNK_DEV flag (§5.4)
+      warn.ts                   devWarn(element, message)
     components/
       panel/        panel.ts, panel.styles.ts, index.ts, register.ts, panel.test.ts
       divider/      …same shape
@@ -158,6 +159,7 @@ packages/core/
     browser/
       foundations.test.ts   criteria 12.1.3 to 12.1.5 in real browsers (§12.1)
       commands.ts           types for custom Vitest browser commands
+      helpers.ts            track/cleanup, addStylesheets, rgb for browser tests
       fixtures/probe.ts     PunkProbe, a test-only element built like a component
     package/        fixture consumer app for packaging tests
 apps/storybook/
@@ -206,7 +208,19 @@ Class names are `PunkPanel`, `PunkDivider`, `PunkButton`, `PunkIconButton`, `Pun
 
 ### 5.4 Development Warnings
 
-`#dev` exports `PUNK_DEV`: `true` under the `development` condition and `false` otherwise. Bundlers drop guarded branches in production. Warnings use one helper, `devWarn(element, message)`, which prefixes the tag name.
+`#dev` exports `PUNK_DEV`: `true` under the `development` condition and `false` otherwise. Bundlers drop guarded branches in production. Warnings use one helper, `devWarn(element, message)` in `utilities/warn.ts`, which prefixes the tag name and does nothing unless `PUNK_DEV` is true.
+
+`#dev` resolves differently in three places, and none depends on a built `dist/`:
+
+| Context | Resolution |
+|---------|------------|
+| Consumers | `imports` in `package.json`: `development` maps to `dist/utilities/dev.dev.js`, everything else to `dist/utilities/dev.js` |
+| Type checking | `paths` in `tsconfig.json` maps `#dev` to `src/utilities/dev.ts` |
+| Tests | A Vite alias in `vitest.config.ts` maps `#dev` to `dev.dev.ts`, so tests always run with warnings on |
+
+`tsc` leaves `#dev` untouched in emitted JavaScript. This was verified in Node: importing the built `warn.js` logs a warning only under `--conditions=development`.
+
+A component warns once per occurrence of a problem, not on every update: it records that it has warned, and clears the record when the problem goes away.
 
 ## 6. Tokens, Themes, and Density
 
@@ -356,7 +370,7 @@ All surfaces use `--punk-radius` (maximum 4px). No blur, glow, or soft shadows (
 
 ### 7.7 Slot Presence
 
-`slot-presence.ts` is a reactive controller reporting whether a named slot has assigned content. It checks light-DOM children synchronously in `hostConnected` and re-evaluates on `slotchange`.
+`slot-presence.ts` is a reactive controller reporting whether a slot has assigned content. A name such as `'header'` is a named slot; the empty name `''` is the default slot, which also counts non-blank text and ignores whitespace-only text. It checks light-DOM child nodes synchronously in `hostConnected` and re-evaluates on `slotchange`. A component that must keep tracking content while the slot is visually hidden renders the slot inside a `hidden` wrapper instead of omitting it, because slot assignment and `slotchange` do not depend on rendering.
 
 ## 8. Components
 
@@ -400,9 +414,13 @@ An etched separator.
 - **Parts:** `line`, `label`.
 - **CSS properties:** `--punk-divider-gap` (label spacing; default `var(--punk-space-2)`).
 - The line is a 1px dark line adjacent to a 1px light line (etched).
-- Default semantics: `role="separator"` with `aria-orientation`. When `decorative`, `role="none"`.
-- Horizontal with a label draws the label centered with a line on each side.
-- Vertical dividers stretch to the container's block size (`align-self: stretch`) and ignore the label slot, emitting a dev warning if it is populated.
+- Default semantics: `role="separator"` with `aria-orientation`. When `decorative`, `role="none"` and no `aria-orientation`.
+- The component writes `role` and `aria-orientation` as attributes on its own host, replacing any values a consumer set. Host attributes were chosen over `ElementInternals` because they work with every assistive technology and can be asserted in tests, whereas an internals role is invisible to the DOM and to Playwright's role engine.
+- An unknown `orientation` value behaves as `horizontal`, including its `aria-orientation`.
+- Horizontal with a label draws the label centered with a line on each side, using two `line` parts. Without a label there is one line. Whitespace-only text is not a label.
+- The label slot always renders, inside a wrapper that is `hidden` when there is no label or the divider is vertical, so label tracking keeps working in every state.
+- Vertical dividers stretch to the container's block size (`align-self: stretch`; a `1em` minimum keeps them visible outside a flex container) and ignore the label slot, emitting a dev warning once when it is populated.
+- The label color is `--punk-color-text-muted`.
 
 ### 8.3 `punk-button`
 
@@ -588,8 +606,8 @@ Packages are ordered by dependency. Each ends with the CI gates that apply to wh
 |---|---------|------------|--------|
 | 1 | Scaffolding | — | Workspaces, `.nvmrc`, `engines`, tsconfigs (including `tsconfig.scripts.json`), lint, CI skeleton on Node 26, empty `core` package building |
 | 2 | Tokens, themes, density | 1 | `tokens/`, `build-css.ts`, `check-contrast.ts`, emitted CSS |
-| 3 | Internals and shared styles | 2 | `PunkElement`, `token()`, surfaces, focus, texture, forced-colors, localize, dev flag, registration helper. Done: `PunkElement`, `token()`, base styles, surfaces, texture, forced-colors helper, density helper, slot presence, registration helper. Remaining: focus, localize, dev flag. |
-| 4 | Panel and divider | 3 | Two components, tests, fixtures. Done: `punk-panel`. Remaining: `punk-divider`. |
+| 3 | Internals and shared styles | 2 | `PunkElement`, `token()`, surfaces, focus, texture, forced-colors, localize, dev flag, registration helper. Done: `PunkElement`, `token()`, base styles, surfaces, texture, forced-colors helper, density helper, slot presence, registration helper, dev flag and `devWarn`. Remaining: focus, localize. |
+| 4 | Panel and divider | 3 | Two components, tests, fixtures. Done. |
 | 5 | Tooltip | 3 | Component, `position.ts`, tests |
 | 6 | Button base, button, icon button | 3, 5 | Components, form behavior, anchor protocol, tests |
 | 7 | Progress bar | 3 | Component, tests |
@@ -625,6 +643,8 @@ Verified in `src/components/panel/panel.test.ts`. `panel.registration.test.ts` v
 1. Horizontal and vertical orientations render and report `aria-orientation`.
 2. A label renders centered between two lines; vertical ignores it with a dev warning.
 3. `decorative` produces `role="none"`.
+
+Verified in `src/components/divider/divider.test.ts` and `divider.registration.test.ts`, including the divider's own unstyled-appearance assertion (12.1.3). Shared test setup lives in `test/browser/helpers.ts`.
 
 ### 12.4 Button
 

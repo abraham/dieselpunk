@@ -10,6 +10,12 @@
   "files": [
     "dist"
   ],
+  "imports": {
+    "#dev": {
+      "development": "./dist/utilities/dev.dev.js",
+      "default": "./dist/utilities/dev.js"
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineBrowserCommand, playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 
@@ -28,6 +29,15 @@ const setForcedColors = defineBrowserCommand<[mode: 'active' | null]>(async (con
 });
 
 export default defineConfig({
+  // Tests always run with development warnings, and need no built dist/ to resolve #dev.
+  resolve: {
+    alias: [
+      {
+        find: /^#dev$/,
+        replacement: fileURLToPath(new URL('./src/utilities/dev.dev.ts', import.meta.url)),
+      },
+    ],
+  },
   // Pre-bundling Lit entry points up front avoids a mid-run reload that loads Lit twice on a cold cache.
   optimizeDeps: {
     include: ['lit', 'lit/decorators.js', 'lit/directives/class-map.js'],
