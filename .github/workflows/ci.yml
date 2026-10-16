@@ -28,6 +28,7 @@ jobs:
       - run: npm run check:package
       - run: npm run check:size
       - run: npm run check:consumer
+      - run: npm run check:frameworks
       - run: npm run test:smoke
 
   # Runs in the image the baselines were rendered on, so pixels match (SPEC-PHASE-1.md section 10.3).

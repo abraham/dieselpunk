@@ -96,6 +96,9 @@ const preview: Preview = {
           'Guides',
           [
             'Integration',
+            'React',
+            'Vue',
+            'Svelte',
             'Forms',
             'Focus and overlays',
             'Responsive layouts',

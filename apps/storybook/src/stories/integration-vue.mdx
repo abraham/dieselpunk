@@ -1,0 +1,60 @@
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+import mainSource from '../../../../packages/core/test/frameworks/vue/main.ts?raw';
+import appSource from '../../../../packages/core/test/frameworks/vue/App.vue?raw';
+
+<Meta title="Guides/Vue" />
+
+# Vue
+
+The components are Web Components, so Vue needs no wrapper package. This guide is a small Vue app, and the code on this page is that app's code: `npm run check:frameworks` builds it against the package and drives it with real keys and clicks, so a guide that stops working fails the build.
+
+## Tell Vue the tags are elements
+
+Vue resolves a tag it does not know as a component, and warns that it cannot find one. Mark `punk-` tags as custom elements in the template compiler:
+
+- With **Vite**, in `@vitejs/plugin-vue`: `vue({ template: { compilerOptions: { isCustomElement: (tag) => tag.startsWith('punk-') } } })`.
+- With **`vue-loader`**, in the loader's `compilerOptions`.
+- With the **runtime compiler** (the full build of Vue, which compiles templates in the browser), in `app.config.compilerOptions.isCustomElement`.
+
+The runtime-only build ignores the last one, because it has no compiler. The check does this with `@vue/compiler-sfc`, in the `template` parse options.
+
+## Register the elements
+
+Registering is a side effect, so import the `register.js` of each element you use, once, before the app mounts. Importing a class never registers it.
+
+<Source code={mainSource} language="ts" />
+
+## Properties and attributes
+
+Vue sets a binding as a **property** when the element has one, and as an attribute when it does not. `.prop` makes it a property whatever the element has, which is what a value or a state is, so `:value.prop` and `:checked.prop` are the way to write them. A boolean attribute written bare (`open`, `dismissible`, `alert`) is `true`.
+
+## Events
+
+Listen with `@`, for native events and for the elements' own: `@input`, `@change`, `@punk-close`, and `@punk-tab-change`. Use the kebab-case name as written. The detail of a `punk-` event is on `event.detail`, typed in the package, and a handler typed with `CustomEvent<PunkCloseDetail>` is checked against it.
+
+## Binding a value
+
+`v-model` is for components and for native form controls, and it does not apply to these elements. Use a one-way binding and an event handler: the state is the single source, `.prop` writes it to the element, and the event reads it back.
+
+```vue
+<punk-text-field
+  name="callsign"
+  label="Callsign"
+  :value.prop="callsign"
+  @input="callsign = $event.target.value"
+></punk-text-field>
+```
+
+A form works as a native one does: `@submit.prevent` on the `<form>` is called when a `punk-button type="submit"` is pressed, and `new FormData(event.currentTarget)` has every named control. See the Forms guide for what each control submits.
+
+## Methods
+
+Call a method, such as `show()` on a dialog or a window, through a template ref, typed with the class from the package (`ref<PunkDialog | null>(null)`).
+
+## Typing
+
+The package declares each tag in `HTMLElementTagNameMap` and exports the classes and event types, so refs, handlers, and details are typed in the script, as below. The template does not check the props of a custom element: Vue leaves their tags alone, and a prop is what the element makes of it. The check builds this app and drives it, and does not type-check the Vue script or template, so run `vue-tsc` in your own project to check them.
+
+## The app
+
+<Source code={appSource} language="html" />

@@ -1,6 +1,6 @@
 # Phase 3: Application Shell — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (shared internals), 2 (layout and disclosure), 3 (tabs and toolbar), 4 (window and dialog), 5 (popover), 6 (toast), 7 (toggles and slider), 8 (text, number, and select), 9 (test infrastructure), and 10 (workbench) are implemented; the framework fixtures and guides, and hardening, are not started.
+**Status:** Draft 1. Work packages 1 (shared internals), 2 (layout and disclosure), 3 (tabs and toolbar), 4 (window and dialog), 5 (popover), 6 (toast), 7 (toggles and slider), 8 (text, number, and select), 9 (test infrastructure), 10 (workbench), and 11 (integration) are implemented; hardening is not started.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 3
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md), [SPEC-PHASE-2.md](SPEC-PHASE-2.md)
 **Package:** `@dieselpunk/core`
@@ -729,7 +729,7 @@ Packages are ordered by dependency.
 | 8 | Text, number, and select | 1, 7 | `punk-text-field`, `punk-number-field`, `punk-select`, tests. Done (§11.8). |
 | 9 | Test infrastructure | 2 to 8 as they land | Three gallery groups, axe and reflow coverage, ARIA snapshots, the visual matrix and `overlays.spec.ts`, `forms.test.ts`, `focus.test.ts`, `perf-shell.test.ts`, consumer typing and the shell fixture, baselines. Done (§11.9). |
 | 10 | Workbench | 2 to 8 as they land | Stories and docs per family, the Application shell example, the three guides (forms, focus and overlays, and responsive layouts; the React, Vue, and Svelte guides are package 11). Done (§11.10). |
-| 11 | Integration | 7, 8, 10 | The React, Vue, and Svelte fixtures and guides, `check:frameworks` |
+| 11 | Integration | 7, 8, 10 | The React, Vue, and Svelte fixtures and guides, `check:frameworks`. Done (§11.11). |
 | 12 | Hardening | 9 | Forced-colors, RTL, 200% zoom, and 375px review of every render; size tuning; docs polish; `SPEC.md` updated |
 
 Packages 2 to 8 can proceed in parallel after package 1, except that 8 reuses the toggles' boundary styles. The gallery in package 9 is extended as each family lands, so each package's own tests already run against it.
@@ -925,6 +925,22 @@ The stories and docs page of each family landed with its package (stack, cluster
 - **The responsive examples are tested in the workbench, not the gallery.** §9 asked for the guide's examples to be the code the tests render, but the gallery lives in the package's tests and the workbench imports only the package. The three examples are stories, and the smoke test loads each at 375px and 187px and fails if the page scrolls sideways by more than a pixel; made to fail, it names each story and width.
 - **Smoke test:** 133 entries render without errors (was 126): the shell story, the three guide pages, and the three responsive stories.
 - **Left for later packages:** the React, Vue, and Svelte guides and the plain HTML guide's fixture-backed code, which are package 11.
+
+### 11.11 Work Package 11 Notes
+
+What was built, and what implementation changed from the text above:
+
+- **Files:** `test/frameworks/` in the core package, with `index.html` and one directory for each framework (`react/` with `main.tsx`, `App.tsx`, `punk-elements.d.ts`, `css.d.ts`, and a `tsconfig.json`; `vue/` with `main.ts` and `App.vue`; `svelte/` with `main.ts` and `App.svelte`), and `scripts/check-frameworks.ts`, which `npm run check:frameworks` runs, at the root and in the package, after `build`. The three guides are `integration-react.mdx`, `integration-vue.mdx`, and `integration-svelte.mdx` in the workbench.
+- **Dependencies** are dev dependencies of the core package, pinned exactly, since each framework bumps its own conventions for custom elements: `react` and `react-dom` 19.3.1, `@types/react` and `@types/react-dom` 19.3.0, `vue` and `@vue/compiler-sfc` 3.5.44, `svelte` 5.57.2, and `esbuild-svelte` 0.9.5. Dependabot groups them as `frameworks` and ignores a new major of each framework, which is made by hand with its guide. The CI job runs the check after `check:consumer`.
+- **One app, three times.** Each app has the same markup and the same ids, so one driver serves all three: a window with tabs (Production and Modules), a form in the Production panel with a text field, a switch, and a slider, an Apply and a Boost button, and a greeting; a Stop button that opens an alert dialog; and a `pre#report` with what the app received, as JSON. The state is held by the framework, written to the elements as properties, and read back from `input`, `change`, `punk-tab-change`, and `punk-close`.
+- **The driver** uses real input in Chromium: fill the text field, check the greeting (the state came back to the page), press Space on the switch, click Boost and read the slider's `aria-valuenow` (the app set a property, 90), press End on the slider, click Apply, click the Modules tab, click Stop machine, click Discard in the dialog, and press Escape for the window. The report must equal the callsign `Echo`, the switch on, the power 100, the submitted `FormData` (`callsign`, `restart=on`, `power=100`), the tab `modules`, the dialog `action:discard`, and the window `escape`; the page must log no error or warning. The report is given three seconds to settle, since React flushes the last update after the key press returns. Made wrong, the check fails in all three apps, with what each received.
+- **React.** The package is typed in `punk-elements.d.ts`, and the check runs `tsc` on the app with it, so every prop and handler is checked. React 19 reads a prop that starts with `on` as a listener for the rest of the name, so events are written in lower case (`oninput`, `onchange`, `onpunk-close`, `onpunk-tab-change`); `onChange` and `onInput` are React's synthetic events, and `onChange` is never sent for a custom element. React 18 passes only attributes, which the guide says.
+- **Vue.** The template compiler must be told that `punk-` tags are elements, and in the build it is told in two places: `templateParseOptions` of `parse`, since `compileScript` reuses the tree `parse` made, and the template options. The runtime option `app.config.compilerOptions` is ignored by the runtime-only build and warns, so the guide lists all three places. `isProd` has to be set for the template to be inlined. `v-model` does not apply to these elements, so a value is `:value.prop` and `@input`. Without `.prop` Vue still sets a property when the element has one, so the check did not catch removing it; the guide says `.prop` is the explicit form.
+- **Svelte.** It worked as written: properties when the element has one, and `oninput` and `onpunk-close` for events. `bind:value` does not apply, so a value is an attribute and `oninput`.
+- **Typing.** Only the React app is type-checked. The Vue script and template and the Svelte script and markup are built and driven but not checked, since that needs `vue-tsc` and `svelte-check`, and the guides say so and tell the reader to run them.
+- **The guides show the fixture's code.** Each imports the app's files with `?raw` and shows them with the `Source` block, so what is on the page is what the check built; the smoke test asserts each page contains its app's code. They are in the sidebar after Integration, in the order React, Vue, Svelte. Each says how to register, how a prop becomes a property or an attribute, how to listen for `punk-` events and native `input` and `change`, how to bind a value, how to call a method, and how to type the elements.
+- **Smoke test:** 136 entries render without errors (was 133).
+- **Linux:** the check passes in the pinned Playwright image from a Linux `npm ci`.
 
 ## 12. Acceptance Criteria
 

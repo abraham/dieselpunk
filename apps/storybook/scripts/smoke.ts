@@ -56,6 +56,24 @@ async function openStory(id: string, width: number, height = 800) {
   return page;
 }
 
+// Each framework guide shows its fixture app's source, which a failed `?raw` import would leave out.
+async function checkFrameworkGuides(): Promise<void> {
+  const guides = { react: 'createRoot', vue: 'createApp', svelte: 'mount(' };
+  for (const [name, marker] of Object.entries(guides)) {
+    const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
+    await page.goto(`http://localhost:${port}/iframe.html?id=guides-${name}--docs&viewMode=docs`);
+    await page.waitForSelector('body.sb-show-main', { timeout: 15000 });
+    await page.waitForTimeout(500);
+    const text = String(
+      await page.evaluate("document.querySelector('.sbdocs')?.textContent ?? ''"),
+    );
+    if (!text.includes(marker) || !text.includes('punk-text-field')) {
+      failures.push(`guides-${name}--docs does not show the fixture app's code`);
+    }
+    await page.close();
+  }
+}
+
 // The examples of the Responsive layouts guide must fit at 375px and at 187px, which is a 375px
 // window at 200% zoom (WCAG 1.4.10). This runs in place of loading them in the gallery.
 async function checkResponsiveExamples(): Promise<void> {
@@ -148,6 +166,7 @@ try {
   }
   await checkResponsiveExamples();
   await checkApplicationShell();
+  await checkFrameworkGuides();
 } finally {
   await browser.close();
   server.close();

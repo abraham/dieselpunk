@@ -1,0 +1,50 @@
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+import mainSource from '../../../../packages/core/test/frameworks/svelte/main.ts?raw';
+import appSource from '../../../../packages/core/test/frameworks/svelte/App.svelte?raw';
+
+<Meta title="Guides/Svelte" />
+
+# Svelte
+
+The components are Web Components, so Svelte needs no wrapper package. This guide is a small Svelte 5 app, and the code on this page is that app's code: `npm run check:frameworks` builds it against the package and drives it with real keys and clicks, so a guide that stops working fails the build.
+
+## Register the elements
+
+Registering is a side effect, so import the `register.js` of each element you use, once, before the app mounts. Importing a class never registers it.
+
+<Source code={mainSource} language="ts" />
+
+## Properties and attributes
+
+Svelte sets an attribute as a **property** when the element has one (`value`, `checked`, `open`, `type`), and as an attribute when it does not (`aria-label`, `slot`, `data-punk-close`). So `value={callsign}` and `checked={restart}` do what you want, and a boolean attribute written bare (`open`, `dismissible`, `alert`) is `true`.
+
+## Events
+
+Listen with an `on` attribute for native events and for the elements' own: `oninput`, `onchange`, `onpunk-close`, and `onpunk-tab-change`. The name is the event name with `on` before it, hyphens included. The detail of a `punk-` event is on `event.detail`, typed in the package, and a handler typed with `CustomEvent<PunkCloseDetail>` is checked against it.
+
+## Binding a value
+
+`bind:value` is for native form controls and for components, and it does not apply to these elements. Use a one-way attribute and an event handler: the state is the single source, the attribute writes it to the element, and the event reads it back.
+
+```svelte
+<punk-text-field
+  name="callsign"
+  label="Callsign"
+  value={callsign}
+  oninput={(event) => (callsign = event.target.value)}
+></punk-text-field>
+```
+
+A form works as a native one does: `onsubmit` on the `<form>` is called when a `punk-button type="submit"` is pressed, and `new FormData(event.currentTarget)` has every named control. See the Forms guide for what each control submits.
+
+## Methods
+
+Call a method, such as `show()` on a dialog or a window, through `bind:this`, typed with the class from the package.
+
+## Typing
+
+The package declares each tag in `HTMLElementTagNameMap` and exports the classes and event types, so references, handlers, and details are typed in the script, as below. Svelte does not check the props of a custom element. The check builds this app and drives it, and does not run `svelte-check`, so run it in your own project to check the script and the markup.
+
+## The app
+
+<Source code={appSource} language="html" />

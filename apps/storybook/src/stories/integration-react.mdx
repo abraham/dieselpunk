@@ -1,0 +1,57 @@
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+import mainSource from '../../../../packages/core/test/frameworks/react/main.tsx?raw';
+import appSource from '../../../../packages/core/test/frameworks/react/App.tsx?raw';
+import typesSource from '../../../../packages/core/test/frameworks/react/punk-elements.d.ts?raw';
+
+<Meta title="Guides/React" />
+
+# React
+
+The components are Web Components, so React needs no wrapper package. This guide is a small React app, and the code on this page is that app's code: `npm run check:frameworks` builds it against the package and drives it with real keys and clicks, so a guide that stops working fails the build.
+
+It needs **React 19**, which passes a prop to a custom element as a property when the element has one. React 18 and older pass props as attributes only, which cannot carry a value, a boolean, or an object; use a `ref` there.
+
+## Register the elements
+
+Registering is a side effect, so import the `register.js` of each element you use, once, before it renders. Importing a class never registers it.
+
+<Source code={mainSource} language="tsx" />
+
+## Properties and attributes
+
+React 19 sets a prop as a **property** when the element has one (`value`, `checked`, `open`, `type`), and as an attribute when it does not (`aria-label`, `slot`, `data-punk-close`). So `value={callsign}` and `checked={restart}` do what you want, and a boolean such as `open` or `alert` is `true`.
+
+## Events
+
+- **Native events**, `input` and `change`, and the elements' own, `punk-close`, `punk-tab-change`, and the rest, are listeners on the element. React reads a prop that starts with `on` as a listener for the rest of the name, so write them **in lower case**: `oninput`, `onchange`, and `onpunk-close`.
+- Do not use `onChange` or `onInput`: those are React's own synthetic events, and `onChange` is never sent for a custom element.
+- The detail of a `punk-` event is on `event.detail`, typed in the package.
+
+## Binding a value
+
+One-way props and an event handler are the whole pattern: the state is the single source, the prop writes it to the element, and the event reads it back.
+
+```tsx
+<punk-text-field
+  name="callsign"
+  label="Callsign"
+  value={callsign}
+  oninput={(event) => setCallsign(event.target.value)}
+/>
+```
+
+A form works as a native one does: `onSubmit` on the `<form>` is called when a `punk-button type="submit"` is pressed, and `new FormData(event.currentTarget)` has every named control. See the Forms guide for what each control submits.
+
+## Methods
+
+Call a method, such as `show()` on a dialog or a window, through a `ref`, typed with the class.
+
+## Typing the elements
+
+The package declares each tag in `HTMLElementTagNameMap` and exports the classes and event types. React needs its own declaration of the JSX props, since it does not read the tag map. This is the file the app uses, and the check runs `tsc` on the app with it, so each prop and each event handler is checked.
+
+<Source code={typesSource} language="ts" />
+
+## The app
+
+<Source code={appSource} language="tsx" />
