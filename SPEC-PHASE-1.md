@@ -1,6 +1,6 @@
 # Phase 1: Foundation — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), 5 (`punk-tooltip`), and 6 (`PunkButtonBase`, `punk-button`, `punk-icon-button`) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, the dev flag and `devWarn`, positioning, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), 12.4 (Button), 12.5 (Icon Button), and 12.7 (Tooltip) are complete. Remaining: `punk-progress-bar` (work package 7), the workbench (8), test infrastructure (9), and hardening (10). `punk-button` and `punk-icon-button` shipped with the boundary-contrast gap in §6.8 still open, by decision.
+**Status:** Draft 1. Work packages 1 (scaffolding), 2 (tokens, themes, density), 4 (`punk-panel`, `punk-divider`), 5 (`punk-tooltip`), 6 (`PunkButtonBase`, `punk-button`, `punk-icon-button`), and 7 (`punk-progress-bar`) are implemented, as are `token()`, the base styles, surfaces, texture, focus ring, forced-colors helper, density helper, slot presence, registration helper, localization, locale resolution, the dev flag and `devWarn`, positioning, and `PunkElement` from work package 3. Sections 12.1 (Foundations), 12.2 (Panel), 12.3 (Divider), 12.4 (Button), 12.5 (Icon Button), 12.6 (Progress Bar), and 12.7 (Tooltip) are complete. Remaining: the workbench (work package 8), test infrastructure (9), and hardening (10). `punk-button` and `punk-icon-button` shipped with the boundary-contrast gap in §6.8 still open, by decision.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases)
 **Package:** `@dieselpunk/core`
 **Prefix:** `punk-`
@@ -142,6 +142,7 @@ packages/core/
     utilities/
       register-element.ts
       localize.ts               default strings + setStrings()
+      locale.ts                 resolveLang(element), formatPercent(ratio, lang)
       position.ts               tooltip placement/flip/shift
       dev.ts / dev.dev.ts       PUNK_DEV flag (§5.4)
       warn.ts                   devWarn(element, message)
@@ -501,16 +502,19 @@ A square, icon-only button. Extends the same base as `punk-button` (`internal/bu
 | `label` | `label` | `string` | `''` | yes |
 | `labelHidden` | `label-hidden` | `boolean` | `false` | yes |
 | `showValue` | `show-value` | `boolean` | `false` | yes |
+| `accessibleLabel` | `aria-label` | `string \| null` | `null` | no |
 
 - **Parts:** `header`, `label`, `value`, `track`, `fill`.
 - **CSS properties:** `--punk-progress-height` (default `calc(var(--punk-control-height-sm) * 0.6)`).
 - Layout: optional header row (label start, value end) above an inset trough with a fill.
-- Semantics: the track element has `role="progressbar"`, `aria-valuemin="0"`, `aria-valuemax`, `aria-valuenow`, and `aria-valuetext` (percentage) when determinate. Indeterminate omits `aria-valuenow`. The label element is its `aria-labelledby` target, and with `label-hidden` it is visually hidden but still present.
-- Values are clamped to `[0, max]`. A non-finite `value` is treated as indeterminate; `max <= 0` is treated as `100`. Both cases emit a dev warning.
-- The percentage text uses `Intl.NumberFormat` with `style: 'percent'`, `maximumFractionDigits: 0`, and the nearest `lang` ancestor's locale.
-- Fill width animates with `transform: scaleX` over `--punk-duration-normal`. ARIA values update immediately; animation is disabled under reduced motion.
-- Indeterminate state shows a hazard-stripe fill that scrolls; under reduced motion the stripes are static.
-- Variants do not rely on color alone: `success` is a solid fill, `warning` a diagonal hatch, and `danger` a dense cross-hatch.
+- Semantics: the track element has `role="progressbar"`, `aria-valuemin="0"`, `aria-valuemax`, `aria-valuenow`, and `aria-valuetext` (percentage) when determinate. Indeterminate omits `aria-valuenow`. The label element is its `aria-labelledby` target, and with `label-hidden` it is visually hidden but still present, so it remains the accessible name. When there is no `label`, the host `aria-label` (property `accessibleLabel`) names the track instead, because a host attribute cannot reach an element inside the shadow root. With neither, a dev warning is emitted.
+- Values are clamped to `[0, max]`. A non-finite `value` is treated as indeterminate; `max` that is not a finite number above zero is treated as `100`. Each of these, and a `value` outside `[0, max]`, emits a dev warning once per occurrence: it is not repeated while the problem persists, and fires again if the problem returns after being fixed.
+- An empty `value` attribute means indeterminate, not zero.
+- The percentage text uses `Intl.NumberFormat` with `style: 'percent'`, `maximumFractionDigits: 0`, and the nearest `lang` ancestor's locale. The search crosses shadow roots (a host's `lang` applies to content inside it), and `lang=""` means unknown, so the browser default applies. An invalid tag falls back to the default. The text is computed at render time, so a changed `lang` takes effect on the next update.
+- Fill width animates `inline-size` over `--punk-duration-normal`. It is not a `transform: scaleX`, because scaling would stretch the variant patterns while the fill grows. ARIA values update immediately; animation is disabled under reduced motion.
+- Indeterminate state shows a full-width hazard-stripe fill that scrolls; under reduced motion the stripes are static.
+- Variants do not rely on color alone: `default` is a plain solid fill in the accent color, `success` a segmented fill of regular ticks, `warning` a diagonal hatch, and `danger` a dense cross-hatch. (An earlier draft made both `default` and `success` solid, which cannot be told apart without color.) An unknown variant renders as `default`.
+- Forced colors: the track becomes a system-colored box and the fill uses `Highlight` with `Canvas` gaps, keeping the patterns.
 
 ### 8.6 `punk-tooltip`
 
@@ -621,7 +625,7 @@ Packages are ordered by dependency. Each ends with the CI gates that apply to wh
 | 4 | Panel and divider | 3 | Two components, tests, fixtures. Done. |
 | 5 | Tooltip | 3 | Component, `position.ts`, tests. Done. |
 | 6 | Button base, button, icon button | 3, 5 | Components, form behavior, anchor protocol, tests. Done. |
-| 7 | Progress bar | 3 | Component, tests |
+| 7 | Progress bar | 3 | Component, `locale.ts`, tests. Done. |
 | 8 | Storybook workbench | 3 (stories added per component as 4–7 land) | App, foundations, stories, API tables |
 | 9 | Test infrastructure | 4–7 | Visual matrix, axe suite, size and package gates, fixture consumer |
 | 10 | Hardening | 9 | Forced-colors, RTL, 200% zoom fixes; budget tuning; docs polish |
@@ -684,6 +688,8 @@ Verified in `src/components/divider/divider.test.ts` and `divider.registration.t
 4. ARIA values update immediately while the fill animates; reduced motion removes animation.
 5. Each variant is distinguishable without color (pattern differs).
 6. `show-value` output respects the `lang` ancestor.
+
+Verified in `src/components/progress-bar/progress-bar.test.ts` and `progress-bar.registration.test.ts`, including the bar's own unstyled-appearance assertion (12.1.3). The reduced-motion cases are in `progress-bar.reduced-motion.test.ts`, a separate file because WebKit does not re-evaluate a shared stylesheet's media queries when the preference changes mid-page; that file sets the preference once before anything renders. Criterion 5 is checked by forcing every status color to the same value and asserting that the four fill patterns still differ.
 
 ### 12.7 Tooltip
 

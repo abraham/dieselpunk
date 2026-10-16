@@ -7,4 +7,6 @@ export type { ButtonSize, ButtonType, ButtonVariant } from './components/button/
 export { PunkIconButton } from './components/icon-button/index.ts';
 export { PunkTooltip } from './components/tooltip/index.ts';
 export type { TooltipPlacement } from './components/tooltip/index.ts';
+export { PunkProgressBar } from './components/progress-bar/index.ts';
+export type { ProgressVariant } from './components/progress-bar/index.ts';
 export { setStrings } from './utilities/localize.ts';
