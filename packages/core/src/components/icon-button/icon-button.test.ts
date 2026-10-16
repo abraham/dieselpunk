@@ -395,7 +395,7 @@ describe('inherited button behavior', () => {
 
   it('accepts an external description from another tooltip', async () => {
     const button = await mount();
-    button.setExternalDescription('Extra detail');
+    button.setExternalAria({ description: 'Extra detail' });
     await button.updateComplete;
     const id = inner(button).getAttribute('aria-describedby') ?? '';
     expect(button.shadowRoot?.getElementById(id)?.textContent).toBe('Extra detail');

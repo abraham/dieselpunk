@@ -328,13 +328,13 @@ describe('aria-label and description (12.4.5, 12.4.6)', () => {
     const button = await mount();
     expect(inner(button).hasAttribute('aria-describedby')).toBe(false);
 
-    button.setExternalDescription('Saves the file');
+    button.setExternalAria({ description: 'Saves the file' });
     await button.updateComplete;
     const id = inner(button).getAttribute('aria-describedby');
     expect(id).toBeTruthy();
     expect(button.shadowRoot?.getElementById(id ?? '')?.textContent).toBe('Saves the file');
 
-    button.setExternalDescription(null);
+    button.setExternalAria({ description: null });
     await button.updateComplete;
     expect(inner(button).hasAttribute('aria-describedby')).toBe(false);
     expect(button.shadowRoot?.getElementById('description')).toBeNull();

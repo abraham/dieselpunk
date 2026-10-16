@@ -1,6 +1,6 @@
 # Phase 3: Application Shell — Implementation Specification
 
-**Status:** Draft 1. Not started.
+**Status:** Draft 1. Work package 1 (shared internals) is implemented; the rest is not started.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 3
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md), [SPEC-PHASE-2.md](SPEC-PHASE-2.md)
 **Package:** `@dieselpunk/core`
@@ -47,12 +47,12 @@ These decisions close gaps in `SPEC.md` and the earlier phase specs that affect 
 | 3 | Registration entries | One `register.js` per family: `tabs` registers `punk-tabs` and `punk-tab`, `accordion` registers both of its tags, and `toast` registers both of its. Every other entry registers one tag. No entry registers a tag of another family, and no component renders another `punk-` component in its shadow tree: windows, toasts, and number fields draw their own native buttons from shared styles (§7.7), so the entries stay independent (Phase 2 §5.1). |
 | 4 | Form association | Controls are form-associated custom elements: `static formAssociated = true`, `ElementInternals` for `setFormValue`, `setValidity`, and `labels`, and the form callbacks (§7.1). Roles on checkbox, switch, and slider are written as host attributes, not through `ElementInternals`, as in Phase 2 §7.3, so DOM tooling sees what users get. A text field, number field, and select render a native control in the shadow tree and delegate focus to it. |
 | 5 | Names of fields | The accessible name comes from text in the shadow tree (Phase 2 §2 decision 6): checkbox and switch from their default slot, and the others from `label` or, failing that, `aria-label`, which the component copies to its inner control. An external `<label for>` focuses the control when clicked, which `delegatesFocus` and `ElementInternals.labels` provide, but does not name it: an ID reference cannot cross into the shadow tree. If no `label` or `aria-label` exists, the component reads the text of `internals.labels` when it renders and on `focusin`, and uses it as the name; this is not live, and the docs say to use `label`. A control with no name warns. |
-| 6 | Boundary contrast for fields (Phase 2 §2 decision 1) | A text field, number field, and select have no visible text while empty, and a checkbox, switch, and slider track are identified by their shape alone, so their boundaries are 3:1 non-text contrast under WCAG 2.2 SC 1.4.11. They use `--punk-color-control-edge`, which the gate already checks on all four surfaces. No new color token is needed. Placeholder text uses `text-muted` and must reach 4.5:1 on `panel-inset`, which is a new gate rule (§6.2). |
+| 6 | Boundary contrast for fields (Phase 2 §2 decision 1) | A text field, number field, and select have no visible text while empty, and a checkbox, switch, and slider track are identified by their shape alone, so their boundaries are 3:1 non-text contrast under WCAG 2.2 SC 1.4.11. They use `--punk-color-control-edge`, which the gate already checks on all four surfaces. No new color token is needed. Placeholder text uses `text-muted`, which the gate already requires to reach 4.5:1 on `panel-inset` (§6.2). |
 | 7 | Error and status text | `danger` is below 3:1 on `panel` and `panel-raised` (Phase 2 §2 decision 2), so validation messages and toast text are drawn in `text`, never `danger`. The state is carried by a shape (a triangle for a message, the status-light shape for a toast), a `danger` frame drawn on `panel-inset`, and the word. The shapes are shared with `punk-status-light` (§7.7). |
 | 8 | Moving a window (WCAG 2.2 SC 2.5.7 Dragging Movements) | Dragging a titlebar is functionality that needs a single-pointer alternative, so `movable` adds a `move-button` part (an addition to SPEC §7.1's parts). Activating it starts move mode: the arrow keys move the window by 8px (32px with Shift), a click anywhere puts the window's titlebar center at that point, Enter confirms, and Escape cancels. This also gives keyboard users a way to move it. Dragging stays, and is the quick way for a pointer. |
 | 9 | Modal mechanics | Native `<dialog>` with `showModal()`, which makes the rest of the document inert and puts the dialog in the top layer. The library adds what the platform leaves out: a reference-counted `overflow: hidden` on `<html>` while any modal is open, initial focus on content rather than on a titlebar button, a restore of focus to the opener, and the Escape rule in decision 10. A backdrop click never closes a modal: these are task surfaces, and an accidental click must not discard work. |
 | 10 | Escape (SPEC §9.1: "Escape closes the topmost dismissible overlay") | One module-level stack of open dismissible overlays (§7.2) with one `keydown` listener on `document`, present only while the stack is not empty, as the tooltip does (Phase 1 §8.6). Escape closes the topmost entry and stops propagation. A tooltip is topmost over everything that opened before it. `persistent` dialogs and non-`dismissible` windows join the stack as non-closing entries, so Escape does not fall through them to a window underneath. |
-| 11 | Anchors and the ARIA protocol | `punk-popover` finds its trigger as the tooltip does (`for`, else the previous sibling) and sets `aria-expanded`, and `aria-haspopup` for menus. An IDREF cannot reach the inner `<button>` of a `punk-button`, so the Phase 1 `setExternalDescription` protocol grows into one `setExternalAria({ describedby?, expanded?, haspopup? })`, which `PunkButtonBase` implements (§7.3). `setExternalDescription` stays as a deprecated alias for one minor release. |
+| 11 | Anchors and the ARIA protocol | `punk-popover` finds its trigger as the tooltip does (`for`, else the previous sibling) and sets `aria-expanded`, and `aria-haspopup` for menus. An IDREF cannot reach the inner `<button>` of a `punk-button`, so the Phase 1 `setExternalDescription` protocol grows into one `setExternalAria({ description?, expanded?, haspopup? })`, which `PunkButtonBase` implements (§7.3). `description` is the description's text. The package is unreleased (0.0.0), so `setExternalDescription` is renamed and not kept as an alias: an alias cost about 0.05 kB in every bundle that imports the button base. |
 | 12 | Toolbar overflow (SPEC §11: "overflow into a menu supplied by the consumer") | The toolbar has an `overflow` slot for the consumer's trigger. Items that do not fit get `data-punk-overflow` and are hidden; the slot is shown only while some are; and `punk-overflow-change` reports them so the consumer can fill its menu. The toolbar builds no menu. Without an `overflow` slot nothing is hidden, the toolbar scrolls inside itself, and it warns once. Toolbars are an accepted exception to WCAG 1.4.10 reflow. |
 | 13 | Arrow-key conflicts in a toolbar | Buttons, icon buttons, checkboxes, switches, and links are in the roving group. A select, text field, number field, and slider use the arrow keys themselves, so each stays its own tab stop outside the group (APG toolbar guidance). |
 | 14 | Tab panels | A `punk-tab` names its panel by id in `panel`, resolved in the tab's root node, so a panel can be inside `punk-tabs` or beside it, as in SPEC §8. The tabs component owns `role="tabpanel"`, `aria-labelledby`, `hidden`, and, when the panel has no tabbable content, `tabindex="0"` on the panels it manages, restoring them when a tab is removed, as the slot grid does for its items (Phase 2 §2 decision 5). The tab list wraps and never scrolls sideways. |
@@ -89,10 +89,13 @@ packages/core/src/
   internal/
     form-control.ts           PunkFormControl: form association, validity, reset, restore
     modal.ts                  ModalController: showModal, focus in and out, scroll lock
-    overlay-stack.ts          the Escape stack (§7.2)
+    overlay-stack.ts          the Escape stack (§7.2), with no DOM types so node can test it
+    overlays.ts               the page's one stack, bound to `document`
     anchor.ts                 anchor resolution and setExternalAria (§7.3), shared with the tooltip
+    fieldset.ts               whether a disabled <fieldset> disables an element, for buttons and fields
     roving.ts                 RovingController: one tab stop, arrow keys, in either direction
-    tab-navigation.ts         pure: next tab for a key, from a list of tab states
+    roving-keys.ts            pure: next enabled index for a key, with no DOM types
+    tab-navigation.ts         pure: next tab for a key, from a list of tab states (work package 3)
     slider-math.ts            pure: clamp, snap to step, key to value, pointer to value
     window-position.ts        pure: clamp a window's translation to the viewport
     toast-timer.ts            pure: a pausable countdown, driven by an injected clock
@@ -107,6 +110,7 @@ packages/core/src/
       <name>.ts, <name>.styles.ts, index.ts, register.ts, <name>.test.ts, <name>.registration.test.ts
 packages/core/test/
   tab-navigation.test.ts      node:test, no browser
+  roving.test.ts              node:test, no browser
   slider-math.test.ts         node:test, no browser
   window-position.test.ts     node:test, no browser
   toast-timer.test.ts         node:test, no browser
@@ -208,9 +212,9 @@ Windows and dialogs use `<dialog>`, popovers and the toast stack use the Popover
 
 ### 6.2 Contrast Gate
 
-`check-contrast.ts` gains, for every theme:
+`check-contrast.ts` already holds these for every theme, so work package 1 added no rule, only a test that the placeholder rule fails when `text-muted` is lost on `panel-inset`. The rules this phase depends on:
 
-- `text-muted` against `panel-inset` is at least 4.5:1 (placeholder and hint text on a field).
+- `text-muted` against `panel-inset` is at least 4.5:1 (7:1 in `high-contrast`), for a placeholder and a hint on a field. It was added in Phase 2 with the other muted-text surfaces.
 - `text` against `panel-inset` stays covered by the existing text rule, which also covers validation messages and the toast text on its lens (decision 7).
 - `control-edge` against the four surfaces is already gated (Phase 2 §6.3), and covers every field boundary, checkbox box, switch track, and slider track.
 - `accent` against `panel-inset` is already gated (Phase 2 §6.3), and covers the slider fill and the checked checkbox fill.
@@ -223,13 +227,15 @@ Disabled controls are exempt (Phase 2 §2 decision 1). If `text-muted` fails on 
 
 The base of the six form controls. It sets `static formAssociated = true` and holds an `ElementInternals`, and provides:
 
-- `name`, `disabled`, and `required` properties, the read-only `form`, `labels`, `type`, `validity`, `validationMessage`, and `willValidate`, and `checkValidity()`, `reportValidity()`, and `setCustomValidity(message)`, with the behavior of a native control.
+- `name`, `disabled`, and `required` properties, the read-only `form`, `labels`, `validity`, `validationMessage`, `willValidate`, and `isDisabled` (the control's own `disabled`, or a disabled `<fieldset>` around it), and `checkValidity()`, `reportValidity()`, and `setCustomValidity(message)`, with the behavior of a native control. `type` is left to each control, since the text field's is the input type.
 - `value` handling through each subclass's `formValue()`, passed to `setFormValue` whenever it changes. A control with no `name`, or that is disabled, adds nothing to the form.
 - `formResetCallback()`, which restores the **default**: the `checked` or `value` attribute as it was authored, not the live property. `formDisabledCallback(disabled)`, which reflects a disabled ancestor `<fieldset>` without touching the control's own `disabled`. `formStateRestoreCallback(state)`, which restores a value the browser kept across navigation.
 - A `touched` flag, set on blur, on `invalid`, and on `reportValidity()`, so a message is not shown before the user has had a chance to type. Validation is always run, and the message is only shown when touched.
 - The name protocol of decision 5: `aria-label` mirroring and the `internals.labels` fallback.
 
-Subclasses implement `formValue()`, `validate()` (which calls `setValidity` with an anchor inside the shadow tree, so `reportValidity` focuses and scrolls to the right element), and the default restoration.
+Subclasses implement `formValue()`, `validate()` (which calls `setValidity` with an anchor inside the shadow tree, so `reportValidity` focuses and scrolls to the right element), `resetToDefault()`, and `restoreState()`. They call `commit()`, which hands the browser the value and validity, as soon as the value changes, so a `FormData` read straight afterward is current; the base also calls it after every update.
+
+A control does not reflect its live value to the attribute that holds the default. Reset restores the attribute as the author wrote it, as native controls do, and a reflected attribute would turn it into the current value. So `checked` (checkbox and switch) and `value` (slider) do not reflect, and the tables in §8.9 and §8.10 say so; a control styles itself from classes in its shadow tree, not from `:host([checked])`.
 
 ### 7.2 Modal Behavior and the Escape Stack
 
@@ -242,17 +248,19 @@ Subclasses implement `formValue()`, `validate()` (which calls `setValidity` with
 - turning a native `cancel` event into a `punk-close` with reason `escape`, or cancelling it for a persistent dialog;
 - `punk-open` and `punk-close`, once each per change.
 
-`overlay-stack.ts` is a pure module with `push(entry)`, `remove(entry)`, and `top()`. Entries have `{ dismissible, close(reason) }`. While the stack has an entry it holds one capturing `keydown` listener on `document` that closes the topmost dismissible entry on Escape and calls `stopPropagation()`; a non-dismissible entry still stops Escape from reaching entries beneath it. With an empty stack there is no listener. The tooltip is moved onto this module in work package 1, with its tests unchanged.
+The component gives it `dialog()`, `modal()`, `dismissible()`, `contentRoots()` (the author's content, searched for `autofocus` and the first tabbable element), and `onOpen`/`onClose` callbacks, and calls `open()`, `close(reason, returnValue)`, and `dispose()` (on disconnect: lets go of the lock and the stack entry without events or moving focus). The platform already returns focus when it closes a `<dialog>`, so the controller's own return is tested on the fallback path, where it is the only one.
+
+`overlay-stack.ts` is a pure module with `push(entry)`, `remove(entry)`, and `top()`, built by `createOverlayStack(target)`; `overlays.ts` binds the one page stack to `document`. Entries have `{ dismissible, close() }`. While the stack has an entry it holds one capturing `keydown` listener on the target that, on Escape, calls `stopPropagation()` and `preventDefault()` (so a native `<dialog>` beneath does not also close) and closes the topmost entry if it is dismissible; a non-dismissible entry still stops Escape from reaching entries beneath it. With an empty stack there is no listener. The tooltip is on this module, with its Phase 1 tests unchanged.
 
 ### 7.3 Anchors and `setExternalAria`
 
-`anchor.ts` exports `resolveAnchor(host)` (the `for` rule of Phase 1 §8.6), and the wiring that adds and removes ARIA on an anchor and puts back only what it added. It extracts what `punk-tooltip` does today, and the tooltip uses it afterward. `setExternalAria({ describedby, expanded, haspopup })` is implemented by `PunkButtonBase` (so `punk-button` and `punk-icon-button`) by writing to the inner `<button>`. For any other anchor the wiring writes to the anchor itself.
+`anchor.ts` exports `resolveAnchor(host)` (the `for` rule of Phase 1 §8.6), and the wiring that adds and removes ARIA on an anchor and puts back only what it added. It extracts what `punk-tooltip` does today, and the tooltip uses it afterward. `setExternalAria({ description, expanded, haspopup })` is implemented by `PunkButtonBase` (so `punk-button` and `punk-icon-button`) by writing to the inner `<button>`. For any other anchor the wiring writes to the anchor itself.
 
 ### 7.4 `RovingController`
 
-Used by tabs, the toolbar, and accordion headers. Given a list of items and a direction, it keeps exactly one tab stop, moves focus with the arrow keys (swapping in `rtl`), `Home` and `End`, and skips disabled and hidden items. An item takes part by implementing `{ focusItem(), setTabStop(on), isDisabled }`; `PunkButtonBase` gains these, since its host is not the focus target. It reads no layout and creates no observers.
+Used by tabs, the toolbar, and accordion headers. `new RovingController({ host, items, orientation })` listens on `host` after `connect()`; `refresh()` recomputes the one tab stop when the items or their disabled state change, `focus(item)` moves it and focus together, `current` is the item that holds it, and `disconnect()` gives every item its own tab stop back. It moves focus with the arrow keys (swapping in `rtl`, found with `:dir(rtl)`), `Home` and `End`, skips disabled and hidden items, ignores keys with Ctrl, Alt, or Meta, and follows focus that arrives another way. An item takes part by implementing `{ isDisabled, focusItem(), setTabStop(on) }`, where `setTabStop(null)` hands control back; `PunkButtonBase` implements it, since its host is not the focus target. A native `button` or link is adapted by writing `tabindex` and restoring the author's. It reads no layout and creates no observers.
 
-`tab-navigation.ts` is the pure part: `nextTab(key, from, tabs, { orientation, direction, activation })` over `{ disabled }`. It does not wrap, as the slot grid does not (Phase 2 §7.2).
+`roving-keys.ts` is the pure part, `nextRovingIndex(key, from, disabled, { orientation, rtl })`, which does not wrap, as the slot grid does not (Phase 2 §7.2). `tab-navigation.ts` (work package 3) builds on it and adds automatic and manual activation.
 
 ### 7.5 Ids
 
@@ -510,7 +518,7 @@ Both extend `PunkFormControl`.
 
 | Property | Attribute | Type | Default | Reflects |
 |----------|-----------|------|---------|----------|
-| `checked` | `checked` | `boolean` | `false` | yes |
+| `checked` | `checked` | `boolean` | `false` | no (the attribute is the default that reset restores, §7.1) |
 | `indeterminate` | `indeterminate` | `boolean` | `false` | yes (checkbox only) |
 | `disabled` | `disabled` | `boolean` | `false` | yes |
 | `required` | `required` | `boolean` | `false` | yes |
@@ -533,7 +541,7 @@ Both extend `PunkFormControl`.
 | `min` | `min` | `number` | `0` | yes |
 | `max` | `max` | `number` | `100` | yes |
 | `step` | `step` | `number` | `1` | yes |
-| `value` | `value` | `number` | `min` | yes |
+| `value` | `value` | `number` | `min` | no (the attribute is the default that reset restores, §7.1) |
 | `disabled` | `disabled` | `boolean` | `false` | yes |
 | `showValue` | `show-value` | `boolean` | `false` | yes |
 | `ticks` | `ticks` | `boolean` | `false` | yes |
@@ -697,7 +705,7 @@ The matrix of Phase 1 §10.3 and Phase 2 §10.4 applies, with these changes:
 
 ### 10.8 Size and Packaging
 
-The gates of Phase 2 §10.6 apply, with each entry measured on its own, gzip-compressed, before any limit is set. The shared form base, the modal controller, and the field styles each get their own size-limit entry. `check-package.ts` requires that no entry brings a tag of another family (§5.1), and that tree-shaken imports of one entry do not include another's component. The forms and the window are the likeliest to pass 5 kB; if one does, the shared base is split before a limit is raised, and any exception is documented with its reason, as Phase 2's was.
+The gates of Phase 2 §10.6 apply, with each entry measured on its own, gzip-compressed, before any limit is set. The shared form base, the modal controller, and the field styles each get their own size-limit entry. `check-package.ts` requires that no entry brings a tag of another family (§5.1), and that tree-shaken imports of one entry do not include another's component. The forms and the window are the likeliest to pass 5 kB; if one does, the shared base is split before a limit is raised, and any exception is documented with its reason, as Phase 2's was. The icon button's limit is 7.5 kB after work package 1 (§11.1).
 
 ### 10.9 CI and Framework Fixtures
 
@@ -711,7 +719,7 @@ Packages are ordered by dependency.
 
 | # | Package | Depends on | Output |
 |---|---------|------------|--------|
-| 1 | Shared internals | Phase 2 | `form-control`, `modal`, `overlay-stack` (the tooltip moved onto it), `anchor` and `setExternalAria`, `roving` and the roving protocol on `PunkButtonBase`, `ids`, `status-shape` moved out of the status light, `close-button`, `field` styles, the tokens, localization keys, the contrast rule; logic tests |
+| 1 | Shared internals | Phase 2 | `form-control`, `modal`, `overlay-stack` (the tooltip moved onto it), `anchor` and `setExternalAria`, `roving` and the roving protocol on `PunkButtonBase`, `ids`, `status-shape` moved out of the status light, `close-button`, `field` styles, the tokens, localization keys, a test of the contrast rule; logic and browser tests. Done (§11.1). |
 | 2 | Layout and disclosure | 1 | `punk-stack`, `punk-cluster`, `punk-accordion`, `punk-accordion-item`, tests |
 | 3 | Tabs and toolbar | 1 | `punk-tabs`, `punk-tab`, `punk-toolbar`, `tab-navigation`, tests |
 | 4 | Window and dialog | 1 | `punk-window`, `punk-dialog`, `window-position`, the modal and Escape tests |
@@ -726,14 +734,28 @@ Packages are ordered by dependency.
 
 Packages 2 to 8 can proceed in parallel after package 1, except that 8 reuses the toggles' boundary styles. The gallery in package 9 is extended as each family lands, so each package's own tests already run against it.
 
+### 11.1 Work Package 1 Notes
+
+What was built, and what implementation changed from the text above:
+
+- **Files:** `ids`, `overlay-stack` and `overlays`, `anchor`, `fieldset`, `roving` and `roving-keys`, `form-control`, and `modal` in `internal/`; `status-shape`, `close-button`, and `field` in `styles/`. Node tests: `overlay-stack.test.ts` and `roving.test.ts` (13 tests). Browser tests, beside the code, for the modal controller (24), the form control base (17), the roving controller, the anchor module and the button protocol, the page stack, and the shared styles (13).
+- **Tooltip** moved onto `anchor.ts` and the Escape stack. Its Phase 1 tests pass, with one rename: a test's fake anchor now implements `setExternalAria`.
+- **`setExternalDescription` is gone, not an alias.** The package is 0.0.0, and the alias and a fallback for old anchors cost about 0.05 kB in every bundle that imports the button base. The button tests that called it use `setExternalAria({ description })`.
+- **The contrast rule already existed.** `text-muted` against `panel-inset` was added in Phase 2 with the other muted-text surfaces, so no rule was added; a test now fails when it is lost.
+- **Escape also calls `preventDefault()`**, so the platform does not close a native `<dialog>` that sits beneath the overlay that took the key.
+- **Pure code has no DOM types.** The node-tested modules are `overlay-stack.ts` and `roving-keys.ts`; the code that touches `document` is in `overlays.ts` and `roving.ts`.
+- **`status-shape` was extracted unchanged** (the status light's 18 tests and all 164 inventory baselines are as before); the status light now imports `statusLensStyles` and `statusShapeStyles`.
+- **Sizes** (gzip). New entries: form control base and field styles 4.44 kB, modal controller and overlay stack 1.54 kB, roving controller and anchor 1.67 kB, close button and status shapes 3.31 kB, each against 5 kB. The shared runtime is 8.37 kB (was 8.28). The button grew from 4.38 to 4.54 kB, the tooltip from 4.44 to 4.68 kB, and the icon button from 6.94 to 7.32 kB, past its 7 kB limit. Nothing was left to split, since the icon button's entry is the button base and the tooltip, so its exception is back at 7.5 kB, the figure Phase 1 had before it tightened it (Phase 1 §10.4). The rest of the code is in shared modules that windows, popovers, and the fields reuse.
+- **Mutation checks:** 16 mutations of the new code were each caught by a test, after two weak tests were fixed: the focus return, which the platform also does on a native `<dialog>`, is now tested on the fallback path, and the fieldset rule has its own test.
+
 ## 12. Acceptance Criteria
 
 ### 12.1 Shared Internals
 
 1. The tooltip behaves as before on the Escape stack and `anchor` module: all of its Phase 1 tests pass unchanged.
-2. `punk-button` and `punk-icon-button` implement `setExternalAria` and the roving protocol, and `setExternalDescription` still works.
+2. `punk-button` and `punk-icon-button` implement `setExternalAria` and the roving protocol.
 3. With the stack empty there is no `keydown` listener on `document`; with one entry there is exactly one.
-4. The contrast gate passes with the rule in §6.2, and fails when a theme's `text-muted` is changed to a color below 4.5:1 on `panel-inset`.
+4. The contrast gate passes, and fails when a theme's `text-muted` is changed to a color below 4.5:1 on `panel-inset`; this was already so before the phase, and a test now says so.
 
 ### 12.2 Stack and Cluster
 

@@ -30,5 +30,7 @@ export const baseTokens = {
   'duration-normal': '140ms',
 
   'z-overlay': '1000',
+  'z-modal': '1100',
+  'z-toast': '1200',
   'tooltip-max-width': '320px',
 } as const satisfies TokenMap;

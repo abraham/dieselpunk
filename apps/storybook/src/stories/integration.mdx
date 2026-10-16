@@ -69,13 +69,26 @@ Importing a class never registers its element. Register it with the matching `re
 
 ## Translating built-in text
 
-Components contain one built-in string, the loading announcement. Replace it before components render.
+Components contain a few built-in words, such as the loading announcement and the state words in an accessible name. Replace them before components render. A string may hold `{name}` placeholders, which the component fills with values already formatted for the page's language, so a translation can reorder them.
 
 ```ts
 import { setStrings } from '@dieselpunk/core';
 
-setStrings({ loading: 'Laden' });
+setStrings({ loading: 'Laden', stackCapacity: '{count} von {capacity}' });
 ```
+
+| Key             | Default                 | Used by             |
+| --------------- | ----------------------- | ------------------- |
+| `loading`       | `Loading`               | Button, icon button |
+| `invalid`       | `invalid`               | Slot, item stack    |
+| `stackCount`    | `{count}`               | Item stack          |
+| `stackCapacity` | `{count} of {capacity}` | Item stack          |
+| `durability`    | `durability {percent}`  | Item stack          |
+| `quality`       | `quality {level}`       | Item stack          |
+| `unavailable`   | `unavailable`           | Recipe              |
+| `craftable`     | `can craft {count}`     | Recipe              |
+| `meterWarning`  | `warning`               | Meter               |
+| `meterCritical` | `critical`              | Meter               |
 
 ## Development warnings
 

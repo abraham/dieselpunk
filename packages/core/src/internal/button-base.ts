@@ -4,6 +4,8 @@ import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { t } from '../utilities/localize.ts';
+import type { ExternalAria, PopupKind } from './anchor.ts';
+import { isFieldsetDisabled } from './fieldset.ts';
 import { PunkElement } from './punk-element.ts';
 
 export type ButtonVariant = 'default' | 'primary' | 'danger';
@@ -46,6 +48,10 @@ export abstract class PunkButtonBase extends PunkElement {
 
   readonly #internals = this.attachInternals();
   #description: string | null = null;
+  #expanded: boolean | null = null;
+  #haspopup: PopupKind | null = null;
+  // `null` means no roving group manages this button, so the inner button keeps its own tab stop.
+  #tabStop: boolean | null = null;
 
   constructor() {
     super();
@@ -54,17 +60,9 @@ export abstract class PunkButtonBase extends PunkElement {
     this.addEventListener('click', this.#blockWhenInert, true);
   }
 
-  /**
-   * Whether a disabled `<fieldset>` ancestor disables this button. It is read live rather than
-   * cached from `formDisabledCallback`, which also fires for this element's own `disabled`
-   * attribute and would lag one update behind the property.
-   */
+  /** Whether a disabled `<fieldset>` ancestor disables this button (see `isFieldsetDisabled`). */
   get #fieldsetDisabled(): boolean {
-    const fieldset = this.parentElement?.closest('fieldset:disabled');
-    if (!fieldset) return false;
-    // Controls inside a fieldset's first <legend> stay enabled.
-    const legend = fieldset.querySelector(':scope > legend');
-    return !legend?.contains(this);
+    return isFieldsetDisabled(this);
   }
 
   get #disabled(): boolean {
@@ -88,12 +86,30 @@ export abstract class PunkButtonBase extends PunkElement {
   }
 
   /**
-   * Tooltip anchor protocol: the text becomes the inner button's accessible description. An id
-   * reference cannot cross the shadow boundary, so a tooltip passes its text here instead.
-   * Pass `null` to remove it.
+   * Anchor protocol: ARIA that cannot reach the inner button by an id reference, because the
+   * button is inside this element's shadow root. `description` is the text of the description.
+   * A property that is left out is not changed, and `null` removes it.
    */
-  setExternalDescription(text: string | null): void {
-    this.#description = text;
+  setExternalAria(aria: ExternalAria): void {
+    if ('description' in aria) this.#description = aria.description ?? null;
+    if ('expanded' in aria) this.#expanded = aria.expanded ?? null;
+    if ('haspopup' in aria) this.#haspopup = aria.haspopup ?? null;
+    this.requestUpdate();
+  }
+
+  /** Roving protocol: whether the button can take focus from a roving group's arrow keys. */
+  get isDisabled(): boolean {
+    return this.#disabled;
+  }
+
+  /** Roving protocol: moves focus to the inner button. */
+  focusItem(): void {
+    this.focus();
+  }
+
+  /** Roving protocol: `true` is the group's one tab stop, `false` is skipped by Tab, `null` hands control back. */
+  setTabStop(on: boolean | null): void {
+    this.#tabStop = on;
     this.requestUpdate();
   }
 
@@ -139,6 +155,9 @@ export abstract class PunkButtonBase extends PunkElement {
         aria-busy=${ifDefined(this.loading ? 'true' : undefined)}
         aria-disabled=${ifDefined(this.loading && !disabled ? 'true' : undefined)}
         aria-describedby=${ifDefined(this.#description === null ? undefined : 'description')}
+        aria-expanded=${ifDefined(this.#expanded === null ? undefined : String(this.#expanded))}
+        aria-haspopup=${ifDefined(this.#haspopup ?? undefined)}
+        tabindex=${ifDefined(this.#tabStop === null ? undefined : this.#tabStop ? '0' : '-1')}
         @click=${this.#handleClick}
       >
         <span class="content">${this.renderContent()}</span>

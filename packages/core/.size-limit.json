@@ -10,11 +10,42 @@
       "dist/utilities/locale.js",
       "dist/utilities/warn.js",
       "dist/styles/*.js",
-      "!dist/styles/receptacle.js"
+      "!dist/styles/receptacle.js",
+      "!dist/styles/field.js",
+      "!dist/styles/close-button.js",
+      "!dist/styles/status-shape.js"
     ],
     "ignore": ["lit"],
     "gzip": true,
     "limit": "12 kB"
+  },
+  {
+    "name": "Form control base and field styles (shared by the form controls)",
+    "path": ["dist/internal/form-control.js", "dist/internal/fieldset.js", "dist/styles/field.js"],
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "Modal controller and overlay stack (shared by window and dialog)",
+    "path": ["dist/internal/modal.js", "dist/internal/overlays.js"],
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "Roving controller (shared by tabs, toolbar, and accordion)",
+    "path": ["dist/internal/roving.js", "dist/internal/anchor.js"],
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "Close button and status shapes (shared by window, toast, and fields)",
+    "path": ["dist/styles/close-button.js", "dist/styles/status-shape.js"],
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
   },
   {
     "name": "Selectable base and receptacle (shared by slot and item stack)",
@@ -105,6 +136,6 @@
     "path": "dist/components/icon-button/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "7 kB"
+    "limit": "7.5 kB"
   }
 ]
