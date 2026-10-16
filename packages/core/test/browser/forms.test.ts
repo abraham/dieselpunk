@@ -5,12 +5,14 @@ import './commands.ts';
 import '../../src/components/checkbox/register.ts';
 import '../../src/components/switch/register.ts';
 import '../../src/components/slider/register.ts';
+import '../../src/components/text-field/register.ts';
+import '../../src/components/number-field/register.ts';
+import '../../src/components/select/register.ts';
 import type { PunkFormControl } from '../../src/internal/form-control.ts';
 import type { PunkSlider } from '../../src/components/slider/index.ts';
 
-// What a native control does in a form, asked of each of ours. Text, number, and select fields
-// join these lists when they land. A control is described by how to give it a value other than
-// its default, and what it submits then.
+// What a native control does in a form, asked of each of ours. A control is described by how to
+// give it a value other than its default, and what it submits then.
 interface Control {
   tag: string;
   /** Attributes for a control in its default state. */
@@ -27,6 +29,33 @@ interface Control {
   required: string | null;
   /** A state, passed to `formStateRestoreCallback`, and what it submits afterward. */
   restore: [state: string | null, submitted: string | null];
+  /** A default of the other kind, which the markup writes, and a way off it. */
+  authored: {
+    base: string;
+    attributes: string;
+    content?: string;
+    change(element: PunkFormControl): void;
+  };
+  /** What a click on a `<label for>` does to it. */
+  labelClick: 'checked' | 'focus';
+}
+
+/** Types into the native control of a field, as a user does. */
+function typeInto(element: PunkFormControl, text: string): void {
+  const input = element.shadowRoot?.querySelector('input') as HTMLInputElement;
+  input.value = text;
+  input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+}
+
+const options =
+  '<option value="">Choose</option><option value="a">Alpha</option><option value="b">Beta</option>';
+
+/** Picks an option in the native select, as a user does. */
+function pick(element: PunkFormControl, index: number): void {
+  const select = element.shadowRoot?.querySelector('select') as HTMLSelectElement;
+  select.selectedIndex = index;
+  select.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+  select.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
 const controls: Control[] = [
@@ -41,6 +70,14 @@ const controls: Control[] = [
     submittedChanged: 'on',
     required: 'required',
     restore: ['on', 'on'],
+    authored: {
+      base: '',
+      attributes: 'checked',
+      change: (element) => {
+        element.click();
+      },
+    },
+    labelClick: 'checked',
   },
   {
     tag: 'punk-switch',
@@ -53,6 +90,14 @@ const controls: Control[] = [
     submittedChanged: 'on',
     required: 'required',
     restore: ['on', 'on'],
+    authored: {
+      base: '',
+      attributes: 'checked',
+      change: (element) => {
+        element.click();
+      },
+    },
+    labelClick: 'checked',
   },
   {
     tag: 'punk-slider',
@@ -65,6 +110,64 @@ const controls: Control[] = [
     submittedChanged: '100',
     required: null,
     restore: ['70', '70'],
+    authored: {
+      base: 'label="Speed"',
+      attributes: 'value="60"',
+      change: (element) => {
+        (element as PunkSlider).value = 5;
+      },
+    },
+    labelClick: 'focus',
+  },
+  {
+    tag: 'punk-text-field',
+    base: 'label="Callsign"',
+    content: '',
+    change: (element) => typeInto(element, 'Foxtrot'),
+    submittedDefault: '',
+    submittedChanged: 'Foxtrot',
+    required: 'required',
+    restore: ['Golf', 'Golf'],
+    authored: {
+      base: 'label="Callsign"',
+      attributes: 'value="Echo"',
+      change: (element) => typeInto(element, 'Hotel'),
+    },
+    labelClick: 'focus',
+  },
+  {
+    tag: 'punk-number-field',
+    base: 'label="Thrust"',
+    content: '',
+    change: (element) => typeInto(element, '8'),
+    submittedDefault: '',
+    submittedChanged: '8',
+    required: 'required',
+    restore: ['6', '6'],
+    authored: {
+      base: 'label="Thrust"',
+      attributes: 'value="5"',
+      change: (element) => typeInto(element, '9'),
+    },
+    labelClick: 'focus',
+  },
+  {
+    tag: 'punk-select',
+    base: 'label="Squadron"',
+    content: options,
+    change: (element) => pick(element, 2),
+    submittedDefault: '',
+    submittedChanged: 'b',
+    required: 'required',
+    restore: ['b', 'b'],
+    authored: {
+      base: 'label="Squadron"',
+      attributes: '',
+      content:
+        '<option value="a">Alpha</option><option value="b" selected>Beta</option><option value="c">Gamma</option>',
+      change: (element) => pick(element, 0),
+    },
+    labelClick: 'focus',
   },
 ];
 
@@ -147,15 +250,14 @@ describe.each(controls)('$tag in a form', (control) => {
   });
 
   it('is reset to a default of the other kind too', async () => {
-    const authored = control.tag === 'punk-slider' ? 'value="60"' : 'checked';
+    const { authored } = control;
     const { form, element } = await mountForm(
-      { ...control, base: control.tag === 'punk-slider' ? 'label="Speed"' : '' },
-      authored,
+      { ...control, base: authored.base, content: authored.content ?? control.content },
+      authored.attributes,
     );
     const expected = new FormData(form).get('field');
     expect(expected).not.toBeNull();
-    if (control.tag === 'punk-slider') (element as PunkSlider).value = 5;
-    else element.click();
+    authored.change(element);
     await element.updateComplete;
     expect(new FormData(form).get('field')).not.toBe(expected);
     form.reset();
@@ -177,7 +279,7 @@ describe.each(controls)('$tag in a form', (control) => {
     await element.updateComplete;
     expect([...element.labels]).toEqual([holder.querySelector('label')]);
     await userEvent.click(holder.querySelector('#caption') as HTMLElement);
-    if (control.tag === 'punk-slider') expect(document.activeElement).toBe(element);
+    if (control.labelClick === 'focus') expect(document.activeElement).toBe(element);
     else expect((element as unknown as { checked: boolean }).checked).toBe(true);
   });
 

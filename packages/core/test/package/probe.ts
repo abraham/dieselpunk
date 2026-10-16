@@ -29,6 +29,9 @@ export async function probeConsumer() {
     'punk-checkbox',
     'punk-switch',
     'punk-slider',
+    'punk-text-field',
+    'punk-number-field',
+    'punk-select',
   ];
   const bar = document
     .querySelector('punk-progress-bar')
@@ -93,6 +96,26 @@ export async function probeConsumer() {
   const speed = document.querySelector('punk-slider');
   speed?.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
   await speed?.updateComplete;
+  // The native controls inside the fields: typed into, stepped with a stepper, and picked from.
+  const callsign = document.querySelector('punk-text-field');
+  const typed = callsign?.shadowRoot?.querySelector('input');
+  if (typed) {
+    typed.value = 'Echo';
+    typed.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+  }
+  document
+    .querySelector('punk-number-field')
+    ?.shadowRoot?.querySelector('.stepper.up')
+    ?.dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }));
+  document
+    .querySelector('punk-number-field')
+    ?.shadowRoot?.querySelector('.stepper.up')
+    ?.dispatchEvent(new PointerEvent('pointerup', { button: 0, bubbles: true }));
+  const picked = document.querySelector('punk-select')?.shadowRoot?.querySelector('select');
+  if (picked) {
+    picked.selectedIndex = 1;
+    picked.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+  }
   const submitted = settings ? new FormData(settings) : null;
   return {
     defined: tags.filter((tag) => customElements.get(tag) !== undefined),
@@ -117,6 +140,9 @@ export async function probeConsumer() {
     toastSlot,
     agree: (submitted?.get('agree') ?? null) as string | null,
     speed: (submitted?.get('speed') ?? null) as string | null,
+    callsign: (submitted?.get('callsign') ?? null) as string | null,
+    thrust: (submitted?.get('thrust') ?? null) as string | null,
+    squadron: (submitted?.get('squadron') ?? null) as string | null,
   };
 }
 

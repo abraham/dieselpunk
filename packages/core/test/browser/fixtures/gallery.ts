@@ -27,6 +27,9 @@ import '../../../src/components/toast/register.ts';
 import '../../../src/components/checkbox/register.ts';
 import '../../../src/components/switch/register.ts';
 import '../../../src/components/slider/register.ts';
+import '../../../src/components/text-field/register.ts';
+import '../../../src/components/number-field/register.ts';
+import '../../../src/components/select/register.ts';
 
 // The visual matrix renders one group per run, so each group has its own page and baselines.
 export const foundationNames = [
@@ -57,7 +60,14 @@ export const shellNames = [
 ] as const;
 // Overlays open on a page of their own, since the top layer covers everything else.
 // Every form control in every state, in flow: no top layer, so one page holds them all.
-export const formNames = ['checkbox', 'switch', 'slider'] as const;
+export const formNames = [
+  'checkbox',
+  'switch',
+  'slider',
+  'text-field',
+  'number-field',
+  'select',
+] as const;
 export const overlayNames = ['dialog', 'window', 'popover', 'toast-stack'] as const;
 export const componentNames = [
   ...foundationNames,
@@ -614,6 +624,46 @@ const builders: Record<ComponentName, Builder> = {
     </div>
   `,
 
+  // A field marked `data-touched` shows its message, as if the user had been and left.
+  'text-field': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-text-field label="${c.settings}"></punk-text-field>
+      <punk-text-field label="${c.settings}" value="${c.body}"></punk-text-field>
+      <punk-text-field label="${c.settings}" placeholder="${c.start}"><span slot="hint">${c.footer}</span></punk-text-field>
+      <punk-text-field label="${c.settings}" value="${c.pause}" readonly></punk-text-field>
+      <punk-text-field label="${c.settings}" value="${c.pause}" disabled><span slot="hint">${c.footer}</span></punk-text-field>
+      <punk-text-field label="${c.settings}" required data-touched><span slot="hint">${c.footer}</span></punk-text-field>
+      <punk-text-field aria-label="${c.settings}" placeholder="${c.start}" type="search"></punk-text-field>
+      <punk-text-field label="${c.settings}" value="${c.stop}"><span slot="prefix">${plus}</span><span slot="suffix">${c.pause}</span></punk-text-field>
+      <punk-text-field label="${c.settings}" type="email" value="${c.stop}" data-touched></punk-text-field>
+    </div>
+  `,
+
+  'number-field': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-number-field label="${c.settings}" value="3" min="0" max="10"></punk-number-field>
+      <punk-number-field label="${c.settings}" placeholder="0"><span slot="hint">${c.footer}</span></punk-number-field>
+      <punk-number-field label="${c.settings}" value="40" step="5"><span slot="suffix">${c.pause}</span></punk-number-field>
+      <punk-number-field label="${c.settings}" value="3" hide-steppers></punk-number-field>
+      <punk-number-field label="${c.settings}" value="3" readonly></punk-number-field>
+      <punk-number-field label="${c.settings}" value="3" disabled><span slot="hint">${c.footer}</span></punk-number-field>
+      <punk-number-field label="${c.settings}" required data-touched></punk-number-field>
+      <punk-number-field label="${c.settings}" value="11" max="10" data-touched></punk-number-field>
+      <punk-number-field aria-label="${c.settings}" value="3"></punk-number-field>
+    </div>
+  `,
+
+  select: (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-select label="${c.settings}"><option value="a">${c.start}</option><option value="b">${c.pause}</option><option value="c">${c.stop}</option></punk-select>
+      <punk-select label="${c.settings}" value="b"><option value="a">${c.start}</option><option value="b">${c.pause}</option><option value="c" disabled>${c.stop}</option></punk-select>
+      <punk-select label="${c.settings}"><optgroup label="${c.divider}"><option value="a">${c.start}</option><option value="b">${c.pause}</option></optgroup><optgroup label="${c.title}"><option value="c">${c.stop}</option></optgroup><span slot="hint">${c.footer}</span></punk-select>
+      <punk-select label="${c.settings}" disabled><option value="a">${c.start}</option></punk-select>
+      <punk-select label="${c.settings}" required data-touched><option value="">${c.divider}</option><option value="a">${c.start}</option><span slot="hint">${c.footer}</span></punk-select>
+      <punk-select aria-label="${c.settings}"><option value="a">${c.start}</option><option value="b">${c.pause}</option></punk-select>
+    </div>
+  `,
+
   window: (c, { open }) => {
     const name = `heading="${c.title}" aria-label="${c.settings}"`;
     const footer = `<punk-button slot="footer" variant="primary">${c.start}</punk-button><punk-button slot="footer">${c.stop}</punk-button>`;
@@ -704,7 +754,15 @@ export function buildGallery(
     )
     .join('');
   applyGridValues(root);
+  touchFields(root);
   return root;
+}
+
+/** A field marked `data-touched` behaves as if the user had left it, so its message shows. */
+function touchFields(root: ParentNode): void {
+  for (const field of root.querySelectorAll('[data-touched]')) {
+    field.dispatchEvent(new FocusEvent('focusout', { bubbles: true, composed: true }));
+  }
 }
 
 /** A grid takes its selection as a property, which markup cannot carry. */

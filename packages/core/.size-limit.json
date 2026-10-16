@@ -218,6 +218,27 @@
     "limit": "5.5 kB"
   },
   {
+    "name": "punk-text-field",
+    "path": "dist/components/text-field/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5.5 kB"
+  },
+  {
+    "name": "punk-number-field",
+    "path": "dist/components/number-field/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6.5 kB"
+  },
+  {
+    "name": "punk-select",
+    "path": "dist/components/select/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
     "name": "punk-icon-button (includes the tooltip)",
     "path": "dist/components/icon-button/register.js",
     "ignore": ["lit"],

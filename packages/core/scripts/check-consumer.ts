@@ -50,6 +50,9 @@ interface Report {
   toastSlot: string | null;
   agree: string | null;
   speed: string | null;
+  callsign: string | null;
+  thrust: string | null;
+  squadron: string | null;
 }
 
 // What each page registers: the plain page imports panel and button; the TypeScript page imports
@@ -65,9 +68,11 @@ const expectedTags: Record<string, string[]> = {
     'punk-icon-button',
     'punk-item-stack',
     'punk-meter',
+    'punk-number-field',
     'punk-popover',
     'punk-progress-bar',
     'punk-recipe',
+    'punk-select',
     'punk-slider',
     'punk-slot',
     'punk-slot-grid',
@@ -76,6 +81,7 @@ const expectedTags: Record<string, string[]> = {
     'punk-switch',
     'punk-tab',
     'punk-tabs',
+    'punk-text-field',
     'punk-toast',
     'punk-toast-stack',
     'punk-toolbar',
@@ -197,6 +203,11 @@ async function checkPages(outDir: string): Promise<void> {
         if (report.agree !== 'on' || report.speed !== '10') {
           problems.push(
             `app.html: the form submitted agree=${report.agree} and speed=${report.speed}`,
+          );
+        }
+        if (report.callsign !== 'Echo' || report.thrust !== '5' || report.squadron !== 'b') {
+          problems.push(
+            `app.html: the fields submitted callsign=${report.callsign}, thrust=${report.thrust}, and squadron=${report.squadron}`,
           );
         }
         if (report.dismissed !== 'method' || report.toastSlot !== 'assertive') {

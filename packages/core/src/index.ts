@@ -41,6 +41,10 @@ export type { PopoverMode, PopoverPlacement } from './components/popover/index.t
 export { PunkCheckbox } from './components/checkbox/index.ts';
 export { PunkSwitch } from './components/switch/index.ts';
 export { PunkSlider } from './components/slider/index.ts';
+export { PunkTextField } from './components/text-field/index.ts';
+export type { TextFieldType } from './components/text-field/index.ts';
+export { PunkNumberField } from './components/number-field/index.ts';
+export { PunkSelect } from './components/select/index.ts';
 export { PunkToastStack, PunkToast } from './components/toast/index.ts';
 export type {
   PunkDismissDetail,

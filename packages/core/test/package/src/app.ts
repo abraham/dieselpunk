@@ -17,10 +17,12 @@ import type {
   PunkItemStack,
   PunkMeter,
   PunkMoveDetail,
+  PunkNumberField,
   PunkOverflowDetail,
   PunkPopover,
   PunkProgressBar,
   PunkRecipe,
+  PunkSelect,
   PunkSelectionChangeDetail,
   PunkSlider,
   PunkSlot,
@@ -31,6 +33,7 @@ import type {
   PunkTab,
   PunkTabChangeDetail,
   PunkTabs,
+  PunkTextField,
   PunkToast,
   PunkToastStack,
   PunkToggleDetail,
@@ -38,6 +41,7 @@ import type {
   PunkWindow,
   StackGap,
   StatusVariant,
+  TextFieldType,
 } from '@dieselpunk/core';
 import '@dieselpunk/core/accordion/register.js';
 import '@dieselpunk/core/checkbox/register.js';
@@ -48,13 +52,16 @@ import '@dieselpunk/core/item-stack/register.js';
 import '@dieselpunk/core/meter/register.js';
 import '@dieselpunk/core/popover/register.js';
 import '@dieselpunk/core/progress-bar/register.js';
+import '@dieselpunk/core/number-field/register.js';
 import '@dieselpunk/core/recipe/register.js';
+import '@dieselpunk/core/select/register.js';
 import '@dieselpunk/core/slot/register.js';
 import '@dieselpunk/core/slider/register.js';
 import '@dieselpunk/core/slot-grid/register.js';
 import '@dieselpunk/core/stack/register.js';
 import '@dieselpunk/core/switch/register.js';
 import '@dieselpunk/core/tabs/register.js';
+import '@dieselpunk/core/text-field/register.js';
 import '@dieselpunk/core/toast/register.js';
 import '@dieselpunk/core/toolbar/register.js';
 import '@dieselpunk/core/window/register.js';
@@ -272,8 +279,37 @@ speed.addEventListener('change', (event) => {
   const target = event.target as PunkSlider;
   void target.value.toFixed(1);
 });
+const callsign: PunkTextField = document.createElement('punk-text-field');
+callsign.name = 'callsign';
+callsign.label = 'Callsign';
+const kind: TextFieldType = 'email';
+callsign.type = kind;
+// @ts-expect-error `search` is a type, and `color` is not.
+callsign.type = 'color';
+callsign.type = 'search';
+callsign.maxlength = 8;
+callsign.addEventListener('input', (event) => {
+  void (event.target as PunkTextField).value.trim();
+});
+const thrust: PunkNumberField = document.createElement('punk-number-field');
+thrust.name = 'thrust';
+thrust.label = 'Thrust';
+thrust.min = 0;
+thrust.max = 10;
+thrust.value = '4';
+// @ts-expect-error The value is the text the user sees.
+thrust.value = 4;
+thrust.value = '4';
+void thrust.valueAsNumber.toFixed(1);
+const squadron: PunkSelect = document.createElement('punk-select');
+squadron.name = 'squadron';
+squadron.label = 'Squadron';
+squadron.innerHTML = '<option value="a">Alpha</option><option value="b">Beta</option>';
+squadron.value = 'a';
+// @ts-expect-error The index is a number.
+squadron.selectedIndex = 'first';
 const settings = document.createElement('form');
-settings.append(agree, power, speed);
+settings.append(agree, power, speed, callsign, thrust, squadron);
 layout.append(settings);
 
 document.body.append(layout);

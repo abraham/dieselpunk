@@ -167,7 +167,13 @@ test.describe('interaction states', () => {
       await expect(gallery(page)).toHaveScreenshot(['forms', 'interaction-checkbox-hover.png']);
     });
 
-    for (const tag of ['checkbox', 'switch', 'slider']) {
+    test('text-field hover', async ({ page }) => {
+      await open(page, { theme: 'industrial', density: 'compact', component: 'text-field' });
+      await first(page, 'punk-text-field').hover();
+      await expect(gallery(page)).toHaveScreenshot(['forms', 'interaction-text-field-hover.png']);
+    });
+
+    for (const tag of ['checkbox', 'switch', 'slider', 'text-field', 'number-field', 'select']) {
       test(`${tag} focus-visible`, async ({ page }) => {
         await open(page, { theme: 'industrial', density: 'compact', component: tag });
         await page.keyboard.press('Tab');

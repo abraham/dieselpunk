@@ -8,6 +8,7 @@ export default {
     'src/internal/modal-surface.ts',
     'src/internal/form-control.ts',
     'src/internal/toggle-base.ts',
+    'src/internal/field-base.ts',
   ],
   exclude: [
     '**/*.test.ts',

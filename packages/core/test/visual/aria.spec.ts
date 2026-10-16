@@ -271,6 +271,45 @@ test.describe('ARIA snapshots', () => {
     `);
   });
 
+  test('text, number, and select fields', async ({ page }) => {
+    await render(
+      page,
+      `<punk-text-field label="Callsign" value="Echo"><span slot="hint">Three letters</span></punk-text-field>
+       <punk-text-field aria-label="Search" type="search"></punk-text-field>
+       <punk-text-field label="Locked" value="Fixed" disabled></punk-text-field>
+       <punk-text-field label="Required name" required></punk-text-field>
+       <punk-number-field label="Thrust" value="3" min="0" max="10"></punk-number-field>
+       <punk-select label="Squadron"><option value="a">Alpha</option><option value="b">Beta</option></punk-select>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - text: Callsign
+      - textbox "Callsign"
+      - searchbox "Search"
+      - text: Locked
+      - textbox "Locked" [disabled]
+      - text: Required name
+      - textbox "Required name"
+      - text: Thrust
+      - spinbutton "Thrust"
+      - text: Squadron
+      - combobox "Squadron"
+    `);
+    await expect(page.getByRole('textbox', { name: 'Callsign' })).toHaveAccessibleDescription(
+      'Three letters',
+    );
+    await expect(page.getByRole('textbox', { name: 'Callsign' })).toHaveValue('Echo');
+  });
+
+  test('a field names its message once the user has left it', async ({ page }) => {
+    await render(page, '<punk-text-field label="Required name" required></punk-text-field>');
+    const field = page.getByRole('textbox', { name: 'Required name' });
+    await expect(field).not.toHaveAttribute('aria-invalid', 'true');
+    await field.focus();
+    await field.blur();
+    await expect(field).toHaveAttribute('aria-invalid', 'true');
+    await expect(field).toHaveAccessibleDescription(/invalid/i);
+  });
+
   test('accordion', async ({ page }) => {
     await render(
       page,

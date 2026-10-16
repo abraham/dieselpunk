@@ -59,7 +59,7 @@ export const fieldStyles = css`
   .control {
     flex: 1 1 auto;
     inline-size: 100%;
-    min-inline-size: 0;
+    min-inline-size: 3ch;
     padding: 0;
     border: 0;
     outline: none;
@@ -73,11 +73,15 @@ export const fieldStyles = css`
     opacity: 1;
   }
 
+  /* An affix takes at most half the box and wraps within it, rather than push the box wider. */
   .prefix,
   .suffix {
     flex: none;
     display: flex;
     align-items: center;
+    max-inline-size: 50%;
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
     color: ${token('color-text-muted')};
   }
 
@@ -93,6 +97,10 @@ export const fieldStyles = css`
     gap: ${token('space-2')};
     color: ${token('color-text')};
     overflow-wrap: break-word;
+  }
+
+  .word {
+    text-transform: capitalize;
   }
 
   .field.invalid .box {

@@ -54,6 +54,9 @@ const sentinels: Record<string, string> = {
   checkbox: '"mixed"',
   switch: '"switch"',
   slider: '--_thumb',
+  'text-field': '-webkit-search-cancel-button',
+  'number-field': '-webkit-inner-spin-button',
+  select: 'optgroup',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };
