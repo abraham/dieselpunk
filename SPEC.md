@@ -154,7 +154,8 @@ Text must use `letter-spacing: 0`. Labels use medium or semibold weight rather t
   --punk-slot-size: 40px;
   --punk-border-width: 2px;
   --punk-radius: 2px;
-  --punk-focus-ring: 0 0 0 2px #1d1e1c, 0 0 0 4px #f2cf44;
+  --punk-color-focus: #f2cf44;
+  --punk-color-focus-inner: #1d1e1c;
   --punk-duration-fast: 80ms;
   --punk-duration-normal: 140ms;
 }

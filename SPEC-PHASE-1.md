@@ -1,6 +1,6 @@
 # Phase 1: Foundation — Implementation Specification
 
-**Status:** Draft 1
+**Status:** Draft 1. Work packages 1 (scaffolding) and 2 (tokens, themes, density) are implemented, as are `token()`, the base styles, and `PunkElement` from work package 3. Section 12.1 (Foundations) is complete.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases)
 **Package:** `@dieselpunk/core`
 **Prefix:** `punk-`
@@ -40,8 +40,8 @@ These decisions close gaps or conflicts in `SPEC.md` that affect Phase 1. Where 
 | 2 | Workbench first screen | SPEC §15 requires inventory components on the first screen. They do not exist until Phase 2, so Phase 1 opens on a "Foundations" overview composed of panel, button, progress bar, and tooltip. Phase 2 replaces it. |
 | 3 | "Native progress semantics" (SPEC §7.4) | Means the ARIA `progressbar` role. The component renders custom markup, not `<progress>`, because native progress styling is inconsistent across engines. |
 | 4 | Focus ring (SPEC §4.2 "not removed in mouse mode") | The ring renders on `:focus-visible`. Components never set `outline: none` without an equivalent replacement. |
-| 5 | Focus ring colors | SPEC §6.2 hard-codes hex values in `--punk-focus-ring`, which cannot adapt to themes. It becomes derived from `--punk-color-focus-inner` and `--punk-color-focus`. |
-| 6 | `reduced-texture` | A value of `data-punk-theme` (as SPEC §6.2 lists it). `--punk-texture-opacity` and the surface fill tokens are also overridable on any theme. |
+| 5 | Focus ring colors | SPEC §6.2 hard-codes hex values in `--punk-focus-ring`, which cannot adapt to themes. `--punk-focus-ring` is removed; the ring is composed at use site from `--punk-color-focus-inner` and `--punk-color-focus` (§6.4). |
+| 6 | `reduced-texture` | A value of `data-punk-theme` (as SPEC §6.2 lists it). `--punk-texture-opacity` and `--punk-surface-gradient-strength` are also overridable on any theme. |
 | 7 | Touch target (SPEC §9.2, 40x40) | Compact `md` controls are 36px tall. Under `@media (pointer: coarse)` they extend their hit area to at least 40px with a transparent pseudo-element; visuals do not change. |
 | 8 | Button `type` default | `'button'`, not the native `'submit'`, to prevent accidental form submission. |
 | 9 | Core fonts | Core bundles no font files. The workbench loads Chakra Petch and IBM Plex Mono (SIL OFL) from `@fontsource` as dev dependencies. |
@@ -62,7 +62,7 @@ Use the current stable major version of each tool when implementation starts, an
 | Rendering | Lit 3 (regular dependency of core) |
 | Module build | `tsc` emitting unbundled ESNext modules and `.d.ts` into `dist/`, mirroring `src/`, with `rewriteRelativeImportExtensions` (§3.1) |
 | CSS artifacts | TypeScript script (`scripts/build-css.ts`) run directly by Node, generating CSS from the token source |
-| Unit/DOM tests | Vitest browser mode with the Playwright provider: Chromium, Firefox, WebKit |
+| Unit/DOM tests | Vitest 5 browser mode with the Playwright provider: Chromium, Firefox, WebKit |
 | Accessibility tests | `axe-core` |
 | Visual regression | Playwright `toHaveScreenshot` against a fixture page |
 | Manifest | `@custom-elements-manifest/analyzer` |
@@ -79,8 +79,8 @@ Use the current stable major version of each tool when implementation starts, an
 
 | Context | Files | Executed by | Rules |
 |---------|-------|-------------|-------|
-| Library and browser code | `src/**`, tests | `tsc` build; Vite/esbuild for tests and Storybook | Decorators, enums, and other TypeScript-only syntax are allowed |
-| Node-run code | `scripts/**` and the data-only token modules `src/tokens/{base,themes,density}.ts` | Node 26 directly (`node scripts/build-css.ts`) | Erasable syntax only, as below |
+| Library and browser code | `src/**`, `test/browser/**` | `tsc` build (`tsconfig.build.json`, which excludes `*.test.ts`); Vite/esbuild for tests and Storybook | Decorators, enums, and other TypeScript-only syntax are allowed |
+| Node-run code | `scripts/**`, `test/*.test.ts`, `vitest.config.ts`, and the data-only token modules `src/tokens/{base,themes,density}.ts` | Node 26 directly (`node scripts/build-css.ts`) | Erasable syntax only, as below |
 
 **Rules for Node-run code.** Node strips type annotations without transforming anything else, so these files must follow `tsconfig.scripts.json`:
 
@@ -94,7 +94,7 @@ Use the current stable major version of each tool when implementation starts, an
 
 **Shared source.** The token data modules are consumed by both contexts. They follow the stricter Node-run rules, and `tsc` compiles them for the library with `rewriteRelativeImportExtensions: true`, which rewrites `.ts` specifiers to `.js` in `dist/`.
 
-**Type checking.** Node does not type-check. `npm run typecheck` runs `tsc --noEmit` for both `tsconfig.json` (library) and `tsconfig.scripts.json` (scripts), and CI fails on errors in either.
+**Type checking.** Node does not type-check. `npm run typecheck` runs `tsc` for both `tsconfig.json` (library and browser tests, `noEmit`) and `tsconfig.scripts.json` (Node-run code), and CI fails on errors in either. `tsconfig.build.json` extends `tsconfig.json` to emit `dist/` from `src/` only.
 
 **Version pin.** `typescript` is declared as `~6.0` in the workspace root only, with no other workspace declaring its own copy. TypeScript 7 has no JavaScript API and is incompatible with `typescript-eslint` (peer range `>=4.8.4 <6.1.0`), so it is not used. Other tools that load the TypeScript JavaScript API (Storybook, the Custom Elements Manifest analyzer) must be confirmed against 6.0 in work package 1.
 
@@ -104,15 +104,21 @@ Use the current stable major version of each tool when implementation starts, an
 package.json                    private workspace root (engines.node >=26)
 .nvmrc                          26
 tsconfig.base.json
-tsconfig.scripts.json           scripts/ and src/tokens/, noEmit, erasableSyntaxOnly
+tsconfig.scripts.json           Node-run code: scripts/, token data modules, tests; noEmit, erasableSyntaxOnly
 eslint.config.js
+.prettierrc.json
 .github/workflows/ci.yml
+scripts/
+  check-toolchain.ts            Node 26 and single TypeScript 6.0.x gate
 packages/core/
   package.json
-  tsconfig.json
+  tsconfig.json                 library and browser tests, noEmit
+  tsconfig.build.json           emits dist/ from src/, excluding tests
+  vitest.config.ts              browser mode, three engines, setColorScheme command
   custom-elements-manifest.config.mjs
   scripts/
     build-css.ts                tokens → dist/css/*.css (run as: node scripts/build-css.ts)
+    render-css.ts               pure CSS renderers shared by build-css.ts and tests
     check-contrast.ts           theme contrast gate (§6.8)
     check-package.ts            exports/side-effect/tree-shake gate
   src/
@@ -147,6 +153,11 @@ packages/core/
   test/
     visual/         matrix.html, matrix.spec.ts, __screenshots__/
     a11y/           axe helpers and fixtures
+    tokens.test.ts  node:test suite for token sources, emitted CSS, and the contrast gate
+    browser/
+      foundations.test.ts   criteria 12.1.3 to 12.1.5 in real browsers (§12.1)
+      commands.ts           types for custom Vitest browser commands
+      fixtures/probe.ts     PunkProbe, a test-only element built like a component
     package/        fixture consumer app for packaging tests
 apps/storybook/
   .storybook/
@@ -204,13 +215,18 @@ Tokens are authored in TypeScript (`tokens/`). Both emitted CSS and component fa
 
 `build-css.ts` writes:
 
-- `tokens.css`: base tokens plus the default dark theme on `:root`, and the density attribute rules.
-- `themes.css`: attribute rules for each theme and the `auto` mapping.
+- `tokens.css`: base tokens on `:where(:root)`, the default theme on `:where(:root)` and `[data-punk-theme="industrial"]`, and the `compact` and `low` density rules.
+- `themes.css`: attribute rules for every other theme and the `auto` mapping.
 
 Selectors:
 
 ```css
-:root, [data-punk-theme="industrial"]        { /* dark colors */ }
+:where(:root)                                { /* base tokens */ }
+:where(:root), [data-punk-theme="industrial"] { /* dark colors */ }
+[data-punk-density="compact"]                { /* compact density tokens */ }
+[data-punk-density="low"]                    { /* low-density tokens */ }
+
+/* themes.css */
 [data-punk-theme="industrial-light"]         { /* light colors */ }
 [data-punk-theme="high-contrast"]            { /* high-contrast colors */ }
 [data-punk-theme="reduced-texture"]          { /* dark colors, texture off */ }
@@ -218,8 +234,9 @@ Selectors:
 @media (prefers-color-scheme: light) {
   [data-punk-theme="auto"]                   { /* light colors */ }
 }
-[data-punk-density="low"]                    { /* low-density tokens */ }
 ```
+
+`:where(:root)` has zero specificity, so theme and density attributes win regardless of stylesheet order, including when set on `<html>`. The explicit `compact` rule lets a compact subtree sit inside a low-density one.
 
 Each theme block also sets `color-scheme` (`dark` or `light`) so native scrollbars and form chrome match.
 
@@ -238,31 +255,31 @@ Phase 1 keeps every token in SPEC §6.2 and adds:
 | `--punk-color-focus` | Outer focus ring color |
 | `--punk-color-focus-inner` | Inner focus ring color |
 | `--punk-color-accent-text` | Text/icon color on accent fills |
+| `--punk-color-danger-text` | Text/icon color on danger fills |
 | `--punk-color-disabled-fill` / `--punk-color-disabled-text` | Disabled surface and label |
-| `--punk-surface-fill-top` / `--punk-surface-fill-bottom` | Raised gradient endpoints (equal in `reduced-texture` and `high-contrast`) |
+| `--punk-surface-gradient-strength` | `1` for the raised gradient, `0` for flat fills (`0` in `reduced-texture` and `high-contrast`) |
 | `--punk-texture-opacity` | Noise overlay opacity; default `0.06`, `0` when reduced or high-contrast |
 | `--punk-icon-size-sm` / `-md` / `-lg` | Icon box sizes: 16, 20, 24 |
 | `--punk-z-overlay` | z-index for the non-top-layer tooltip fallback |
 | `--punk-tooltip-max-width` | Default `320px` |
 
-`--punk-focus-ring` is defined as:
+**Token values never reference other custom properties.** A custom property whose value uses `var()` is resolved on the element that declares it, so a derived token declared on `:root` would ignore a later override of its inputs on a subtree (for example `.factory-console { --punk-color-panel: ... }` from SPEC §12). A test enforces this. Derived values are therefore composed where they are used:
 
-```css
-0 0 0 2px var(--punk-color-focus-inner), 0 0 0 4px var(--punk-color-focus)
-```
+- The focus ring is `box-shadow: 0 0 0 2px <color-focus-inner>, 0 0 0 4px <color-focus>`, written in `focus.ts`. There is no `--punk-focus-ring` token.
+- The raised gradient runs from `color-panel-raised` to `color-panel`, blended with `color-mix()` by `--punk-surface-gradient-strength`.
 
-The two-tone ring stays visible on both light and dark surfaces.
+The two-tone ring stays visible on both light and dark surfaces. In the light and high-contrast themes the outer ring is the dark color and the inner ring the bright one, so the outer ring always contrasts with the surrounding surface.
 
 ### 6.5 Themes
 
-| Theme | Intent | Starting values |
-|-------|--------|-----------------|
-| `industrial` (default) | Charcoal metal, brass, safety orange | The values in SPEC §6.2 |
-| `industrial-light` | Same material language on pale steel; dark text | canvas `#d8d5ca`, panel `#bfbcb0`, panel-raised `#d0cdc2`, panel-inset `#aeab9f`, text `#1f201d`, text-muted `#34342f`, accent `#8f4a00`, focus-inner `#1d1e1c`, focus `#f2cf44` |
-| `high-contrast` | Black/white with a yellow accent; no gradients or texture; text at least 7:1 | canvas `#000000`, panel `#141414`, text `#ffffff`, edges `#ffffff`, accent `#ffd400` |
-| `reduced-texture` | Dark palette, flat fills, no noise | Same as `industrial`, with `--punk-texture-opacity: 0` and equal fill-top/bottom |
+| Theme | Intent | Values |
+|-------|--------|--------|
+| `industrial` (default) | Charcoal metal, brass, safety orange | The values in SPEC §6.2, plus `danger-text` `#0e0d0b` |
+| `industrial-light` | Same material language on pale steel; dark text | canvas `#d8d5ca`, panel `#bfbcb0`, panel-raised `#d0cdc2`, panel-inset `#aeab9f`, text `#1f201d`, text-muted `#34342f`, accent `#7d4000`, focus `#1d1e1c`, focus-inner `#f2cf44` |
+| `high-contrast` | Black/white with a yellow accent; no gradients or texture; text at least 7:1 | canvas `#000000`, panel `#0d0d0d`, text `#ffffff`, edges `#ffffff`, accent `#ffd400` |
+| `reduced-texture` | Dark palette, flat fills, no noise | Same as `industrial`, with `--punk-texture-opacity: 0` and `--punk-surface-gradient-strength: 0` |
 
-Values for `industrial-light` and `high-contrast` are starting points. The contrast gate (§6.8) is authoritative, and values must be adjusted until it passes. Fill colors that carry meaning (progress fills, selected outlines) use the theme accent, which in `industrial-light` is darker than the dark theme's so it meets 3:1 against light surfaces.
+`packages/core/src/tokens/themes.ts` is the source of truth; the table lists the key values. Every value passes the contrast gate (§6.8), and any change must keep it passing. Fill colors that carry meaning (progress fills, selected outlines) use the theme accent, which in `industrial-light` is darker than the dark theme's so it meets 3:1 against light surfaces.
 
 ### 6.6 Density
 
@@ -285,10 +302,13 @@ Compact is the default. Font sizes do not change with density.
 
 `check-contrast.ts` runs in CI and fails the build when, for any theme:
 
-- text or text-muted on canvas, panel, panel-raised, or panel-inset is below 4.5:1 (7:1 for `high-contrast`);
-- accent, danger, warning, and success fills against the surface they appear on are below 3:1;
-- the focus ring pair is below 3:1 against both neighboring surfaces;
-- `accent-text` on accent is below 4.5:1.
+- `text` on canvas, panel, panel-raised, or panel-inset is below 4.5:1 (7:1 for `high-contrast`);
+- `text-muted` on canvas, panel, or panel-inset is below the same threshold. It is not checked on panel-raised: raised surfaces carry controls, which use `text`;
+- accent, accent-strong, warning, danger, success, and info fills against panel-inset are below 3:1. Inset troughs are the only Phase 1 surface that carries these fills; Phase 2 must extend this check to the surfaces status components use;
+- `accent-text` on accent, or `danger-text` on danger, is below the text threshold;
+- the outer focus color is below 3:1 against canvas, panel, panel-raised, or panel-inset, or the inner focus color is below 3:1 against the outer one.
+
+**Known gap.** The gate does not check control boundaries. In the `industrial` palette from SPEC §6.2, `edge-dark` on panel is 1.78:1 and `edge-light` on panel is 2.22:1, below the 3:1 SPEC §10 requires for non-text controls (`industrial-light` and `high-contrast` pass for `edge-dark`). Raised surfaces differ from panel by only 1.41:1. Before the button and panel components ship, either the dark palette's edges must be strengthened or the spec must define which boundary satisfies the requirement; the gate then gains a matching rule.
 
 ## 7. Shared Styles and Internals
 
@@ -307,7 +327,7 @@ Phase 1 components emit no custom events, but `emit` is defined here so Phase 2 
 
 | Surface | Fill | Edges |
 |---------|------|-------|
-| `raised` | Vertical gradient from `surface-fill-top` to `surface-fill-bottom` | Inset 1px light top/left and dark bottom/right, plus a `border-width` outline in `edge-dark` |
+| `raised` | Vertical gradient from `panel-raised` to `panel`, blended with `color-mix()` by `--punk-surface-gradient-strength` (strength `0` is flat) | Inset 1px light top/left and dark bottom/right, plus a `border-width` outline in `edge-dark` |
 | `inset` | `panel-inset` solid | Inset 1px dark top/left and light bottom/right |
 | `flat` | `panel` solid | Outline only |
 
@@ -319,7 +339,7 @@ All surfaces use `--punk-radius` (maximum 4px). No blur, glow, or soft shadows (
 
 ### 7.4 Focus
 
-`focus.ts` provides a `:focus-visible` rule that applies `--punk-focus-ring`. Ring offset must not be clipped by the host; hosts use `overflow: visible`.
+`focus.ts` provides a `:focus-visible` rule that draws a two-tone ring from `--punk-color-focus-inner` and `--punk-color-focus` (§6.4). Ring offset must not be clipped by the host; hosts use `overflow: visible`.
 
 ### 7.5 Forced Colors
 
@@ -511,7 +531,9 @@ The workbench consumes the built package through the same exports as an external
 
 ### 10.1 Unit and DOM Tests
 
-Run in Chromium, Firefox, and WebKit. Each component has tests covering the criteria in §12, plus these package-wide assertions:
+Node-run code (token sources, CSS rendering, the contrast gate, scripts) is tested with `node --test` and `node:assert`, with no browser or test framework.
+
+Component tests run in Chromium, Firefox, and WebKit. Local runs default to Chromium only. CI sets `PUNK_BROWSERS=chromium,firefox,webkit` explicitly, so it never depends on a default. `PUNK_BROWSERS` takes a comma-separated list, and the config rejects unknown names. Each component has tests covering the criteria in §12, plus these package-wide assertions:
 
 - Importing a component's class entry does not define its element; importing `register.js` does; importing it twice does not throw.
 - Every `part` attribute rendered in a component's shadow DOM appears in its manifest `csspart` list, and vice versa.
@@ -558,7 +580,7 @@ Packages are ordered by dependency. Each ends with the CI gates that apply to wh
 |---|---------|------------|--------|
 | 1 | Scaffolding | — | Workspaces, `.nvmrc`, `engines`, tsconfigs (including `tsconfig.scripts.json`), lint, CI skeleton on Node 26, empty `core` package building |
 | 2 | Tokens, themes, density | 1 | `tokens/`, `build-css.ts`, `check-contrast.ts`, emitted CSS |
-| 3 | Internals and shared styles | 2 | `PunkElement`, `token()`, surfaces, focus, texture, forced-colors, localize, dev flag, registration helper |
+| 3 | Internals and shared styles | 2 | `PunkElement`, `token()`, surfaces, focus, texture, forced-colors, localize, dev flag, registration helper. Done: `PunkElement`, `token()`, base styles. |
 | 4 | Panel and divider | 3 | Two components, tests, fixtures |
 | 5 | Tooltip | 3 | Component, `position.ts`, tests |
 | 6 | Button base, button, icon button | 3, 5 | Components, form behavior, anchor protocol, tests |
@@ -573,6 +595,9 @@ Work packages 4, 5, and 7 can proceed in parallel after package 3. Package 8 sta
 
 ### 12.1 Foundations
 
+No component exists yet, so criteria 3 to 5 are verified in `test/browser/foundations.test.ts` against `PunkProbe`, a test-only element built with `PunkElement` and `token()` exactly as components will be. It exposes the resolved value of every token. Each component task adds its own unstyled-appearance assertion to that component's tests, which is what finally satisfies “every component” in criterion 3.
+
+The tests also cover cases beyond the criteria: both stylesheet orders, attributes on `<html>`, a compact subtree inside a low-density one, nested themes, and plain custom-property overrides on a subtree.
 1. `tokens.css` and `themes.css` are emitted; all token values originate from `tokens/*.ts`.
 2. The contrast gate passes for all four themes.
 3. An unstyled page (no stylesheet) renders every component in the default dark, compact appearance.
