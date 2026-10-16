@@ -37,6 +37,8 @@ A selectable recipe tile: a name, a craft time, whether it can be made, and what
 
 **Duration** is in seconds and formatted for the nearest \`lang\` ("0.5 sec", "12 Sek.").
 
+**Layout:** when less than 12em would be left for the text beside the icon, the text moves under the icon, so it stays readable in a narrow container.
+
 **Selection:** like a slot, the application owns \`selected\`, announced as \`aria-pressed\`.
 
 **Keyboard**

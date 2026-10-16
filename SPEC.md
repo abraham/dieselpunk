@@ -271,7 +271,7 @@ An etched disclosure group for settings and recipe categories. Uses native butto
 
 The foundational square receptacle for items, recipes, tools, and equipment.
 
-- Properties: `selected`, `disabled`, `highlighted`, `invalid`, `size`, `label`.
+- Properties: `selected`, `disabled`, `highlighted`, `invalid`, `size`, `label`, `value`.
 - Slots: default image/content, `badge`, `overlay`.
 - Parts: `slot`, `content`, `badge`, `overlay`.
 - Supports click, Enter, and Space activation.
@@ -279,7 +279,7 @@ The foundational square receptacle for items, recipes, tools, and equipment.
 
 #### `<punk-item-stack>`
 
-Displays item artwork, count, durability, and quality inside a `<punk-slot>`.
+Displays item artwork, count, durability, and quality in the same receptacle as `<punk-slot>`. It shares the slot's base instead of nesting a slot, so a grid never holds an option inside an option.
 
 - Properties: `name`, `count`, `capacity`, `durability`, `quality`, `selected`, `disabled`.
 - Slots: `icon`.
@@ -290,10 +290,11 @@ Displays item artwork, count, durability, and quality inside a `<punk-slot>`.
 
 A responsive, keyboard-navigable grid of slotted `<punk-slot>` or `<punk-item-stack>` children.
 
-- Properties: `columns`, `selection: 'none' | 'single' | 'multiple'`, `disabled`.
-- Events: `punk-selection-change`, `punk-activate`.
+- Properties: `columns`, `selection: 'none' | 'single' | 'multiple'`, `disabled`, `values`. Its items identify themselves with a `value`.
+- Events: `punk-selection-change` (`{ values, items }`), `punk-activate`.
 - Uses CSS Grid with stable `--punk-slot-size` tracks.
-- Arrow keys move within the grid; Home/End move to row boundaries.
+- With `selection` of `none` it is a `group` of buttons; with `single` or `multiple` it is a `listbox` of `option` items (not `role="grid"`, since a wrapping layout has no rows and cells). Focus is a roving `tabindex`, one tab stop, and moving it never changes the selection.
+- Arrow keys move in reading order and by row; Home/End move to row boundaries, and Ctrl+Home/Ctrl+End to the first and last item.
 
 #### `<punk-recipe>`
 
@@ -498,7 +499,7 @@ The documentation app must function as a workbench rather than a marketing landi
 - framework integration examples for plain HTML, React, Vue, and Svelte;
 - an asset policy page explaining how to provide original item icons and textures.
 
-The first screen opens directly to the component workbench with the inventory components visible. Until those components exist, in Phase 2, it opens on a Foundations overview composed of the components that do.
+The first screen opens directly to the component workbench with the inventory components visible: the Inventory overview. (Phase 1 opened on a Foundations overview, which remains as a story.)
 
 ## 16. Versioning and Compatibility
 

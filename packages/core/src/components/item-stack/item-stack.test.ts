@@ -180,6 +180,23 @@ describe('shown count', () => {
     expect(plate.right).toBeLessThanOrEqual(box.right + 0.5);
     expect(plate.left).toBeGreaterThanOrEqual(box.left - 0.5);
   });
+
+  it('cuts a long count at its end, not its start, on a right-to-left page', async () => {
+    for (const dir of ['ltr', 'rtl']) {
+      const element = await mount(
+        { count: '1234567', capacity: '9876543' },
+        { parent: container({ dir }) },
+      );
+      const plate = part(element, 'count') as HTMLElement;
+      const range = document.createRange();
+      range.selectNodeContents(plate);
+      expect(plate.scrollWidth, dir).toBeGreaterThan(plate.clientWidth);
+      // The first digit has to be on show; a cut tail is clearly cut, a missing head reads wrong.
+      expect(range.getBoundingClientRect().left, dir).toBeGreaterThanOrEqual(
+        plate.getBoundingClientRect().left - 0.5,
+      );
+    }
+  });
 });
 
 describe('durability and quality', () => {

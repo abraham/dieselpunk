@@ -24,6 +24,7 @@ export const recipeStyles = css`
     ${raisedSurface}
     position: relative;
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     gap: ${token('space-2')};
     min-block-size: calc(${token('slot-size')} + 2 * ${token('space-2')});
@@ -76,8 +77,9 @@ export const recipeStyles = css`
     object-fit: contain;
   }
 
+  /* The text drops under the icon when less than 12em would be left beside it. */
   .body {
-    flex: 1 1 0;
+    flex: 1 1 12em;
     min-inline-size: 0;
     display: grid;
     row-gap: ${token('space-1')};

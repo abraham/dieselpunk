@@ -16,6 +16,9 @@ export const itemStackStyles = css`
     color: ${token('color-text')};
     font: 600 11px/14px ${token('font-mono')};
     font-variant-numeric: tabular-nums;
+    /* Digits read left to right in every language, so a cut count loses its end, not its start. */
+    direction: ltr;
+    unicode-bidi: isolate;
     text-overflow: ellipsis;
     white-space: nowrap;
     pointer-events: none;

@@ -1,6 +1,6 @@
 # Phase 2: Inventory — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), 3 (slot and item stack), 4 (slot grid), 5 (recipe), 6 (meter and status light), 7 (test infrastructure), and 8 (workbench) are implemented.
+**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), 3 (slot and item stack), 4 (slot grid), 5 (recipe), 6 (meter and status light), 7 (test infrastructure), 8 (workbench), and 9 (hardening) are implemented.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 2
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md)
 **Package:** `@dieselpunk/core`
@@ -294,7 +294,7 @@ An item with its count, durability, and quality, in the same receptacle.
 - `durability` is a fraction from 0 to 1, drawn as a thin bar in an inset trough. Its fill uses the same non-color patterns as the progress bar, so a low value is visible without color, and its state is in the accessible text ("durability 40%").
 - `quality` is an integer from 0 to 5, drawn as that many small diamonds; the number is in the accessible text.
 - Invalid input (a negative or non-finite count, a durability outside 0 to 1, a quality outside 0 to 5) is clamped and warns once.
-- Details settled in implementation: a non-finite count is 0, a `capacity` that is not above 0 is ignored, a count above the capacity is shown as written, and quality is rounded. Removing the `count` or `quality` attribute restores the default silently. A `quality` of 0 draws no diamonds and adds nothing to the name. A durability of 0.5 or more draws solid stripes, 0.25 or more diagonal hatching, and less than that cross-hatching. The quality diamonds sit at the inline start of the top edge, the count plate at the inline end of the bottom edge and above the bar when there is one, and a count too long for the item is ellipsized, never wrapped. The item has no `label` property: `name` names it, and an `aria-label` would replace the quantity in the accessible name, so the JSDoc says to use `name`.
+- Details settled in implementation: a non-finite count is 0, a `capacity` that is not above 0 is ignored, a count above the capacity is shown as written, and quality is rounded. Removing the `count` or `quality` attribute restores the default silently. A `quality` of 0 draws no diamonds and adds nothing to the name. A durability of 0.5 or more draws solid stripes, 0.25 or more diagonal hatching, and less than that cross-hatching. The quality diamonds sit at the inline start of the top edge, the count plate at the inline end of the bottom edge and above the bar when there is one, and a count too long for the item is ellipsized, never wrapped, and is always laid out left to right, so on a right-to-left page a cut count keeps its first digits. The item has no `label` property: `name` names it, and an `aria-label` would replace the quantity in the accessible name, so the JSDoc says to use `name`.
 - The slot and the item stack share `PunkReceptacleBase`, which owns `highlighted`, `invalid`, `size`, the receptacle markup, badge and overlay, and the "no accessible name" warning. The item stack warns once for each of: no name, a count below 0 or not a number, a capacity not above 0, a durability outside 0 to 1 or not a number, and a quality that is not a whole number from 0 to 5.
 
 ### 8.3 `punk-slot-grid`
@@ -371,7 +371,7 @@ A selectable recipe tile.
   - **Duration** is in seconds, shown with `unit: 'second'` and `unitDisplay: 'short'` ("0.5 sec" in English, "12 Sek." in German), at most two decimals. Zero is shown as a time, and unset shows none. A negative value is clamped and warns, and a value that is not a number shows nothing and warns.
   - **Count.** `craftable-count` is rounded down. Removing the attribute reads as zero without a warning, and a negative or non-numeric value is zero with one.
   - **Name.** The tile's text in reading order (icon alt text, name, duration, status, ingredients, products), so naming it with `aria-label` would replace the ingredients: the JSDoc and the gallery use `name`. It warns once when there is no `name`, no `aria-label` or `aria-labelledby`, and nothing in the icon, ingredients, or products slots.
-  - **Layout.** The icon plate is `--punk-slot-size` square and hidden when empty. The ingredients, an arrow, and the products sit on one wrapping row; the arrow shows only when both are present, is hidden from assistive technology, and flips for right-to-left. The text column can shrink below its widest unbreakable content, and a long word breaks.
+  - **Layout.** The icon plate is `--punk-slot-size` square and hidden when empty. The ingredients, an arrow, and the products sit on one wrapping row; the arrow shows only when both are present, is hidden from assistive technology, and flips for right-to-left. The text column can shrink below its widest unbreakable content, and a long word breaks. It has a basis of 12em and the tile wraps, so in a narrow container the text moves under the icon and is not squeezed beside it.
   - **Selected** is a 3px ring and a pressed-in bevel, no fill change, since the text keeps its contrast on the tile. Under forced colors it is a 3px `Highlight` outline.
 - The tile is `role="button"` with `aria-pressed` for `selected` (§2 decision 4). Its name is the browser's name from content: the name, the duration, the availability word, the craftable count, and the text of the `ingredients` and `products` slots. Nothing in the tile is hidden from the name, so an ingredient list is read.
 - The duration is formatted as a unit with `Intl.NumberFormat` (for example "0.5 s"), and the count and the word "unavailable" are shown as text, so availability never depends on dimming or color.
@@ -517,9 +517,23 @@ The consumer check (`check-consumer.ts`) also covers the inventory: its TypeScri
 | 6 | Meter and status light | 1 | Two components, tests. Done. |
 | 7 | Test infrastructure | 3 to 6 as they land | Gallery group, axe and reflow coverage, ARIA snapshots, visual matrix, consumer typing, baselines. Done. |
 | 8 | Workbench | 3 to 6 as they land | Inventory overview, stories, docs pages, demo art. Done. |
-| 9 | Hardening | 7 | Forced-colors, RTL, 200% zoom review of the renders; size tuning; docs polish |
+| 9 | Hardening | 7 | Forced-colors, RTL, 200% zoom review of the renders; size tuning; docs polish. Done. |
 
 Packages 3, 5, and 6 can proceed in parallel after packages 1 and 2. The gallery in package 7 is extended as each component lands, so each package's own tests already run against it.
+
+### 11.1 Work Package 9 Review
+
+The renders in all four projects were reviewed (forced colors, right-to-left, 200% zoom at 187px, the light theme at low density), and the workbench was checked in a browser. Findings:
+
+- **Fixed: a cut count read wrongly on a right-to-left page.** The ellipsis cut the start of the digits, so 1,234,567 showed as "…567" and 75/100 as "…100". The count now has `direction: ltr` and `unicode-bidi: isolate`, so it is always cut at its end ("1,2…"). A test checks that the first digit is on show in both directions; it fails without the rule.
+- **Fixed: a recipe in a narrow container.** At 187px the text had about 90px beside the icon and broke words in the middle. The text column now has a 12em basis and the tile wraps, so the text moves under the icon. A test checks both layouts (below at 187px, beside at 512px); it fails without the basis.
+- **Left as it is, and documented:** a count that does not fit a small item is still cut (§8.2). The workbench says to use `compact-count`, a larger `size`, or low density. In Hebrew the value text "15%, warning" shows its English comma oddly; a real application translates the state words with `setStrings`, so it is not a layout fault.
+- **Reviewed and fine:** the forced-colors states stay apart (selected is a heavy outline, highlighted dotted, invalid dashed, disabled in the disabled color, and the meter and durability patterns remain); the grid, recipe arrow, meter fill, and badge positions flip correctly; nothing scrolls sideways at 187px; the light theme keeps the empty slot boundary and the selected fill visible.
+- **Sizes.** After the change: `punk-slot` 4.30 kB, `punk-item-stack` 5.95 kB (limit 6), `punk-slot-grid` 4.66 kB, `punk-recipe` 4.91 kB, `punk-meter` 4.47 kB, `punk-status-light` 2.67 kB. Nothing was cut: the item stack has 0.05 kB and the recipe 0.09 kB of room left, so the next addition to either needs the base split or a limit decision first.
+- **Baselines.** The layout change moved 41 inventory baselines (narrow containers). All 164 inventory baselines were regenerated the same way as in work package 7 (locally, in the pinned image); the 160 foundation baselines are unchanged byte for byte. The "Update visual baselines" workflow should still be run once to confirm on amd64.
+- **Parent spec.** `SPEC.md` §7.4 and §15 now describe the item stack's shared base, the grid's roles and `values`, and the Inventory first screen.
+
+Still open (not code): the owner's confirmation of §2 decision 1 (§13 item 4), and a screen reader check by hand of the `listbox` grid (§14, second risk).
 
 ## 12. Acceptance Criteria
 

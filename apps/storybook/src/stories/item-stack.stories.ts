@@ -31,6 +31,8 @@ An item with its count, durability, and quality, in the same receptacle as a \`p
 
 **Count:** hidden when it is 1, and shown as \`count/capacity\` when there is a capacity. \`compact-count\` abbreviates only the visible number ("1.2K"); the accessible text always has the full one.
 
+**Fit:** a visible count that is too long for the item is cut at its end with an ellipsis, in every writing direction, never wrapped. Use \`compact-count\`, a larger \`size\`, or low density for big numbers or a capacity; the accessible text stays complete either way.
+
 **Durability** is a fraction from 0 to 1 drawn as a bar. Its fill is solid, diagonally hatched, or cross-hatched as it falls, so it reads without color. **Quality** is 0 to 5 diamonds.
 
 Values out of range are clamped and warn in development builds.

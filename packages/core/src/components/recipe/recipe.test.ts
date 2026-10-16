@@ -282,6 +282,25 @@ describe('layout', () => {
     expect(body.getBoundingClientRect().width).toBeLessThanOrEqual(tile(element).clientWidth);
   });
 
+  it('puts the text under the icon when it would be squeezed beside it, and beside it otherwise', async () => {
+    const rows: Array<[number, boolean]> = [
+      [187, true],
+      [512, false],
+    ];
+    for (const [width, below] of rows) {
+      const wrapper = container({}, width);
+      const element = await mount(
+        { name: 'Precision gear for heavy industrial drives', duration: '12', available: '' },
+        { content: art + needs + makes, parent: wrapper },
+      );
+      const icon = (part(element, 'icon') as HTMLElement).getBoundingClientRect();
+      const body = (
+        element.shadowRoot?.querySelector('.body') as HTMLElement
+      ).getBoundingClientRect();
+      expect(body.top >= icon.bottom - 0.5, `${width}px`).toBe(below);
+    }
+  });
+
   it('grows with its content and keeps a minimum height', async () => {
     const short = await mount();
     const tall = await mount({}, { content: art + needs + makes, parent: container({}, 200) });
