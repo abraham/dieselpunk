@@ -1,0 +1,32 @@
+version: 2
+
+updates:
+  # One entry covers every npm workspace, because they share the root lockfile.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # These packages release together and must stay on matching versions.
+      storybook:
+        patterns: ['storybook', '@storybook/*', '@wc-toolkit/*']
+      size-limit:
+        patterns: ['size-limit', '@size-limit/*']
+      vitest:
+        patterns: ['vitest', '@vitest/*']
+      lint:
+        patterns: ['eslint', '@eslint/*', 'typescript-eslint', 'prettier']
+      fonts:
+        patterns: ['@fontsource/*']
+    ignore:
+      # TypeScript is held at 6.0 until typescript-eslint supports a newer release (SPEC-PHASE-1.md §3.1).
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # The types follow the Node major in .nvmrc.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

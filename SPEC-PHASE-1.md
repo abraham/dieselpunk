@@ -686,6 +686,14 @@ Pipeline stages, all required, all running on Node 26: install, toolchain check 
 
 Visual regression is its own job, in the pinned Playwright container. The "Update visual baselines" workflow is manual and uploads new baselines as an artifact. The story smoke test loads every story and docs page in the built workbench and fails on a render error or any console warning or error other than Lit's one-time dev-mode notice. It fails for a story that throws and for a story that misuses a component, such as an icon button without a label, which only logs a development warning.
 
+### 10.6 Dependency Updates
+
+`.github/dependabot.yml` opens weekly pull requests for npm (one entry covers every workspace, since they share the root lockfile) and for GitHub Actions. Packages that release together are grouped so they update in one pull request: Storybook and its helpers, `size-limit` and its plugins, Vitest, the linting tools, and the fonts. Three dependencies are held back on purpose:
+
+- **TypeScript** takes patch updates only, because `typescript-eslint` caps it at 6.0 (§3.1). The toolchain gate would fail a newer one anyway.
+- **`@types/node`** takes no major updates, since it follows the Node major in `.nvmrc`.
+- **Playwright** takes no automatic updates. Every version changes the browser builds, which invalidates every visual baseline (§10.3), and the version is also written in the image tag of both workflows, which Dependabot does not edit. To upgrade it, change the package versions and both image tags together, then run the "Update visual baselines" workflow and commit its artifact. `test/visual-ci.test.ts` fails if the tags and the installed version disagree.
+
 ## 11. Work Packages
 
 Packages are ordered by dependency. Each ends with the CI gates that apply to what it added.
