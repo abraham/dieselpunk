@@ -15,6 +15,10 @@ Nothing forces horizontal scrolling at 200% zoom, down to a layout 187px wide (a
 - **Panels** and **dividers** wrap their text. A word too long for the line breaks only when it cannot fit on a line by itself.
 - **Tooltips** are never wider than the viewport, whatever `--punk-tooltip-max-width` is.
 - **Progress bars** wrap a long label above the track.
+- **Slots** and **item stacks** keep their size, and a **slot grid** drops columns before it shrinks a slot, down to one column.
+- **Recipes** grow with their content, and a long name wraps.
+- **Meters** wrap a long label above the track, and a vertical meter keeps its length.
+- **Status lights** wrap their text next to the shape.
 
 Components set no widths of their own, so they fill the container you place them in. Put a button in a container that can shrink, such as a block container or a flex item with `min-inline-size: 0`, and it wraps.
 
@@ -25,23 +29,47 @@ Set `dir="rtl"` on `<html>` or any ancestor. Layout uses logical properties thro
 - Headers, labels, and values swap sides, and the start and end icon slots of a button swap with them.
 - Progress fills grow from the right. The indeterminate stripes scroll the same way in both directions, because they are decoration and not a measure.
 - A tooltip with `placement="start"` opens on the right side of its anchor.
+- A slot grid's horizontal arrow keys swap, so the arrow that points toward the start of the row moves to the next item. Home is the rightmost item of a row.
+- Meter and recipe fills, and the arrow between a recipe's ingredients and products, flip.
 
 ## Forced colors
 
 Under `forced-colors: active`, the gradients, textures, and bevels give way to plain borders in system colors. Information that normally depends on color is carried by something else:
 
 | Component         | Normal                                                          | Forced colors                                    |
-| ----------------- | --------------------------------------------------------------- | ------------------------------------------------ |
+| ----------------- | --------------------------------------------------------------- | ------------------------------------------------ | --- | ---------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | Button            | `default`, `primary`, and `danger` differ in fill               | A normal, a heavy (4px), and a dashed border     |
 | Progress bar      | `default`, `success`, `warning`, and `danger` differ in pattern | The same patterns, in the system highlight color |
 | Disabled controls | Flat and desaturated                                            | The system disabled-text color                   |
-| Focus             | A two-tone ring                                                 | A 2px `Highlight` outline                        |
+| Focus             | A two-tone ring                                                 | A 2px `Highlight` outline                        |     | Slot, item stack | Selected is a heavier ring and a darker fill; highlighted is a dotted outline; invalid is a frame and a hatched corner | A 3px `Highlight` outline, a dotted border, and a dashed border |
+| Meter             | Solid, diagonally hatched, and cross-hatched fills              | The same patterns, in the system highlight color |
+| Status light      | A ring, diamond, circle, triangle, and square                   | The shapes in the system text color              |
+| Recipe            | A solid or dashed availability chip; selected is a ring         | A 3px `Highlight` outline when selected          |
 
 Sizes do not change in this mode: a button has the same height with and without forced colors.
 
 ## Reduced motion
 
-With `prefers-reduced-motion: reduce`, the loading spinner and the indeterminate stripes stop moving, and a progress fill jumps to its new width instead of growing.
+With `prefers-reduced-motion: reduce`, the loading spinner and the indeterminate stripes stop moving, and a progress or meter fill jumps to its new size instead of growing.
+
+## Status is never color alone
+
+Every state in the inventory has a cue besides color. A meter's state is a fill pattern and a word in its value text ("15%, warning"). A status light's variant is a shape, and its meaning is its text. A recipe that cannot be made says "unavailable". An invalid slot has a frame, a hatched corner, and the word "invalid" in its accessible name. Item durability is a solid, hatched, or cross-hatched bar and a percentage in the accessible name.
+
+## Inventory keyboard model
+
+A slot grid is one tab stop. Tab enters it at the item that last had focus, else the first selected item, else the first enabled one, and a second Tab leaves it. Arrow keys move focus, and moving focus never changes the selection.
+
+| Key                 | Action                                                                          |
+| ------------------- | ------------------------------------------------------------------------------- |
+| Arrow keys          | Move in reading order and by row; nothing wraps from the last item to the first |
+| Home, End           | First and last item of the row                                                  |
+| Ctrl+Home, Ctrl+End | First and last item of the grid                                                 |
+| Space               | Selects (single) or toggles (multiple); activates when selection is none        |
+| Enter               | Activates; never changes the selection                                          |
+| Shift+Arrow, Ctrl+A | Extends the selection, or selects all (multiple)                                |
+
+A grid with selection is a `listbox` of `option` items, and with none a `group` of buttons. It is not `role="grid"`, since a wrapping layout has no rows and cells. The automated checks cover this tree in all three engines, but it has not yet been checked by hand with a screen reader.
 
 ## Keyboard focus
 

@@ -1,6 +1,6 @@
 # Phase 2: Inventory — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), 3 (slot and item stack), 4 (slot grid), 5 (recipe), 6 (meter and status light), and 7 (test infrastructure) are implemented.
+**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), 3 (slot and item stack), 4 (slot grid), 5 (recipe), 6 (meter and status light), 7 (test infrastructure), and 8 (workbench) are implemented.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 2
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md)
 **Package:** `@dieselpunk/core`
@@ -437,6 +437,15 @@ Additions to Phase 1 §9:
 3. **Demo item art** in `src/icons/items.ts`: a gear, a plate, a circuit, a module, and a coil, drawn originally on a 24 by 24 grid in `currentColor`, so they follow the theme. The asset policy page says so and repeats that applications supply their own imagery.
 4. The accessibility guide (Phase 1 §10.7) gains the inventory components: keyboard model, forced-colors cues, and the rule that status is never color alone.
 
+Details settled in implementation:
+
+- The story "Overview / Inventory" is the first screen. Phase 1's machine panel moved, unchanged, to "Foundations / Machine panel" (`foundations-machine-panel.stories.ts`). The sidebar order lists the new components after the Phase 1 ones.
+- Each component has a stories file with a Playground (controls from the manifest), a States story (every state in the tables of §8), and a theme by density matrix. The generated docs page carries the description, the keyboard table, and the manifest's API table. The slot grid also has Selection modes, Grid of item stacks, Narrow container (a resizable box), and 100 slots; the slot has Standalone selection.
+- The slot grid's Playground is written by hand and not from the generated template, because the grid needs an `aria-label` from the application, which the template cannot add. The Playground and the 100-slot story use item stacks; the others use slots as well.
+- The demo art is five original geometric icons (gear, iron plate, circuit, speed module, copper coil) with `itemSvg`, `itemMarkup` (a string, for Storybook slot arguments), and `item` (a template). Stories use the art as a slot value with `slot="icon"` for stacks and in the default slot for slots.
+- Every story passes the smoke test with no console warning, so a slot without a name in a story fails it (mutation-checked).
+- The accessibility guide says the grid's `listbox` structure has not been checked by hand with a screen reader (§14, second risk), which is still to be done.
+
 ## 10. Testing and CI
 
 ### 10.1 Logic Tests
@@ -507,7 +516,7 @@ The consumer check (`check-consumer.ts`) also covers the inventory: its TypeScri
 | 5 | Recipe | 2 | Component, tests. Done. |
 | 6 | Meter and status light | 1 | Two components, tests. Done. |
 | 7 | Test infrastructure | 3 to 6 as they land | Gallery group, axe and reflow coverage, ARIA snapshots, visual matrix, consumer typing, baselines. Done. |
-| 8 | Workbench | 3 to 6 as they land | Inventory overview, stories, docs pages, demo art |
+| 8 | Workbench | 3 to 6 as they land | Inventory overview, stories, docs pages, demo art. Done. |
 | 9 | Hardening | 7 | Forced-colors, RTL, 200% zoom review of the renders; size tuning; docs polish |
 
 Packages 3, 5, and 6 can proceed in parallel after packages 1 and 2. The gallery in package 7 is extended as each component lands, so each package's own tests already run against it.
