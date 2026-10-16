@@ -578,4 +578,38 @@ describe('forced colors', () => {
       await commands.setForcedColors(null);
     }
   });
+
+  it.skipIf(server.browser !== 'chromium')(
+    'tells the variants apart by border, since colors are unavailable',
+    async () => {
+      const buttons = await Promise.all(
+        (['default', 'primary', 'danger'] as const).map((variant) => mount({ variant })),
+      );
+      await commands.setForcedColors('active');
+      try {
+        const borders = buttons.map((button) => {
+          const style = getComputedStyle(inner(button));
+          return `${style.borderTopWidth} ${style.borderTopStyle}`;
+        });
+        expect(new Set(borders).size).toBe(3);
+      } finally {
+        await commands.setForcedColors(null);
+      }
+    },
+  );
+
+  it.skipIf(server.browser !== 'chromium')(
+    'keeps the same height as without forced colors',
+    async () => {
+      const sizes = ['sm', 'md', 'lg'] as const;
+      const buttons = await Promise.all(sizes.map((size) => mount({ size })));
+      const normal = buttons.map((button) => button.getBoundingClientRect().height);
+      await commands.setForcedColors('active');
+      try {
+        expect(buttons.map((button) => button.getBoundingClientRect().height)).toEqual(normal);
+      } finally {
+        await commands.setForcedColors(null);
+      }
+    },
+  );
 });

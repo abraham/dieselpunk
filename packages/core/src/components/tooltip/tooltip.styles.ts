@@ -19,9 +19,13 @@ export const tooltipStyles = css`
     box-sizing: border-box;
     z-index: ${token('z-overlay')};
     inline-size: max-content;
-    max-inline-size: var(--punk-tooltip-max-width, ${token('tooltip-max-width')});
+    max-inline-size: min(
+      var(--punk-tooltip-max-width, ${token('tooltip-max-width')}),
+      calc(100vw - 16px)
+    );
     padding: ${token('space-1')} ${token('space-2')};
     overflow: visible;
+    overflow-wrap: break-word;
     border-radius: ${token('radius')};
     color: ${token('color-text')};
     font-size: 0.875em;

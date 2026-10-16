@@ -1,4 +1,5 @@
 import type { TokenMap } from './base.ts';
+import { darkTokens as dark } from './default-theme.ts';
 
 export const themeNames = [
   'industrial',
@@ -18,31 +19,6 @@ export const defaultThemeName = 'industrial' satisfies ThemeName;
 
 /** Theme that `data-punk-theme="auto"` selects under `prefers-color-scheme: light`. */
 export const autoLightThemeName = 'industrial-light' satisfies ThemeName;
-
-const dark = {
-  'color-canvas': '#1d1e1c',
-  'color-panel': '#41433f',
-  'color-panel-raised': '#565954',
-  'color-panel-inset': '#292b28',
-  'color-edge-light': '#747870',
-  'color-edge-dark': '#171815',
-  'color-text': '#f0ead8',
-  'color-text-muted': '#b8b4a7',
-  'color-accent': '#f59b23',
-  'color-accent-strong': '#ffb52e',
-  'color-accent-text': '#1d1e1c',
-  'color-warning': '#f2cf44',
-  'color-danger': '#d9573f',
-  'color-danger-text': '#0e0d0b',
-  'color-success': '#7fa84f',
-  'color-info': '#65a9c2',
-  'color-focus': '#f2cf44',
-  'color-focus-inner': '#1d1e1c',
-  'color-disabled-fill': '#34362f',
-  'color-disabled-text': '#8e8b80',
-  'surface-gradient-strength': '1',
-  'texture-opacity': '0.06',
-} as const satisfies TokenMap;
 
 const light = {
   'color-canvas': '#d8d5ca',

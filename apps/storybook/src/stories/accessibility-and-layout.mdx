@@ -1,0 +1,54 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Guides/Accessibility and layout" />
+
+# Accessibility and layout
+
+How the components behave at different text sizes, writing directions, and system settings. Each behavior below is covered by an automated test or a visual baseline.
+
+## Reflow and zoom
+
+Nothing forces horizontal scrolling at 200% zoom, down to a layout 187px wide (a 375px window at 200%).
+
+- **Buttons** keep their height as a minimum and wrap a long label onto more lines. A one-line label is exactly the size it always was: 28, 36, and 44px at compact density for `sm`, `md`, and `lg`, and 34, 44, and 54px at low density. A button never grows wider than its container.
+- **Icon buttons** stay square. Their content is an icon, not text.
+- **Panels** and **dividers** wrap their text. A word too long for the line breaks only when it cannot fit on a line by itself.
+- **Tooltips** are never wider than the viewport, whatever `--punk-tooltip-max-width` is.
+- **Progress bars** wrap a long label above the track.
+
+Components set no widths of their own, so they fill the container you place them in. Put a button in a container that can shrink, such as a block container or a flex item with `min-inline-size: 0`, and it wraps.
+
+## Right-to-left
+
+Set `dir="rtl"` on `<html>` or any ancestor. Layout uses logical properties throughout, so no component needs a separate style:
+
+- Headers, labels, and values swap sides, and the start and end icon slots of a button swap with them.
+- Progress fills grow from the right. The indeterminate stripes scroll the same way in both directions, because they are decoration and not a measure.
+- A tooltip with `placement="start"` opens on the right side of its anchor.
+
+## Forced colors
+
+Under `forced-colors: active`, the gradients, textures, and bevels give way to plain borders in system colors. Information that normally depends on color is carried by something else:
+
+| Component         | Normal                                                          | Forced colors                                    |
+| ----------------- | --------------------------------------------------------------- | ------------------------------------------------ |
+| Button            | `default`, `primary`, and `danger` differ in fill               | A normal, a heavy (4px), and a dashed border     |
+| Progress bar      | `default`, `success`, `warning`, and `danger` differ in pattern | The same patterns, in the system highlight color |
+| Disabled controls | Flat and desaturated                                            | The system disabled-text color                   |
+| Focus             | A two-tone ring                                                 | A 2px `Highlight` outline                        |
+
+Sizes do not change in this mode: a button has the same height with and without forced colors.
+
+## Reduced motion
+
+With `prefers-reduced-motion: reduce`, the loading spinner and the indeterminate stripes stop moving, and a progress fill jumps to its new width instead of growing.
+
+## Keyboard focus
+
+The focus ring appears on `:focus-visible`, so keyboard users always get one, and it is never removed without a replacement. A tooltip opens when its anchor receives keyboard focus, and Escape closes it without moving focus.
+
+## What is tested
+
+- Reflow: every component, in every theme and density and four content variants, at four widths from 187px to 512px.
+- Accessibility: `axe-core` over the same combinations, with no serious or critical violations.
+- Appearance: screenshots in Chromium, Firefox, and WebKit at 100% and 200% zoom, in RTL, and in forced colors.

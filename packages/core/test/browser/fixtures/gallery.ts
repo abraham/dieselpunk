@@ -122,8 +122,8 @@ const builders: Record<ComponentName, Builder> = {
   divider: (c) => `
     <punk-divider></punk-divider>
     <punk-divider>${c.divider}</punk-divider>
-    <div class="row" style="block-size: 48px; align-items: stretch">
-      <span>${c.pause}</span><punk-divider orientation="vertical"></punk-divider><span>${c.stop}</span>
+    <div class="row" style="flex-wrap: nowrap; min-block-size: 48px; align-items: stretch">
+      <span style="flex: 1 1 0; min-inline-size: 0; overflow-wrap: break-word">${c.pause}</span><punk-divider orientation="vertical"></punk-divider><span style="flex: 1 1 0; min-inline-size: 0; overflow-wrap: break-word">${c.stop}</span>
     </div>
     <punk-divider decorative>${c.divider}</punk-divider>
   `,

@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 // The matrix from SPEC-PHASE-1.md §10.3. Chromium runs all of it. Firefox and WebKit run the
-// default theme at compact density and `industrial-light` at low density, at 100% only.
+// default theme at compact density and `industrial-light` at low density, at 100% only. The
+// forced-colors project ignores themes, so it runs one theme at 100% zoom.
 
 const themes = ['industrial', 'industrial-light', 'high-contrast', 'reduced-texture'] as const;
 const densities = ['compact', 'low'] as const;
@@ -33,15 +34,20 @@ for (const zoom of zooms) {
         for (const container of containers) {
           for (const content of contents) {
             const id = `${theme}-${density}-${container.name}-${zoom.name}-${content}`;
-            test(id, async ({ page, browserName }) => {
+            test(id, async ({ page, browserName }, testInfo) => {
+              const forced = testInfo.project.name === 'chromium-forced';
               const reduced =
                 crossEngineCombos.has(`${theme}/${density}`) &&
                 zoom.name === '100' &&
                 container.name === 'desktop' &&
                 content === 'short';
               test.skip(
-                browserName !== 'chromium' && !reduced,
-                'Firefox and WebKit run the reduced matrix',
+                forced
+                  ? theme !== 'industrial' || zoom.name !== '100'
+                  : browserName !== 'chromium' && !reduced,
+                forced
+                  ? 'Forced colors ignore the theme'
+                  : 'Firefox and WebKit run the reduced matrix',
               );
               await page.setViewportSize({
                 width: Math.round(container.width / zoom.scale),
