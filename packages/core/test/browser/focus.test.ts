@@ -254,6 +254,28 @@ describe('a popover inside a modal window', () => {
   });
 });
 
+describe('a modal window in move mode', () => {
+  it('keeps focus on the move button, ends the move with the first Escape, and closes with the second', async () => {
+    const opener = track(document.createElement('button'));
+    opener.textContent = 'Open';
+    opener.focus();
+    const element = (await modalWindow('movable')) as PunkWindow;
+    await show(element);
+    const move = element.shadowRoot?.querySelector('[part="move-button"]') as HTMLElement;
+    await userEvent.click(move);
+    expect(move.getAttribute('aria-pressed')).toBe('true');
+    await userEvent.tab();
+    expect(document.activeElement).not.toBe(opener);
+    move.focus();
+    await userEvent.keyboard('{ArrowRight}{Escape}');
+    expect(move.getAttribute('aria-pressed')).toBe('false');
+    expect(element.open).toBe(true);
+    await userEvent.keyboard('{Escape}');
+    expect(element.open).toBe(false);
+    expect(document.activeElement).toBe(opener);
+  });
+});
+
 describe('a backdrop click', () => {
   it('closes neither a modal window nor a dialog', async () => {
     const windowElement = (await modalWindow()) as PunkWindow;

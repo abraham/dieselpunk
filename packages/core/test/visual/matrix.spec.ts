@@ -167,11 +167,25 @@ test.describe('interaction states', () => {
       await expect(gallery(page)).toHaveScreenshot(['forms', 'interaction-checkbox-hover.png']);
     });
 
-    test('text-field hover', async ({ page }) => {
-      await open(page, { theme: 'industrial', density: 'compact', component: 'text-field' });
-      await first(page, 'punk-text-field').hover();
-      await expect(gallery(page)).toHaveScreenshot(['forms', 'interaction-text-field-hover.png']);
-    });
+    // The checkbox's hover is above; the rest of the controls are hovered in the same way.
+    for (const tag of ['switch', 'slider', 'text-field', 'number-field', 'select']) {
+      test(`${tag} hover`, async ({ page }) => {
+        await open(page, { theme: 'industrial', density: 'compact', component: tag });
+        await first(page, `punk-${tag}`).hover();
+        await expect(gallery(page)).toHaveScreenshot(['forms', `interaction-${tag}-hover.png`]);
+      });
+    }
+
+    // Pressed, with the pointer still down; a field has no pressed look of its own.
+    for (const tag of ['checkbox', 'switch', 'slider']) {
+      test(`${tag} active`, async ({ page }) => {
+        await open(page, { theme: 'industrial', density: 'compact', component: tag });
+        await first(page, `punk-${tag}`).hover();
+        await page.mouse.down();
+        await expect(gallery(page)).toHaveScreenshot(['forms', `interaction-${tag}-active.png`]);
+        await page.mouse.up();
+      });
+    }
 
     for (const tag of ['checkbox', 'switch', 'slider', 'text-field', 'number-field', 'select']) {
       test(`${tag} focus-visible`, async ({ page }) => {
@@ -181,5 +195,25 @@ test.describe('interaction states', () => {
         await expect(gallery(page)).toHaveScreenshot(['forms', `interaction-${tag}-focus.png`]);
       });
     }
+  });
+});
+
+// A window in move mode, with the keyboard: the pressed move button and the offset window.
+test.describe('window mid-move', () => {
+  test('after the move button and four arrow keys', async ({ page }) => {
+    await open(page, {
+      group: 'overlays',
+      theme: 'industrial',
+      density: 'compact',
+      content: 'short',
+      component: 'window',
+    });
+    const move = page.locator('punk-window [part="move-button"]');
+    await move.click();
+    await expect(move).toHaveAttribute('aria-pressed', 'true');
+    for (const key of ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown']) {
+      await page.keyboard.press(key);
+    }
+    await expect(page).toHaveScreenshot(['overlays', 'interaction-window-moving.png']);
   });
 });
