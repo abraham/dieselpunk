@@ -36,6 +36,8 @@ export { PunkWindow } from './components/window/index.ts';
 export type { PunkMoveDetail } from './components/window/index.ts';
 export { PunkDialog } from './components/dialog/index.ts';
 export type { PunkCloseDetail, PunkCloseReason } from './components/dialog/index.ts';
+export { PunkPopover } from './components/popover/index.ts';
+export type { PopoverMode, PopoverPlacement } from './components/popover/index.ts';
 export { PunkToolbar } from './components/toolbar/index.ts';
 export type { PunkOverflowDetail } from './components/toolbar/index.ts';
 export { setStrings } from './utilities/localize.ts';

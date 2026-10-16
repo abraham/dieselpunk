@@ -207,6 +207,27 @@ test.describe('ARIA snapshots', () => {
     `);
   });
 
+  test('popover in each mode', async ({ page }) => {
+    await render(
+      page,
+      `<punk-button>Details</punk-button>
+       <punk-popover open><p>Iron plates</p></punk-popover>
+       <punk-button>Actions</punk-button>
+       <punk-popover mode="menu" open>
+         <button role="menuitem">Rename</button>
+         <button role="menuitem" disabled>Delete</button>
+       </punk-popover>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - button "Details" [expanded]
+      - paragraph: Iron plates
+      - button "Actions" [expanded]
+      - menu:
+        - menuitem "Rename"
+        - menuitem "Delete" [disabled]
+    `);
+  });
+
   test('accordion', async ({ page }) => {
     await render(
       page,

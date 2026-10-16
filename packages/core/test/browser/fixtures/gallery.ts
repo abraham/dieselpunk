@@ -22,6 +22,7 @@ import '../../../src/components/tabs/register.ts';
 import '../../../src/components/toolbar/register.ts';
 import '../../../src/components/window/register.ts';
 import '../../../src/components/dialog/register.ts';
+import '../../../src/components/popover/register.ts';
 
 // The visual matrix renders one group per run, so each group has its own page and baselines.
 export const foundationNames = [
@@ -51,12 +52,13 @@ export const shellNames = [
   'window',
 ] as const;
 // Overlays open on a page of their own, since the top layer covers everything else.
-export const overlayNames = ['dialog', 'window'] as const;
+export const overlayNames = ['dialog', 'window', 'popover'] as const;
 export const componentNames = [
   ...foundationNames,
   ...inventoryNames,
   ...shellNames,
   'dialog',
+  'popover',
 ] as const;
 export type ComponentName = (typeof componentNames)[number];
 
@@ -565,6 +567,22 @@ const builders: Record<ComponentName, Builder> = {
       <punk-window ${name} open>${text}</punk-window>
       <punk-window ${name} open dismissible movable><span slot="icon">${gear}</span>${text}${footer}</punk-window>
       <punk-window ${name} open dismissible style="--punk-window-max-width: 320px">${text}${footer}</punk-window>
+    `;
+  },
+
+  popover: (c, { open }) => {
+    const item = (text: string, extra = '') =>
+      `<button role="menuitem" ${extra} style="display: block; inline-size: 100%; padding: 8px 12px; border: 0; background: transparent; color: inherit; font: inherit; text-align: start${extra ? '; opacity: 0.55' : ''}">${text}</button>`;
+    // Both modes open side by side on an overlay page, since manual popovers do not close each other.
+    return `
+      <div class="row" style="align-items: flex-start; min-block-size: 260px">
+        <punk-button>${c.start}</punk-button>
+        <punk-popover${open ? ' open' : ''}><p style="margin: 0">${c.body}</p></punk-popover>
+        <punk-button>${c.settings}</punk-button>
+        <punk-popover mode="menu" placement="end"${open ? ' open' : ''}>
+          ${item(c.pause)}${item(c.stop, 'disabled')}${item(c.start)}
+        </punk-popover>
+      </div>
     `;
   },
 

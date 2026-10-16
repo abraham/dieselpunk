@@ -8,7 +8,7 @@ import type { Page } from '@playwright/test';
 
 const groups = ['foundation', 'inventory', 'shell', 'overlays'] as const;
 // An overlay is open on a page of its own, so each is a page, and only two contents are captured.
-const overlayPages = ['dialog', 'window'] as const;
+const overlayPages = ['dialog', 'window', 'popover'] as const;
 const themes = ['industrial', 'industrial-light', 'high-contrast', 'reduced-texture'] as const;
 const densities = ['compact', 'low'] as const;
 const containers = [

@@ -109,6 +109,20 @@ A modal window or dialog makes the rest of the page inert, traps Tab and Shift+T
 
 Dragging a window by its titlebar has a single-pointer alternative, the move button (WCAG 2.5.7). Overlays are named by their heading, or by an `aria-label`, and a dialog with `alert` is an `alertdialog` described by its content. A window never leaves the viewport, and a modal window fits it at 375px and at 200% zoom: its body scrolls, and is a focusable region while it does.
 
+## Popovers and menus
+
+A popover's trigger has `aria-expanded`, and `aria-haspopup="menu"` for a menu. Focus moves into a content popover only for a keyboard open; a menu always moves focus to its first enabled item. Whatever closes it, focus that was inside goes back to the trigger.
+
+| Key                | Content popover                                                                              | Menu                                           |
+| ------------------ | -------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Enter, Space       | On the trigger: toggles, and moves focus in                                                  | On the trigger: toggles; on an item: activates |
+| ArrowDown          | Nothing                                                                                      | On the trigger: opens; on an item: next item   |
+| ArrowUp, Home, End | Nothing                                                                                      | Previous, first, and last item; no wrapping    |
+| Tab                | Past the last element (Shift+Tab before the first) closes it and carries on from the trigger | Closes it and carries on from the trigger      |
+| Escape             | Closes the topmost overlay, and focus goes back to the trigger                               | Same                                           |
+
+Menu items must be focusable and carry `role="menuitem"`, `menuitemcheckbox`, or `menuitemradio`. Inside a modal window or dialog the trigger must be in the same one, since the rest of the page is inert.
+
 ## Keyboard focus
 
 The focus ring appears on `:focus-visible`, so keyboard users always get one, and it is never removed without a replacement. A tooltip opens when its anchor receives keyboard focus, and Escape closes it without moving focus.

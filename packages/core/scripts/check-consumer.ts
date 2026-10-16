@@ -45,6 +45,7 @@ interface Report {
   toggled: boolean | null;
   tabbed: string | null;
   closed: string | null;
+  menuClosed: string | null;
 }
 
 // What each page registers: the plain page imports panel and button; the TypeScript page imports
@@ -59,6 +60,7 @@ const expectedTags: Record<string, string[]> = {
     'punk-icon-button',
     'punk-item-stack',
     'punk-meter',
+    'punk-popover',
     'punk-progress-bar',
     'punk-recipe',
     'punk-slot',
@@ -179,6 +181,9 @@ async function checkPages(outDir: string): Promise<void> {
         }
         if (report.closed !== 'method:done') {
           problems.push(`app.html: closing a dialog reported ${report.closed}`);
+        }
+        if (report.menuClosed !== 'method') {
+          problems.push(`app.html: closing a popover reported ${report.menuClosed}`);
         }
       }
       if (messages.length > 0) problems.push(`${page}.html logged: ${messages.join(' | ')}`);

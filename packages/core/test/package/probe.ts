@@ -23,6 +23,7 @@ export async function probeConsumer() {
     'punk-toolbar',
     'punk-window',
     'punk-dialog',
+    'punk-popover',
   ];
   const bar = document
     .querySelector('punk-progress-bar')
@@ -60,6 +61,18 @@ export async function probeConsumer() {
     await confirm.updateComplete;
     confirm.close('done');
   }
+  // A popover opened and closed from code reports why it closed.
+  const menu = document.querySelector('punk-popover');
+  let menuClosed: string | null = null;
+  menu?.addEventListener('punk-close', (event) => {
+    menuClosed = event.detail.reason;
+  });
+  if (menu) {
+    menu.show();
+    await menu.updateComplete;
+    menu.hide();
+    await menu.updateComplete;
+  }
   return {
     defined: tags.filter((tag) => customElements.get(tag) !== undefined),
     upgraded: Boolean(
@@ -78,6 +91,7 @@ export async function probeConsumer() {
     toggled: toggled as boolean | null,
     tabbed: tabbed as string | null,
     closed: closed as string | null,
+    menuClosed: menuClosed as string | null,
   };
 }
 

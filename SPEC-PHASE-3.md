@@ -1,6 +1,6 @@
 # Phase 3: Application Shell — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (shared internals), 2 (layout and disclosure), 3 (tabs and toolbar), and 4 (window and dialog) are implemented, with their test infrastructure and workbench parts; the rest is not started.
+**Status:** Draft 1. Work packages 1 (shared internals), 2 (layout and disclosure), 3 (tabs and toolbar), 4 (window and dialog), and 5 (popover) are implemented, with their test infrastructure and workbench parts; the rest is not started.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 3
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md), [SPEC-PHASE-2.md](SPEC-PHASE-2.md)
 **Package:** `@dieselpunk/core`
@@ -705,7 +705,7 @@ The matrix of Phase 1 §10.3 and Phase 2 §10.4 applies, with these changes:
 
 ### 10.8 Size and Packaging
 
-The gates of Phase 2 §10.6 apply, with each entry measured on its own, gzip-compressed, before any limit is set. The shared form base, the modal controller, and the field styles each get their own size-limit entry. `check-package.ts` requires that no entry brings a tag of another family (§5.1), and that tree-shaken imports of one entry do not include another's component. The forms and the window are the likeliest to pass 5 kB; if one does, the shared base is split before a limit is raised, and any exception is documented with its reason, as Phase 2's was. The icon button's limit is 7.5 kB after work package 1 (§11.1), the tabs' is 6 kB after work package 3 (§11.3), and the window's is 7 kB after work package 4 (§11.4).
+The gates of Phase 2 §10.6 apply, with each entry measured on its own, gzip-compressed, before any limit is set. The shared form base, the modal controller, and the field styles each get their own size-limit entry. `check-package.ts` requires that no entry brings a tag of another family (§5.1), and that tree-shaken imports of one entry do not include another's component. The forms and the window are the likeliest to pass 5 kB; if one does, the shared base is split before a limit is raised, and any exception is documented with its reason, as Phase 2's was. The icon button's limit is 7.5 kB after work package 1 (§11.1), the tabs' is 6 kB after work package 3 (§11.3), the window's is 7 kB after work package 4 (§11.4), and the popover's is 5.5 kB after work package 5 (§11.5).
 
 ### 10.9 CI and Framework Fixtures
 
@@ -723,7 +723,7 @@ Packages are ordered by dependency.
 | 2 | Layout and disclosure | 1 | `punk-stack`, `punk-cluster`, `punk-accordion`, `punk-accordion-item`, tests. Done (§11.2). |
 | 3 | Tabs and toolbar | 1 | `punk-tabs`, `punk-tab`, `punk-toolbar`, `tab-navigation`, tests. Done (§11.3). |
 | 4 | Window and dialog | 1 | `punk-window`, `punk-dialog`, `window-position`, the modal and Escape tests. Done (§11.4). |
-| 5 | Popover | 1 | `punk-popover`, both focus modes, tests |
+| 5 | Popover | 1 | `punk-popover`, both focus modes, tests. Done (§11.5). |
 | 6 | Toast | 1 | `punk-toast-stack`, `punk-toast`, `toast-timer`, tests |
 | 7 | Toggles and slider | 1 | `punk-checkbox`, `punk-switch`, `punk-slider`, `slider-math`, the parity test |
 | 8 | Text, number, and select | 1, 7 | `punk-text-field`, `punk-number-field`, `punk-select`, tests |
@@ -804,6 +804,25 @@ What was built, and what implementation changed from the text above:
 - **Tests:** window 36, dialog 32, `focus.test.ts` 16 (browser). The full run in Chromium, Firefox, and WebKit on Linux is 177 files, 3180 tests passed, 27 skipped; `test:visual` 657 passed.
 - **Mutation checks:** 22 mutations were each caught: the close hook, the open event, `open` clearing itself, disposing on removal, the scroll region, the resize listener, the once-only warning, the removed-opener blur, dragging without `movable`, the no-drag controls, clamping, the move entry on the stack, restoring on Escape, the resize listener only while moved, ending move mode when the window closes, the placing click's listener, the Shift step, the `action` reason, `persistent`, the fallback rule, and the footer breakpoint. One survived at first, the placing click's listener after move mode ended, and a test now covers it.
 - **Left for later packages:** the popover over the window in the Escape order (work package 5), and the listener gates of §10.7 and `perf-shell.test.ts` (work package 9).
+
+### 11.5 Work Package 5 Notes
+
+What was built, and what implementation changed from the text above:
+
+- **Files:** `components/popover` (`popover.ts`, `popover.styles.ts`, `index.ts`, `register.ts`) with `popover.test.ts` and `popover.registration.test.ts`. It builds on the shared `anchor`, `overlays`, `roving-keys`, `modal` (`isTabbable`), and `position` modules; none of them changed.
+- **`popover="manual"` with its own light dismissal**, not `auto`. The native `auto` mode closes other popovers and ignores the overlay stack, so Escape would not follow the order of §8.3 and the reason of a close could not be told. The popover listens for `pointerdown` outside, `focusin` outside, and Escape (through `overlayStack`) only while it is open, and closes with `escape`, `outside`, `tab`, `action` (a click on a menu item), or `method`.
+- **Keyboard opening** is told from a pointer click by `click` with `detail === 0`, so Enter and Space on the trigger put focus into the popover and a pointer click does not. Arrow Down on the trigger opens a menu popover with the first item focused.
+- **Roles:** `role="menu"` is on the surface only while it is open in `menu` mode, and the trigger gets `aria-haspopup` and `aria-expanded` from `wireAnchorState`. The surface has no `tabindex` in menu mode, since axe reports `aria-required-children` on a focusable menu with no focused item; content mode keeps `tabindex="-1"` as the focus target.
+- **Tab leaves cleanly.** Tab moves focus to the trigger and closes with `tab`, and the update runs synchronously (`performUpdate`), because Firefox runs the key's default action before Lit's microtask, and the content was still tabbable. The explicit `trigger.focus()` in the handler is only caught by a Firefox run; a mutation that removes it survives in Chromium.
+- **Listeners and observers exist only while open**, the same rule as the window; `perf` gates for it are in work package 9.
+- **Gallery:** `popover` is in the default gallery closed (the trigger is a `punk-button`); the `overlays` group has a page with a content popover and a menu popover open. That is 76 new baselines, 228 in the group, and the folder is about 80 MB. The foundation, inventory, and shell baselines are byte-identical.
+- **Axe:** the overlay scan now includes the popover (96 scans). `aria.spec.ts` has a snapshot of an open content popover and an open menu.
+- **Consumer typing:** the fixture `app.ts` builds a popover with a `@ts-expect-error` on a `mode` outside the union and a typed `punk-close` detail; the probe opens it from code, closes it, and reads the reason.
+- **Workbench:** stories (Playground, Menu, States, and the theme and density matrix), their place in the sidebar, and a popovers section in the accessibility guide. The smoke test renders 97 entries (was 92).
+- **Sizes** (gzip): the popover 5.21 kB, with a limit of 5.5 kB. The reason: the anchor wiring, the two focus modes, the menu keys, and light dismissal are all in the one component, and the shared modules it imports are about 2.5 kB of it; there is no shared base left to split.
+- **Tests:** popover 41 and `focus.test.ts` 19 (browser), which now checks Escape for a popover on a window. The full run in Chromium, Firefox, and WebKit on Linux is 183 files, 3423 tests passed, 27 skipped; `test:visual` 736 passed, and its self-test passes.
+- **Mutation checks:** 20 mutations were tried and 19 were caught: the trigger wiring, the open and close events, each close reason, the keyboard-open test, the menu role, the surface `tabindex`, the Tab handler, the synchronous update, the listeners' removal, and the Escape entry. The one that survived is the explicit `trigger.focus()` in the Tab handler, explained above.
+- **Left for later packages:** the listener gates of §10.7 and `perf-shell.test.ts` (work package 9), and the "window mid-move" capture of §10.4.
 
 ## 12. Acceptance Criteria
 

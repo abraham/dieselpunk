@@ -5,7 +5,9 @@ import '../../src/components/button/register.ts';
 import '../../src/components/tooltip/register.ts';
 import '../../src/components/window/register.ts';
 import '../../src/components/dialog/register.ts';
+import '../../src/components/popover/register.ts';
 import type { PunkDialog } from '../../src/components/dialog/index.ts';
+import type { PunkPopover } from '../../src/components/popover/index.ts';
 import type { PunkWindow } from '../../src/components/window/index.ts';
 import { overlayStack } from '../../src/internal/overlays.ts';
 
@@ -144,6 +146,44 @@ describe('Escape closes only the topmost', () => {
     expect(element.open).toBe(false);
   });
 
+  it('closes a tooltip over a popover over a window, then each in turn', async () => {
+    const element = (await overlay(
+      `<punk-window heading="W" modal dismissible>
+         <button id="trigger">Menu</button>
+         <punk-popover>
+           <punk-button id="anchor">Anchor</punk-button>
+           <punk-tooltip for="anchor">Tip</punk-tooltip>
+         </punk-popover>
+       </punk-window>`,
+    )) as PunkWindow;
+    await show(element);
+    const popover = element.querySelector('punk-popover') as PunkPopover;
+    popover.show();
+    await popover.updateComplete;
+    const tooltip = element.querySelector('punk-tooltip') as HTMLElement & { show(): void };
+    tooltip.show();
+    await userEvent.keyboard('{Escape}');
+    expect([element.open, popover.open, tooltip.hasAttribute('open')]).toEqual([true, true, false]);
+    await userEvent.keyboard('{Escape}');
+    expect([element.open, popover.open]).toEqual([true, false]);
+    await userEvent.keyboard('{Escape}');
+    expect(element.open).toBe(false);
+  });
+
+  it('closes a popover over a window that is not dismissible only with its own Escape', async () => {
+    const element = (await overlay(
+      '<punk-window heading="W" modal><button id="trigger">Menu</button><punk-popover><p>Text</p></punk-popover></punk-window>',
+    )) as PunkWindow;
+    await show(element);
+    const popover = element.querySelector('punk-popover') as PunkPopover;
+    popover.show();
+    await popover.updateComplete;
+    await userEvent.keyboard('{Escape}');
+    expect([element.open, popover.open]).toEqual([true, false]);
+    await userEvent.keyboard('{Escape}');
+    expect(element.open).toBe(true);
+  });
+
   it('closes a dialog that opened over a window, then the window', async () => {
     const lower = (await modalWindow()) as PunkWindow;
     await show(lower);
@@ -187,6 +227,28 @@ describe('Escape closes only the topmost', () => {
     upper.close();
     lower.close();
     expect(overlayStack.size).toBe(0);
+  });
+});
+
+describe('a popover inside a modal window', () => {
+  it('opens from its trigger, can be used, and returns focus to the trigger when it closes', async () => {
+    const element = (await overlay(
+      `<punk-window heading="W" modal dismissible>
+         <button id="trigger">Menu</button>
+         <punk-popover mode="menu"><button role="menuitem" id="item">Item</button></punk-popover>
+       </punk-window>`,
+    )) as PunkWindow;
+    await show(element);
+    const trigger = element.querySelector('#trigger') as HTMLElement;
+    const popover = element.querySelector('punk-popover') as PunkPopover;
+    await userEvent.click(trigger);
+    await popover.updateComplete;
+    expect(popover.open).toBe(true);
+    expect(document.activeElement?.id).toBe('item');
+    await userEvent.keyboard('{Escape}');
+    expect(popover.open).toBe(false);
+    expect(element.open).toBe(true);
+    expect(document.activeElement).toBe(trigger);
   });
 });
 

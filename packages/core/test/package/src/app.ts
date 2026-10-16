@@ -15,6 +15,7 @@ import type {
   PunkMeter,
   PunkMoveDetail,
   PunkOverflowDetail,
+  PunkPopover,
   PunkProgressBar,
   PunkRecipe,
   PunkSelectionChangeDetail,
@@ -37,6 +38,7 @@ import '@dieselpunk/core/dialog/register.js';
 import '@dieselpunk/core/icon-button/register.js';
 import '@dieselpunk/core/item-stack/register.js';
 import '@dieselpunk/core/meter/register.js';
+import '@dieselpunk/core/popover/register.js';
 import '@dieselpunk/core/progress-bar/register.js';
 import '@dieselpunk/core/recipe/register.js';
 import '@dieselpunk/core/slot/register.js';
@@ -202,7 +204,21 @@ confirm.addEventListener('punk-close', (event) => {
   const unknown: PunkCloseReason = 'sulking';
   void [reason, unknown, detail.returnValue];
 });
-layout.append(assembler, confirm);
+
+// A popover menu, with a typed close event.
+const menuTrigger = document.createElement('button');
+menuTrigger.textContent = 'Actions';
+const menu: PunkPopover = document.createElement('punk-popover');
+menu.mode = 'menu';
+// @ts-expect-error The modes are a closed union.
+menu.mode = 'tree';
+menu.mode = 'menu';
+menu.placement = 'end';
+menu.addEventListener('punk-close', (event) => {
+  const detail: PunkCloseDetail = event.detail;
+  void detail.reason;
+});
+layout.append(assembler, confirm, menuTrigger, menu);
 
 document.body.append(layout);
 document.documentElement.dataset['consumer'] = 'ready';
