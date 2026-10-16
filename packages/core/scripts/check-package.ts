@@ -45,6 +45,8 @@ const sentinels: Record<string, string> = {
   stack: '--punk-stack-gap',
   cluster: '--punk-cluster-gap',
   accordion: '"punk-accordion-item"',
+  tabs: '"punk-tab"',
+  toolbar: 'data-punk-toolbar-item',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };

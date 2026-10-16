@@ -18,6 +18,9 @@ export function probeConsumer() {
     'punk-cluster',
     'punk-accordion',
     'punk-accordion-item',
+    'punk-tabs',
+    'punk-tab',
+    'punk-toolbar',
   ];
   const bar = document
     .querySelector('punk-progress-bar')
@@ -37,6 +40,13 @@ export function probeConsumer() {
     toggled = event.detail.expanded;
   });
   section?.shadowRoot?.querySelector('button')?.click();
+  // Clicking the second tab selects it, and the event carries the panel.
+  const secondTab = document.querySelector<HTMLElement>('punk-tab:nth-of-type(2)');
+  let tabbed: string | null = null;
+  document.querySelector('punk-tabs')?.addEventListener('punk-tab-change', (event) => {
+    tabbed = event.detail.value;
+  });
+  secondTab?.click();
   return {
     defined: tags.filter((tag) => customElements.get(tag) !== undefined),
     upgraded: Boolean(
@@ -53,6 +63,7 @@ export function probeConsumer() {
     itemRole: grid?.querySelector('punk-slot')?.getAttribute('role') ?? null,
     changed: changed as string[] | null,
     toggled: toggled as boolean | null,
+    tabbed: tabbed as string | null,
   };
 }
 

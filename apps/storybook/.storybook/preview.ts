@@ -80,6 +80,8 @@ const preview: Preview = {
             'Stack',
             'Cluster',
             'Accordion',
+            'Tabs',
+            'Toolbar',
           ],
           'Guides',
         ],

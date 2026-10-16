@@ -154,6 +154,20 @@
     "limit": "5 kB"
   },
   {
+    "name": "punk-tabs (both tags)",
+    "path": "dist/components/tabs/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
+    "name": "punk-toolbar",
+    "path": "dist/components/toolbar/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
     "name": "punk-icon-button (includes the tooltip)",
     "path": "dist/components/icon-button/register.js",
     "ignore": ["lit"],

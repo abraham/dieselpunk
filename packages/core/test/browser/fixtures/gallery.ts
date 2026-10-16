@@ -18,6 +18,8 @@ import '../../../src/components/status-light/register.ts';
 import '../../../src/components/stack/register.ts';
 import '../../../src/components/cluster/register.ts';
 import '../../../src/components/accordion/register.ts';
+import '../../../src/components/tabs/register.ts';
+import '../../../src/components/toolbar/register.ts';
 
 // The visual matrix renders one group per run, so each group has its own page and baselines.
 export const foundationNames = [
@@ -36,7 +38,15 @@ export const inventoryNames = [
   'meter',
   'status-light',
 ] as const;
-export const shellNames = ['stack', 'cluster', 'accordion', 'accordion-item'] as const;
+export const shellNames = [
+  'stack',
+  'cluster',
+  'accordion',
+  'accordion-item',
+  'tabs',
+  'tab',
+  'toolbar',
+] as const;
 export const componentNames = [...foundationNames, ...inventoryNames, ...shellNames] as const;
 export type ComponentName = (typeof componentNames)[number];
 
@@ -465,6 +475,66 @@ const builders: Record<ComponentName, Builder> = {
         <punk-accordion-item heading="${c.stop}"><p style="margin: 0">${c.body}</p></punk-accordion-item>
       </punk-accordion>
       <punk-accordion style="max-inline-size: 480px">${items(-1)}</punk-accordion>
+    `;
+  },
+
+  tabs: (c) => {
+    const labels = [c.settings, c.pause, c.stop];
+    const tabs = (prefix: string, selected: number) =>
+      labels
+        .map(
+          (label, index) =>
+            `<punk-tab slot="tab" panel="${prefix}${index}"${index === selected ? ' selected' : ''}${index === 2 ? ' disabled' : ''}>${label}</punk-tab>`,
+        )
+        .join('');
+    const panels = (prefix: string) =>
+      labels
+        .map(
+          (_, index) =>
+            `<div id="${prefix}${index}" style="overflow-wrap: break-word">${c.body}</div>`,
+        )
+        .join('');
+    return `
+      <punk-tabs aria-label="${c.settings}">${tabs('g-tabs-a', -1)}${panels('g-tabs-a')}</punk-tabs>
+      <punk-tabs aria-label="${c.settings}" orientation="vertical" style="max-inline-size: 480px">${tabs('g-tabs-b', 1)}${panels('g-tabs-b')}</punk-tabs>
+      <div class="stack">
+        <punk-tabs aria-label="${c.settings}" activation="manual">
+          <punk-tab slot="tab" panel="g-tabs-c0"><span slot="icon">${gear}</span>${c.settings}</punk-tab>
+          <punk-tab slot="tab" panel="g-tabs-c1">${c.pause}</punk-tab>
+        </punk-tabs>
+        <div id="g-tabs-c0" style="overflow-wrap: break-word">${c.body}</div>
+        <div id="g-tabs-c1" style="overflow-wrap: break-word">${c.body}</div>
+      </div>
+    `;
+  },
+
+  tab: (c) => `
+    <div role="tablist" aria-label="${c.settings}" class="row">
+      <punk-tab>${c.settings}</punk-tab>
+      <punk-tab selected>${c.pause}</punk-tab>
+      <punk-tab disabled>${c.stop}</punk-tab>
+      <punk-tab selected disabled>${c.start}</punk-tab>
+      <punk-tab><span slot="icon">${gear}</span>${c.settings}</punk-tab>
+    </div>
+    <div role="tablist" aria-orientation="vertical" aria-label="${c.settings}" class="stack" style="max-inline-size: 240px">
+      <punk-tab orientation="vertical">${c.settings}</punk-tab>
+      <punk-tab selected>${c.pause}</punk-tab>
+    </div>
+  `,
+
+  toolbar: (c) => {
+    const actions = `
+      <punk-button>${c.start}</punk-button>
+      <punk-button>${c.pause}</punk-button>
+      <punk-divider orientation="vertical"></punk-divider>
+      <punk-icon-button label="${c.settings}">${gear}</punk-icon-button>
+      <punk-button variant="danger">${c.stop}</punk-button>
+    `;
+    const more = `<punk-icon-button slot="overflow" label="${c.settings}">${plus}</punk-icon-button>`;
+    return `
+      <punk-toolbar aria-label="${c.settings}">${actions}</punk-toolbar>
+      <punk-toolbar aria-label="${c.settings}" wrap style="max-inline-size: 320px">${actions}</punk-toolbar>
+      <punk-toolbar aria-label="${c.settings}" style="max-inline-size: 150px">${actions}${more}</punk-toolbar>
     `;
   },
 

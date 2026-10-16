@@ -43,6 +43,7 @@ interface Report {
   itemRole: string | null;
   changed: string[] | null;
   toggled: boolean | null;
+  tabbed: string | null;
 }
 
 // What each page registers: the plain page imports panel and button; the TypeScript page imports
@@ -62,6 +63,9 @@ const expectedTags: Record<string, string[]> = {
     'punk-slot-grid',
     'punk-stack',
     'punk-status-light',
+    'punk-tab',
+    'punk-tabs',
+    'punk-toolbar',
     'punk-tooltip',
   ],
 };
@@ -166,6 +170,9 @@ async function checkPages(outDir: string): Promise<void> {
         }
         if (report.toggled !== true) {
           problems.push(`app.html: clicking a heading reported ${report.toggled}`);
+        }
+        if (report.tabbed !== 'outputs') {
+          problems.push(`app.html: clicking a tab reported ${report.tabbed}`);
         }
       }
       if (messages.length > 0) problems.push(`${page}.html logged: ${messages.join(' | ')}`);

@@ -144,6 +144,45 @@ test.describe('ARIA snapshots', () => {
     `);
   });
 
+  test('tabs, with panels inside and beside', async ({ page }) => {
+    await render(
+      page,
+      `<punk-tabs aria-label="Machine">
+         <punk-tab slot="tab" panel="inside-a">Inputs</punk-tab>
+         <punk-tab slot="tab" panel="inside-b">Outputs</punk-tab>
+         <punk-tab slot="tab" panel="beside-c" disabled>Locked</punk-tab>
+         <div id="inside-a"><p>Iron plates</p></div>
+         <div id="inside-b"><p>Gears</p></div>
+       </punk-tabs>
+       <div id="beside-c"><p>Hidden</p></div>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - tablist "Machine":
+        - tab "Inputs" [selected]
+        - tab "Outputs"
+        - tab "Locked" [disabled]
+      - tabpanel "Inputs":
+        - paragraph: Iron plates
+    `);
+  });
+
+  test('toolbar', async ({ page }) => {
+    await render(
+      page,
+      `<punk-toolbar aria-label="Tools">
+         <punk-button>Start</punk-button>
+         <punk-icon-button label="Settings">${art}</punk-icon-button>
+         <button type="button" disabled>Stop</button>
+       </punk-toolbar>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - toolbar "Tools":
+        - button "Start"
+        - button "Settings"
+        - button "Stop" [disabled]
+    `);
+  });
+
   test('accordion', async ({ page }) => {
     await render(
       page,

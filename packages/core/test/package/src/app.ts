@@ -10,6 +10,7 @@ import type {
   PunkIconButton,
   PunkItemStack,
   PunkMeter,
+  PunkOverflowDetail,
   PunkProgressBar,
   PunkRecipe,
   PunkSelectionChangeDetail,
@@ -17,7 +18,11 @@ import type {
   PunkSlotGrid,
   PunkStack,
   PunkStatusLight,
+  PunkTab,
+  PunkTabChangeDetail,
+  PunkTabs,
   PunkToggleDetail,
+  PunkToolbar,
   StackGap,
   StatusVariant,
 } from '@dieselpunk/core';
@@ -31,6 +36,8 @@ import '@dieselpunk/core/recipe/register.js';
 import '@dieselpunk/core/slot/register.js';
 import '@dieselpunk/core/slot-grid/register.js';
 import '@dieselpunk/core/stack/register.js';
+import '@dieselpunk/core/tabs/register.js';
+import '@dieselpunk/core/toolbar/register.js';
 import '@dieselpunk/core/status-light/register.js';
 
 setStrings({ loading: 'Laden' });
@@ -126,6 +133,46 @@ section.addEventListener('punk-toggle', (event) => {
 });
 accordion.append(section);
 layout.append(cluster, accordion);
+
+// Tabs with a panel, and a toolbar, with typed events.
+const tabs: PunkTabs = document.createElement('punk-tabs');
+tabs.setAttribute('aria-label', 'Machine');
+// @ts-expect-error The activation modes are a closed union.
+tabs.activation = 'sometimes';
+tabs.activation = 'manual';
+const inputs: PunkTab = document.createElement('punk-tab');
+inputs.slot = 'tab';
+inputs.panel = 'inputs';
+inputs.textContent = 'Inputs';
+const outputs: PunkTab = document.createElement('punk-tab');
+outputs.slot = 'tab';
+outputs.panel = 'outputs';
+outputs.textContent = 'Outputs';
+const inputsPanel = document.createElement('div');
+inputsPanel.id = 'inputs';
+const outputsPanel = document.createElement('div');
+outputsPanel.id = 'outputs';
+tabs.addEventListener('punk-tab-change', (event) => {
+  const detail: PunkTabChangeDetail = event.detail;
+  const shown: HTMLElement | null = detail.panel;
+  // @ts-expect-error The detail carries `value`, `tab`, and `panel`, not an index.
+  void detail.index;
+  void [detail.value, detail.tab, shown];
+});
+tabs.append(inputs, outputs, inputsPanel, outputsPanel);
+
+const toolbar: PunkToolbar = document.createElement('punk-toolbar');
+toolbar.setAttribute('aria-label', 'Tools');
+toolbar.wrap = false;
+toolbar.addEventListener('punk-overflow-change', (event) => {
+  const detail: PunkOverflowDetail = event.detail;
+  const hidden: HTMLElement[] = detail.hidden;
+  // @ts-expect-error The detail lists the hidden items only.
+  void detail.visible;
+  void hidden;
+});
+toolbar.append(loading.cloneNode(true));
+layout.append(tabs, toolbar);
 
 document.body.append(layout);
 document.documentElement.dataset['consumer'] = 'ready';

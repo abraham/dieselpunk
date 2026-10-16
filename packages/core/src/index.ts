@@ -26,4 +26,12 @@ export { PunkCluster } from './components/cluster/index.ts';
 export type { ClusterAlign, ClusterGap, ClusterJustify } from './components/cluster/index.ts';
 export { PunkAccordion, PunkAccordionItem } from './components/accordion/index.ts';
 export type { PunkToggleDetail } from './components/accordion/index.ts';
+export { PunkTabs, PunkTab } from './components/tabs/index.ts';
+export type {
+  PunkTabChangeDetail,
+  TabActivation,
+  TabsOrientation,
+} from './components/tabs/index.ts';
+export { PunkToolbar } from './components/toolbar/index.ts';
+export type { PunkOverflowDetail } from './components/toolbar/index.ts';
 export { setStrings } from './utilities/localize.ts';

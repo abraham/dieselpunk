@@ -83,6 +83,19 @@ Each enabled accordion heading is its own tab stop, so Tab moves through them li
 
 A heading is `role="heading"` with an `aria-level` that the page chooses (`level`, default 3), holding a button with `aria-expanded` and `aria-controls`. The panel is a `region` named by that button. The plus or minus drawn beside the heading says the same thing as `aria-expanded`, so state is not color alone.
 
+## Tabs and toolbar keyboard model
+
+One tab of a tab list, and one item of a toolbar, is the tab stop. Arrow keys move between the others, and nothing wraps. Horizontal arrows swap in right-to-left languages, and vertical tabs use Up and Down. Disabled tabs and items are skipped.
+
+| Key          | Tabs                                                                          | Toolbar                    |
+| ------------ | ----------------------------------------------------------------------------- | -------------------------- |
+| Left, Right  | Previous and next tab; with automatic activation, also selects it             | Previous and next item     |
+| Home, End    | First and last enabled tab; with automatic activation, also selects it        | First and last item        |
+| Enter, Space | With manual activation, selects the focused tab                               | Activates the focused item |
+| Tab          | To the selected panel if it has something to reach or a `tabindex`, else past | Leaves the toolbar         |
+
+A tab list is `role="tablist"` with `role="tab"` children, `aria-selected`, and `aria-controls`; its panels are `role="tabpanel"` and named by their tab. A toolbar is `role="toolbar"` with the application's `aria-label`. A select, text field, number field, or slider in a toolbar is its own tab stop, since it needs the arrow keys. The selected tab differs from the rest by a bar on the edge facing its panel, as well as a pressed-in surface.
+
 ## Keyboard focus
 
 The focus ring appears on `:focus-visible`, so keyboard users always get one, and it is never removed without a replacement. A tooltip opens when its anchor receives keyboard focus, and Escape closes it without moving focus.

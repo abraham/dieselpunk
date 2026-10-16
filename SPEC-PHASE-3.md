@@ -1,6 +1,6 @@
 # Phase 3: Application Shell — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (shared internals) and 2 (layout and disclosure) are implemented, with their test infrastructure and workbench parts; the rest is not started.
+**Status:** Draft 1. Work packages 1 (shared internals), 2 (layout and disclosure), and 3 (tabs and toolbar) are implemented, with their test infrastructure and workbench parts; the rest is not started.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 3
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md), [SPEC-PHASE-2.md](SPEC-PHASE-2.md)
 **Package:** `@dieselpunk/core`
@@ -705,7 +705,7 @@ The matrix of Phase 1 §10.3 and Phase 2 §10.4 applies, with these changes:
 
 ### 10.8 Size and Packaging
 
-The gates of Phase 2 §10.6 apply, with each entry measured on its own, gzip-compressed, before any limit is set. The shared form base, the modal controller, and the field styles each get their own size-limit entry. `check-package.ts` requires that no entry brings a tag of another family (§5.1), and that tree-shaken imports of one entry do not include another's component. The forms and the window are the likeliest to pass 5 kB; if one does, the shared base is split before a limit is raised, and any exception is documented with its reason, as Phase 2's was. The icon button's limit is 7.5 kB after work package 1 (§11.1).
+The gates of Phase 2 §10.6 apply, with each entry measured on its own, gzip-compressed, before any limit is set. The shared form base, the modal controller, and the field styles each get their own size-limit entry. `check-package.ts` requires that no entry brings a tag of another family (§5.1), and that tree-shaken imports of one entry do not include another's component. The forms and the window are the likeliest to pass 5 kB; if one does, the shared base is split before a limit is raised, and any exception is documented with its reason, as Phase 2's was. The icon button's limit is 7.5 kB after work package 1 (§11.1), and the tabs' is 6 kB after work package 3 (§11.3).
 
 ### 10.9 CI and Framework Fixtures
 
@@ -721,7 +721,7 @@ Packages are ordered by dependency.
 |---|---------|------------|--------|
 | 1 | Shared internals | Phase 2 | `form-control`, `modal`, `overlay-stack` (the tooltip moved onto it), `anchor` and `setExternalAria`, `roving` and the roving protocol on `PunkButtonBase`, `ids`, `status-shape` moved out of the status light, `close-button`, `field` styles, the tokens, localization keys, a test of the contrast rule; logic and browser tests. Done (§11.1). |
 | 2 | Layout and disclosure | 1 | `punk-stack`, `punk-cluster`, `punk-accordion`, `punk-accordion-item`, tests. Done (§11.2). |
-| 3 | Tabs and toolbar | 1 | `punk-tabs`, `punk-tab`, `punk-toolbar`, `tab-navigation`, tests |
+| 3 | Tabs and toolbar | 1 | `punk-tabs`, `punk-tab`, `punk-toolbar`, `tab-navigation`, tests. Done (§11.3). |
 | 4 | Window and dialog | 1 | `punk-window`, `punk-dialog`, `window-position`, the modal and Escape tests |
 | 5 | Popover | 1 | `punk-popover`, both focus modes, tests |
 | 6 | Toast | 1 | `punk-toast-stack`, `punk-toast`, `toast-timer`, tests |
@@ -764,6 +764,26 @@ What was built, and what implementation changed from the text above:
 - **Sizes** (gzip, against 5 kB): stack 1.61 kB, cluster 1.67 kB, accordion with both tags 4.03 kB. `styles/gap.js` is left out of the shared entry so that stays at 8.37 kB.
 - **Tests:** stack 22, cluster 24, accordion and item 37 (browser). The full run in Chromium, Firefox, and WebKit on Linux is 144 files, 2451 tests passed, 27 skipped; node tests 122; `test:visual` 496 passed.
 - **Mutation checks:** five mutations were each caught: single mode not collapsing the others, keeping the last instead of the first expanded item, not clearing `owner` for a removed item, ignoring Shift, and removing the stack clamp. The same mutation of the cluster's clamp survived, so the clamp was removed from the cluster.
+
+### 11.3 Work Package 3 Notes
+
+What was built, and what implementation changed from the text above:
+
+- **Files:** `components/tabs` (both tags, with one `register.ts`) and `components/toolbar`, and `internal/tab-navigation.ts`, the pure part: `navigateTabs` (what a key does, for `auto` and `manual` activation, in either direction) and `resolveSelection` (the enabled tab nearest a preferred one, forward first). `test/tab-navigation.test.ts` has 14 node tests; the node suite is 136.
+- **Tabs do not use `RovingController`.** The key table needs `Enter` and `Space` in `manual` activation and a selection with each arrow in `auto`, which the controller has no place for, so `punk-tabs` handles `keydown` itself with `navigateTabs`, and `punk-tab` implements the roving item protocol (`isDisabled`, `focusItem`, `setTabStop`) so the tab stop is written the same way. The toolbar uses the controller as §8.4 says.
+- **The tab stop** is the selected tab, moves to a tab when it gets focus (so a `manual` arrow press keeps it there), and a disabled tab has no `tabindex`.
+- **The tab tells its tabs**, as an accordion item does: `owner` and `tabChanged`, set on `slotchange`. A tab that is upgraded after the tabs rendered gets no `slotchange`, so it calls `refreshTabs()` when it connects; `tabs.upgrade.test.ts` covers it. Selecting from code (`tab.selected`, `tabs.value`) sends no event; a `value` assigned before any tab exists is applied when they arrive.
+- **No observer for panels.** A panel after the tabs in the markup may not be parsed when the tabs are, so a missing panel is not reported while `document.readyState` is `loading`, and the tabs look again on `DOMContentLoaded`. A panel whose tab has left, or whose tab's `panel` changed, is given back as the author wrote it, which can show a panel the tabs had hidden.
+- **Look:** the selected tab is pressed in and has a 3px `accent` bar on the edge that faces the panel (`::before`, on the inline end for vertical tabs). Under forced colors the selected tab has a `Highlight` border and bar, and a disabled one `GrayText`.
+- **Toolbar overflow.** The strip is the `role="toolbar"` element. One `ResizeObserver` on it (none with `wrap`, created after the first render) and `slotchange` call the measure. It shows every child, reads each width once, reserves the trigger and a gap, and hides the trailing children that do not fit, so a separator never ends the visible run and is never in `detail.hidden`. Focus in an item that goes away moves to the trigger, found before the item is hidden. Without `overflow` content it scrolls and warns once. The measure runs on resize and on child changes, not when an item's own content changes, and the docs say so.
+- **Wrap lets items shrink** (`flex: 0 1 auto`, `max-inline-size: 100%`). WebKit in the Linux image showed a 3px horizontal scroll at 187px with a long native button label; Chromium and macOS WebKit did not, so only the pinned image found it. A test with a long native button covers it.
+- **Gallery:** `shell` gains `tabs`, `tab`, and `toolbar` (seven names), with ids prefixed `g-tabs-` and a toolbar narrow enough to overflow. The toolbar's native `button` became a `punk-button`, since WebKit's axe run flagged an unstyled native button on a dark page; native items are the application's to style, and the component tests use them. `aria.spec.ts` has a tabs snapshot (panels inside and beside, a disabled tab) and a toolbar snapshot, in all three engines.
+- **Baselines:** the 148 `shell` baselines were written again, and the foundation and inventory ones are byte-identical. `maxDiffPixelRatio` is 0.002, so `update` leaves alone a baseline that changed only in a small example; the group's folder is deleted first when an example changes. The folder is 73 MB.
+- **Consumer typing:** the fixture `app.ts` builds tabs, panels, and a toolbar, with a `@ts-expect-error` on an activation outside the union and on fields not in the `punk-tab-change` and `punk-overflow-change` details. The probe clicks the second tab and checks the event, under TypeScript 5.0 and the newest.
+- **Workbench:** stories for both (Playground, States, and the theme and density matrix), their place in the sidebar, and a tabs and toolbar keyboard table in the accessibility guide. The smoke test renders 83 entries (was 75).
+- **Sizes** (gzip): tabs with both tags 5.4 kB, over 5 kB, with a limit of 6 kB; toolbar 3.92 kB. The tabs exception has a reason: it holds two components, the panel ownership and activation logic, and the tab and tab list styles, none of which another entry shares, so there was no shared base to split. The shared runtime is 8.37 kB.
+- **Tests:** tabs 45 and toolbar 25 (browser). The full run in Chromium, Firefox, and WebKit on Linux is 159 files, 2706 tests passed, 27 skipped; `test:visual` 502 passed.
+- **Mutation checks:** 17 mutations were each caught: the disabled and selection hooks, the event, auto activation, the rtl swap, forward-first resolution, restoring `hidden`, the `tabindex` rule, the once-only warning, `aria-selected`, the disabled `tabindex`, the focus handoff, the trailing separator, the observer with `wrap`, its disconnect, the trigger reserve, the scroll rule, and the wrap shrink rule.
 
 ## 12. Acceptance Criteria
 
