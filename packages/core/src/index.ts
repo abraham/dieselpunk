@@ -12,5 +12,7 @@ export type { ProgressVariant } from './components/progress-bar/index.ts';
 export { PunkSlot } from './components/slot/index.ts';
 export type { SlotSize } from './components/slot/index.ts';
 export { PunkItemStack } from './components/item-stack/index.ts';
+export { PunkSlotGrid } from './components/slot-grid/index.ts';
+export type { GridSelection, PunkSelectionChangeDetail } from './components/slot-grid/index.ts';
 export type { PunkActivateDetail } from './internal/selectable-base.ts';
 export { setStrings } from './utilities/localize.ts';

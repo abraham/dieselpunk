@@ -111,6 +111,21 @@ describe('SelectionModel, mode multiple', () => {
     assert.deepEqual(m.extendTo('b').selected, ['b']);
   });
 
+  it('reports the anchor, which extending keeps and clearing forgets', () => {
+    const m = model('multiple');
+    assert.equal(m.anchor, undefined);
+    m.select('b');
+    assert.equal(m.anchor, 'b');
+    m.extendTo('d');
+    assert.equal(m.anchor, 'b');
+    m.toggle('e');
+    assert.equal(m.anchor, 'e');
+    m.clear();
+    assert.equal(m.anchor, undefined);
+    m.set(['a', 'c']);
+    assert.equal(m.anchor, 'c');
+  });
+
   it('selects exactly the valid keys given to set', () => {
     const m = model('multiple', ['b']);
     m.toggle('a');

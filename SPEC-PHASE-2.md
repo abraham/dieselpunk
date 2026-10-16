@@ -1,6 +1,6 @@
 # Phase 2: Inventory — Implementation Specification
 
-**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), and 3 (slot and item stack) are implemented.
+**Status:** Draft 1. Work packages 1 (contrast and tokens), 2 (shared internals), 3 (slot and item stack), and 4 (slot grid) are implemented.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 2
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md)
 **Package:** `@dieselpunk/core`
@@ -190,7 +190,7 @@ In `none` mode every operation but `clear` and `setItems` does nothing. A key th
 
 `grid-navigation.ts` exports `nextIndex(key, from, items, { direction, ctrl })`. Items are `{ left, right, top, bottom, disabled }` in any one coordinate space, since only comparisons between them matter. It returns the next index, or `from` when there is nowhere to go. It does not wrap.
 
-- Horizontal keys move by one item, and swap in `rtl`.
+- Horizontal keys move by one item in reading order, and swap in `rtl`. At the end of a row they continue on the next row, because knowing where a row ends needs layout, and a horizontal key reads none (§10.5). Nothing wraps from the last item to the first. `stepIndex(from, step, disabled)` is that move, and takes only which items are disabled.
 - Vertical keys move to the item in the adjacent row whose horizontal center is nearest; rows are runs of items in document order that start within half an item height of the run's first item, so a grid whose column count changes with its width needs no stored column count, and a common offset, scale, or sub-pixel jitter does not matter. A tie between two equally near items goes to the earlier one. Rows with no enabled item are passed over.
 - `Home` and `End` move to the first and last enabled item of the focused row, in document order, so in `rtl` `Home` is the row's visually rightmost item. `Ctrl+Home` and `Ctrl+End` move to the first and last enabled item of the grid.
 - Disabled items are skipped.
@@ -201,7 +201,7 @@ The grid reads rectangles once per vertical keypress and not at all for horizont
 
 The base of `punk-slot`, `punk-item-stack`, and `punk-recipe`, in the way `PunkButtonBase` serves the buttons.
 
-- Properties: `selected`, `disabled`, `value`, and an internal `managed` flag that a grid sets. `selected` is an accessor so the base can tell that it has been set, even to `false`.
+`PunkSelectableBase` is told about its owner by an `ItemOwner` reference in `managed` (not a boolean): a grid cannot observe attributes, and may not create a `MutationObserver` (§10.5), so an item calls `owner.itemChanged(item, changed)` from `willUpdate` when its `disabled`, `value`, or `selected` changes while it is managed. The grid coalesces these into one rebuild per microtask, and ignores a `selected` change that already agrees with its selection model. `selected` is an accessor so the base can tell that it has been set, even to `false`.
 - It is a host-level widget: the host has the role and the `tabindex`, written as attributes (not `ElementInternals`) so that tooling that reads the DOM sees what users get. A native `<button>` cannot be an `option`, and a grid needs to own both. The host is `role="button"` outside a grid. While `managed`, the base leaves `role`, `tabindex`, and `aria-selected` to the grid and writes no `aria-pressed`; when the flag clears it restores its own `role`, removes `aria-selected`, and resets `tabindex` (§2 decision 3).
 - `tabindex="0"` is added unless the author set one, and is removed again only if the base added it, so a disabled item is not focusable unless the author made it so.
 - Keyboard: `Enter` activates on key down, once per press, and `Space` on key up if it was also pressed on this item, as a native button does; `Space` never scrolls the page. Keys with Ctrl, Alt, or Meta, keys pressed in focusable content slotted into the item, and keys whose default is already prevented are ignored. The last rule is how a grid claims the keys it handles: it prevents the default in a capture listener before the item sees the event. A disabled item does nothing, and its click is hidden from later listeners.
@@ -317,6 +317,15 @@ A responsive, keyboard-navigable grid of slots or item stacks.
 - The grid owns `role`, `tabindex`, and `aria-selected` on its items (§2 decision 3), and listens once on itself, not on each item (§10.5). It finds its items from `slotchange`.
 - Exactly one item is a tab stop. Tab enters at the item that last had focus, else the first selected item, else the first enabled item, and a second Tab leaves the grid.
 - Selection and focus are separate (SPEC §9.3): moving focus never changes the selection.
+- Details settled in implementation:
+  - **Events.** `punk-selection-change` is sent for changes the user makes (click, Space, Shift and Ctrl+A), once per change and not for a click that changes nothing. It is not sent when the application assigns `values`, changes `selection`, or adds or removes items, as `change` is not sent for a script's change to an input. `detail.values` leaves out items with no `value`, and `detail.items` does not.
+  - **Order.** The grid handles a click in the capture phase, so the selection is up to date when `punk-activate` reaches a listener. A key it handles has its default prevented before the item sees it, which is why Space selects without also activating, and Enter, which it does not handle, activates without selecting.
+  - **`values`.** Assigned before its items exist, it selects them when they arrive, and the user's first choice replaces it. Reading returns a copy, and assigning copies what it is given. A selected item that becomes disabled stays selected until the selection is replaced.
+  - **Items.** An item is a direct child that has the `managed` property; an element that is not yet defined is waited for with `customElements.whenDefined`, and anything else is ignored and warned about once. An item with no `value`, or a second one with the same `value`, can still be selected and is listed in `detail.items`, but not in `values`. A removed item gets its own role and tab stop back.
+  - **Disabling the grid** disables the items that are not already disabled and remembers them, so enabling the grid restores exactly what it took. Re-enabling does not touch an item the application disabled.
+  - **Selection by an item.** If the application sets `selected` on an item inside a grid, the grid puts it back.
+  - **Columns.** A `columns` value that is not a number of at least 1 is ignored, and a fraction is rounded down. Right to left is found with `:dir(rtl)`, which reads no layout.
+  - **Keys.** Ctrl, Alt, and Meta with an arrow are left to the browser, `Ctrl+Home` and `Ctrl+End` are the exception, and `Ctrl+A` and `Command+A` both select all. Shift with `Home` or `End` is plain. A held Space is ignored.
 
 Roles and states:
 
@@ -330,7 +339,7 @@ Keyboard (for `rtl`, the horizontal arrows swap):
 
 | Key | Effect |
 |-----|--------|
-| Arrow keys | Move focus to the neighbor; no wrapping |
+| Arrow keys | Left and Right move to the neighbor in reading order, and on to the next or previous row at a row end; Up and Down keep the column. Nothing wraps from the last item to the first |
 | `Home`, `End` | First and last item of the row |
 | `Ctrl+Home`, `Ctrl+End` | First and last item of the grid |
 | `Space` | Select the focused item (single) or toggle it (multiple); in `none` it activates |
@@ -447,9 +456,10 @@ The matrix of Phase 1 §10.3 applies, with these changes:
 SPEC §14.3 requires a 100-slot grid to stay responsive. Frame times on a CI runner are too noisy to assert, so the gate checks what makes a grid fast, deterministically, in `perf.test.ts`:
 
 - A grid of 100 item stacks has one set of event listeners on the grid, not one per item, and creates no `ResizeObserver`, `IntersectionObserver`, or `MutationObserver` of its own.
-- A horizontal keypress reads no layout. A vertical keypress reads the items' rectangles once.
-- Moving focus through all 100 items changes the `tabindex` of two elements per keypress.
-- Changing one item's `selected` re-renders that item only.
+- A horizontal keypress reads no layout (`getBoundingClientRect` is never called). A vertical keypress, `Home`, or `End` reads each item's rectangle once, which is 100 reads for 100 items.
+- Moving focus through all 100 items changes the `tabindex` of exactly two elements per keypress.
+- Changing one item's `selected` re-renders that item only; moving a single selection re-renders the two items involved.
+- The grid adds the same few listeners to itself for 10 items and for 100, adds none to its items, and the whole page creates no `ResizeObserver`, `IntersectionObserver`, or `MutationObserver`.
 - Informational, not asserted: the time to render the grid, recorded in the CI log so regressions are visible.
 
 ### 10.6 Size and Packaging
@@ -457,6 +467,7 @@ SPEC §14.3 requires a 100-slot grid to stay responsive. Frame times on a CI run
 The gates of Phase 1 §10.4 apply, with each component's register entry measured on its own and gzip-compressed:
 
 - Each entry is at most 5 kB. The shared selectable base is imported by three components, so it counts toward each of them; if an entry would pass 5 kB, the base is split before any limit is raised, and any exception is documented as `punk-icon-button`'s was.
+- Measured in work package 4: `punk-slot-grid` 4.66 kB, with the shared runtime. The selectable base is not part of it, since the grid never imports an item class.
 - Measured in work package 3: `punk-slot` 4.27 kB. `punk-item-stack` is 5.83 kB, so it has a documented exception of 6 kB, as `punk-icon-button` has 7. There was nothing left to split: the receptacle styles and base (about 4.2 kB with the shared runtime) are used by both components, and the rest of the item stack is its own code, which is the durability patterns, the quality diamonds, and the number formatting. The way to bring it under 5 kB is to cut features or shrink the receptacle CSS, and neither seemed worth it for 0.8 kB. English defaults live beside the component that renders them (§7.4), which kept the Phase 1 bundles from growing.
 - `check-package.ts` gains a sentinel string for each new component and requires that no register entry brings another component with it.
 - The shared runtime stays at or below 12 kB. The inventory-only base is measured as its own entry, "Selectable base and receptacle", at 4.23 kB against a 5 kB limit (measured in work package 2, with the shared runtime at 8.27 kB). It includes the shared runtime, so a component built on it has under 0.8 kB of its own before it reaches 5 kB; `punk-item-stack`, the largest, is the likely first entry to need the base split.
@@ -472,7 +483,7 @@ The stages of Phase 1 §10.5 are unchanged. The "Update visual baselines" workfl
 | 1 | Contrast and tokens | Phase 1 | `control-edge` in every theme, new gate rules, the workbench table updated, Phase 1 §6.8 and §13 item 7 closed, `SPEC.md` updated. Done. |
 | 2 | Shared internals | 1 | `SelectionModel`, `grid-navigation`, `PunkSelectableBase`, `receptacle` styles, `hostFocusRing`, localization with interpolation; logic tests. Done. |
 | 3 | Slot and item stack | 2 | Two components, tests. Done. |
-| 4 | Slot grid | 2, 3 | Component, keyboard and selection tests, performance gate |
+| 4 | Slot grid | 2, 3 | Component, keyboard and selection tests, performance gate. Done. |
 | 5 | Recipe | 2 | Component, tests |
 | 6 | Meter and status light | 1 | Two components, tests |
 | 7 | Test infrastructure | 3 to 6 as they land | Gallery group, axe and reflow coverage, ARIA snapshots, visual matrix, consumer typing, baselines |

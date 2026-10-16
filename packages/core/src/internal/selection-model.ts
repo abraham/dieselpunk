@@ -32,6 +32,11 @@ export class SelectionModel {
     return this.#keys.filter((key) => this.#selected.has(key));
   }
 
+  /** The key a range extends from: the last one selected or toggled by itself. */
+  get anchor(): string | undefined {
+    return this.#anchor;
+  }
+
   has(key: string): boolean {
     return this.#selected.has(key);
   }

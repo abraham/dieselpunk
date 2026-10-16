@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { nextIndex } from '../src/internal/grid-navigation.ts';
+import { nextIndex, stepIndex } from '../src/internal/grid-navigation.ts';
 import type { Direction, NavItem } from '../src/internal/grid-navigation.ts';
 
 interface Layout {
@@ -50,31 +50,45 @@ const rtl = { direction: 'rtl' } as const;
 const grid = layout({ columns: 4, count: 10 });
 
 describe('horizontal arrows', () => {
-  it('move to the neighbor in the row', () => {
+  it('move to the neighbor in reading order', () => {
     assert.equal(nextIndex('ArrowRight', 5, grid, ltr), 6);
     assert.equal(nextIndex('ArrowLeft', 5, grid, ltr), 4);
   });
 
-  it('do not wrap to another row', () => {
-    assert.equal(nextIndex('ArrowRight', 3, grid, ltr), 3);
-    assert.equal(nextIndex('ArrowLeft', 4, grid, ltr), 4);
+  it('continue on the next or previous row, but do not wrap round the grid', () => {
+    assert.equal(nextIndex('ArrowRight', 3, grid, ltr), 4);
+    assert.equal(nextIndex('ArrowLeft', 4, grid, ltr), 3);
     assert.equal(nextIndex('ArrowRight', 9, grid, ltr), 9);
+    assert.equal(nextIndex('ArrowLeft', 0, grid, ltr), 0);
   });
 
   it('swap in rtl, where the first item of a row is on the right', () => {
     const items = layout({ columns: 4, count: 10, direction: 'rtl' });
     assert.equal(nextIndex('ArrowLeft', 5, items, rtl), 6);
     assert.equal(nextIndex('ArrowRight', 5, items, rtl), 4);
-    assert.equal(nextIndex('ArrowRight', 4, items, rtl), 4);
-    assert.equal(nextIndex('ArrowLeft', 7, items, rtl), 7);
+    assert.equal(nextIndex('ArrowRight', 4, items, rtl), 3);
+    assert.equal(nextIndex('ArrowLeft', 7, items, rtl), 8);
+    assert.equal(nextIndex('ArrowRight', 0, items, rtl), 0);
   });
 
-  it('skip disabled items and stop at the row end when only disabled ones remain', () => {
+  it('skip disabled items, including across a row end', () => {
     const items = layout({ columns: 4, count: 10, disabled: [5, 6] });
     assert.equal(nextIndex('ArrowRight', 4, items, ltr), 7);
     assert.equal(nextIndex('ArrowLeft', 7, items, ltr), 4);
     const edge = layout({ columns: 4, count: 10, disabled: [6, 7] });
-    assert.equal(nextIndex('ArrowRight', 5, edge, ltr), 5);
+    assert.equal(nextIndex('ArrowRight', 5, edge, ltr), 8);
+    const last = layout({ columns: 4, count: 10, disabled: [8, 9] });
+    assert.equal(nextIndex('ArrowRight', 7, last, ltr), 7);
+  });
+
+  it('need no rectangles: the step function takes only which items are disabled', () => {
+    assert.equal(stepIndex(1, 1, [false, false, false]), 2);
+    assert.equal(stepIndex(1, -1, [false, false, false]), 0);
+    assert.equal(stepIndex(1, 1, [false, false, true, false]), 3);
+    assert.equal(stepIndex(1, -1, [true, false, false]), 1);
+    assert.equal(stepIndex(2, 1, [false, false, false]), 2);
+    assert.equal(stepIndex(0, -1, []), 0);
+    assert.equal(stepIndex(0, 1, []), 0);
   });
 });
 
@@ -165,7 +179,7 @@ describe('layout independence', () => {
   it('treats a single column and a single row', () => {
     const column = layout({ columns: 1, count: 3 });
     assert.equal(nextIndex('ArrowDown', 0, column, ltr), 1);
-    assert.equal(nextIndex('ArrowRight', 0, column, ltr), 0);
+    assert.equal(nextIndex('ArrowRight', 0, column, ltr), 1);
     const row = layout({ columns: 5, count: 5 });
     assert.equal(nextIndex('ArrowDown', 2, row, ltr), 2);
     assert.equal(nextIndex('End', 0, row, ltr), 4);

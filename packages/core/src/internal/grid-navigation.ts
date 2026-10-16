@@ -35,9 +35,21 @@ function rowsOf(items: readonly NavItem[]): number[] {
 }
 
 /**
- * The index to focus after `key`, or `from` when there is nowhere to go. Nothing wraps, and
- * disabled items are skipped. Horizontal arrows swap in `rtl`; `Home` and `End` follow
- * document order, so in `rtl` `Home` is the row's visually rightmost item.
+ * The next enabled index from `from` in document order (`step` 1) or against it (`step` -1), or
+ * `from` when there is none. It needs no layout, only which items are disabled.
+ */
+export function stepIndex(from: number, step: 1 | -1, disabled: readonly boolean[]): number {
+  for (let i = from + step; i >= 0 && i < disabled.length; i += step) {
+    if (disabled[i] === false) return i;
+  }
+  return from;
+}
+
+/**
+ * The index to focus after `key`, or `from` when there is nowhere to go. Nothing wraps from the
+ * last item to the first, and disabled items are skipped. Horizontal arrows follow reading order,
+ * so at the end of a row they continue on the next one, and they swap in `rtl`. `Home` and `End`
+ * follow document order, so in `rtl` `Home` is the row's visually rightmost item.
  */
 export function nextIndex(
   key: string,
@@ -47,19 +59,19 @@ export function nextIndex(
 ): number {
   const current = items[from];
   if (!current) return from;
+  if (key === 'ArrowLeft' || key === 'ArrowRight') {
+    const forward = (key === 'ArrowRight') === (direction === 'ltr');
+    return stepIndex(
+      from,
+      forward ? 1 : -1,
+      items.map((item) => item.disabled),
+    );
+  }
   const rows = rowsOf(items);
   const enabled = (index: number): boolean => items[index]?.disabled === false;
   const indexes = items.map((_, index) => index);
 
   switch (key) {
-    case 'ArrowLeft':
-    case 'ArrowRight': {
-      const forward = (key === 'ArrowRight') === (direction === 'ltr') ? 1 : -1;
-      for (let i = from + forward; rows[i] === rows[from]; i += forward) {
-        if (enabled(i)) return i;
-      }
-      return from;
-    }
     case 'ArrowUp':
     case 'ArrowDown': {
       const step = key === 'ArrowDown' ? 1 : -1;

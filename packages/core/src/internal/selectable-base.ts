@@ -8,6 +8,12 @@ export interface PunkActivateDetail {
   item: HTMLElement;
 }
 
+/** A grid that owns its items' role, tab stop, and selected state. */
+export interface ItemOwner {
+  /** Called while `item` is updating, with the properties that changed. */
+  itemChanged(item: HTMLElement, changed: ReadonlyMap<PropertyKey, unknown>): void;
+}
+
 declare global {
   interface HTMLElementEventMap {
     'punk-activate': CustomEvent<PunkActivateDetail>;
@@ -49,10 +55,11 @@ export abstract class PunkSelectableBase extends PunkElement {
   }
 
   /**
-   * Set by a grid that owns this item's role, `tabindex`, and `aria-selected`.
+   * Set by a grid that owns this item's role, `tabindex`, and `aria-selected`. The grid is told
+   * when `disabled`, `value`, or `selected` change, since it cannot observe attributes.
    * @internal
    */
-  @property({ attribute: false }) managed = false;
+  @property({ attribute: false }) managed: ItemOwner | null = null;
 
   #selected: boolean | undefined;
   #managedBefore = false;
@@ -114,6 +121,12 @@ export abstract class PunkSelectableBase extends PunkElement {
   protected override willUpdate(changed: PropertyValues): void {
     super.willUpdate(changed);
     this.#syncSemantics();
+    if (
+      this.managed &&
+      (changed.has('disabled') || changed.has('value') || changed.has('selected'))
+    ) {
+      this.managed.itemChanged(this, changed);
+    }
   }
 
   // Attributes, not ElementInternals, so tooling that reads the DOM sees the same role as users.

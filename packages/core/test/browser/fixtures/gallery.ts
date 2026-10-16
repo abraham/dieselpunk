@@ -11,6 +11,7 @@ import '../../../src/components/progress-bar/register.ts';
 import '../../../src/components/tooltip/register.ts';
 import '../../../src/components/slot/register.ts';
 import '../../../src/components/item-stack/register.ts';
+import '../../../src/components/slot-grid/register.ts';
 
 // The visual matrix renders the foundation set only, until its baselines include the inventory.
 export const foundationNames = [
@@ -21,7 +22,7 @@ export const foundationNames = [
   'progress-bar',
   'tooltip',
 ] as const;
-export const inventoryNames = ['slot', 'item-stack'] as const;
+export const inventoryNames = ['slot', 'item-stack', 'slot-grid'] as const;
 export const componentNames = [...foundationNames, ...inventoryNames] as const;
 export type ComponentName = (typeof componentNames)[number];
 
@@ -273,6 +274,32 @@ const builders: Record<ComponentName, Builder> = {
       `)}
     `;
   },
+
+  'slot-grid': (c) => {
+    // Grids are named by the application, so the unlabeled variant still has an aria-label.
+    const label = `aria-label="${c.item || 'Module slots'}"`;
+    const slotName = c.slot || 'Slot';
+    const itemName = c.item || 'Item';
+    const slots = (disabled: number[] = []) =>
+      [1, 2, 3, 4, 5, 6]
+        .map(
+          (n) =>
+            `<punk-slot label="${slotName} ${n}" value="s${n}"${disabled.includes(n) ? ' disabled' : ''}>${n === 5 ? '' : gear}</punk-slot>`,
+        )
+        .join('');
+    const stacks = [1, 2, 3, 4, 5, 6]
+      .map(
+        (n) =>
+          `<punk-item-stack name="${itemName} ${n}" value="i${n}" count="${n * 12}"${n === 4 ? ' disabled' : ''}>${gear.replace('<svg', '<svg slot="icon"')}</punk-item-stack>`,
+      )
+      .join('');
+    return `
+      <punk-slot-grid ${label} selection="single" columns="4" data-values="s2">${slots([3])}</punk-slot-grid>
+      <punk-slot-grid ${label} selection="multiple" columns="3" data-values="i1,i3">${stacks}</punk-slot-grid>
+      <punk-slot-grid ${label}>${slots()}</punk-slot-grid>
+      <punk-slot-grid ${label} selection="single" disabled data-values="s1">${slots()}</punk-slot-grid>
+    `;
+  },
 };
 
 /** HTML for one component's states. */
@@ -300,6 +327,12 @@ export function buildGallery(
       `,
     )
     .join('');
+  // A grid takes its selection as a property, which markup cannot carry.
+  for (const grid of root.querySelectorAll<HTMLElementTagNameMap['punk-slot-grid']>(
+    'punk-slot-grid[data-values]',
+  )) {
+    grid.values = (grid.dataset['values'] ?? '').split(',');
+  }
   return root;
 }
 

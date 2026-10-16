@@ -38,6 +38,7 @@ const sentinels: Record<string, string> = {
   tooltip: '--punk-tooltip-offset',
   slot: '"punk-slot"',
   'item-stack': 'durability-fill',
+  'slot-grid': '--punk-slot-gap',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };

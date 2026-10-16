@@ -13,7 +13,7 @@ import { themes } from '../tokens/themes.ts';
 import { registerElement } from '../utilities/register-element.ts';
 import { receptacleStyles } from '../styles/receptacle.ts';
 import { PunkSelectableBase } from './selectable-base.ts';
-import type { PunkActivateDetail } from './selectable-base.ts';
+import type { ItemOwner, PunkActivateDetail } from './selectable-base.ts';
 
 // The smallest possible subclass: the DOM shape that `receptacleStyles` documents.
 class TestSelectable extends PunkSelectableBase {
@@ -58,6 +58,10 @@ function slotOf(element: TestSelectable): HTMLElement {
 
 function key(type: 'keydown' | 'keyup', init: KeyboardEventInit): KeyboardEvent {
   return new KeyboardEvent(type, { bubbles: true, cancelable: true, composed: true, ...init });
+}
+
+function owner() {
+  return { itemChanged: vi.fn<ItemOwner['itemChanged']>() };
 }
 
 function listen(target: HTMLElement = document.body) {
@@ -138,7 +142,7 @@ describe('semantics', () => {
     element.setAttribute('role', 'option');
     element.setAttribute('tabindex', '-1');
     element.setAttribute('aria-selected', 'true');
-    element.managed = true;
+    element.managed = owner();
     element.disabled = true;
     await element.updateComplete;
     expect(element.getAttribute('role')).toBe('option');
@@ -148,16 +152,52 @@ describe('semantics', () => {
     expect(element.getAttribute('aria-disabled')).toBe('true');
   });
 
+  it('tells a grid when its disabled, value, or selected state changes, and not otherwise', async () => {
+    const element = await mount();
+    const grid = owner();
+    element.managed = grid;
+    await element.updateComplete;
+    grid.itemChanged.mockClear();
+
+    element.disabled = true;
+    await element.updateComplete;
+    element.value = 'gear';
+    await element.updateComplete;
+    element.selected = true;
+    await element.updateComplete;
+    expect(grid.itemChanged).toHaveBeenCalledTimes(3);
+    const [item, changed] = grid.itemChanged.mock.calls[0] ?? [];
+    expect(item).toBe(element);
+    expect(changed?.has('disabled')).toBe(true);
+
+    grid.itemChanged.mockClear();
+    element.requestUpdate();
+    await element.updateComplete;
+    expect(grid.itemChanged).not.toHaveBeenCalled();
+  });
+
+  it('stops telling a grid once it lets go', async () => {
+    const element = await mount();
+    const grid = owner();
+    element.managed = grid;
+    await element.updateComplete;
+    element.managed = null;
+    grid.itemChanged.mockClear();
+    element.disabled = true;
+    await element.updateComplete;
+    expect(grid.itemChanged).not.toHaveBeenCalled();
+  });
+
   it('takes its own semantics back when a grid lets go', async () => {
     const element = await mount();
     element.selected = true;
-    element.managed = true;
+    element.managed = owner();
     element.setAttribute('role', 'option');
     element.setAttribute('tabindex', '-1');
     element.setAttribute('aria-selected', 'true');
     await element.updateComplete;
 
-    element.managed = false;
+    element.managed = null;
     await element.updateComplete;
     expect(element.getAttribute('role')).toBe('button');
     expect(element.getAttribute('tabindex')).toBe('0');

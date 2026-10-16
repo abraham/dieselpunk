@@ -66,6 +66,13 @@
     "limit": "6 kB"
   },
   {
+    "name": "punk-slot-grid",
+    "path": "dist/components/slot-grid/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
     "name": "punk-tooltip",
     "path": "dist/components/tooltip/register.js",
     "ignore": ["lit"],
