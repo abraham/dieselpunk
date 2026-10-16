@@ -49,10 +49,10 @@ describe.each(overlayNames)('axe: an open %s', (name) => {
       };
       await overlay.updateComplete;
       await new Promise((resolve) => setTimeout(resolve));
-      const showing =
-        name === 'popover'
-          ? overlay.shadowRoot?.querySelector('[part="surface"]')?.matches(':popover-open')
-          : overlay.shadowRoot?.querySelector('dialog')?.open;
+      const popovers: Record<string, string> = { popover: 'surface', 'toast-stack': 'stack' };
+      const showing = popovers[name]
+        ? overlay.shadowRoot?.querySelector(`[part="${popovers[name]}"]`)?.matches(':popover-open')
+        : overlay.shadowRoot?.querySelector('dialog')?.open;
       expect(showing).toBe(true);
       const results = await axe.run(stage, {
         resultTypes: ['violations'],

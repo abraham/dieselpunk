@@ -228,6 +228,25 @@ test.describe('ARIA snapshots', () => {
     `);
   });
 
+  test('toast stack with a polite and an assertive toast', async ({ page }) => {
+    await render(
+      page,
+      `<punk-toast-stack>
+         <punk-toast duration="0">Saved</punk-toast>
+         <punk-toast variant="danger" heading="Offline" duration="0">Reactor lost power</punk-toast>
+       </punk-toast-stack>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - region "Notifications":
+        - status:
+          - text: Saved
+          - button "Dismiss"
+        - alert:
+          - text: Offline Reactor lost power
+          - button "Dismiss"
+    `);
+  });
+
   test('accordion', async ({ page }) => {
     await render(
       page,

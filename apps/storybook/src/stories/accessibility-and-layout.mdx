@@ -123,6 +123,14 @@ A popover's trigger has `aria-expanded`, and `aria-haspopup="menu"` for a menu. 
 
 Menu items must be focusable and carry `role="menuitem"`, `menuitemcheckbox`, or `menuitemradio`. Inside a modal window or dialog the trigger must be in the same one, since the rest of the page is inert.
 
+## Toasts
+
+A toast stack has two live regions that exist before any toast does: `role="alert"` for `warning` and `danger` toasts, and `role="status"` for `info` and `success` ones. A region added together with its content is not reliably announced, so the regions stay, and the stack moves each toast into the right one. A toast outside a stack is shown but not announced.
+
+A toast never takes focus, and has a dismiss button reachable with Tab. Its countdown pauses while the pointer is over it, while focus is inside it, and while the page is hidden, and it resumes with the time that was left. An `info` or `success` toast closes after 5 seconds; a `warning`, a `danger`, and any toast with an action stay until dismissed. Each variant is a shape as well as a color, and the text is always in the text color.
+
+A modal window or dialog makes everything outside it inert, a toast stack included, so put a stack inside the dialog when its toasts must be usable while it is open. A toast shown behind a modal still counts down.
+
 ## Keyboard focus
 
 The focus ring appears on `:focus-visible`, so keyboard users always get one, and it is never removed without a replacement. A tooltip opens when its anchor receives keyboard focus, and Escape closes it without moving focus.

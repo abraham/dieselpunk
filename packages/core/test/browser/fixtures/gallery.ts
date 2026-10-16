@@ -23,6 +23,7 @@ import '../../../src/components/toolbar/register.ts';
 import '../../../src/components/window/register.ts';
 import '../../../src/components/dialog/register.ts';
 import '../../../src/components/popover/register.ts';
+import '../../../src/components/toast/register.ts';
 
 // The visual matrix renders one group per run, so each group has its own page and baselines.
 export const foundationNames = [
@@ -52,13 +53,15 @@ export const shellNames = [
   'window',
 ] as const;
 // Overlays open on a page of their own, since the top layer covers everything else.
-export const overlayNames = ['dialog', 'window', 'popover'] as const;
+export const overlayNames = ['dialog', 'window', 'popover', 'toast-stack'] as const;
 export const componentNames = [
   ...foundationNames,
   ...inventoryNames,
   ...shellNames,
   'dialog',
   'popover',
+  'toast-stack',
+  'toast',
 ] as const;
 export type ComponentName = (typeof componentNames)[number];
 
@@ -194,6 +197,17 @@ const plus = `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor
 const variants = ['default', 'primary', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
 const row = (content: string) => `<div class="row">${content}</div>`;
+
+// Toasts in the gallery never close by themselves, or a long page would lose them.
+function toasts(c: Copy): string {
+  const [, scheduled, running, low, offline] = c.statuses;
+  return `
+    <punk-toast variant="info" duration="0">${scheduled}</punk-toast>
+    <punk-toast variant="success" duration="0" heading="${c.title}">${running}</punk-toast>
+    <punk-toast variant="warning" duration="0"><punk-button slot="action" size="sm">${c.start}</punk-button>${low}</punk-toast>
+    <punk-toast variant="danger" duration="0" heading="${c.title}">${offline}</punk-toast>
+  `;
+}
 
 function slot(name: string, text: string): string {
   return text ? `<span slot="${name}">${text}</span>` : '';
@@ -586,6 +600,15 @@ const builders: Record<ComponentName, Builder> = {
     `;
   },
 
+  // The stack is empty in the default gallery: it is always in the top layer, in a corner, and
+  // would cover the page. The overlays page fills it, one toast of each variant.
+  'toast-stack': (c, { open }) =>
+    open
+      ? `<punk-toast-stack label="${c.settings}">${toasts(c)}</punk-toast-stack>`
+      : `<punk-toast-stack label="${c.settings}"></punk-toast-stack>`,
+
+  toast: (c) => `<div class="stack" style="max-inline-size: 420px">${toasts(c)}</div>`,
+
   dialog: (c, { open }) => `
     <punk-dialog heading="${c.title}" aria-label="${c.settings}"${open ? ' open' : ''}>
       <p style="margin: 0">${c.body}</p>
@@ -688,5 +711,6 @@ export const galleryCss = `
   .gallery { display: flex; flex-direction: column; gap: 24px; padding: 16px; box-sizing: border-box; }
   .gallery .stack { display: flex; flex-direction: column; gap: 12px; }
   .gallery .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .gallery punk-toast::part(toast) { animation: none; }
   .gallery .caption { margin: 0; font: 12px/1.2 var(--punk-font-mono, monospace); color: var(--punk-color-text-muted, #b8b4a7); }
 `;

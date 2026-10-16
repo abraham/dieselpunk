@@ -24,6 +24,8 @@ export async function probeConsumer() {
     'punk-window',
     'punk-dialog',
     'punk-popover',
+    'punk-toast-stack',
+    'punk-toast',
   ];
   const bar = document
     .querySelector('punk-progress-bar')
@@ -73,6 +75,15 @@ export async function probeConsumer() {
     menu.hide();
     await menu.updateComplete;
   }
+  // A toast shown from code is placed by its variant, and reports why it was dismissed.
+  const notifications = document.querySelector('punk-toast-stack');
+  let dismissed: string | null = null;
+  notifications?.addEventListener('punk-dismiss', (event) => {
+    dismissed = event.detail.reason;
+  });
+  const alertToast = notifications?.show({ message: 'Offline', variant: 'danger', duration: 0 });
+  const toastSlot = alertToast?.getAttribute('slot') ?? null;
+  alertToast?.dismiss();
   return {
     defined: tags.filter((tag) => customElements.get(tag) !== undefined),
     upgraded: Boolean(
@@ -92,6 +103,8 @@ export async function probeConsumer() {
     tabbed: tabbed as string | null,
     closed: closed as string | null,
     menuClosed: menuClosed as string | null,
+    dismissed: dismissed as string | null,
+    toastSlot,
   };
 }
 

@@ -63,6 +63,13 @@ export const closeButtonStyles = css`
 
   ${focusRing('.close-button')}
   ${forcedColorsSurface('.close-button', { face: 'ButtonFace', text: 'ButtonText' })}
+
+  /* A glyph drawn as a background is erased under forced colors unless it uses a system color. */
+  @media (forced-colors: active) {
+    .close-button .glyph {
+      background: ButtonText;
+    }
+  }
 `;
 
 export interface CloseButtonOptions {

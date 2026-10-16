@@ -498,6 +498,21 @@ describe('appearance', () => {
     expect(getComputedStyle(button).backgroundColor).not.toBe(idle);
   });
 
+  it('still draws the close and move glyphs under forced colors, and in a color that shows on the pressed button', async () => {
+    await commands.setForcedColors('active');
+    const element = await open('heading="x" movable dismissible');
+    // The glyph is a background, so it only shows when it is not the button's own face color.
+    const shows = (name: string) => {
+      const button = part(element, name);
+      const glyph = button.querySelector('.glyph') as Element;
+      return getComputedStyle(glyph).backgroundColor !== getComputedStyle(button).backgroundColor;
+    };
+    expect([shows('close-button'), shows('move-button')]).toEqual([true, true]);
+    await userEvent.click(part(element, 'move-button'));
+    await element.updateComplete;
+    expect(shows('move-button')).toBe(true);
+  });
+
   it('raises a focused non-modal window above its siblings', async () => {
     const element = await open('heading="x" movable');
     element.shadowRoot?.querySelector<HTMLElement>('.body')?.focus();

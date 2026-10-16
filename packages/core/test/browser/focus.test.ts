@@ -6,8 +6,10 @@ import '../../src/components/tooltip/register.ts';
 import '../../src/components/window/register.ts';
 import '../../src/components/dialog/register.ts';
 import '../../src/components/popover/register.ts';
+import '../../src/components/toast/register.ts';
 import type { PunkDialog } from '../../src/components/dialog/index.ts';
 import type { PunkPopover } from '../../src/components/popover/index.ts';
+import type { PunkToastStack } from '../../src/components/toast/index.ts';
 import type { PunkWindow } from '../../src/components/window/index.ts';
 import { overlayStack } from '../../src/internal/overlays.ts';
 
@@ -264,5 +266,48 @@ describe('a backdrop click', () => {
     dialogElement.shadowRoot?.querySelector('dialog')?.click();
     expect(dialogElement.open).toBe(true);
     expect(deepActive()).toBeTruthy();
+  });
+});
+
+describe('a toast stack and a modal', () => {
+  const dismissButton = (stack: PunkToastStack) =>
+    stack.querySelector('punk-toast')?.shadowRoot?.querySelector('button') as HTMLElement;
+
+  it('is inert while a modal dialog is open, and usable again once it closes', async () => {
+    const stack = track(document.createElement('punk-toast-stack'));
+    await stack.updateComplete;
+    const toast = stack.show({ message: 'Saved', duration: 0 });
+    await toast.updateComplete;
+    const element = (await dialog()) as PunkDialog;
+    await show(element);
+    dismissButton(stack).focus();
+    expect(deepActive()).not.toBe(dismissButton(stack));
+    element.close();
+    await element.updateComplete;
+    dismissButton(stack).focus();
+    expect(deepActive()).toBe(dismissButton(stack));
+  });
+
+  it('is usable while the modal is open when it is inside the dialog', async () => {
+    const element = (await overlay(
+      '<punk-dialog heading="D"><button class="inside">Inside</button><punk-toast-stack></punk-toast-stack></punk-dialog>',
+    )) as PunkDialog;
+    const stack = element.querySelector('punk-toast-stack') as PunkToastStack;
+    await stack.updateComplete;
+    const toast = stack.show({ message: 'Saved', duration: 0 });
+    await toast.updateComplete;
+    await show(element);
+    dismissButton(stack).focus();
+    expect(deepActive()).toBe(dismissButton(stack));
+  });
+
+  it('leaves Escape to the dialog', async () => {
+    const stack = track(document.createElement('punk-toast-stack'));
+    stack.show({ message: 'Saved', duration: 0 });
+    const element = (await dialog()) as PunkDialog;
+    await show(element);
+    await userEvent.keyboard('{Escape}');
+    expect(element.open).toBe(false);
+    expect(overlayStack.size).toBe(0);
   });
 });

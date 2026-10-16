@@ -85,6 +85,7 @@ const preview: Preview = {
             'Window',
             'Dialog',
             'Popover',
+            'Toast',
           ],
           'Guides',
         ],

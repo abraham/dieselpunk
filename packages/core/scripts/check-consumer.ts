@@ -46,6 +46,8 @@ interface Report {
   tabbed: string | null;
   closed: string | null;
   menuClosed: string | null;
+  dismissed: string | null;
+  toastSlot: string | null;
 }
 
 // What each page registers: the plain page imports panel and button; the TypeScript page imports
@@ -69,6 +71,8 @@ const expectedTags: Record<string, string[]> = {
     'punk-status-light',
     'punk-tab',
     'punk-tabs',
+    'punk-toast',
+    'punk-toast-stack',
     'punk-toolbar',
     'punk-tooltip',
     'punk-window',
@@ -184,6 +188,11 @@ async function checkPages(outDir: string): Promise<void> {
         }
         if (report.menuClosed !== 'method') {
           problems.push(`app.html: closing a popover reported ${report.menuClosed}`);
+        }
+        if (report.dismissed !== 'method' || report.toastSlot !== 'assertive') {
+          problems.push(
+            `app.html: a toast was placed in ${report.toastSlot} and dismissed for ${report.dismissed}`,
+          );
         }
       }
       if (messages.length > 0) problems.push(`${page}.html logged: ${messages.join(' | ')}`);

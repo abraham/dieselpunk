@@ -92,5 +92,9 @@ export const windowStyles = css`
       background: Highlight;
       color: HighlightText;
     }
+
+    .move-button[aria-pressed='true'] .glyph {
+      background: HighlightText;
+    }
   }
 `;

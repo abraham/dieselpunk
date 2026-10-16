@@ -10,6 +10,8 @@ import type {
   PunkCloseReason,
   PunkCluster,
   PunkDialog,
+  PunkDismissDetail,
+  PunkDismissReason,
   PunkIconButton,
   PunkItemStack,
   PunkMeter,
@@ -26,6 +28,8 @@ import type {
   PunkTab,
   PunkTabChangeDetail,
   PunkTabs,
+  PunkToast,
+  PunkToastStack,
   PunkToggleDetail,
   PunkToolbar,
   PunkWindow,
@@ -45,6 +49,7 @@ import '@dieselpunk/core/slot/register.js';
 import '@dieselpunk/core/slot-grid/register.js';
 import '@dieselpunk/core/stack/register.js';
 import '@dieselpunk/core/tabs/register.js';
+import '@dieselpunk/core/toast/register.js';
 import '@dieselpunk/core/toolbar/register.js';
 import '@dieselpunk/core/window/register.js';
 import '@dieselpunk/core/status-light/register.js';
@@ -219,6 +224,24 @@ menu.addEventListener('punk-close', (event) => {
   void detail.reason;
 });
 layout.append(assembler, confirm, menuTrigger, menu);
+
+// A toast stack, with typed options and a typed dismiss event.
+const notifications: PunkToastStack = document.createElement('punk-toast-stack');
+notifications.placement = 'top-end';
+// @ts-expect-error The corners are a closed union.
+notifications.placement = 'middle';
+notifications.addEventListener('punk-dismiss', (event) => {
+  const detail: PunkDismissDetail = event.detail;
+  const reason: PunkDismissReason = detail.reason;
+  // @ts-expect-error The reasons are a closed union.
+  const unknown: PunkDismissReason = 'bored';
+  void [reason, unknown];
+});
+const saved: PunkToast = notifications.show({ message: 'Saved', variant: 'success', duration: 0 });
+// @ts-expect-error A toast needs a message.
+notifications.show({ variant: 'info' });
+void saved;
+layout.append(notifications);
 
 document.body.append(layout);
 document.documentElement.dataset['consumer'] = 'ready';

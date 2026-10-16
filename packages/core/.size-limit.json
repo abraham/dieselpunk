@@ -190,6 +190,13 @@
     "limit": "5.5 kB"
   },
   {
+    "name": "punk-toast and punk-toast-stack",
+    "path": "dist/components/toast/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
     "name": "punk-icon-button (includes the tooltip)",
     "path": "dist/components/icon-button/register.js",
     "ignore": ["lit"],
