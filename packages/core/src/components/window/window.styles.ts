@@ -17,7 +17,9 @@ export const windowStyles = css`
   .titlebar {
     display: flex;
     flex: none;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: flex-end;
     gap: ${token('space-2')};
     min-block-size: calc(${token('control-height-sm')} + 2 * ${token('space-2')});
     padding: ${token('space-2')} ${token('space-3')};
@@ -38,8 +40,9 @@ export const windowStyles = css`
     display: none;
   }
 
+  /* Where the title and its buttons cannot share a row, the buttons wrap below it. */
   .title {
-    flex: 1 1 auto;
+    flex: 1 1 9ch;
     min-inline-size: 0;
     font-weight: 700;
     overflow-wrap: break-word;

@@ -121,6 +121,8 @@ describe.each(tags)('%s as a field', (tag) => {
     await touch(element);
     expect(part(element, 'message').hidden).toBe(false);
     expect(part(element, 'message').textContent).toMatch(/invalid:\s*\S/);
+    // The text takes its direction from its own language, so its punctuation stays put on a right-to-left page.
+    expect(part(element, 'message').querySelector('[dir="auto"]')).not.toBeNull();
     expect(control(element).getAttribute('aria-invalid')).toBe('true');
     expect(control(element).getAttribute('aria-describedby')).toBe('message');
   });

@@ -56,6 +56,26 @@ export const toastStyles = css`
   ${statusLensStyles}
   ${statusShapeStyles}
 
+  /* On a very narrow viewport the dismiss button joins the indicator row, so the text keeps the full
+     width instead of breaking inside words. */
+  @media (max-width: 320px) {
+    .toast {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+    }
+
+    .main {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+
+    .close-button {
+      grid-column: 3;
+      grid-row: 1;
+    }
+  }
+
   .main {
     flex: 1 1 0;
     min-inline-size: 0;

@@ -200,12 +200,13 @@ A structural metal surface.
 
 A titled application or game window, optionally movable and dismissible.
 
-- Properties: `heading`, `open`, `modal`, `movable`, `dismissible`.
+- Properties: `heading`, `open` (default `false`, as for `<dialog>`), `modal`, `movable`, `dismissible`.
 - Events: `punk-open`, `punk-close`, `punk-move-start`, `punk-move-end`.
 - Slots: `icon`, default, `footer`.
-- Parts: `window`, `titlebar`, `title`, `close-button`, `body`, `footer`.
+- Parts: `window`, `titlebar`, `title`, `move-button` (while `movable`), `close-button`, `body`, `footer`.
 - Modal behavior uses the native `<dialog>` element internally where supported.
 - Dragging is opt-in and constrained to the viewport; dragging never starts from interactive titlebar descendants.
+- A movable window has a move button as the single-pointer alternative to dragging (WCAG 2.2 SC 2.5.7). It starts move mode: the arrow keys move the window by 8px (32px with Shift), a click places the center of the titlebar, Enter confirms, and Escape cancels.
 
 #### `<punk-divider>`
 
@@ -255,11 +256,12 @@ Inset fields with optional prefix, suffix, validation message, and stepper contr
 - Orientation: horizontal or vertical.
 - Activation: automatic by default; manual activation is configurable.
 - Implements the WAI-ARIA Tabs keyboard pattern.
+- A tab names its panel by id in `panel`, resolved in the tab's root node, so a panel can be inside `<punk-tabs>` or beside it. The tab list wraps and never scrolls sideways.
 - The active tab uses an inset orange-accented state.
 
 #### `<punk-toolbar>`
 
-A fixed-height action strip supporting roving tabindex, separators, keyboard navigation, and slotted controls.
+A fixed-height action strip supporting roving tabindex, separators, keyboard navigation, and slotted controls. A select, text field, number field, and slider keep their own tab stop, since they use the arrow keys themselves. An `overflow` slot takes the consumer's trigger: items that do not fit are marked `data-punk-overflow` and hidden, and `punk-overflow-change` reports them so the consumer can fill its menu. The toolbar builds no menu. Without an `overflow` slot nothing is hidden and the toolbar scrolls inside itself.
 
 #### `<punk-accordion>`
 
@@ -347,12 +349,12 @@ A modal confirmation or task surface based on native `<dialog>`. It traps focus 
 
 #### `<punk-toast-stack>` and `<punk-toast>`
 
-Transient system feedback with `info`, `success`, `warning`, and `danger` variants. Toasts pause their dismissal timer while hovered or focused and are announced using an appropriate live-region politeness level.
+Transient system feedback with `info`, `success`, `warning`, and `danger` variants. Every toast has a dismiss button. A toast pauses its dismissal timer while hovered, focused, or while the document is hidden. The default is 5000ms for `info` and `success`, and no timeout for `warning`, `danger`, or a toast with an action. The stack keeps two persistent live regions, `role="status"` for `info` and `success` and `role="alert"` for `warning` and `danger`, and puts each toast in the matching one.
 
 ## 8. Representative Markup
 
 ```html
-<punk-window heading="Assembler 03" dismissible>
+<punk-window heading="Assembler 03" open dismissible>
   <punk-tabs aria-label="Machine details">
     <punk-tab slot="tab" panel="production">Production</punk-tab>
     <punk-tab slot="tab" panel="modules">Modules</punk-tab>
@@ -520,7 +522,7 @@ Slot, item stack, slot grid, recipe, meter, status light, keyboard selection mod
 
 ### Phase 3: Application Shell
 
-Window, dialog, tabs, toolbar, form controls, popover, toast, responsive layouts, and framework wrappers or integration guides.
+Window, dialog, tabs, toolbar, accordion, stack, cluster, form controls, popover, toast, responsive layouts, and framework integration guides.
 
 ### Phase 4: Production Interfaces
 

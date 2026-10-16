@@ -125,7 +125,7 @@ export abstract class PunkFieldBase extends PunkFormControl {
           <span class="indicator variant-warning" aria-hidden="true"
             ><span class="shape"></span
           ></span>
-          <span
+          <span dir="auto"
             ><span class="word">${t('invalidField', 'invalid')}</span>:
             ${shown ? this.validationMessage : ''}</span
           >

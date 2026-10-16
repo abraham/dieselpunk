@@ -264,6 +264,26 @@ describe('layout', () => {
     expect(two?.top).toBeGreaterThan(one?.top ?? 0);
   });
 
+  it('puts the titlebar buttons below the title where they cannot share its row', async () => {
+    const attributes = 'heading="Assembler" movable dismissible';
+    const narrow = track(document.createElement('div'));
+    narrow.style.inlineSize = '150px';
+    const wide = track(document.createElement('div'));
+    wide.style.inlineSize = '400px';
+    const small = await open(attributes, content, narrow);
+    const large = await open(attributes, content, wide);
+    const rows = (element: PunkWindow) => ({
+      title: part(element, 'title').getBoundingClientRect(),
+      button: part(element, 'close-button').getBoundingClientRect(),
+    });
+    const { title: smallTitle, button: smallButton } = rows(small);
+    expect(smallButton.top).toBeGreaterThanOrEqual(smallTitle.bottom);
+    expect(smallTitle.height).toBeLessThan(smallButton.height * 1.5);
+    expect(smallButton.right).toBeGreaterThan(smallTitle.right - 1);
+    const { title: largeTitle, button: largeButton } = rows(large);
+    expect(largeButton.top).toBeLessThan(largeTitle.bottom);
+  });
+
   it('keeps a modal window inside the viewport, and makes a tall body a focusable scroll region', async () => {
     const element = await open(
       'heading="x" modal',

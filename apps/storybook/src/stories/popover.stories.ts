@@ -42,7 +42,7 @@ An interactive surface anchored to a trigger, for content or a menu. The trigger
 
 **Menu mode:** the host is \`role="menu"\` while it is showing, and the application supplies the \`menuitem\`, \`menuitemcheckbox\`, or \`menuitemradio\` elements, which must be focusable. Opening always moves focus to the first enabled item, and ArrowDown on the trigger opens it. Up, Down, Home, and End move among the items without wrapping and skip disabled ones. Tab closes it. Activating an item does not close the menu: call \`hide()\`, or set \`data-punk-close-on-activate\` on the popover.
 
-**Placement:** \`bottom\` (the default), \`top\`, \`start\`, and \`end\`, flipped when there is no room and kept inside the viewport. \`start\` and \`end\` follow the writing direction. It sits in the top layer, so inside a modal window or dialog its trigger must be in the same one.
+**Placement:** \`bottom\` (the default), \`top\`, \`start\`, and \`end\`, flipped when there is no room, moved above or below when neither side has room (as at 375px), and kept inside the viewport. \`start\` and \`end\` follow the writing direction. It sits in the top layer, so inside a modal window or dialog its trigger must be in the same one.
 `,
       },
     },

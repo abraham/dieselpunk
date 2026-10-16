@@ -347,6 +347,19 @@ describe('placement', () => {
     expect(box.right).toBeLessThanOrEqual(document.documentElement.clientWidth);
   });
 
+  it('goes below the trigger when neither side has room for it', async () => {
+    const { popover } = await opened({
+      attributes: 'placement="end" style="--punk-popover-max-width: 90vw"',
+      position: 'left: 150px; top: 160px',
+      content: '<p>' + 'word '.repeat(60) + '</p>',
+    });
+    const surface = surfaceOf(popover);
+    expect(surface.dataset['side']).toBe('bottom');
+    const box = surface.getBoundingClientRect();
+    expect(box.left).toBeGreaterThanOrEqual(0);
+    expect(box.right).toBeLessThanOrEqual(document.documentElement.clientWidth);
+  });
+
   it('puts start at the inline start of the trigger, which is the right in rtl', async () => {
     const ltr = await opened({
       attributes: 'placement="start"',
