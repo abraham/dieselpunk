@@ -6,7 +6,7 @@ import type { Page } from '@playwright/test';
 // `industrial-light` at low density, at 100% only. The forced-colors project ignores themes, so
 // it runs one theme at 100% zoom. The baselines of a group are in a folder of that name.
 
-const groups = ['foundation', 'inventory'] as const;
+const groups = ['foundation', 'inventory', 'shell'] as const;
 const themes = ['industrial', 'industrial-light', 'high-contrast', 'reduced-texture'] as const;
 const densities = ['compact', 'low'] as const;
 const containers = [

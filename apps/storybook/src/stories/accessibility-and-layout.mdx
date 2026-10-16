@@ -71,6 +71,18 @@ A slot grid is one tab stop. Tab enters it at the item that last had focus, else
 
 A grid with selection is a `listbox` of `option` items, and with none a `group` of buttons. It is not `role="grid"`, since a wrapping layout has no rows and cells. The automated checks cover this tree in all three engines, but it has not yet been checked by hand with a screen reader.
 
+## Accordion keyboard model
+
+Each enabled accordion heading is its own tab stop, so Tab moves through them like any other buttons. Arrow keys are a shortcut between headings, and they only act while focus is on a heading, so arrows inside an expanded panel (a text field, a slider) are left alone.
+
+| Key          | Action                                                    |
+| ------------ | --------------------------------------------------------- |
+| Enter, Space | Expand or collapse the item                               |
+| Down, Up     | Focus the next or previous enabled heading; nothing wraps |
+| Home, End    | Focus the first or last enabled heading                   |
+
+A heading is `role="heading"` with an `aria-level` that the page chooses (`level`, default 3), holding a button with `aria-expanded` and `aria-controls`. The panel is a `region` named by that button. The plus or minus drawn beside the heading says the same thing as `aria-expanded`, so state is not color alone.
+
 ## Keyboard focus
 
 The focus ring appears on `:focus-visible`, so keyboard users always get one, and it is never removed without a replacement. A tooltip opens when its anchor receives keyboard focus, and Escape closes it without moving focus.

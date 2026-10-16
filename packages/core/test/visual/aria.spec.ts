@@ -143,4 +143,25 @@ test.describe('ARIA snapshots', () => {
       - status: Offline
     `);
   });
+
+  test('accordion', async ({ page }) => {
+    await render(
+      page,
+      `<punk-accordion>
+         <punk-accordion-item heading="Inputs" expanded><p>Iron plates</p></punk-accordion-item>
+         <punk-accordion-item heading="Outputs" level="2"><p>Gears</p></punk-accordion-item>
+         <punk-accordion-item heading="Locked" disabled><p>Hidden</p></punk-accordion-item>
+       </punk-accordion>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - heading "Inputs" [level=3]:
+        - button "Inputs" [expanded]
+      - region "Inputs":
+        - paragraph: Iron plates
+      - heading "Outputs" [level=2]:
+        - button "Outputs"
+      - heading "Locked" [level=3]:
+        - button "Locked" [disabled]
+    `);
+  });
 });

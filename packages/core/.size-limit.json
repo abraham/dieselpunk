@@ -13,7 +13,8 @@
       "!dist/styles/receptacle.js",
       "!dist/styles/field.js",
       "!dist/styles/close-button.js",
-      "!dist/styles/status-shape.js"
+      "!dist/styles/status-shape.js",
+      "!dist/styles/gap.js"
     ],
     "ignore": ["lit"],
     "gzip": true,
@@ -127,6 +128,27 @@
   {
     "name": "punk-tooltip",
     "path": "dist/components/tooltip/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-stack",
+    "path": "dist/components/stack/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-cluster",
+    "path": "dist/components/cluster/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "punk-accordion (both tags)",
+    "path": "dist/components/accordion/register.js",
     "ignore": ["lit"],
     "gzip": true,
     "limit": "5 kB"

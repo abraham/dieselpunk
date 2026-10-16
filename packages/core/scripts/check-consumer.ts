@@ -42,6 +42,7 @@ interface Report {
   gridRole: string | null;
   itemRole: string | null;
   changed: string[] | null;
+  toggled: boolean | null;
 }
 
 // What each page registers: the plain page imports panel and button; the TypeScript page imports
@@ -49,6 +50,9 @@ interface Report {
 const expectedTags: Record<string, string[]> = {
   plain: ['punk-button', 'punk-panel'],
   app: [
+    'punk-accordion',
+    'punk-accordion-item',
+    'punk-cluster',
     'punk-icon-button',
     'punk-item-stack',
     'punk-meter',
@@ -56,6 +60,7 @@ const expectedTags: Record<string, string[]> = {
     'punk-recipe',
     'punk-slot',
     'punk-slot-grid',
+    'punk-stack',
     'punk-status-light',
     'punk-tooltip',
   ],
@@ -158,6 +163,9 @@ async function checkPages(outDir: string): Promise<void> {
         }
         if (JSON.stringify(report.changed) !== '["engine"]') {
           problems.push(`app.html: clicking a slot reported ${JSON.stringify(report.changed)}`);
+        }
+        if (report.toggled !== true) {
+          problems.push(`app.html: clicking a heading reported ${report.toggled}`);
         }
       }
       if (messages.length > 0) problems.push(`${page}.html logged: ${messages.join(' | ')}`);

@@ -1,6 +1,6 @@
 # Phase 3: Application Shell — Implementation Specification
 
-**Status:** Draft 1. Work package 1 (shared internals) is implemented; the rest is not started.
+**Status:** Draft 1. Work packages 1 (shared internals) and 2 (layout and disclosure) are implemented, with their test infrastructure and workbench parts; the rest is not started.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 3
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md), [SPEC-PHASE-2.md](SPEC-PHASE-2.md)
 **Package:** `@dieselpunk/core`
@@ -720,7 +720,7 @@ Packages are ordered by dependency.
 | # | Package | Depends on | Output |
 |---|---------|------------|--------|
 | 1 | Shared internals | Phase 2 | `form-control`, `modal`, `overlay-stack` (the tooltip moved onto it), `anchor` and `setExternalAria`, `roving` and the roving protocol on `PunkButtonBase`, `ids`, `status-shape` moved out of the status light, `close-button`, `field` styles, the tokens, localization keys, a test of the contrast rule; logic and browser tests. Done (§11.1). |
-| 2 | Layout and disclosure | 1 | `punk-stack`, `punk-cluster`, `punk-accordion`, `punk-accordion-item`, tests |
+| 2 | Layout and disclosure | 1 | `punk-stack`, `punk-cluster`, `punk-accordion`, `punk-accordion-item`, tests. Done (§11.2). |
 | 3 | Tabs and toolbar | 1 | `punk-tabs`, `punk-tab`, `punk-toolbar`, `tab-navigation`, tests |
 | 4 | Window and dialog | 1 | `punk-window`, `punk-dialog`, `window-position`, the modal and Escape tests |
 | 5 | Popover | 1 | `punk-popover`, both focus modes, tests |
@@ -747,6 +747,23 @@ What was built, and what implementation changed from the text above:
 - **`status-shape` was extracted unchanged** (the status light's 18 tests and all 164 inventory baselines are as before); the status light now imports `statusLensStyles` and `statusShapeStyles`.
 - **Sizes** (gzip). New entries: form control base and field styles 4.44 kB, modal controller and overlay stack 1.54 kB, roving controller and anchor 1.67 kB, close button and status shapes 3.31 kB, each against 5 kB. The shared runtime is 8.37 kB (was 8.28). The button grew from 4.38 to 4.54 kB, the tooltip from 4.44 to 4.68 kB, and the icon button from 6.94 to 7.32 kB, past its 7 kB limit. Nothing was left to split, since the icon button's entry is the button base and the tooltip, so its exception is back at 7.5 kB, the figure Phase 1 had before it tightened it (Phase 1 §10.4). The rest of the code is in shared modules that windows, popovers, and the fields reuse.
 - **Mutation checks:** 16 mutations of the new code were each caught by a test, after two weak tests were fixed: the focus return, which the platform also does on a native `<dialog>`, is now tested on the fallback path, and the fieldset rule has its own test.
+
+### 11.2 Work Package 2 Notes
+
+What was built, and what implementation changed from the text above:
+
+- **Files:** `components/stack`, `cluster`, and `accordion` (the accordion directory holds both tags, with one `register.ts` that defines both, as §5.1 says), and `styles/gap.ts`, the one helper that maps `gap` `0` to `5` to the spacing tokens for the stack and the cluster. Each component has its class, styles, `index.ts`, `register.ts`, and tests, plus a `*.registration.test.ts` that checks the class entry does not define the element.
+- **The heading is `role="heading"` with `aria-level`, not `<h{level}>`.** A real `<h1>` to `<h6>` cannot have its level changed without replacing the element, and a heading element inside a shadow tree is not reliably in the page's outline in every engine. The accessibility tree is the same, and the ARIA snapshot checks it.
+- **The item tells its accordion, not the other way round.** An item holds `owner`, which the accordion sets on `slotchange` and clears for items that leave. When `expanded` becomes true, whether from the user or from code, the item calls `owner.itemExpanded(this)` and a single-mode accordion collapses the rest. This gives the same result for a click, `item.expanded = true`, and the attribute, with no event listener in the accordion to tell user changes from code changes. Several expanded items at connection, or after `multiple` is turned off, keep the first and warn once.
+- **Every enabled heading is a tab stop**, as in the WAI-ARIA accordion pattern, so there is no roving controller. The accordion handles `keydown` on its container and acts only when the event came from an item's trigger, so arrows pressed in a field inside a panel are left alone. It uses the pure `nextRovingIndex` with the vertical orientation, so Up, Down, Home, and End skip disabled items and do not wrap. They behave the same in `rtl`.
+- **Stack children are clamped to the stack's width** (`max-inline-size: 100%` as well as `min-inline-size: 0`). With only `min-inline-size: 0` a child sized to its content in a column with `align` `start`, `center`, or `end` still took the width of its longest word. The cluster needs no clamp, since flex items shrink and wrap; a test for it passed without one, so none was added.
+- **State is a shape.** The indicator is a plus whose vertical bar, drawn with `::after`, disappears when expanded, leaving a minus; a test reads its `display`. Under forced colors the heading is a bordered button.
+- **Gallery and visual group:** a `shell` group (`stack`, `cluster`, `accordion`, `accordion-item`) in the gallery, so the manifest, axe, and reflow suites cover it, and 148 baselines in `__screenshots__/<project>/shell/` (Chromium 128, forced colors 16, Firefox 2, WebKit 2). The 324 foundation and inventory baselines are byte-identical. The folder is 67 MB in all. `aria.spec.ts` has an accordion snapshot.
+- **Consumer typing:** the fixture `app.ts` constructs a stack, cluster, accordion, and item, with a `@ts-expect-error` on a gap outside the union and on a field not in the `punk-toggle` detail. The probe clicks a heading and checks the event, under TypeScript 5.0 and the newest. The dedicated `shell.ts` fixture of §10 stays with work package 9.
+- **Workbench:** stories for the three components (Playground, States, and the theme and density matrix), their order in the sidebar, and an accordion keyboard section in the accessibility guide. The smoke test renders 75 entries (was 63).
+- **Sizes** (gzip, against 5 kB): stack 1.61 kB, cluster 1.67 kB, accordion with both tags 4.03 kB. `styles/gap.js` is left out of the shared entry so that stays at 8.37 kB.
+- **Tests:** stack 22, cluster 24, accordion and item 37 (browser). The full run in Chromium, Firefox, and WebKit on Linux is 144 files, 2451 tests passed, 27 skipped; node tests 122; `test:visual` 496 passed.
+- **Mutation checks:** five mutations were each caught: single mode not collapsing the others, keeping the last instead of the first expanded item, not clearing `owner` for a removed item, ignoring Shift, and removing the stack clamp. The same mutation of the cluster's clamp survived, so the clamp was removed from the cluster.
 
 ## 12. Acceptance Criteria
 

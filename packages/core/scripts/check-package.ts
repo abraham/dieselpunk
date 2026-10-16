@@ -42,6 +42,9 @@ const sentinels: Record<string, string> = {
   recipe: 'can craft {count}',
   meter: '--punk-meter-length',
   'status-light': 'variant-neutral',
+  stack: '--punk-stack-gap',
+  cluster: '--punk-cluster-gap',
+  accordion: '"punk-accordion-item"',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };

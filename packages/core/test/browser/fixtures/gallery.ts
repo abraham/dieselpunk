@@ -15,6 +15,9 @@ import '../../../src/components/slot-grid/register.ts';
 import '../../../src/components/recipe/register.ts';
 import '../../../src/components/meter/register.ts';
 import '../../../src/components/status-light/register.ts';
+import '../../../src/components/stack/register.ts';
+import '../../../src/components/cluster/register.ts';
+import '../../../src/components/accordion/register.ts';
 
 // The visual matrix renders one group per run, so each group has its own page and baselines.
 export const foundationNames = [
@@ -33,12 +36,14 @@ export const inventoryNames = [
   'meter',
   'status-light',
 ] as const;
-export const componentNames = [...foundationNames, ...inventoryNames] as const;
+export const shellNames = ['stack', 'cluster', 'accordion', 'accordion-item'] as const;
+export const componentNames = [...foundationNames, ...inventoryNames, ...shellNames] as const;
 export type ComponentName = (typeof componentNames)[number];
 
 export const galleryGroups = {
   foundation: foundationNames,
   inventory: inventoryNames,
+  shell: shellNames,
 } as const;
 export type GalleryGroup = keyof typeof galleryGroups;
 
@@ -404,6 +409,75 @@ const builders: Record<ComponentName, Builder> = {
       </div>
     `;
   },
+
+  stack: (c) => {
+    const block = (text: string, width?: number) =>
+      `<punk-panel variant="flat" style="${width ? `inline-size: ${width}px; ` : ''}min-inline-size: 0">${text}</punk-panel>`;
+    return `
+      ${['0', '1', '2', '3', '4', '5']
+        .map(
+          (gap) =>
+            `<punk-stack gap="${gap}" style="max-inline-size: 320px">${block(c.start)}${block(c.pause)}${block(c.stop)}</punk-stack>`,
+        )
+        .join('')}
+      ${['stretch', 'start', 'center', 'end']
+        .map(
+          (align) =>
+            `<punk-stack align="${align}" style="max-inline-size: 320px">${block(c.start, 120)}${block(c.body)}</punk-stack>`,
+        )
+        .join('')}
+      <punk-stack>${block(c.body)}<punk-stack gap="1">${block(c.pause)}${block(c.stop)}</punk-stack></punk-stack>
+    `;
+  },
+
+  cluster: (c) => {
+    const buttons = `<punk-button>${c.start}</punk-button><punk-button>${c.pause}</punk-button><punk-button variant="danger">${c.stop}</punk-button>`;
+    return `
+      ${['0', '1', '2', '3', '4', '5'].map((gap) => `<punk-cluster gap="${gap}">${buttons}</punk-cluster>`).join('')}
+      ${['start', 'center', 'end', 'between']
+        .map(
+          (justify) =>
+            `<punk-cluster justify="${justify}" style="max-inline-size: 640px">${buttons}</punk-cluster>`,
+        )
+        .join('')}
+      ${['start', 'center', 'end', 'baseline', 'stretch']
+        .map(
+          (align) =>
+            `<punk-cluster align="${align}"><punk-button size="lg">${c.start}</punk-button><punk-button size="sm">${c.pause}</punk-button><span>${c.footer || c.body}</span></punk-cluster>`,
+        )
+        .join('')}
+    `;
+  },
+
+  accordion: (c) => {
+    const items = (expanded: number) =>
+      [c.settings, c.pause, c.stop]
+        .map(
+          (heading, index) =>
+            `<punk-accordion-item heading="${heading}"${index === expanded ? ' expanded' : ''}${index === 2 ? ' disabled' : ''}><p style="margin: 0">${c.body}</p></punk-accordion-item>`,
+        )
+        .join('');
+    return `
+      <punk-accordion style="max-inline-size: 480px">${items(0)}</punk-accordion>
+      <punk-accordion multiple style="max-inline-size: 480px">
+        <punk-accordion-item heading="${c.settings}" expanded><p style="margin: 0">${c.body}</p></punk-accordion-item>
+        <punk-accordion-item heading="${c.pause}" expanded><p style="margin: 0">${c.body}</p></punk-accordion-item>
+        <punk-accordion-item heading="${c.stop}"><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      </punk-accordion>
+      <punk-accordion style="max-inline-size: 480px">${items(-1)}</punk-accordion>
+    `;
+  },
+
+  'accordion-item': (c) => `
+    <div class="stack" style="max-inline-size: 480px">
+      <punk-accordion-item heading="${c.settings}"><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      <punk-accordion-item heading="${c.settings}" expanded><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      <punk-accordion-item heading="${c.pause}" disabled><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      <punk-accordion-item heading="${c.pause}" expanded disabled><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      <punk-accordion-item heading="${c.stop}" level="2" expanded><span slot="icon">${gear}</span><p style="margin: 0">${c.body}</p></punk-accordion-item>
+      <punk-accordion-item expanded><span slot="heading">${c.settings} <b>${c.pause}</b></span><p style="margin: 0">${c.body}</p></punk-accordion-item>
+    </div>
+  `,
 };
 
 /** HTML for one component's states. */

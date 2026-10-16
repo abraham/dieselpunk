@@ -2,8 +2,11 @@ import { setStrings } from '@dieselpunk/core';
 import type {
   ButtonVariant,
   GridSelection,
+  PunkAccordion,
+  PunkAccordionItem,
   PunkActivateDetail,
   PunkButton,
+  PunkCluster,
   PunkIconButton,
   PunkItemStack,
   PunkMeter,
@@ -12,9 +15,14 @@ import type {
   PunkSelectionChangeDetail,
   PunkSlot,
   PunkSlotGrid,
+  PunkStack,
   PunkStatusLight,
+  PunkToggleDetail,
+  StackGap,
   StatusVariant,
 } from '@dieselpunk/core';
+import '@dieselpunk/core/accordion/register.js';
+import '@dieselpunk/core/cluster/register.js';
 import '@dieselpunk/core/icon-button/register.js';
 import '@dieselpunk/core/item-stack/register.js';
 import '@dieselpunk/core/meter/register.js';
@@ -22,6 +30,7 @@ import '@dieselpunk/core/progress-bar/register.js';
 import '@dieselpunk/core/recipe/register.js';
 import '@dieselpunk/core/slot/register.js';
 import '@dieselpunk/core/slot-grid/register.js';
+import '@dieselpunk/core/stack/register.js';
 import '@dieselpunk/core/status-light/register.js';
 
 setStrings({ loading: 'Laden' });
@@ -93,4 +102,30 @@ light.variant = status;
 light.textContent = 'Low fuel';
 
 document.body.append(iconButton, bar, loading, grid, recipe, meter, light);
+
+// The shell: layout primitives and an accordion, with a typed toggle event.
+const layout: PunkStack = document.createElement('punk-stack');
+const gap: StackGap = '3';
+layout.gap = gap;
+// @ts-expect-error The gaps are a closed union.
+layout.gap = '9';
+layout.gap = gap;
+const cluster: PunkCluster = document.createElement('punk-cluster');
+cluster.justify = 'between';
+cluster.append(loading.cloneNode());
+const accordion: PunkAccordion = document.createElement('punk-accordion');
+accordion.multiple = false;
+const section: PunkAccordionItem = document.createElement('punk-accordion-item');
+section.heading = 'Inputs';
+section.level = 3;
+section.textContent = 'Iron plates';
+section.addEventListener('punk-toggle', (event) => {
+  const detail: PunkToggleDetail = event.detail;
+  // @ts-expect-error The detail carries `expanded` only.
+  void detail.open;
+});
+accordion.append(section);
+layout.append(cluster, accordion);
+
+document.body.append(layout);
 document.documentElement.dataset['consumer'] = 'ready';

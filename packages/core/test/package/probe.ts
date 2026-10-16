@@ -14,6 +14,10 @@ export function probeConsumer() {
     'punk-recipe',
     'punk-meter',
     'punk-status-light',
+    'punk-stack',
+    'punk-cluster',
+    'punk-accordion',
+    'punk-accordion-item',
   ];
   const bar = document
     .querySelector('punk-progress-bar')
@@ -26,6 +30,13 @@ export function probeConsumer() {
     changed = event.detail.values;
   });
   grid?.querySelector('punk-slot')?.click();
+  // Clicking an accordion heading expands the item, and the event carries the new state.
+  const section = document.querySelector('punk-accordion-item');
+  let toggled: boolean | null = null;
+  section?.addEventListener('punk-toggle', (event) => {
+    toggled = event.detail.expanded;
+  });
+  section?.shadowRoot?.querySelector('button')?.click();
   return {
     defined: tags.filter((tag) => customElements.get(tag) !== undefined),
     upgraded: Boolean(
@@ -41,6 +52,7 @@ export function probeConsumer() {
     gridRole: grid?.getAttribute('role') ?? null,
     itemRole: grid?.querySelector('punk-slot')?.getAttribute('role') ?? null,
     changed: changed as string[] | null,
+    toggled: toggled as boolean | null,
   };
 }
 
