@@ -17,7 +17,7 @@ The library feels:
 
 ## 2. Goals
 
-1. Reusable Lit-based components for inventory, crafting, logistics, production, research, and settings screens.
+1. Reusable Lit-based components for inventory, crafting, logistics, production, research, and settings screens, and for the rest of a general-purpose application: navigation, forms, data, and feedback ([components.md](components.md)).
 2. The native behavior, accessibility, and composability expected of good Web Components: form participation, keyboard patterns from WAI-ARIA, focus that is always visible, and events that cross shadow roots.
 3. A convincing industrial game UI from CSS custom properties and the application's own assets, with no global setup.
 4. Plain HTML as a first-class target, typed imports for TypeScript, and documented use from React, Vue, and Svelte.
@@ -27,7 +27,7 @@ The library feels:
 
 - Pixel recreation of any game's screens, or any extracted game asset, logo, typeface, sound, or proprietary name.
 - Game logic: simulation, inventory rules, recipe calculation, drag-and-drop business rules, persistence. Components report what the user did and show what the application tells them.
-- A general-purpose design system for interfaces that are not industrial or game-like.
+- A second visual language. The library covers general-purpose interfaces, always in the industrial look; themes recolor it, they do not restyle it into another system.
 - Game-world graphics: maps, sprites, charts. Applications slot their own.
 - Framework wrapper packages, server-side rendering, and hydration.
 
@@ -54,7 +54,7 @@ Every spec applies these. Where a spec makes a trade-off, it says which principl
 
 ## 6. Component inventory
 
-32 tags in 29 registration entries. One entry registers a family; [package-contract.md §2](package-contract.md) has the rules.
+[components.md](components.md) is the catalog: every implemented and planned component, its purpose, and its status. 32 tags in 29 registration entries are implemented. One entry registers a family; [package-contract.md §2](package-contract.md) has the rules.
 
 | Family                 | Tags                                                                                                  | Behavior spec                                          |
 | ---------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
@@ -85,7 +85,7 @@ A developer installs `@dieselpunk/core`, imports the registration entries for wi
 
 These hold for every release from 1.0 on, not once:
 
-1. Every non-experimental component in §6 is implemented, documented in the workbench, and described in the manifest.
+1. Every component marked Implemented in [components.md](components.md) is documented in the workbench and described in the manifest.
 2. The manifest is valid, every public name has a description, and the API snapshot matches it.
 3. Axe reports no serious or critical violation in any gallery group, theme, density, content variant, or shipped locale.
 4. Keyboard behavior matches the WAI-ARIA pattern each component names, in every engine and in both directions.
@@ -101,13 +101,10 @@ These hold for every release from 1.0 on, not once:
 
 ## 10. Deliberately deferred
 
-Each is a candidate for a later spec. None may be added without one.
+Planned and rejected components are in [components.md](components.md) §3 to §5; none is built before its spec section exists. Beyond components:
 
-- A searchable combobox, until its accessibility behavior is specified and tested on its own.
 - An interaction-sound adapter: an optional package that maps existing component events to audio the application supplies, off until enabled from a user gesture, never the only carrier of information, with no audio bundled. Core needs no change for it.
-- A multiline text field, radio group, date and time inputs, file input, a menu component (the popover supplies the surface and focus behavior), a data table, a tree, a vertical slider, and drag-to-resize windows.
-- A window manager: z-order beyond the top layer, snapping, minimizing, and persisted positions.
-- Virtualized lists and per-subtree message locales.
+- A vertical slider, drag-to-resize windows, and per-subtree message locales.
 
 ## Gaps
 

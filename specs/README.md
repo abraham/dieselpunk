@@ -6,7 +6,8 @@ Living specifications for `@dieselpunk/core` and `@dieselpunk/locales`. Each one
 
 | Spec                                                   | Owns                                                                                                                   |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| [product.md](product.md)                               | Purpose, goals, non-goals, design principles, the component inventory, release criteria                                |
+| [product.md](product.md)                               | Purpose, goals, non-goals, design principles, release criteria                                                         |
+| [components.md](components.md)                         | The component catalog: every implemented and planned component, its purpose, and its status                            |
 | [toolchain.md](toolchain.md)                           | Repository layout, TypeScript and Node, builds, scripts, dependencies, CI                                              |
 | [package-contract.md](package-contract.md)             | Exports, registration, naming, events, development warnings, the manifest, the API snapshot, versioning                |
 | [visual-system.md](visual-system.md)                   | Tokens, themes, density, contrast, surfaces, focus, forced colors, motion, typography, responsive layout               |

@@ -87,7 +87,7 @@ Root scripts aggregate the workspaces (`--workspaces --if-present`) or delegate 
 
 ## 7. Dependencies
 
-- **Core runtime:** `lit` and `@lit/localize`. Nothing else, ever, without a change to [product.md §2](product.md).
+- **Core runtime:** `lit` and `@lit/localize`. Nothing else, ever, without a change to [product.md §2](product.md). Lit Labs packages, whose APIs may change, are never runtime dependencies of core: `@lit-labs/virtualizer` is a peer dependency of the planned optional package for virtualized containers only ([performance.md §4.1](performance.md)).
 - **Locales runtime:** none. `@dieselpunk/core` and `@lit/localize` are peer dependencies.
 - **Development:** Vitest with the Playwright provider, Playwright, `axe-core`, `@custom-elements-manifest/analyzer`, `@lit/localize-tools`, `size-limit` with its esbuild plugin, `publint`, `@arethetypeswrong/cli`, Storybook with `@wc-toolkit/storybook-helpers`, `@fontsource` fonts for the workbench, and the framework fixture dependencies.
 - **Updates:** Dependabot opens weekly grouped pull requests for npm and GitHub Actions. Packages that release together are one group (Storybook, `size-limit`, Vitest, linting, fonts, framework fixtures). Held back on purpose:
