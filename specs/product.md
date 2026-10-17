@@ -55,7 +55,7 @@ Every spec applies these. Where a spec makes a trade-off, it says which principl
 
 ## 6. Component inventory
 
-[components.md](components.md) is the catalog: every implemented and planned component, its purpose, and its status. 50 tags in 43 registration entries are implemented. One entry registers a family; [package-contract.md §2](package-contract.md) has the rules.
+[components.md](components.md) is the catalog: every implemented and planned component, its purpose, and its status. 51 tags in 44 registration entries are implemented. One entry registers a family; [package-contract.md §2](package-contract.md) has the rules.
 
 | Family                 | Tags                                                                                                                                                                                       | Behavior spec                                          |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
@@ -65,7 +65,7 @@ Every spec applies these. Where a spec makes a trade-off, it says which principl
 | Page navigation        | `punk-breadcrumb` + `punk-breadcrumb-item`, `punk-pagination`                                                                                                                              | [layout-and-actions.md](layout-and-actions.md)         |
 | Inventory              | `punk-slot`, `punk-item-stack`, `punk-slot-grid`, `punk-recipe`                                                                                                                            | [inventory-and-readouts.md](inventory-and-readouts.md) |
 | Readouts               | `punk-progress-bar`, `punk-meter`, `punk-status-light`, `punk-production-stat`, `punk-connection-row`                                                                                      | [inventory-and-readouts.md](inventory-and-readouts.md) |
-| Data display           | `punk-table`, `punk-alert`, `punk-badge`, `punk-spinner`                                                                                                                                   | [data-display.md](data-display.md)                     |
+| Data display           | `punk-table`, `punk-alert`, `punk-badge`, `punk-spinner`, `punk-kbd`                                                                                                                       | [data-display.md](data-display.md)                     |
 | Overlays and feedback  | `punk-tooltip`, `punk-popover`, `punk-window`, `punk-dialog`, `punk-toast-stack` + `punk-toast`, `punk-drawer`                                                                             | [overlays.md](overlays.md)                             |
 | Form controls          | `punk-checkbox`, `punk-switch`, `punk-slider`, `punk-text-field`, `punk-number-field`, `punk-select`, `punk-radio-group` + `punk-radio`, `punk-textarea`, `punk-combobox`, `punk-fieldset` | [forms.md](forms.md)                                   |
 

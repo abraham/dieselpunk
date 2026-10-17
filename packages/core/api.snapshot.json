@@ -570,6 +570,19 @@
         "--punk-slot-size": "= 40px"
       }
     },
+    "punk-kbd": {
+      "attributes": {},
+      "properties": {},
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "key": ""
+      },
+      "cssProperties": {}
+    },
     "punk-list": {
       "attributes": {
         "selection": "ListSelection = 'none'"

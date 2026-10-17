@@ -364,5 +364,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "4.5 kB"
+  },
+  {
+    "name": "punk-kbd",
+    "path": "dist/components/kbd/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "2.25 kB"
   }
 ]

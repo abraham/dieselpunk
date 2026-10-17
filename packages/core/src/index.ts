@@ -88,3 +88,4 @@ export type { DrawerPlacement } from './components/drawer/index.ts';
 export { PunkBreadcrumb, PunkBreadcrumbItem } from './components/breadcrumb/index.ts';
 export { PunkPagination } from './components/pagination/index.ts';
 export type { PunkPageChangeDetail } from './components/pagination/index.ts';
+export { PunkKbd } from './components/kbd/index.ts';

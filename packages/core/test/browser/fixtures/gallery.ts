@@ -46,6 +46,7 @@ import '../../../src/components/spinner/register.ts';
 import '../../../src/components/drawer/register.ts';
 import '../../../src/components/breadcrumb/register.ts';
 import '../../../src/components/pagination/register.ts';
+import '../../../src/components/kbd/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -1022,6 +1023,14 @@ const builders: Record<ComponentName, Builder> = {
       <punk-spinner></punk-spinner>
       <punk-spinner size="lg"></punk-spinner>
       <punk-spinner>${c.progress || c.body}</punk-spinner>
+    </div>
+  `,
+
+  kbd: (c) => `
+    <div class="stack">
+      <div class="row"><punk-kbd>Ctrl</punk-kbd> + <punk-kbd>S</punk-kbd> <punk-kbd>Esc</punk-kbd> <punk-kbd>↑</punk-kbd></div>
+      <p style="margin: 0; overflow-wrap: anywhere">${c.body} <punk-kbd>${c.start}</punk-kbd></p>
+      <punk-button>${c.settings} <punk-kbd>F2</punk-kbd></punk-button>
     </div>
   `,
 };

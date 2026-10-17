@@ -601,14 +601,16 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     );
   });
 
-  test('alert, badge, and spinner', { tag: at('data') }, async ({ page }) => {
+  test('alert, badge, spinner, and kbd', { tag: at('data') }, async ({ page }) => {
     await render(
       page,
       `<punk-alert variant="warning" heading="Belt blocked" dismissible>Clear it.</punk-alert>
        <punk-alert variant="danger" announce>Reactor offline</punk-alert>
        <punk-button>Alerts <punk-badge variant="warning">3</punk-badge></punk-button>
        <punk-spinner></punk-spinner>
-       <punk-spinner>Loading recipes</punk-spinner>`,
+       <punk-spinner>Loading recipes</punk-spinner>
+       <punk-button>Save <punk-kbd>Ctrl</punk-kbd> + <punk-kbd>S</punk-kbd></punk-button>
+       <p>Press <punk-kbd>Esc</punk-kbd> to close.</p>`,
     );
     await expect(page.locator('#case')).toMatchAriaSnapshot(`
       - text: Belt blocked Clear it.
@@ -617,6 +619,8 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
       - button "Alerts 3"
       - status: Loading
       - status: Loading recipes
+      - button "Save Ctrl + S"
+      - paragraph: Press Esc to close.
     `);
   });
 

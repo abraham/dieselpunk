@@ -1,7 +1,7 @@
 # Data Display
 
-**Scope:** components that present data and status in the flow of a page: the table, the alert, the badge, and the spinner.
-**Code:** `src/components/table/`, `alert/`, `badge/`, `spinner/`; `src/styles/status-shape.ts`, `close-button.ts`, `visually-hidden.ts`.
+**Scope:** components that present data and status in the flow of a page: the table, the alert, the badge, the spinner, and the keyboard key.
+**Code:** `src/components/table/`, `alert/`, `badge/`, `spinner/`, `kbd/`; `src/styles/status-shape.ts`, `close-button.ts`, `visually-hidden.ts`.
 
 ## 1. Table
 
@@ -40,14 +40,26 @@
 - It turns while shown, and stands still under reduced motion. It is one of the two animations allowed to run continuously ([performance.md §3](performance.md)).
 - For a busy button the button's own `loading` is used instead ([layout-and-actions.md §4](layout-and-actions.md)).
 
+## 5. Keyboard key
+
+`punk-kbd`: one keyboard key, drawn as a keycap, with the default slot for its name.
+
+- A native `<kbd>` in the shadow tree holds the slot. The host has no role, and its text joins the name of the element that holds it ("Save Ctrl + S").
+- **A shortcut is markup.** It is several keys with the application's own text between them (`+`, "then"), so it reads in order and is translated with the page. **Why** not a `keys` property: the separator and the key names are language, and the library's own strings are only its chrome ([localization.md](localization.md)).
+- **Key names are the application's text.** The docs ask for words a screen reader can say ("Up arrow") where a symbol alone would be skipped or read as punctuation.
+- The cap is the raised surface with a deeper bottom edge, and `text` in the mono face, so a key differs from a badge without color. Under forced colors the edges become a `CanvasText` border, still deeper at the bottom.
+- A long name wraps rather than overflow its container.
+- **Warning:** no text.
+
 ## Verification
 
 - `table.test.ts`: the native table and its name, the adopted styles and their zero specificity, the region only while overflowing, sorting by click and from script, `aria-sort` restoration, the direction shapes under forced colors, selection by row and select-all, `values`, and the warnings.
 - `alert.test.ts`: shapes under forced colors, roles with `announce` and their restoration, optional heading and actions, the localized dismiss button, cancelable dismissal.
 - `badge.test.ts`: shapes and their absence for `neutral`, contrast of text and shapes in every theme, the name of the holding element, wrapping, and the warning.
 - `spinner.test.ts` and `spinner.reduced-motion.test.ts`: the status text and its locale, slotted text, sizes, the ring stopping under reduced motion.
+- `kbd.test.ts`: the native `<kbd>`, no role, a shortcut in the name of its button, the mono face and deeper edge, text contrast on the cap in every theme, forced colors, wrapping, and the warning.
 - The `data` gallery group: axe, reflow, manifest, strings, and the visual matrix.
-- `aria.spec.ts`: a sorted table with a selected row, an announcing alert, a badge in a button, and a spinner, in the three engines.
+- `aria.spec.ts`: a sorted table with a selected row, an announcing alert, a badge in a button, a spinner, and keys in a button and in a paragraph, in the three engines.
 
 ## Gaps
 
