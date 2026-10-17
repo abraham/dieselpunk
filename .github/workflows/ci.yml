@@ -74,3 +74,16 @@ jobs:
           name: visual-report
           path: packages/core/test-results/
           retention-days: 7
+
+  # The one check to require in branch protection: it passes only when every job above passed.
+  ci-success:
+    if: always()
+    needs: [verify, browser, visual]
+    runs-on: ubuntu-latest
+    steps:
+      - if: >-
+          contains(needs.*.result, 'failure') ||
+          contains(needs.*.result, 'cancelled') ||
+          contains(needs.*.result, 'skipped')
+        run: exit 1
+      - run: echo "All CI jobs passed."

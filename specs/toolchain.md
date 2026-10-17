@@ -98,11 +98,12 @@ Root scripts aggregate the workspaces (`--workspaces --if-present`) or delegate 
 
 ## 8. Continuous integration
 
-`.github/workflows/ci.yml` has three jobs, all on Node 26, running in parallel.
+`.github/workflows/ci.yml` has three jobs, all on Node 26, running in parallel, and a fourth that reports them.
 
 1. **Checks** (`verify`): `npm ci`, install Chromium (for the consumer, framework, and smoke checks), then in order: `check:toolchain`, `format:check`, `lint`, `typecheck`, `build`, `check:contrast`, `check:strings`, `check:api`, `test:node` in every workspace, `check:package`, `check:size`, `check:consumer`, `check:frameworks`, `test:smoke`.
 2. **Browser suites** (`browser`): one job per engine (Chromium, Firefox, WebKit), each installing only its engine and running `test:browser` in every workspace with `PUNK_BROWSERS` set to that engine. The matrix does not fail fast, so one engine's failure does not hide another's.
 3. **Visual:** runs inside `mcr.microsoft.com/playwright:v<version>-noble`, where `<version>` is the installed `@playwright/test`, with `HOME=/root` (GitHub starts container jobs with a `$HOME` owned by another user, and Firefox then refuses to launch as root). It runs `test:visual` and uploads the report.
+4. **Result** (`ci-success`): runs after the other three whatever their outcome, and passes only if every one of them succeeded; a failed, cancelled, or skipped job fails it. It is the single status check that branch protection requires, so adding or splitting a job changes its `needs` list and not the repository settings.
 
 `.github/workflows/update-visual-baselines.yml` is manual: it deletes the baseline folders, renders them again on the pinned image, and uploads them as an artifact to commit.
 
