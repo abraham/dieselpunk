@@ -62,6 +62,7 @@ const sentinels: Record<string, string> = {
   'radio-group': '"punk-radio"',
   textarea: 'field-sizing',
   fieldset: 'It has no legend',
+  menu: '"punk-menu-item"',
   'toggle-group': 'not `<button>`',
   list: '"punk-list-item"',
   alert: 'part="actions"',
