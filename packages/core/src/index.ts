@@ -66,6 +66,8 @@ export type {
 export { PunkRadioGroup, PunkRadio } from './components/radio-group/index.ts';
 export type { RadioGroupOrientation } from './components/radio-group/index.ts';
 export { PunkTextarea } from './components/textarea/index.ts';
+export { PunkCombobox } from './components/combobox/index.ts';
+export type { ComboboxFilter } from './components/combobox/index.ts';
 export { PunkFieldset } from './components/fieldset/index.ts';
 export { PunkMenu, PunkMenuItem } from './components/menu/index.ts';
 export type { MenuItemType, MenuPlacement } from './components/menu/index.ts';

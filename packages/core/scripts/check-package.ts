@@ -61,6 +61,7 @@ const sentinels: Record<string, string> = {
   select: 'optgroup',
   'radio-group': '"punk-radio"',
   textarea: 'field-sizing',
+  combobox: 'aria-activedescendant',
   fieldset: 'It has no legend',
   menu: '"punk-menu-item"',
   'toggle-group': 'not `<button>`',

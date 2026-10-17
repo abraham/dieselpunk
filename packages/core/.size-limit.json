@@ -282,6 +282,13 @@
     "limit": "6.25 kB"
   },
   {
+    "name": "punk-combobox",
+    "path": "dist/components/combobox/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "8.75 kB"
+  },
+  {
     "name": "punk-fieldset",
     "path": "dist/components/fieldset/register.js",
     "ignore": ["lit"],

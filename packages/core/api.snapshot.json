@@ -226,6 +226,66 @@
         "--punk-cluster-gap": "= var(--punk-space-2)"
       }
     },
+    "punk-combobox": {
+      "attributes": {
+        "allow-custom": "boolean = false",
+        "aria-label": "string | null = null",
+        "disabled": "boolean = false",
+        "filter": "ComboboxFilter = 'contains'",
+        "label": "string = ''",
+        "name": "string = ''",
+        "placeholder": "string = ''",
+        "required": "boolean = false",
+        "value": "string = ''"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "allowCustom": "boolean = false",
+        "disabled": "boolean = false",
+        "filter": "ComboboxFilter = 'contains'",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "name": "string = ''",
+        "placeholder": "string = ''",
+        "required": "boolean = false",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "value": "string = ''",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "select": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "Event",
+        "input": ""
+      },
+      "slots": {
+        "hint": ""
+      },
+      "parts": {
+        "control": "",
+        "field": "",
+        "hint": "",
+        "label": "",
+        "listbox": "",
+        "message": "",
+        "option": "",
+        "toggle": ""
+      },
+      "cssProperties": {
+        "--punk-combobox-max-height": "= 240px"
+      }
+    },
     "punk-connection-row": {
       "attributes": {
         "direction": "ConnectionDirection = 'forward'",
