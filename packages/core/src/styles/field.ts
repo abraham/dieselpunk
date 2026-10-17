@@ -8,9 +8,9 @@ import { statusLensStyles, statusShapeStyles } from './status-shape.ts';
 //   .field > .label, .box > (.prefix, .control, .suffix), .hint, .message
 //
 // The boundary is `control-edge`, which meets 3:1 on every surface, because an empty field has no
-// text to identify it (SPEC-PHASE-2 §2 decision 1). Invalid is a `danger` frame plus a dashed
+// text to identify it (specs/visual-system.md §4.2). Invalid is a `danger` frame plus a dashed
 // boundary under forced colors, and the message is drawn in `text`: `danger` is below 3:1 on the
-// panel surfaces, so it is never used for text (SPEC-PHASE-3 §2 decision 7).
+// panel surfaces, so it is never used for text (specs/visual-system.md §4.2).
 export const fieldStyles = css`
   :host {
     display: block;

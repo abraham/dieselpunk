@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 // Loads every story and docs page in the built workbench and fails on a render error or on any
-// console warning or error. Run after `npm run build`. See SPEC-PHASE-1.md §12.8.
+// console warning or error. Run after `npm run build`. See specs/workbench.md §5.
 
 const root = fileURLToPath(new URL('../dist', import.meta.url));
 if (!existsSync(join(root, 'index.json'))) {
@@ -137,7 +137,7 @@ async function checkApplicationShell(): Promise<void> {
   await page.close();
 }
 
-// SPEC-PHASE-4 §12: every example, and the overview, fits at 375px and at 187px, as the responsive
+// specs/workbench.md §5: every example, and the overview, fits at 375px and at 187px, as the responsive
 // ones do.
 async function checkExamples(): Promise<void> {
   const stories = (prefix: string) =>

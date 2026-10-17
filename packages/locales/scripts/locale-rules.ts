@@ -4,7 +4,7 @@ import type { LocaleInfo } from '../src/locales.ts';
 import { parseXliff, placeholdersOf, textOf } from './xliff.ts';
 import type { XliffFile } from './xliff.ts';
 
-// SPEC-PHASE-4 §9.3: the rules a translation must meet, as pure functions so each can be tested on
+// specs/localization.md §6: the rules a translation must meet, as pure functions so each can be tested on
 // a fixture that breaks it.
 
 // eslint-disable-next-line no-control-regex -- matching control characters is the point

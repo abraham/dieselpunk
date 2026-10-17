@@ -1,4 +1,4 @@
-/** Every size entry needs a stated reason for its limit, and a reason needs an entry (SPEC-PHASE-4 §16). */
+/** Every size entry needs a stated reason for its limit, and a reason needs an entry (specs/performance.md §2). */
 export function checkReasons(names: string[], reasons: Record<string, string>): string[] {
   const problems: string[] = [];
   for (const name of names) {

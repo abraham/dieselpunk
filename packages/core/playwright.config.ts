@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // Visual baselines are only valid when rendered on the Linux CI image. `scripts/visual.ts` runs this
-// config inside that image locally, and CI runs it directly on ubuntu. See SPEC-PHASE-1.md §10.3.
+// config inside that image locally, and CI runs it directly on ubuntu. See specs/testing.md §6.
 
 const port = Number(process.env['PUNK_VISUAL_PORT'] ?? 4173);
 

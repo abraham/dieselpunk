@@ -3,7 +3,7 @@ import { shippedProblems } from './locale-rules.ts';
 
 /**
  * Fails when a translation is missing or empty, changes a placeholder, or has text that would leak
- * into the page, or when `locales` disagrees with the XLIFF files and with `Intl` (SPEC-PHASE-4 §9.3).
+ * into the page, or when `locales` disagrees with the XLIFF files and with `Intl` (specs/localization.md §6).
  */
 const { problems, count } = shippedProblems(fileURLToPath(new URL('..', import.meta.url)));
 if (problems.length > 0) {

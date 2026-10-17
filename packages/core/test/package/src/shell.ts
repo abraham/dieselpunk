@@ -16,7 +16,7 @@ import '@dieselpunk/core/switch/register.js';
 import '@dieselpunk/core/tabs/register.js';
 import '@dieselpunk/core/window/register.js';
 
-// The assembler of SPEC §8 and §19, built from the registration entries a developer would pick,
+// The assembler of specs/product.md §8, built from the registration entries a developer would pick,
 // with their own item art, and with every event of those components typed.
 
 const art = (shape: string) =>

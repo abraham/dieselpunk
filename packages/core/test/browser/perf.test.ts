@@ -8,7 +8,7 @@ import '../../src/components/slot/register.ts';
 import type { PunkItemStack } from '../../src/components/item-stack/index.ts';
 import type { PunkSlotGrid } from '../../src/components/slot-grid/index.ts';
 
-// SPEC §14.3 asks for a responsive 100-slot grid. Frame times on a CI runner are too noisy to
+// specs/performance.md §4 asks for a responsive 100-slot grid. Frame times on a CI runner are too noisy to
 // assert, so this checks what keeps a grid fast: how much work each interaction does.
 
 const ITEMS = 100;

@@ -24,7 +24,7 @@ export const MachinePanel: Story = {
         <h2>Dieselpunk UI</h2>
         <p>
           Industrial game-style Web Components. Use the toolbar to switch theme and density. This is
-          a machine panel composed from the six Phase 1 components.
+          a machine panel composed from the six foundation components.
         </p>
       </div>
 

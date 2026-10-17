@@ -16,7 +16,7 @@ export const Palettes: Story = {
     <p>
       Colors are read from the page's computed styles, so these are the values a consumer gets from
       <code>tokens.css</code> and <code>themes.css</code>. The ratios follow the contrast gate
-      (SPEC-PHASE-1 §6.8 and SPEC-PHASE-2 §6.3). <code>control-edge</code> is the boundary of a
+      (<code>specs/visual-system.md</code> §4.1). <code>control-edge</code> is the boundary of a
       control with no other visible content, such as an empty slot; buttons are identified by their
       text or icon. <code>auto</code> uses the industrial or industrial-light palette, following the
       system.

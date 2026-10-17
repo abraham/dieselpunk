@@ -1,7 +1,7 @@
 import { css } from 'lit';
 import { token } from '../tokens/token.ts';
 
-// Tokens never reference each other (see SPEC-PHASE-1 §6.4), so the gradient is composed here.
+// Tokens never reference each other (see specs/visual-system.md §1.4), so the gradient is composed here.
 const raisedFill = css`linear-gradient(
   to bottom,
   color-mix(

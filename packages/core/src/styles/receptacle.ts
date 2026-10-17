@@ -52,7 +52,7 @@ export const receptacleStyles = css`
       var(--_marker);
   }
 
-  /* Nothing else identifies an empty slot, so its boundary meets 3:1 (SPEC-PHASE-2 §6). */
+  /* Nothing else identifies an empty slot, so its boundary meets 3:1 (specs/visual-system.md §4.2). */
   .slot.empty {
     --_ring: ${token('color-control-edge')};
   }

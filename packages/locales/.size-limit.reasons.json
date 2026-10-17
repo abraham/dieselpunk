@@ -1,9 +1,9 @@
 {
-  "de": "Within the 1 kB budget of Phase 4 §11.1 for a locale module.",
-  "fr": "Within the 1 kB budget of Phase 4 §11.1 for a locale module.",
-  "es": "Within the 1 kB budget of Phase 4 §11.1 for a locale module.",
-  "ja": "Within the 1 kB budget of Phase 4 §11.1 for a locale module.",
-  "ar": "Within the 1 kB budget of Phase 4 §11.1 for a locale module.",
-  "loader": "Within the 1 kB budget of Phase 4 §11.1 for the loader, `mergeLocaleModules`, and the metadata; the five languages are left out by name.",
-  "document": "Within the 0.5 kB budget of Phase 4 §11.1 for `bindDocumentLocale`."
+  "de": "Within the 1 kB budget of specs/performance.md §2 for a locale module.",
+  "fr": "Within the 1 kB budget of specs/performance.md §2 for a locale module.",
+  "es": "Within the 1 kB budget of specs/performance.md §2 for a locale module.",
+  "ja": "Within the 1 kB budget of specs/performance.md §2 for a locale module.",
+  "ar": "Within the 1 kB budget of specs/performance.md §2 for a locale module.",
+  "loader": "Within the 1 kB budget of specs/performance.md §2 for the loader, `mergeLocaleModules`, and the metadata; the five languages are left out by name.",
+  "document": "Within the 0.5 kB budget of specs/performance.md §2 for `bindDocumentLocale`."
 }

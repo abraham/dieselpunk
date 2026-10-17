@@ -26,7 +26,7 @@ import '@dieselpunk/core/window/register.js';
 import { icon } from '../icons/icons.ts';
 import { item, itemLabels } from '../icons/items.ts';
 
-// SPEC §8 and §19: the assembler window, completed with a toolbar, tabs, a settings form, a
+// specs/product.md §8: the assembler window, completed with a toolbar, tabs, a settings form, a
 // confirmation dialog, a menu, and toasts. Everything is wired from the outside with the events
 // the components send, so this is also what an application's code looks like.
 

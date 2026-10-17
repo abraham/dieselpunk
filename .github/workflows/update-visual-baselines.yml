@@ -1,6 +1,6 @@
 name: Update visual baselines
 
-# Baselines are only valid when rendered on the Linux image CI checks with (SPEC-PHASE-1.md section 10.3).
+# Baselines are only valid when rendered on the Linux image CI checks with (specs/testing.md §6).
 # Run this manually, download the artifact, and commit it under packages/core/test/visual/__screenshots__.
 on:
   workflow_dispatch:

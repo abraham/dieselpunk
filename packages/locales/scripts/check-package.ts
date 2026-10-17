@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 
 // Checks the built package the way a consumer meets it: through `exports`, `sideEffects`, and a
-// bundler (SPEC-PHASE-4 §13.7). Run after `npm run build`.
+// bundler (specs/localization.md §5). Run after `npm run build`.
 
 const packageDir = fileURLToPath(new URL('..', import.meta.url));
 const repoDir = fileURLToPath(new URL('../../..', import.meta.url));

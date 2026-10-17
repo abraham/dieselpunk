@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
-// The matrix from SPEC-PHASE-1.md §10.3, run once for each gallery group (SPEC-PHASE-2.md §10.2).
+// The matrix from specs/testing.md §6, run once for each gallery group (specs/testing.md §3).
 // Chromium runs all of it. Firefox and WebKit run the default theme at compact density and
 // `industrial-light` at low density, at 100% only. The forced-colors project ignores themes, so
 // it runs one theme at 100% zoom. The baselines of a group are in a folder of that name.
@@ -22,7 +22,7 @@ const zooms = [
 const contents = ['short', 'long', 'unlabeled', 'rtl'] as const;
 const overlayContents = ['short', 'rtl'] as const; // The stat and the row take their words from the content, but a missing label is replaced by the
 // same fallback the short content has, so `unlabeled` would only repeat `short`: it is left out of
-// `production` to keep the group under 20 MB (SPEC-PHASE-4 §2 decision 16).
+// `production` to keep the group under 20 MB (specs/testing.md §6).
 const productionContents = ['short', 'long', 'rtl'] as const;
 
 const crossEngineCombos = new Set(['industrial/compact', 'industrial-light/low']);

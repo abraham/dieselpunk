@@ -13,7 +13,7 @@ export interface OverlayStack {
 }
 
 /**
- * The open overlays, in the order they opened. Escape closes only the topmost one (SPEC §9.1).
+ * The open overlays, in the order they opened. Escape closes only the topmost one (specs/overlays.md §2).
  * One capturing `keydown` listener exists on `target` while the stack is not empty, and none
  * otherwise, so closed overlays cost nothing.
  */

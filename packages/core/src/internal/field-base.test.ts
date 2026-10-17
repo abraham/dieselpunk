@@ -218,7 +218,7 @@ describe.each(tags)('%s as a field', (tag) => {
         const edge = toHex(getComputedStyle(box(element)).borderTopColor);
         const boundary = ratio(edge, behind);
         if (boundary < 3) problems.push(`${theme} boundary on ${surface}: ${boundary.toFixed(2)}`);
-        // `text-muted` is not required on panel-raised, which carries controls (SPEC-PHASE-1 §6).
+        // `text-muted` is not required on panel-raised, which carries controls (specs/visual-system.md §4.2).
         if (surface === 'panel-raised') continue;
         const hint = ratio(toHex(getComputedStyle(part(element, 'hint')).color), behind);
         if (hint < 4.5) problems.push(`${theme} hint on ${surface}: ${hint.toFixed(2)}`);

@@ -5,7 +5,7 @@ import { buildGallery, componentNames, galleryCss, openTooltips } from './fixtur
 import type { ComponentName } from './fixtures/gallery.ts';
 import * as pseudo from './fixtures/generated/en-x-pseudo.ts';
 
-// SPEC-PHASE-4 §13.5. The page is configured once, with the pseudo-locale `en-x-pseudo` that
+// specs/localization.md, Verification. The page is configured once, with the pseudo-locale `en-x-pseudo` that
 // `scripts/build-pseudo.ts` writes: every message wrapped in ⟦ ⟧. A word that a component writes
 // in itself instead of through `msg()` has no markers, and a component that is not drawn again on
 // a locale change keeps its English.
