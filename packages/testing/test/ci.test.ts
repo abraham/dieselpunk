@@ -5,14 +5,14 @@ import {
   countTests,
   grepFor,
   onlyProse,
-  parseSelection,
   planBrowser,
   planSmoke,
   planVisual,
-} from '../../../scripts/ci-matrix.ts';
-import type { Budget, BrowserBudget, Count } from '../../../scripts/ci-matrix.ts';
-import { themeNames } from '../src/tokens/themes.ts';
-import { groupNames } from './browser/fixtures/groups.ts';
+} from '../src/ci.ts';
+import type { Budget, BrowserBudget, Count } from '../src/ci.ts';
+
+// Group and theme names are made up: the caller passes its own.
+const order = ['foundation', 'inventory', 'shell', 'forms', 'overlays'];
 
 const browserBudget: BrowserBudget = {
   cap: 10,
@@ -87,8 +87,7 @@ test('the budget report lists the slowest jobs against their targets', () => {
   ]);
 });
 
-// The packing of the visual jobs (specs/ci.md §6). Theme names are made up except where the plan
-// checks them against the token source.
+// The packing of the visual jobs (specs/ci.md §6).
 
 const budget: Budget = {
   cap: 100,
@@ -116,6 +115,7 @@ test('Chromium runs one job per group, and the other projects pack whole groups'
       count('firefox', 'inventory', 'steel', 20),
       count('firefox', 'shell', 'steel', 30),
     ],
+    order,
     budget,
   );
   // Largest first: shell, then foundation fills that job to the cap, and inventory starts another.
@@ -133,6 +133,7 @@ test('Chromium runs one job per group, and the other projects pack whole groups'
 test('a project that fits one job runs every group there', () => {
   const jobs = planVisual(
     [count('firefox', 'foundation', 'steel', 10), count('firefox', 'shell', 'steel', 10)],
+    order,
     budget,
   );
   assert.deepEqual(
@@ -144,6 +145,7 @@ test('a project that fits one job runs every group there', () => {
 test('a group over the cap is split by theme', () => {
   const jobs = planVisual(
     [count('chromium', 'overlays', 'steel', 60), count('chromium', 'overlays', 'steel-light', 60)],
+    order,
     budget,
   );
   assert.deepEqual(
@@ -157,14 +159,14 @@ test('a group over the cap is split by theme', () => {
 
 test('a group and theme over the cap fails the plan', () => {
   assert.throws(
-    () => planVisual([count('chromium', 'overlays', 'steel', 101)], budget),
+    () => planVisual([count('chromium', 'overlays', 'steel', 101)], order, budget),
     /chromium · overlays · steel costs 101, over the cap of 100/,
   );
 });
 
 test('a project with no weight fails the plan', () => {
   assert.throws(
-    () => planVisual([count('webkit', 'shell', 'steel', 1)], budget),
+    () => planVisual([count('webkit', 'shell', 'steel', 1)], order, budget),
     /No weight for the visual project "webkit"/,
   );
 });
@@ -178,6 +180,7 @@ test('a selection plans only its groups and themes, and each job greps its theme
       count('chromium', 'forms', 'steel', 10),
       count('firefox', 'shell', 'brass', 10),
     ],
+    order,
     budget,
     { groups: ['shell'], themes: ['steel', 'steel-light'] },
   );
@@ -193,19 +196,10 @@ test('a selection plans only its groups and themes, and each job greps its theme
 
 test('a selection that matches no test fails the plan', () => {
   assert.throws(
-    () => planVisual([count('chromium', 'shell', 'steel', 1)], budget, { themes: ['brass'] }),
+    () =>
+      planVisual([count('chromium', 'shell', 'steel', 1)], order, budget, { themes: ['brass'] }),
     /No visual tests match/,
   );
-});
-
-test('a selection is read from a list, and unknown names fail', () => {
-  assert.deepEqual(parseSelection('', ''), {});
-  assert.deepEqual(parseSelection(`${groupNames[0]}, ${groupNames[1]}`, ` ${themeNames[0]} `), {
-    groups: [groupNames[0], groupNames[1]],
-    themes: [themeNames[0]],
-  });
-  assert.throws(() => parseSelection('attic'), /Unknown group: attic/);
-  assert.throws(() => parseSelection('', 'sepia'), /Unknown theme: sepia/);
 });
 
 test('a grep selects its groups and no others', () => {
@@ -232,25 +226,20 @@ const report = (tags: string[]) => ({
     },
   ],
 });
-const [group = ''] = groupNames;
-const [theme = ''] = themeNames;
+const group = 'shell';
+const theme = 'steel';
+const known = (tags: string[]) => countTests(report(tags), order, ['steel', 'brass']);
 
 test('tests are counted by project, group, and theme', () => {
-  assert.deepEqual(countTests(report([`@group:${group}`, `@theme:${theme}`, '@forced'])), [
+  assert.deepEqual(known([`@group:${group}`, `@theme:${theme}`, '@forced']), [
     count('chromium', group, theme, 1),
   ]);
 });
 
 test('a test without exactly one known group and theme fails the plan', () => {
-  assert.throws(() => countTests(report([`@theme:${theme}`])), /needs one group tag and one theme/);
-  assert.throws(
-    () => countTests(report(['@group:attic', `@theme:${theme}`])),
-    /unknown group "attic"/,
-  );
-  assert.throws(
-    () => countTests(report([`@group:${group}`, '@theme:sepia'])),
-    /unknown theme "sepia"/,
-  );
+  assert.throws(() => known([`@theme:${theme}`]), /needs one group tag and one theme/);
+  assert.throws(() => known(['@group:attic', `@theme:${theme}`]), /unknown group "attic"/);
+  assert.throws(() => known([`@group:${group}`, '@theme:sepia']), /unknown theme "sepia"/);
 });
 
 test('the smoke test gets a part for each full set of entries', () => {

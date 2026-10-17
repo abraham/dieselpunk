@@ -1,7 +1,7 @@
 # Performance
 
 **Scope:** what the library may cost, in bytes and at run time, and the deterministic gates that hold those costs.
-**Code:** `.size-limit.json` and `.size-limit.reasons.json` in each package, `packages/core/scripts/check-size-reasons.ts`, `test/browser/perf.test.ts`, `perf-shell.test.ts`, `perf-production.test.ts`, `perf-idle.test.ts`.
+**Code:** `.size-limit.json` and `.size-limit.reasons.json` in each package, each package's `scripts/check-size-reasons.ts` and `packages/testing/src/size.ts`, `test/browser/perf.test.ts`, `perf-shell.test.ts`, `perf-production.test.ts`, `perf-idle.test.ts`.
 
 ## 1. Principles
 

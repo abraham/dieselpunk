@@ -3,8 +3,8 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseXliff } from '../../locales/scripts/xliff.ts';
-import { LOCALE, pseudoXliff } from './pseudo.ts';
+import { LOCALE, pseudoXliff } from '@dieselpunk/testing/pseudo';
+import { parseXliff } from '@dieselpunk/testing/xliff';
 
 // Writes the pseudo-locale XLIFF from the source units of the locales package, and runs
 // `lit-localize build` on it into test/browser/fixtures/generated/, which is not committed.

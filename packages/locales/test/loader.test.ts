@@ -10,7 +10,7 @@ import {
   targetLocales,
 } from '../src/index.ts';
 import type { LocaleModule } from '../src/index.ts';
-import { parseXliff } from '../scripts/xliff.ts';
+import { parseXliff } from '@dieselpunk/testing/xliff';
 
 const xliff = (code: string) =>
   parseXliff(readFileSync(fileURLToPath(new URL(`../xliff/${code}.xlf`, import.meta.url)), 'utf8'));

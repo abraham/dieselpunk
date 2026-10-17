@@ -1,20 +1,12 @@
-import { execFileSync } from 'node:child_process';
-import {
-  cpSync,
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
-import { createServer } from 'node:http';
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { extname, join } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { chromium } from 'playwright';
 import type { Browser } from 'playwright';
+import { installProject, pack, run, watchPage } from '@dieselpunk/testing/consumer';
+import { serveStatic } from '@dieselpunk/testing/server';
 
 // Installs the packed tarball into throwaway projects, the way a consumer would, then type-checks
 // the fixture under the oldest and newest supported TypeScript and runs it in a browser.
@@ -107,9 +99,6 @@ const allTags = [
   ]),
 ];
 
-const run = (command: string, args: string[], cwd: string): string =>
-  execFileSync(command, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-
 const work = mkdtempSync(join(tmpdir(), 'punk-consumer-'));
 const problems: string[] = [];
 
@@ -118,23 +107,16 @@ function install(
   tarballs: { core: string; locales: string },
   typescript: string,
 ): void {
-  mkdirSync(project, { recursive: true });
-  writeFileSync(
-    join(project, 'package.json'),
-    JSON.stringify({
-      name: 'consumer',
-      private: true,
-      type: 'module',
-      dependencies: {
-        '@dieselpunk/core': `file:${tarballs.core}`,
-        '@dieselpunk/locales': `file:${tarballs.locales}`,
-        // The consumer's own copy, which core and the translations must share (§13.7).
-        '@lit/localize': corePackage.dependencies['@lit/localize'],
-      },
-      devDependencies: { typescript },
-    }),
+  installProject(
+    project,
+    {
+      '@dieselpunk/core': `file:${tarballs.core}`,
+      '@dieselpunk/locales': `file:${tarballs.locales}`,
+      // The consumer's own copy, which core and the translations must share (§13.7).
+      '@lit/localize': corePackage.dependencies['@lit/localize'] ?? '',
+    },
+    { typescript },
   );
-  run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], project);
   cpSync(join(fixtureDir, 'src'), join(project, 'src'), { recursive: true });
   cpSync(join(fixtureDir, 'tsconfig.json'), join(project, 'tsconfig.json'));
 }
@@ -150,12 +132,6 @@ function typecheck(project: string, label: string): void {
   }
 }
 
-const contentTypes: Record<string, string> = {
-  '.html': 'text/html',
-  '.js': 'text/javascript',
-  '.css': 'text/css',
-};
-
 async function probeScript(): Promise<string> {
   const result = await build({
     entryPoints: [join(fixtureDir, 'probe.ts')],
@@ -170,11 +146,7 @@ async function probeScript(): Promise<string> {
 // specs/product.md §8: the assembler built from the registration entries, driven with real input.
 async function checkShell(browser: Browser, port: number): Promise<void> {
   const tab = await browser.newPage();
-  const messages: string[] = [];
-  tab.on('console', (message) => {
-    if (['error', 'warning'].includes(message.type())) messages.push(message.text());
-  });
-  tab.on('pageerror', (error) => messages.push(error.message));
+  const messages = watchPage(tab);
   await tab.goto(`http://localhost:${port}/shell.html`);
   await tab.waitForSelector('html[data-shell="ready"]');
   // This script is type-checked without DOM types, so what runs in the page is a string.
@@ -254,11 +226,7 @@ async function checkShell(browser: Browser, port: number): Promise<void> {
 // `@dieselpunk/locales`, set from the consumer's own Lit Localize.
 async function checkProduction(browser: Browser, port: number): Promise<void> {
   const tab = await browser.newPage();
-  const messages: string[] = [];
-  tab.on('console', (message) => {
-    if (['error', 'warning'].includes(message.type())) messages.push(message.text());
-  });
-  tab.on('pageerror', (error) => messages.push(error.message));
+  const messages = watchPage(tab);
   await tab.goto(`http://localhost:${port}/production.html`);
   await tab.waitForSelector('html[data-production="ready"]');
   // This script is type-checked without DOM types, so what runs in the page is a string.
@@ -327,27 +295,14 @@ async function checkProduction(browser: Browser, port: number): Promise<void> {
 
 async function checkPages(outDir: string): Promise<void> {
   const probe = await probeScript();
-  const server = createServer((request, response) => {
-    const file = join(outDir, new URL(request.url ?? '/', 'http://localhost').pathname);
-    if (!existsSync(file)) {
-      response.writeHead(404).end();
-      return;
-    }
-    response.writeHead(200, { 'content-type': contentTypes[extname(file)] ?? 'text/plain' });
-    response.end(readFileSync(file));
-  }).listen(0);
-  const port = (server.address() as { port: number }).port;
+  const { server, port } = await serveStatic(outDir);
   const browser = await chromium.launch();
   try {
     await checkShell(browser, port);
     await checkProduction(browser, port);
     for (const page of ['plain', 'app']) {
       const tab = await browser.newPage();
-      const messages: string[] = [];
-      tab.on('console', (message) => {
-        if (['error', 'warning'].includes(message.type())) messages.push(message.text());
-      });
-      tab.on('pageerror', (error) => messages.push(error.message));
+      const messages = watchPage(tab);
       await tab.goto(`http://localhost:${port}/${page}.html`);
       await tab.waitForTimeout(500);
       await tab.addScriptTag({ content: probe });
@@ -412,13 +367,7 @@ async function checkPages(outDir: string): Promise<void> {
 }
 
 try {
-  const pack = (directory: string): string => {
-    const [packed] = JSON.parse(
-      run('npm', ['pack', '--json', '--pack-destination', work], directory),
-    ) as Array<{ filename: string }>;
-    return join(work, packed?.filename ?? '');
-  };
-  const tarballs = { core: pack(packageDir), locales: pack(localesDir) };
+  const tarballs = { core: pack(packageDir, work), locales: pack(localesDir, work) };
 
   console.log('Type-checking the consumer:');
   const oldest = join(work, 'oldest');

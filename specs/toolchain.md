@@ -10,7 +10,7 @@ package.json              private workspace root: engines.node >=26, the one Typ
 .nvmrc                    26
 tsconfig.base.json        shared compiler options
 tsconfig.scripts.json     Node-run code (§3)
-scripts/check-toolchain.ts
+scripts/                  the repository's glue: check-toolchain, ci-matrix, merge-baselines
 specs/                    these specifications
 packages/
   core/                   @dieselpunk/core
@@ -26,12 +26,15 @@ packages/
   locales/                @dieselpunk/locales
     xliff/                committed translations
     src/                  loader, metadata, document binding, per-locale re-exports
-    scripts/              check-strings, check-locales, and the XLIFF reader
+    scripts/              check-strings, check-locales, and the message and locale rules
+  testing/                @dieselpunk/testing (private): the shared test tooling (testing.md §10)
+    src/                  one module per export, run from source
+    test/                 Node tests of the tooling itself
 apps/
   storybook/              the workbench (private)
 ```
 
-A component's tests live beside it. Tests that span components (the gallery suites, form participation, focus and modality, performance) live in `packages/core/test/browser/`. Pure-logic tests live in `packages/core/test/*.test.ts` and run under Node.
+A component's tests live beside it. Tests that span components (the gallery suites, form participation, focus and modality, performance) live in `packages/core/test/browser/`. Pure-logic tests live in `packages/core/test/*.test.ts` and run under Node. The machinery tests run on, shared by more than one workspace, lives in `packages/testing` and holds no test of another package.
 
 ## 2. Language and runtime
 
@@ -50,10 +53,10 @@ A component's tests live beside it. Tests that span components (the gallery suit
 
 ## 3. Two compilation contexts
 
-| Context                  | Files                                                                                                                 | Run by                                                      | Syntax                              |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------- |
-| Library and browser code | `src/**` (except the Node-run modules below), `test/browser/**`, the workbench                                        | `tsc` for `dist/`; Vite and esbuild for tests and Storybook | Any TypeScript, decorators included |
-| Node-run code            | `scripts/**`, `test/*.test.ts`, config files, the token data modules, and every pure logic module a Node test imports | Node 26 directly, by type stripping                         | Erasable syntax only                |
+| Context                  | Files                                                                                                                                                               | Run by                                                      | Syntax                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------- |
+| Library and browser code | `src/**` (except the Node-run modules below), `test/browser/**`, `packages/testing/src/browser.ts`, the workbench                                                   | `tsc` for `dist/`; Vite and esbuild for tests and Storybook | Any TypeScript, decorators included |
+| Node-run code            | `scripts/**`, `test/*.test.ts`, config files, the token data modules, every pure logic module a Node test imports, and the other modules of `packages/testing/src/` | Node 26 directly, by type stripping                         | Erasable syntax only                |
 
 Rules for Node-run code, enforced by `tsconfig.scripts.json`:
 
@@ -77,11 +80,12 @@ The root `build` runs every workspace in dependency order. Generated files (`dis
 
 ## 5. Scripts
 
-Root scripts aggregate the workspaces (`--workspaces --if-present`) or delegate to the one that owns the check. The full list, and what each gate checks, is in [testing.md §9](testing.md). A new check is a TypeScript file in the owning workspace's `scripts/`, a `check:<name>` script there, a root alias, and a CI step.
+Root scripts aggregate the workspaces (`--workspaces --if-present`) or delegate to the one that owns the check. The full list, and what each gate checks, is in [testing.md §9](testing.md). A new check is a TypeScript file in the owning workspace's `scripts/`, a `check:<name>` script there, a root alias, and a CI step; machinery that more than one workspace needs goes in `packages/testing`, with a thin entry in each ([testing.md §10](testing.md)).
 
 ## 6. Lint and format
 
 - ESLint flat config with `typescript-eslint`, `eslint-plugin-lit`, and `eslint-plugin-wc`. A rule is turned off only with a comment that says why.
+- `local/workspace-imports`, defined in `eslint.config.js`, keeps imports inside their workspace ([testing.md §10](testing.md)).
 - Prettier with `singleQuote` and `printWidth: 100`, over code and these specs.
 - `npm run format:check` and `npm run lint` are CI gates.
 
@@ -105,7 +109,7 @@ The workflows, their jobs, how they split the suites, and their time budgets are
 - `check:toolchain`: Node major and a single TypeScript 6.0.x.
 - `typecheck`: both compilation contexts, all workspaces.
 - `lint`, `format:check`.
-- `test/visual-ci.test.ts`: both workflows pin the image of the installed Playwright.
+- `packages/testing/test/visual-ci.test.ts`: both workflows pin the image of the installed Playwright.
 - Every script is exercised in CI by running it; none has a separate build.
 
 ## Gaps

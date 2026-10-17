@@ -2,7 +2,8 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { messageCallProblems } from './source-check.ts';
-import { messageProblems, parseXliff } from './xliff.ts';
+import { parseXliff } from '@dieselpunk/testing/xliff';
+import { messageProblems } from './messages.ts';
 
 /**
  * Runs `lit-localize extract` and fails if it would change any committed XLIFF file, or if a

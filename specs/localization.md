@@ -1,7 +1,7 @@
 # Localization
 
 **Scope:** the words components render, how they change language at run time, the translations package and its gates, and how numbers, units, and writing direction follow the page.
-**Code:** `packages/core/src/internal/localize.ts`, `locale-watch.ts`, `src/utilities/locale.ts`, `number-format.ts`, `scripts/pseudo.ts`, `build-pseudo.ts`; `packages/locales/` (all of it).
+**Code:** `packages/core/src/internal/localize.ts`, `locale-watch.ts`, `src/utilities/locale.ts`, `number-format.ts`, `scripts/build-pseudo.ts`; `packages/testing/src/pseudo.ts`, `xliff.ts`; `packages/locales/` (all of it).
 
 ## 1. Model
 

@@ -7,7 +7,7 @@ import {
   shippedProblems,
   translationProblems,
 } from '../scripts/locale-rules.ts';
-import { parseXliff } from '../scripts/xliff.ts';
+import { parseXliff } from '@dieselpunk/testing/xliff';
 import type { LocaleInfo } from '../src/locales.ts';
 
 const unit = (id: string, source: string, target?: string) =>

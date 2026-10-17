@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { interactionTolerance } from '@dieselpunk/testing/playwright';
 import { autoLightThemeName, defaultThemeName, themeNames } from '../../src/tokens/themes.ts';
 import { galleryGroups, groupNames } from '../browser/fixtures/groups.ts';
 import type { GalleryGroup } from '../browser/fixtures/groups.ts';
@@ -316,8 +317,7 @@ async function shotAround(
   // A hover or a pressed look moves an edge colour by a few steps, so the default tolerance of the
   // matrix (a fifth of a colour step, 0.2% of the picture) would let it go.
   await expect(page).toHaveScreenshot(file, {
-    threshold: 0.02,
-    maxDiffPixelRatio: 0.0005,
+    ...interactionTolerance,
     clip: { x, y, width: box.x + box.width + right - x, height: box.y + box.height + bottom - y },
   });
 }

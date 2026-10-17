@@ -1,7 +1,7 @@
 # Continuous Integration
 
 **Scope:** the GitHub Actions workflows that check, render, and publish the repository: their jobs, how work is split and parallelized, how setup is shared, what decides which jobs run, and the time budgets that keep it fast as the library grows.
-**Code:** `.github/workflows/ci.yml`, `.github/workflows/visual.yml`, `.github/workflows/update-visual-baselines.yml`, `.github/workflows/docs.yml`, `.github/actions/setup/`, `scripts/ci-matrix.ts`, `scripts/merge-baselines.ts`, `packages/core/scripts/browser-part.ts`, `packages/core/test/browser/fixtures/groups.ts`, `packages/core/test/visual/tags.ts`.
+**Code:** `.github/workflows/ci.yml`, `.github/workflows/visual.yml`, `.github/workflows/update-visual-baselines.yml`, `.github/workflows/docs.yml`, `.github/actions/setup/`, `scripts/ci-matrix.ts`, `scripts/merge-baselines.ts`, `packages/testing/src/ci.ts`, `vitest.ts`, `playwright.ts`, `packages/core/test/browser/fixtures/groups.ts`, `packages/core/test/visual/tags.ts`.
 
 ## 1. Goals
 
@@ -126,8 +126,8 @@ The packing cap of §6 is set so a packed job meets its target. The `plan` job w
 ## Verification
 
 - `ci-success` is the required check on `main`.
-- A Node test covers `scripts/ci-matrix.ts`: packing, the split by theme, the oversized-unit failure, selections, change detection, and the budget report. Another covers `scripts/merge-baselines.ts`: what a selection replaces and keeps.
-- `test/visual-ci.test.ts` fails if any workflow pins a Playwright image other than the installed version.
+- `packages/testing/test/ci.test.ts` covers the planning that `scripts/ci-matrix.ts` runs: packing, the split by theme, the oversized-unit failure, selections, change detection, and the budget report. `merge-baselines.test.ts` covers what a selection replaces and keeps.
+- `packages/testing/test/visual-ci.test.ts` fails if any workflow pins a Playwright image other than the installed version.
 - The budgets of §9 are reported, not asserted; a missed target is visible in the `plan` summary.
 
 ## Gaps

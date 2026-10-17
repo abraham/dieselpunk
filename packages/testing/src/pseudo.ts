@@ -1,8 +1,9 @@
-import { textOf } from '../../locales/scripts/xliff.ts';
-import type { XliffUnit } from '../../locales/scripts/xliff.ts';
+import { textOf } from './xliff.ts';
+import type { XliffUnit } from './xliff.ts';
 
-// The test-only pseudo-locale of specs/localization.md, Verification: each source wrapped in markers and made about
-// 40% longer, with its placeholders as they were, so a test can tell translated text from a literal.
+// The test-only pseudo-locale of specs/localization.md, Verification: each source wrapped in markers
+// and made about 40% longer, with its placeholders as they were, so a test can tell translated text
+// from a literal.
 
 export const OPEN = '⟦';
 export const CLOSE = '⟧';

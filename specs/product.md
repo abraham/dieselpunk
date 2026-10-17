@@ -1,7 +1,7 @@
 # Product
 
 **Scope:** what Industrial UI is, who it is for, the principles every other spec follows, and what 1.0 means.
-**Packages:** `@dieselpunk/core`, `@dieselpunk/locales`. The workbench in `apps/storybook` is private.
+**Packages:** `@dieselpunk/core`, `@dieselpunk/locales`. The workbench in `apps/storybook` and the test tooling in `packages/testing` are private.
 
 ## 1. Purpose
 
@@ -51,6 +51,7 @@ Every spec applies these. Where a spec makes a trade-off, it says which principl
 | `@dieselpunk/core`    | The components, their class and registration entries, `tokens.css`, `themes.css`, and `custom-elements.json`. English is its source locale. | [package-contract.md](package-contract.md) |
 | `@dieselpunk/locales` | Translations of core's messages as Lit Localize runtime modules, a loader, a merger, and `bindDocumentLocale`.                              | [localization.md §5](localization.md)      |
 | `apps/storybook`      | The documentation workbench, published at https://dieselpunk.dev. Private; consumes the built packages through their public exports.        | [workbench.md](workbench.md)               |
+| `@dieselpunk/testing` | The tooling the other workspaces' tests and gates run on. Private and never published.                                                      | [testing.md §10](testing.md)               |
 
 ## 6. Component inventory
 
