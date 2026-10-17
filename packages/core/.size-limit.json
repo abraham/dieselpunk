@@ -350,5 +350,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "6.25 kB"
+  },
+  {
+    "name": "punk-breadcrumb (both tags)",
+    "path": "dist/components/breadcrumb/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "4 kB"
   }
 ]

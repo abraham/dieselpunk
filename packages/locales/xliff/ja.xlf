@@ -132,6 +132,16 @@
   <target>接続を削除：<x id="0" equiv-text="${source}"/>、<x id="1" equiv-text="${destination}"/></target>
   <note from="lit-localize">The name of the button that removes a connection, with the text of its two nodes.</note>
 </trans-unit>
+<trans-unit id="showPath">
+  <source>Show full path</source>
+  <target>パス全体を表示</target>
+  <note from="lit-localize">The name of the button that shows the hidden middle steps of a breadcrumb trail.</note>
+</trans-unit>
+<trans-unit id="breadcrumb">
+  <source>Breadcrumb</source>
+  <target>パンくずリスト</target>
+  <note from="lit-localize">The name of the landmark around a breadcrumb trail.</note>
+</trans-unit>
 </body>
 </file>
 </xliff>

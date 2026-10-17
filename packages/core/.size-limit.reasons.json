@@ -46,5 +46,6 @@
   "punk-alert": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-badge": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-spinner": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
-  "punk-drawer": "Over 5 kB: the shared modal surface, controller, and close button are most of it, as they are of the window, and the drawer adds its four edges and the slide."
+  "punk-drawer": "Over 5 kB: the shared modal surface, controller, and close button are most of it, as they are of the window, and the drawer adds its four edges and the slide.",
+  "punk-breadcrumb (both tags)": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB."
 }

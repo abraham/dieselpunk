@@ -114,6 +114,48 @@
       },
       "cssProperties": {}
     },
+    "punk-breadcrumb": {
+      "attributes": {
+        "label": "string = ''",
+        "max-items": "number | undefined"
+      },
+      "properties": {
+        "label": "string = ''",
+        "maxItems": "number | undefined"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": "",
+        "rest": ""
+      },
+      "parts": {
+        "list": "",
+        "more": "",
+        "nav": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-breadcrumb-item": {
+      "attributes": {
+        "current": "boolean = false",
+        "href": "string = ''"
+      },
+      "properties": {
+        "current": "boolean = false",
+        "href": "string = ''"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "link": "",
+        "separator": ""
+      },
+      "cssProperties": {}
+    },
     "punk-button": {
       "attributes": {
         "aria-label": "string | null = null",

@@ -85,3 +85,4 @@ export { PunkSpinner } from './components/spinner/index.ts';
 export type { SpinnerSize } from './components/spinner/index.ts';
 export { PunkDrawer } from './components/drawer/index.ts';
 export type { DrawerPlacement } from './components/drawer/index.ts';
+export { PunkBreadcrumb, PunkBreadcrumbItem } from './components/breadcrumb/index.ts';

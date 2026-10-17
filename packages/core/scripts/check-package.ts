@@ -71,6 +71,7 @@ const sentinels: Record<string, string> = {
   badge: '"punk-badge"',
   spinner: '"punk-spinner"',
   drawer: 'punk-drawer-in',
+  breadcrumb: '"punk-breadcrumb-item"',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };

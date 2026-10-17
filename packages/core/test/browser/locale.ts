@@ -24,6 +24,8 @@ const german = {
     craftable: str`${0}× herstellbar`,
     notifications: 'Benachrichtigungen',
     dismiss: 'Schließen',
+    breadcrumb: 'Navigationspfad',
+    showPath: 'Vollständigen Pfad anzeigen',
   },
 };
 
