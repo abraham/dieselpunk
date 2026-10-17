@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 // The matrix from SPEC-PHASE-1.md §10.3, run once for each gallery group (SPEC-PHASE-2.md §10.2).
 // Chromium runs all of it. Firefox and WebKit run the default theme at compact density and
@@ -242,6 +242,134 @@ test.describe('interaction states', () => {
         await expect(gallery(page)).toHaveScreenshot(['forms', `interaction-${tag}-focus.png`]);
       });
     }
+  });
+});
+
+// The other interactive components, each hovered, focused with the keyboard, and pressed, with real
+// input. `from` is the folder of the group the component belongs to; an overlay is captured as the
+// page, since it is in the top layer and not in the gallery.
+interface Capture {
+  name: string;
+  from: 'foundation' | 'inventory' | 'shell' | 'overlays';
+  query?: Record<string, string>;
+  /** The element that is hovered, focused, and pressed. */
+  target: (page: Page) => Locator;
+  states?: readonly ('hover' | 'focus' | 'active')[];
+}
+
+const first = (selector: string) => (page: Page) => page.locator(selector).first();
+const captures: Capture[] = [
+  {
+    name: 'icon-button',
+    from: 'foundation',
+    target: first('punk-icon-button:not([disabled]):not([loading])'),
+  },
+  { name: 'item-stack', from: 'inventory', target: first('punk-item-stack:not([disabled])') },
+  { name: 'recipe', from: 'inventory', target: first('punk-recipe[available]:not([disabled])') },
+  {
+    name: 'tab',
+    from: 'shell',
+    query: { component: 'tabs' },
+    // A selected tab is already inset, so hover and pressed would not show on it.
+    target: first('punk-tab:not([selected]):not([disabled])'),
+  },
+  {
+    name: 'accordion-item',
+    from: 'shell',
+    // The first item is collapsed, so the centre of the host is the header and not the panel.
+    target: (page) => page.locator('punk-accordion-item').first().locator('[part="trigger"]'),
+  },
+  {
+    name: 'window-close',
+    from: 'overlays',
+    query: { group: 'overlays', content: 'short', component: 'window' },
+    target: (page) => page.locator('punk-window [part="close-button"]'),
+  },
+  {
+    name: 'toast-dismiss',
+    from: 'overlays',
+    query: { group: 'overlays', content: 'short', component: 'toast-stack' },
+    target: (page) => page.locator('punk-toast').first().locator('[part="dismiss-button"]'),
+  },
+];
+
+/** A picture of the target and a margin, so that a change of a pixel or two is a visible part of it. */
+async function shotAround(
+  page: Page,
+  file: string[],
+  target: Locator,
+  margin: { top?: number; right?: number; bottom?: number; left?: number } = {},
+): Promise<void> {
+  const box = await target.boundingBox();
+  if (!box) throw new Error(`${file.join('/')}: the target has no box`);
+  const { top = 12, right = 12, bottom = 12, left = 12 } = margin;
+  const x = Math.max(0, box.x - left);
+  const y = Math.max(0, box.y - top);
+  // A hover or a pressed look moves an edge colour by a few steps, so the default tolerance of the
+  // matrix (a fifth of a colour step, 0.2% of the picture) would let it go.
+  await expect(page).toHaveScreenshot(file, {
+    threshold: 0.02,
+    maxDiffPixelRatio: 0.0005,
+    clip: { x, y, width: box.x + box.width + right - x, height: box.y + box.height + bottom - y },
+  });
+}
+
+test.describe('interaction states of the remaining components', () => {
+  for (const capture of captures) {
+    const component = capture.query?.['component'] ?? capture.name;
+    const query = { theme: 'industrial', density: 'compact', component, ...capture.query };
+
+    for (const state of capture.states ?? (['hover', 'focus', 'active'] as const)) {
+      test(`${capture.name} ${state}`, async ({ page }) => {
+        await open(page, query);
+        const target = capture.target(page);
+        const file = [capture.from, `interaction-${capture.name}-${state}.png`];
+        if (state === 'focus') {
+          // A keypress marks keyboard modality, so the focus that follows matches :focus-visible.
+          await page.keyboard.press('Tab');
+          await target.focus();
+          await expect(target).toBeFocused();
+          await shotAround(page, file, target);
+          return;
+        }
+        await target.hover();
+        if (state === 'active') await page.mouse.down();
+        await shotAround(page, file, target);
+        if (state === 'active') await page.mouse.up();
+      });
+    }
+  }
+
+  // A tooltip opens at once for keyboard focus on its anchor.
+  test('tooltip opens for keyboard focus', async ({ page }) => {
+    await open(page, { theme: 'industrial', density: 'compact', component: 'tooltip' });
+    const anchor = page.locator('#gallery-anchor');
+    await page.keyboard.press('Tab');
+    await anchor.focus();
+    await expect(anchor).toBeFocused();
+    await expect(page.locator('punk-tooltip[for="gallery-anchor"]')).toHaveAttribute('open', '');
+    await shotAround(page, ['foundation', 'interaction-tooltip-focus.png'], anchor, {
+      bottom: 80,
+      left: 60,
+      right: 60,
+    });
+  });
+
+  // Hovering an item of a grid, and moving along a toolbar with the arrow keys.
+  test('slot grid hover', async ({ page }) => {
+    await open(page, { theme: 'industrial', density: 'compact', component: 'slot-grid' });
+    const grid = page.locator('punk-slot-grid').first();
+    await grid.locator('punk-slot[value="s2"]').hover();
+    await shotAround(page, ['inventory', 'interaction-slot-grid-hover.png'], grid);
+  });
+
+  test('toolbar roving focus on the second item', async ({ page }) => {
+    await open(page, { theme: 'industrial', density: 'compact', component: 'toolbar' });
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('ArrowRight');
+    const toolbar = page.locator('punk-toolbar').first();
+    await expect(toolbar.locator('punk-button').nth(1)).toBeFocused();
+    await shotAround(page, ['shell', 'interaction-toolbar-focus.png'], toolbar);
   });
 });
 
