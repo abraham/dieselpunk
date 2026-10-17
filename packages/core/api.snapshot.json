@@ -1344,6 +1344,30 @@
       },
       "cssProperties": {}
     },
+    "punk-toggle-group": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "disabled": "boolean = false",
+        "selection": "ToggleGroupSelection = 'single'"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "disabled": "boolean = false",
+        "selection": "ToggleGroupSelection = 'single'",
+        "values": "string[]"
+      },
+      "methods": {},
+      "events": {
+        "punk-selection-change": ""
+      },
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "group": ""
+      },
+      "cssProperties": {}
+    },
     "punk-toolbar": {
       "attributes": {
         "aria-label": "string | null = null",

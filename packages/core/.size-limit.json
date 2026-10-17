@@ -289,6 +289,13 @@
     "limit": "3.5 kB"
   },
   {
+    "name": "punk-toggle-group",
+    "path": "dist/components/toggle-group/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "4.5 kB"
+  },
+  {
     "name": "punk-alert",
     "path": "dist/components/alert/register.js",
     "ignore": ["lit"],
