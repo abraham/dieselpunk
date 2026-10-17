@@ -266,5 +266,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "7.85 kB"
+  },
+  {
+    "name": "punk-badge",
+    "path": "dist/components/badge/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "3 kB"
   }
 ]

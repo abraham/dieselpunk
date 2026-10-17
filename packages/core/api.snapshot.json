@@ -63,6 +63,24 @@
       },
       "cssProperties": {}
     },
+    "punk-badge": {
+      "attributes": {
+        "variant": "BadgeVariant = 'neutral'"
+      },
+      "properties": {
+        "variant": "BadgeVariant = 'neutral'"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "badge": "",
+        "label": ""
+      },
+      "cssProperties": {}
+    },
     "punk-button": {
       "attributes": {
         "aria-label": "string | null = null",

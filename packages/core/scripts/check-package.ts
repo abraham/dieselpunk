@@ -59,6 +59,7 @@ const sentinels: Record<string, string> = {
   'text-field': '-webkit-search-cancel-button',
   'number-field': '-webkit-inner-spin-button',
   select: 'optgroup',
+  badge: '"punk-badge"',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };
