@@ -15,7 +15,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      # The consumer, framework, and smoke checks drive Chromium; the browser suites have their own jobs.
+      # The consumer and framework checks drive Chromium; the browser suites and smoke test have their own jobs.
       - run: npx playwright install --with-deps chromium
       - run: npm run check:toolchain
       - run: npm run format:check
@@ -30,6 +30,18 @@ jobs:
       - run: npm run check:size
       - run: npm run check:consumer
       - run: npm run check:frameworks
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
       - run: npm run test:smoke
 
   browser:
@@ -89,7 +101,7 @@ jobs:
   # The one check to require in branch protection: it passes only when every job above passed.
   ci-success:
     if: always()
-    needs: [verify, browser, visual]
+    needs: [verify, smoke, browser, visual]
     runs-on: ubuntu-latest
     steps:
       - if: >-
