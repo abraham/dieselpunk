@@ -27,18 +27,18 @@ The workbench is where people build with and review the library, not a marketing
 
 ## 4. Guides
 
-| Guide                    | Covers                                                                                                                                                                                         |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Integration              | Plain HTML and TypeScript: class versus register imports, CSS, typing, forms, and localization setup                                                                                           |
-| React, Vue, Svelte       | Properties versus attributes, `punk-` and native events, binding a value, calling methods, typing; each shows its fixture's code with `?raw`, so the page is what `check:frameworks` built     |
-| Forms                    | Association, what each control submits, defaults and reset, validation timing, fieldsets, names and labels, events, platform limits                                                            |
-| Focus and overlays       | Modality, the Escape order, backdrop clicks, popover focus modes, toast announcements and modals, window move mode                                                                             |
-| Responsive layouts       | Windows and footers at 560px and 320px, a tall modal, a settings row from stack, cluster, and a container query; containers decide                                                             |
-| Accessibility and layout | Reflow, right-to-left, forced colors, reduced motion, focus, each family's keyboard model and non-color cues                                                                                   |
-| Localization             | Configuring Lit Localize, merging application messages, `bindDocumentLocale`, writing XLIFF, the rules, what does not change, and a table of every message read from the XLIFF                 |
-| Performance              | Budgets, what each component costs, updating many stats, `content-visibility` for long lists with measurements and caveats, a list of connection rows virtualized with `@lit-labs/virtualizer` |
-| Screen reader checklist  | The manual scenarios and combinations of [accessibility.md §13](accessibility.md), and the results table                                                                                       |
-| Asset policy             | What is original, what applications must supply, and the rule against game-derived assets                                                                                                      |
+| Guide                    | Covers                                                                                                                                                                                                |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Integration              | Installing, plain HTML and TypeScript: class versus register imports, CSS, a page without a build step through an import map (the page `check:consumer` loads), typing, forms, and localization setup |
+| React, Vue, Svelte       | Properties versus attributes, `punk-` and native events, binding a value, calling methods, typing; each shows its fixture's code with `?raw`, so the page is what `check:frameworks` built            |
+| Forms                    | Association, what each control submits, defaults and reset, validation timing, fieldsets, names and labels, events, platform limits                                                                   |
+| Focus and overlays       | Modality, the Escape order, backdrop clicks, popover focus modes, toast announcements and modals, window move mode                                                                                    |
+| Responsive layouts       | Windows and footers at 560px and 320px, a tall modal, a settings row from stack, cluster, and a container query; containers decide                                                                    |
+| Accessibility and layout | Reflow, right-to-left, forced colors, reduced motion, focus, each family's keyboard model and non-color cues                                                                                          |
+| Localization             | Configuring Lit Localize, merging application messages, `bindDocumentLocale`, writing XLIFF, the rules, what does not change, and a table of every message read from the XLIFF                        |
+| Performance              | Budgets, what each component costs, updating many stats, `content-visibility` for long lists with measurements and caveats, a list of connection rows virtualized with `@lit-labs/virtualizer`        |
+| Screen reader checklist  | The manual scenarios and combinations of [accessibility.md §13](accessibility.md), and the results table                                                                                              |
+| Asset policy             | What is original, what applications must supply, and the rule against game-derived assets                                                                                                             |
 
 ## 5. Smoke test
 
@@ -48,7 +48,7 @@ The workbench is where people build with and review the library, not a marketing
 - sideways scrolling of more than 1px at 375px and 187px for the overviews, the examples, and the responsive-layout stories;
 - the Application shell's keyboard flows: tabs, the live form, the Stop dialog and its focus return, and the Actions menu;
 - the examples' flows: dashboard updates, pause, and resume without focus moves or announcements; logistics removal, cancel, Undo, filter, and focus targets; interface-settings `lang`, `dir`, and names for every locale;
-- guide content: each framework guide contains its app's code, the Localization table lists every message id, the checklist has its rows and combinations, and the guides with Markdown tables render them as tables.
+- guide content: each framework guide contains its app's code, the Integration guide contains its import-map page, the Localization table lists every message id, the checklist has its rows and combinations, and the guides with Markdown tables render them as tables.
 
 An entry counts as loaded when Storybook's preview reports it rendered (or failed), and two frames later; entries load 4 at a time, and the flows run after them, one at a time. `PUNK_SMOKE_PART=<n>/<total>` checks one slice of the entries, with the flows in the first part ([ci.md §5.4](ci.md)).
 
@@ -103,7 +103,7 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 ## Verification
 
 - `npm run build` builds the workbench; `test:smoke` runs §5 in CI.
-- Every guide's framework code is the code `check:frameworks` builds.
+- Every guide's framework code is the code `check:frameworks` builds, and the Integration guide's import-map page is the page `check:consumer` loads from a fresh install.
 - Foundations data is measured from the built CSS, so it cannot drift from what consumers get.
 - Nothing gates a deploy but a successful build: a commit that fails CI on `main` is still published, and the CI failure is fixed on `main`.
 
@@ -115,4 +115,3 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 - **No published-ids file or check** in CI.
 - **The guides and overviews are not scanned by axe.** Closing it: run axe over every docs page and example in the smoke test, outside the Storybook chrome.
 - **Manifest descriptions do not link their docs pages.**
-- **The Integration guide has no `npm install` step or plain HTML import-map page,** since the packages are not on npm yet.

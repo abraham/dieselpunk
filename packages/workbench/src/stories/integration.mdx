@@ -1,4 +1,5 @@
-import { Meta } from '@storybook/addon-docs/blocks';
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+import importMapPage from '../../../../packages/core/test/package/import-map.html?raw';
 
 <Meta title="Guides/Integration" />
 
@@ -6,7 +7,19 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 `@dieselpunk/core` is plain Web Components built with Lit. It needs no framework and no global setup beyond optional CSS imports.
 
-The examples below assume a tool that resolves bare module specifiers, such as Vite, esbuild, or a CDN with an import map. The package is not published yet, so install it from the monorepo.
+## Install
+
+```sh
+npm install @dieselpunk/core
+```
+
+Lit and Lit Localize come with it. To translate the built-in text, also install `@dieselpunk/locales` (see the Localization guide):
+
+```sh
+npm install @dieselpunk/locales
+```
+
+The examples below assume a tool that resolves bare module specifiers, such as Vite or esbuild. To use the packages with no build step, see [Without a build step](#without-a-build-step).
 
 ## Register only what you use
 
@@ -38,6 +51,16 @@ import '@dieselpunk/core/panel/register.js';
 ```
 
 The stylesheets are optional. Without them every component renders in the default dark, compact appearance. Import `tokens.css` to let ancestors override tokens, and `themes.css` to use themes other than the default.
+
+## Without a build step
+
+A browser can load the installed packages as they are, with an import map that says where each bare module specifier lives. Serve your project folder, so that `/node_modules/` is reachable, and open this page. It is the page `npm run check:consumer` serves from a fresh install and checks, so it stays correct.
+
+<Source code={importMapPage} language="html" />
+
+- `@dieselpunk/core/` maps the `register.js` entries. A class entry is at `/node_modules/@dieselpunk/core/dist/components/<name>/index.js`.
+- `#dev` is the switch for development warnings. `dev.js` leaves them off; `dev.dev.js` turns them on.
+- The Lit entries cover what Lit's own modules import. Add an entry for any other package a page imports.
 
 ## Theme and density
 
