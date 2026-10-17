@@ -34,6 +34,7 @@ const german = {
     steps: 'Schritte',
     stepComplete: 'abgeschlossen',
     stepUpcoming: 'nicht begonnen',
+    dropFiles: 'oder Dateien hier ablegen',
   },
 };
 

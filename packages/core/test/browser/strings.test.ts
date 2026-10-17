@@ -187,6 +187,7 @@ const cases: Record<string, Case> = {
   stepUpcoming: {
     show: () => step('<punk-steps current="0"><punk-step>A</punk-step></punk-steps>'),
   },
+  dropFiles: { show: () => mount('<punk-file-field label="Plans" drop-zone></punk-file-field>') },
 };
 
 /** The first step of the steps in `markup`, which says the word for its state. */

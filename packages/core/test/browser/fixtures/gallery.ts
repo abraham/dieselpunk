@@ -52,6 +52,7 @@ import '../../../src/components/tag/register.ts';
 import '../../../src/components/steps/register.ts';
 import '../../../src/components/date-field/register.ts';
 import '../../../src/components/time-field/register.ts';
+import '../../../src/components/file-field/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -862,6 +863,16 @@ const builders: Record<ComponentName, Builder> = {
         <punk-text-field label="${c.start}" required data-touched></punk-text-field>
         <span slot="error">${c.statuses[4]}</span>
       </punk-fieldset>
+    </div>
+  `,
+
+  // Markup cannot choose files, so the list of chosen files is in the component's own tests.
+  'file-field': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-file-field label="${c.settings}"><span slot="hint">${c.footer}</span></punk-file-field>
+      <punk-file-field label="${c.settings}" drop-zone multiple></punk-file-field>
+      <punk-file-field label="${c.settings}" drop-zone disabled></punk-file-field>
+      <punk-file-field aria-label="${c.settings}" required data-touched></punk-file-field>
     </div>
   `,
 

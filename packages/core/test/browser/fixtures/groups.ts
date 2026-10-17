@@ -21,7 +21,7 @@ export const galleryGroups = {
     'time-field',
   ],
   // The form controls that group or choose, in flow like the first six.
-  inputs: ['radio-group', 'radio', 'textarea', 'combobox', 'fieldset'],
+  inputs: ['radio-group', 'radio', 'textarea', 'combobox', 'fieldset', 'file-field'],
   // Navigation and selection in flow; a menu is in the top layer, so it is open only in `overlays`.
   navigation: [
     'toggle-group',

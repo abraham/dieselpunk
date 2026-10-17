@@ -95,3 +95,4 @@ export { PunkSteps, PunkStep } from './components/steps/index.ts';
 export type { StepState } from './components/steps/index.ts';
 export { PunkDateField } from './components/date-field/index.ts';
 export { PunkTimeField } from './components/time-field/index.ts';
+export { PunkFileField } from './components/file-field/index.ts';

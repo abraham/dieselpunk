@@ -182,6 +182,11 @@
   <target>Schritte</target>
   <note from="lit-localize">The name of a list of the steps of a task.</note>
 </trans-unit>
+<trans-unit id="dropFiles">
+  <source>or drop files here</source>
+  <target>oder Dateien hier ablegen</target>
+  <note from="lit-localize">Shown beside the button of a file field that also takes files dropped on it.</note>
+</trans-unit>
 </body>
 </file>
 </xliff>

@@ -318,6 +318,21 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     await expect(time).toBeDisabled();
   });
 
+  test('file field', { tag: at('inputs') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-file-field label="Plans" drop-zone multiple><span slot="hint">PDF only</span></punk-file-field>`,
+    );
+    const input = page.getByLabel('Plans', { exact: true });
+    await expect(input).toHaveAttribute('type', 'file');
+    await expect(input).toHaveAccessibleDescription('PDF only');
+    await expect(page.getByText('or drop files here')).toBeVisible();
+    await input.setInputFiles([
+      { name: 'plan.pdf', mimeType: 'application/pdf', buffer: Buffer.from('x'.repeat(1540)) },
+    ]);
+    await expect(page.getByRole('listitem')).toHaveText(/plan\.pdf\s+1\.5 kB/);
+  });
+
   test(
     'a field names its message once the user has left it',
     { tag: at('forms') },

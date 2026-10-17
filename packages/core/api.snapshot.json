@@ -559,6 +559,62 @@
       },
       "cssProperties": {}
     },
+    "punk-file-field": {
+      "attributes": {
+        "accept": "string = ''",
+        "aria-label": "string | null = null",
+        "disabled": "boolean = false",
+        "drop-zone": "boolean = false",
+        "label": "string = ''",
+        "multiple": "boolean = false",
+        "name": "string = ''",
+        "required": "boolean = false"
+      },
+      "properties": {
+        "accept": "string = ''",
+        "accessibleLabel": "string | null = null",
+        "disabled": "boolean = false",
+        "dropZone": "boolean = false",
+        "files": "FileList | null",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "multiple": "boolean = false",
+        "name": "string = ''",
+        "required": "boolean = false",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "select": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "",
+        "input": ""
+      },
+      "slots": {
+        "hint": ""
+      },
+      "parts": {
+        "control": "",
+        "drop": "",
+        "field": "",
+        "hint": "",
+        "label": "",
+        "list": "",
+        "message": ""
+      },
+      "cssProperties": {}
+    },
     "punk-icon-button": {
       "attributes": {
         "aria-label": "string | null = null",

@@ -406,5 +406,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "6.1 kB"
+  },
+  {
+    "name": "punk-file-field",
+    "path": "dist/components/file-field/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6.7 kB"
   }
 ]

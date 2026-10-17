@@ -79,6 +79,7 @@ const sentinels: Record<string, string> = {
   steps: 'stepUpcoming',
   'date-field': '"punk-date-field"',
   'time-field': '"punk-time-field"',
+  'file-field': 'dropFiles',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };
