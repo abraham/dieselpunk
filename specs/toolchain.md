@@ -73,7 +73,7 @@ There is no `tsx`, `ts-node`, or script build step: every script runs as `node <
 | locales   | `lit-localize build` (generated runtime modules from the XLIFF), then `tsc`, then `check:locales`                                                               |
 | storybook | Builds the workbench against the built packages                                                                                                                 |
 
-The root `build` runs every workspace in dependency order. Generated files (`dist/`, `custom-elements.json`, `packages/locales/src/generated/`, the test pseudo-locale) are not committed; scripts that read them build them first (`pretest:browser`, `typecheck`).
+The root `build` runs every workspace in dependency order. Generated files (`dist/`, `custom-elements.json`, `packages/locales/src/generated/`, the test pseudo-locale) are not committed. Scripts that read generated sources make them first (`pretest:browser`, and `typecheck` for the locale modules and pseudo-locale). No typecheck builds `dist/`, so the workbench's `typecheck` runs after `build`.
 
 ## 5. Scripts
 

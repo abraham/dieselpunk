@@ -10,7 +10,7 @@ The workbench is where people build with and review the library, not a marketing
 ## 2. Build and consumption
 
 - Storybook for web components with Vite (`@storybook/web-components-vite`).
-- The workbench imports the **built** packages through their public exports, including `custom-elements.json`, exactly as an external consumer does, so it exercises the real `exports` map. Its `typecheck` and the root `storybook` script build core first.
+- The workbench imports the **built** packages through their public exports, including `custom-elements.json`, exactly as an external consumer does, so it exercises the real `exports` map. The root `storybook` script builds core first; its `typecheck` reads whatever was last built, so run `npm run build` before it, as CI does ([ci.md §3](ci.md)).
 - The `development` export condition is on in every build, so development warnings (a missing name, a bad range) show in stories.
 - Fonts (Chakra Petch, IBM Plex Mono) come from `@fontsource` as development dependencies; neither package bundles a font.
 
