@@ -6,25 +6,32 @@ on:
   pull_request:
 
 jobs:
-  verify:
+  static:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      # The consumer and framework checks drive Chromium; the browser suites and smoke test have their own jobs.
       - uses: ./.github/actions/setup
-        with:
-          browsers: chromium
       - run: npm run check:toolchain
       - run: npm run format:check
       - run: npm run lint
-      - run: npm run typecheck
       - run: npm run build
+      - run: npm run typecheck
       - run: npm run check:contrast
       - run: npm run check:strings
       - run: npm run check:api
       - run: npm run test:node --workspaces --if-present
       - run: npm run check:package
       - run: npm run check:size
+
+  # The only checks outside the browser suites that drive a browser.
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          browsers: chromium
+          build: true
       - run: npm run check:consumer
       - run: npm run check:frameworks
 
@@ -88,7 +95,7 @@ jobs:
   # The one check to require in branch protection: it passes only when every job above passed.
   ci-success:
     if: always()
-    needs: [verify, smoke, browser, visual]
+    needs: [static, integration, smoke, browser, visual]
     runs-on: ubuntu-latest
     steps:
       - if: >-

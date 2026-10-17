@@ -131,10 +131,9 @@ The packing cap of §6 is set so a packed job meets its target. The `plan` job w
 
 ## Gaps
 
-The workflows are the first step toward this design: `verify`, `smoke`, `browser` (one job per engine), a hand-written `visual` matrix (Chromium in two count-based shards), and `ci-success`. Every job sets up through `.github/actions/setup`. The visual tests carry the `@cross-engine` and `@forced` tags, and each project selects its tests with `grep`. Missing:
+The workflows are the first step toward this design: `static`, `integration`, `smoke`, `browser` (one job per engine), a hand-written `visual` matrix (Chromium in two count-based shards), and `ci-success`. Every job sets up through `.github/actions/setup`. The visual tests carry the `@cross-engine` and `@forced` tags, and each project selects its tests with `grep`. Missing:
 
-- **`verify` installs Chromium** for the two checks that need it; `static` and `integration` are not split.
-- **`typecheck` builds core and locales** through the workbench's typecheck script, and `build` then builds them again.
+- **`typecheck` builds core and locales** through the workbench's typecheck script, so `static` builds them twice.
 - **No `plan` job, no generated matrix, no group or theme selection** in the gallery suites (`PUNK_GALLERY_GROUPS`, `PUNK_GALLERY_THEMES`) or the visual jobs (`@group:` and `@theme:` tags); groups are defined in the gallery only, and the visual spec lists theme names itself instead of reading the token source.
 - **The smoke test is sequential,** with a fixed wait per entry, and has no parts.
 - **The baseline workflow renders everything in one job,** does not share the visual job definition, and cannot update one group or theme.
