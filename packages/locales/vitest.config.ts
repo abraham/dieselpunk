@@ -5,7 +5,7 @@ import { defineConfig } from 'vitest/config';
 const engines = ['chromium', 'firefox', 'webkit'] as const;
 type Engine = (typeof engines)[number];
 
-// Local runs use Chromium only. CI sets PUNK_BROWSERS to all three engines explicitly.
+// Local runs use Chromium only. CI runs one job per engine, each setting PUNK_BROWSERS.
 function selectedEngines(): Engine[] {
   const requested = process.env['PUNK_BROWSERS'];
   if (!requested) return ['chromium'];

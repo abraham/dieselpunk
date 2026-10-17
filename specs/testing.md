@@ -50,7 +50,7 @@ Suites over the gallery:
 
 ## 4. Engines
 
-- Local runs default to Chromium. CI sets `PUNK_BROWSERS=chromium,firefox,webkit` explicitly; the config rejects unknown names.
+- Local runs default to Chromium. CI runs the browser suites in one job per engine, each setting `PUNK_BROWSERS` to its engine; the config rejects unknown names.
 - Before trusting a new test, run the suite on Linux in the pinned Playwright image from a Linux `npm ci`.
 - The Vitest config lists Lit's entry points in `optimizeDeps.include`, so a cold cache never reloads mid-run and loads Lit twice.
 - Engine behaviors the helpers account for:
@@ -130,7 +130,7 @@ A test or gate is trusted only after it has failed against a deliberately broken
 | `check:strings`    | locales   | Extraction changes the XLIFF; a unit without id or note; a non-literal id or description |
 | `check:locales`    | locales   | Any translation rule ([localization.md §6](localization.md))                             |
 | `check:api`        | core      | Any API difference from the snapshot; an undocumented public name                        |
-| `test`             | all       | Node and browser suites, in three engines in CI                                          |
+| `test`             | all       | Node and browser suites; in CI, Node in `verify` and each engine in its own job          |
 | `check:package`    | all       | Export, side-effect, registration, chunk, `publint`, or `attw` errors                    |
 | `check:size`       | all       | An entry over its limit, or without a reason                                             |
 | `check:consumer`   | core      | The consumer fixtures                                                                    |
