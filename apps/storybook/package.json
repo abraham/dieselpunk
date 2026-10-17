@@ -7,7 +7,7 @@
     "dev": "storybook dev -p 6006",
     "build": "storybook build -o dist",
     "build:site": "node scripts/site.ts",
-    "typecheck": "npm run build -w @dieselpunk/core && npm run build -w @dieselpunk/locales && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json",
     "test:smoke": "node scripts/smoke.ts"
   },
   "dependencies": {

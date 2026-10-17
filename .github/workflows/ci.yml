@@ -5,54 +5,132 @@ on:
     branches: [main]
   pull_request:
 
+# A newer commit cancels a pull request's older run; each push to `main` has a group of its own.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  # The plan reads the last run's job durations for its budget summary.
+  actions: read
+
 jobs:
-  verify:
+  # Computes the matrices from the gallery groups, the test listing, and the workbench index, and
+  # whether the change needs more than `static` (specs/ci.md §6, §7).
+  plan:
     runs-on: ubuntu-latest
-    env:
-      PUNK_BROWSERS: chromium,firefox,webkit
+    timeout-minutes: 10
+    outputs:
+      visual: ${{ steps.matrix.outputs.visual }}
+      smoke: ${{ steps.matrix.outputs.smoke }}
+      browser: ${{ steps.matrix.outputs.browser }}
+      full: ${{ steps.matrix.outputs.full }}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
         with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium firefox webkit
+          # The merge commit and its base, to list what the pull request changes.
+          fetch-depth: 2
+      - uses: ./.github/actions/setup
+      - id: matrix
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/ci-matrix.ts
+
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
       - run: npm run check:toolchain
       - run: npm run format:check
       - run: npm run lint
-      - run: npm run typecheck
       - run: npm run build
+      - run: npm run typecheck
       - run: npm run check:contrast
       - run: npm run check:strings
       - run: npm run check:api
-      - run: npm test
+      - run: npm run test:node --workspaces --if-present
       - run: npm run check:package
       - run: npm run check:size
-      - run: npm run check:consumer
-      - run: npm run check:frameworks
-      - run: npm run test:smoke
 
-  # Runs in the image the baselines were rendered on, so pixels match (specs/testing.md §6).
-  visual:
+  # The only checks outside the browser suites that drive a browser.
+  integration:
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
-      options: --ipc=host
-    env:
-      # Firefox refuses to start as root when $HOME belongs to another user, as it does by default here.
-      HOME: /root
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run test:visual
-      - uses: actions/upload-artifact@v7
-        if: failure()
+          browsers: chromium
+          build: true
+      - run: npm run check:consumer
+      - run: npm run check:frameworks
+
+  smoke:
+    name: smoke (${{ matrix.part }})
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.smoke) }}
+    env:
+      PUNK_SMOKE_PART: ${{ matrix.part }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
         with:
-          name: visual-report
-          path: packages/core/test-results/
-          retention-days: 7
+          browsers: chromium
+          build: true
+      - run: npm run test:smoke
+
+  browser:
+    name: browser (${{ matrix.name }})
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.browser) }}
+    env:
+      PUNK_BROWSERS: ${{ matrix.engine }}
+      PUNK_BROWSER_PART: ${{ matrix.part }}
+      PUNK_GALLERY_GROUPS: ${{ matrix.groups }}
+      PUNK_GALLERY_THEMES: ${{ matrix.themes }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          browsers: ${{ matrix.engine }}
+      - run: npm run test:browser --workspaces --if-present
+
+  visual:
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    uses: ./.github/workflows/visual.yml
+    with:
+      mode: check
+      matrix: ${{ needs.plan.outputs.visual }}
+
+  # The one check to require in branch protection: it passes only when every job above passed.
+  ci-success:
+    if: always()
+    needs: [plan, static, integration, smoke, browser, visual]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # A job may be skipped only when the plan skipped it for a prose-only change.
+      - if: >-
+          contains(needs.*.result, 'failure') ||
+          contains(needs.*.result, 'cancelled') ||
+          (needs.plan.outputs.full != 'false' && contains(needs.*.result, 'skipped'))
+        run: exit 1
+      - run: echo "All CI jobs passed."

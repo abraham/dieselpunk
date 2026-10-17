@@ -10,6 +10,8 @@ export default defineConfig({
   testMatch: '*.spec.ts',
   snapshotPathTemplate: `${process.env['PUNK_VISUAL_SNAPSHOTS'] ?? '{testDir}/__screenshots__'}/{projectName}/{arg}{ext}`,
   fullyParallel: true,
+  // Playwright's default of half the reported cores gave one worker on GitHub's 4-vCPU runners.
+  workers: 4,
   forbidOnly: Boolean(process.env['CI']),
   retries: 0,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'test-results/visual-report' }]],
@@ -29,9 +31,14 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    // Firefox, WebKit, and forced colors run tagged subsets, chosen before any page opens.
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, grep: /@cross-engine/ },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, grep: /@cross-engine/ },
     // Chromium is the one engine that emulates forced colors. The theme has no effect in this mode.
-    { name: 'chromium-forced', use: { ...devices['Desktop Chrome'], forcedColors: 'active' } },
+    {
+      name: 'chromium-forced',
+      use: { ...devices['Desktop Chrome'], forcedColors: 'active' },
+      grep: /@forced/,
+    },
   ],
 });

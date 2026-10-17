@@ -1,0 +1,43 @@
+name: Setup
+description: Node from .nvmrc, npm ci, and optionally Playwright browsers and the build (specs/ci.md §4).
+
+inputs:
+  browsers:
+    description: Space-separated Playwright engines to install, such as "chromium" or "firefox webkit".
+    default: ''
+  build:
+    description: Run `npm run build` after installing.
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v7
+      with:
+        node-version-file: .nvmrc
+        cache: npm
+
+    - run: npm ci
+      shell: bash
+
+    - id: playwright
+      if: inputs.browsers != ''
+      run: echo "version=$(node -p "require('./node_modules/@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      shell: bash
+
+    - if: inputs.browsers != ''
+      uses: actions/cache@v6
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-${{ inputs.browsers }}
+
+    # With the browsers restored, this only installs their system packages.
+    - if: inputs.browsers != ''
+      run: npx playwright install --with-deps $BROWSERS
+      shell: bash
+      env:
+        BROWSERS: ${{ inputs.browsers }}
+
+    - if: inputs.build == 'true'
+      run: npm run build
+      shell: bash

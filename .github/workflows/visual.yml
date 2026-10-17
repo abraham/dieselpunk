@@ -1,0 +1,90 @@
+name: Visual
+
+# The visual jobs, for checking in CI and for updating baselines (specs/ci.md §8).
+on:
+  workflow_call:
+    inputs:
+      mode:
+        description: '`check` compares with the committed baselines; `update` renders new ones.'
+        type: string
+        required: true
+      matrix:
+        description: The visual jobs, as planned by scripts/ci-matrix.ts.
+        type: string
+        required: true
+      groups:
+        description: In `update` mode, the groups that were planned; empty for all.
+        type: string
+        default: ''
+      themes:
+        description: In `update` mode, the themes that were planned; empty for all.
+        type: string
+        default: ''
+
+jobs:
+  # Runs in the image the baselines were rendered on, so pixels match (specs/testing.md §6).
+  visual:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.matrix) }}
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --ipc=host
+    env:
+      # Firefox refuses to start as root when $HOME belongs to another user, as it does by default here.
+      HOME: /root
+      PROJECT: ${{ matrix.project }}
+      GREP: ${{ matrix.grep }}
+    defaults:
+      run:
+        working-directory: packages/core
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - if: inputs.mode == 'check'
+        run: node scripts/visual.ts check --project="$PROJECT" --grep="$GREP"
+      # An empty folder, so the artifact holds only what this job rendered.
+      - if: inputs.mode == 'update'
+        env:
+          PUNK_VISUAL_SNAPSHOTS: test-results/visual-render
+        run: node scripts/visual.ts update --project="$PROJECT" --grep="$GREP"
+      - if: inputs.mode == 'update'
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-render-${{ matrix.id }}
+          path: packages/core/test-results/visual-render/
+          if-no-files-found: error
+          retention-days: 1
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-report-${{ matrix.id }}
+          path: packages/core/test-results/
+          retention-days: 7
+
+  merge:
+    if: inputs.mode == 'update'
+    needs: visual
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: visual-render-*
+          merge-multiple: true
+          path: rendered
+      - env:
+          PUNK_GALLERY_GROUPS: ${{ inputs.groups }}
+          PUNK_GALLERY_THEMES: ${{ inputs.themes }}
+        run: node scripts/merge-baselines.ts rendered
+      - uses: actions/upload-artifact@v7
+        with:
+          name: visual-baselines
+          path: packages/core/test/visual/__screenshots__/
+          if-no-files-found: error

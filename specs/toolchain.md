@@ -73,7 +73,7 @@ There is no `tsx`, `ts-node`, or script build step: every script runs as `node <
 | locales   | `lit-localize build` (generated runtime modules from the XLIFF), then `tsc`, then `check:locales`                                                               |
 | storybook | Builds the workbench against the built packages                                                                                                                 |
 
-The root `build` runs every workspace in dependency order. Generated files (`dist/`, `custom-elements.json`, `packages/locales/src/generated/`, the test pseudo-locale) are not committed; scripts that read them build them first (`pretest:browser`, `typecheck`).
+The root `build` runs every workspace in dependency order. Generated files (`dist/`, `custom-elements.json`, `packages/locales/src/generated/`, the test pseudo-locale) are not committed. Scripts that read generated sources make them first (`pretest:browser`, and `typecheck` for the locale modules and pseudo-locale). No typecheck builds `dist/`, so the workbench's `typecheck` runs after `build`.
 
 ## 5. Scripts
 
@@ -98,12 +98,7 @@ Root scripts aggregate the workspaces (`--workspaces --if-present`) or delegate 
 
 ## 8. Continuous integration
 
-`.github/workflows/ci.yml` has two jobs, both on Node 26.
-
-1. **Checks:** `npm ci`, install Chromium, Firefox, and WebKit, then in order: `check:toolchain`, `format:check`, `lint`, `typecheck`, `build`, `check:contrast`, `check:strings`, `check:api`, `test` (Node and browser suites in all three engines), `check:package`, `check:size`, `check:consumer`, `check:frameworks`, `test:smoke`.
-2. **Visual:** runs inside `mcr.microsoft.com/playwright:v<version>-noble`, where `<version>` is the installed `@playwright/test`, with `HOME=/root` (GitHub starts container jobs with a `$HOME` owned by another user, and Firefox then refuses to launch as root). It runs `test:visual` and uploads the report.
-
-`.github/workflows/update-visual-baselines.yml` is manual: it deletes the baseline folders, renders them again on the pinned image, and uploads them as an artifact to commit.
+The workflows, their jobs, how they split the suites, and their time budgets are specified in [ci.md](ci.md). Every job runs on the Node of `.nvmrc`, and every check it runs is a root script listed in [testing.md §9](testing.md), so CI never runs a command a developer cannot run locally.
 
 ## Verification
 

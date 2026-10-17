@@ -10,7 +10,7 @@ The workbench is where people build with and review the library, not a marketing
 ## 2. Build and consumption
 
 - Storybook for web components with Vite (`@storybook/web-components-vite`).
-- The workbench imports the **built** packages through their public exports, including `custom-elements.json`, exactly as an external consumer does, so it exercises the real `exports` map. Its `typecheck` and the root `storybook` script build core first.
+- The workbench imports the **built** packages through their public exports, including `custom-elements.json`, exactly as an external consumer does, so it exercises the real `exports` map. The root `storybook` script builds core first; its `typecheck` reads whatever was last built, so run `npm run build` before it, as CI does ([ci.md §3](ci.md)).
 - The `development` export condition is on in every build, so development warnings (a missing name, a bad range) show in stories.
 - Fonts (Chakra Petch, IBM Plex Mono) come from `@fontsource` as development dependencies; neither package bundles a font.
 
@@ -47,6 +47,8 @@ The workbench is where people build with and review the library, not a marketing
 - the Application shell's keyboard flows: tabs, the live form, the Stop dialog and its focus return, and the Actions menu;
 - the examples' flows: dashboard updates, pause, and resume without focus moves or announcements; logistics removal, cancel, Undo, filter, and focus targets; interface-settings `lang`, `dir`, and names for every locale;
 - guide content: each framework guide contains its app's code, the Localization table lists every message id, and the checklist has its rows and combinations.
+
+An entry counts as loaded when Storybook's preview reports it rendered (or failed), and two frames later; entries load 4 at a time, and the flows run after them, one at a time. `PUNK_SMOKE_PART=<n>/<total>` checks one slice of the entries, with the flows in the first part ([ci.md §5.4](ci.md)).
 
 ## 6. Authoring rules
 

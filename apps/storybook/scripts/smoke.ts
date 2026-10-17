@@ -3,9 +3,21 @@ import { createServer } from 'node:http';
 import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import type { Page } from 'playwright';
 
 // Loads every story and docs page in the built workbench and fails on a render error or on any
 // console warning or error. Run after `npm run build`. See specs/workbench.md §5.
+// PUNK_SMOKE_PART=<n>/<total> checks every total-th entry, from the n-th; the scripted flows run in
+// the first part only (specs/ci.md §5.4).
+
+const partSpec = process.env['PUNK_SMOKE_PART'] ?? '1/1';
+const partMatch = /^(\d+)\/(\d+)$/.exec(partSpec);
+const part = Number(partMatch?.[1]);
+const parts = Number(partMatch?.[2]);
+if (!partMatch || part < 1 || part > parts) {
+  console.error(`PUNK_SMOKE_PART must be <n>/<total>, with n from 1 to total; got "${partSpec}".`);
+  process.exit(2);
+}
 
 const root = fileURLToPath(new URL('../dist', import.meta.url));
 if (!existsSync(join(root, 'index.json'))) {
@@ -48,28 +60,100 @@ const expected = [/Lit is in dev mode/];
 const browser = await chromium.launch();
 const failures: string[] = [];
 
-async function openStory(id: string, width: number, height = 800) {
+// Records Storybook's render events as the preview's channel is installed, so none is missed.
+const renderSignal = `(() => {
+  const state = (window.__punkSmoke = { done: false, error: '' });
+  const describe = (value) =>
+    String(value?.message ?? value?.description ?? value?.title ?? value ?? 'render error');
+  let channel;
+  Object.defineProperty(globalThis, '__STORYBOOK_ADDONS_CHANNEL__', {
+    configurable: true,
+    get: () => channel,
+    set(next) {
+      channel = next;
+      if (!next) return;
+      for (const name of ['storyRendered', 'docsRendered']) {
+        next.on(name, () => (state.done = true));
+      }
+      for (const name of ['storyErrored', 'storyThrewException', 'storyMissing']) {
+        next.on(name, (value) => Object.assign(state, { done: true, error: describe(value) }));
+      }
+    },
+  });
+})()`;
+
+async function load(page: Page, id: string, view: 'story' | 'docs'): Promise<string> {
+  await page.goto(`http://localhost:${port}/iframe.html?id=${id}&viewMode=${view}`);
+  await page.waitForFunction('window.__punkSmoke?.done', undefined, { timeout: 15000 });
+  // Two frames let the components finish the updates the render started.
+  await page.evaluate(
+    'new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))',
+  );
+  // Storybook sets this class on <body> when a story fails to render.
+  return String(
+    await page.evaluate(
+      `window.__punkSmoke.error ||
+        (document.body.classList.contains('sb-show-errordisplay')
+          ? document.querySelector('#error-message')?.textContent ?? 'render error'
+          : '')`,
+    ),
+  );
+}
+
+async function open(id: string, view: 'story' | 'docs', width: number, height = 800) {
   const page = await browser.newPage({ viewport: { width, height } });
-  await page.goto(`http://localhost:${port}/iframe.html?id=${id}&viewMode=story`);
-  await page.waitForSelector('body.sb-show-main', { timeout: 15000 });
-  await page.waitForTimeout(500);
+  await page.addInitScript(renderSignal);
+  const error = await load(page, id, view);
+  if (error) failures.push(`${id}: render error: ${error.slice(0, 200)}`);
   return page;
+}
+
+const openStory = (id: string, width: number, height = 800) => open(id, 'story', width, height);
+const openDocs = (id: string) => open(id, 'docs', 1100);
+
+/** Renders one entry and fails on a render error or an unexpected console message. */
+async function checkEntry(entry: Entry): Promise<void> {
+  const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
+  await page.addInitScript(renderSignal);
+  const messages: string[] = [];
+  page.on('console', (message) => {
+    const text = message.text();
+    if (
+      ['error', 'warning'].includes(message.type()) &&
+      !expected.some((rule) => rule.test(text))
+    ) {
+      messages.push(`${message.type()}: ${text.slice(0, 200)}`);
+    }
+  });
+  page.on('pageerror', (error) => messages.push(`pageerror: ${error.message.slice(0, 200)}`));
+  try {
+    const error = await load(page, entry.id, entry.type === 'docs' ? 'docs' : 'story');
+    if (error) messages.unshift(`render error: ${error.slice(0, 200)}`);
+  } catch (error) {
+    messages.unshift(`did not render: ${String(error).split('\n')[0]}`);
+  }
+  if (messages.length > 0) failures.push(`${entry.id} (${entry.type}): ${messages.join(' | ')}`);
+  await page.close();
 }
 
 // Each framework guide shows its fixture app's source, which a failed `?raw` import would leave out.
 async function checkFrameworkGuides(): Promise<void> {
   const guides = { react: 'createRoot', vue: 'createApp', svelte: 'mount(' };
   for (const [name, marker] of Object.entries(guides)) {
-    const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
-    await page.goto(`http://localhost:${port}/iframe.html?id=guides-${name}--docs&viewMode=docs`);
-    await page.waitForSelector('body.sb-show-main', { timeout: 15000 });
-    await page.waitForTimeout(500);
-    const text = String(
-      await page.evaluate("document.querySelector('.sbdocs')?.textContent ?? ''"),
-    );
-    if (!text.includes(marker) || !text.includes('punk-text-field')) {
-      failures.push(`guides-${name}--docs does not show the fixture app's code`);
-    }
+    const page = await openDocs(`guides-${name}--docs`);
+    // The code blocks are highlighted after the docs report they rendered.
+    const shown = await page
+      .waitForFunction(
+        `['${marker}', 'punk-text-field'].every((word) =>
+          document.querySelector('.sbdocs')?.textContent?.includes(word))`,
+        undefined,
+        { timeout: 5000 },
+      )
+      .then(
+        () => true,
+        () => false,
+      );
+    if (!shown) failures.push(`guides-${name}--docs does not show the fixture app's code`);
     await page.close();
   }
 }
@@ -296,12 +380,7 @@ async function checkInterfaceSettings(): Promise<void> {
 
 // The Localization guide lists every message of the XLIFF, with its English and description.
 async function checkScreenReaderChecklist(): Promise<void> {
-  const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
-  await page.goto(
-    `http://localhost:${port}/iframe.html?id=guides-screen-reader-checklist--docs&viewMode=docs`,
-  );
-  await page.waitForSelector('body.sb-show-main', { timeout: 15000 });
-  await page.waitForTimeout(500);
+  const page = await openDocs('guides-screen-reader-checklist--docs');
   const text = String(await page.evaluate("document.querySelector('.sbdocs')?.textContent ?? ''"));
   const results = Number(
     await page.evaluate(
@@ -318,12 +397,7 @@ async function checkScreenReaderChecklist(): Promise<void> {
 }
 
 async function checkLocalizationGuide(): Promise<void> {
-  const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
-  await page.goto(
-    `http://localhost:${port}/iframe.html?id=guides-localization--docs&viewMode=docs`,
-  );
-  await page.waitForSelector('body.sb-show-main', { timeout: 15000 });
-  await page.waitForTimeout(500);
+  const page = await openDocs('guides-localization--docs');
   const rows = Number(
     await page.evaluate("document.querySelectorAll('.sbdocs table tbody tr').length"),
   );
@@ -336,43 +410,31 @@ async function checkLocalizationGuide(): Promise<void> {
   await page.close();
 }
 
+// Sorted, so that a part is the same set of entries on every run.
+const mine = Object.values(entries)
+  .sort((a, b) => a.id.localeCompare(b.id))
+  .filter((_, index) => index % parts === part - 1);
+const pool = 4;
+
 try {
-  for (const entry of Object.values(entries)) {
-    const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
-    const messages: string[] = [];
-    page.on('console', (message) => {
-      const text = message.text();
-      if (
-        ['error', 'warning'].includes(message.type()) &&
-        !expected.some((rule) => rule.test(text))
-      ) {
-        messages.push(`${message.type()}: ${text.slice(0, 200)}`);
-      }
-    });
-    page.on('pageerror', (error) => messages.push(`pageerror: ${error.message.slice(0, 200)}`));
-    const view = entry.type === 'docs' ? 'docs' : 'story';
-    await page.goto(`http://localhost:${port}/iframe.html?id=${entry.id}&viewMode=${view}`);
-    // Storybook sets this class on <body> when a story fails to render.
-    await page.waitForSelector('body.sb-show-main, body.sb-show-errordisplay', { timeout: 15000 });
-    await page.waitForTimeout(500);
-    const error = await page.evaluate(
-      `document.body.classList.contains('sb-show-errordisplay')
-        ? document.querySelector('#error-message')?.textContent ?? 'render error'
-        : ''`,
-    );
-    if (error) messages.unshift(`render error: ${String(error).slice(0, 200)}`);
-    if (messages.length > 0) failures.push(`${entry.id} (${entry.type}): ${messages.join(' | ')}`);
-    await page.close();
+  const queue = [...mine];
+  await Promise.all(
+    Array.from({ length: pool }, async () => {
+      for (let entry = queue.shift(); entry; entry = queue.shift()) await checkEntry(entry);
+    }),
+  );
+  // The flows drive focus and timers, so they run one at a time, after the pool.
+  if (part === 1) {
+    await checkResponsiveExamples();
+    await checkApplicationShell();
+    await checkExamples();
+    await checkDashboard();
+    await checkLogistics();
+    await checkInterfaceSettings();
+    await checkLocalizationGuide();
+    await checkScreenReaderChecklist();
+    await checkFrameworkGuides();
   }
-  await checkResponsiveExamples();
-  await checkApplicationShell();
-  await checkExamples();
-  await checkDashboard();
-  await checkLogistics();
-  await checkInterfaceSettings();
-  await checkLocalizationGuide();
-  await checkScreenReaderChecklist();
-  await checkFrameworkGuides();
 } finally {
   await browser.close();
   server.close();
@@ -384,4 +446,7 @@ if (failures.length > 0) {
   );
   process.exit(1);
 }
-console.log(`Story smoke test OK: ${Object.keys(entries).length} entries rendered without errors`);
+console.log(
+  `Story smoke test OK: ${mine.length} of ${Object.keys(entries).length} entries rendered without errors` +
+    (parts > 1 ? ` (part ${part} of ${parts})` : ''),
+);

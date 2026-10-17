@@ -2,19 +2,11 @@ import axe from 'axe-core';
 import type { AxeResults, Result } from 'axe-core';
 import { commands, server } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { themeNames } from '../../src/tokens/themes.ts';
 import { addStylesheets, cleanup, focusWithKeyboard, track } from './helpers.ts';
 import './commands.ts';
-import {
-  buildGallery,
-  componentNames,
-  contentVariants,
-  galleryCss,
-  openTooltips,
-} from './fixtures/gallery.ts';
+import { buildGallery, contentVariants, galleryCss, openTooltips } from './fixtures/gallery.ts';
 import type { ComponentName, ContentVariant } from './fixtures/gallery.ts';
-
-const densities = ['compact', 'low'] as const;
+import { galleryCombinations, galleryNames } from './fixtures/selection.ts';
 
 beforeEach(() => {
   addStylesheets();
@@ -33,7 +25,7 @@ function mountGallery(
   variant: ContentVariant,
   theme: string,
   density: string,
-  names: readonly ComponentName[] = componentNames,
+  names: readonly ComponentName[] = galleryNames,
 ): HTMLElement {
   const stage = document.createElement('div');
   stage.setAttribute('data-punk-theme', theme);
@@ -78,26 +70,23 @@ const serious = (results: AxeResults): Result[] =>
     ['serious', 'critical'].includes(violation.impact ?? ''),
   );
 
-describe.each(themeNames.flatMap((theme) => densities.map((density) => ({ theme, density }))))(
-  'axe: $theme, $density',
-  ({ theme, density }) => {
-    it.each(contentVariants)(
-      'has no serious or critical violations (%s content)',
-      async (variant) => {
-        const stage = mountGallery(variant, theme, density);
-        await settle(stage);
-        const found = serious(await scan(stage));
-        expect(found, describeViolations(found)).toEqual([]);
-      },
-    );
-  },
-);
+describe.each(galleryCombinations)('axe: $theme, $density', ({ theme, density }) => {
+  it.each(contentVariants)(
+    'has no serious or critical violations (%s content)',
+    async (variant) => {
+      const stage = mountGallery(variant, theme, density);
+      await settle(stage);
+      const found = serious(await scan(stage));
+      expect(found, describeViolations(found)).toEqual([]);
+    },
+  );
+});
 
 describe('axe: every component is scanned', () => {
   it('finds each component in the gallery', async () => {
     const stage = mountGallery('short', 'industrial', 'compact');
     await settle(stage);
-    for (const name of componentNames) {
+    for (const name of galleryNames) {
       expect(stage.querySelector(`[data-component="${name}"] punk-${name}`), name).not.toBeNull();
     }
   });
@@ -134,7 +123,9 @@ describe.skipIf(server.browser !== 'chromium')('forced colors', () => {
   ];
 
   it.each(surfaces)('keeps a visible border on the %s', async (_label, tag, part) => {
-    const stage = mountGallery('short', 'industrial', 'compact');
+    const stage = mountGallery('short', 'industrial', 'compact', [
+      tag.slice('punk-'.length) as ComponentName,
+    ]);
     await settle(stage);
     await commands.setForcedColors('active');
     const element = stage.querySelector(`${tag}${tag === 'punk-tooltip' ? '[data-open]' : ''}`);

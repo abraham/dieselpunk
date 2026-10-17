@@ -50,7 +50,7 @@ Suites over the gallery:
 
 ## 4. Engines
 
-- Local runs default to Chromium. CI sets `PUNK_BROWSERS=chromium,firefox,webkit` explicitly; the config rejects unknown names.
+- Local runs default to Chromium. CI runs the browser suites in jobs by engine and part, each setting `PUNK_BROWSERS` to its engine; the config rejects unknown names. Firefox and WebKit render the gallery suites in two theme and density pairs only ([ci.md §5.3](ci.md)).
 - Before trusting a new test, run the suite on Linux in the pinned Playwright image from a Linux `npm ci`.
 - The Vitest config lists Lit's entry points in `optimizeDeps.include`, so a cold cache never reloads mid-run and loads Lit twice.
 - Engine behaviors the helpers account for:
@@ -85,12 +85,12 @@ Suites over the gallery:
 | Zoom      | 100% and 200% (half the viewport width with `deviceScaleFactor: 2`)  |
 | Content   | The gallery's variants, cut per group where noted                    |
 
-**Projects.** `chromium` runs the full matrix for every group. `firefox` and `webkit` run the default and `industrial-light` with `low` at 100%. `chromium-forced` runs every group with forced colors active at one theme (themes have no effect there), 100%, both densities, both widths, and every variant. Interaction captures (hover, keyboard focus, and pressed, driven by real input, never by class hooks) run in each project, and clip to the target with a margin and a tight tolerance (`threshold: 0.02`, `maxDiffPixelRatio: 0.0005`), since a hover changes only an edge.
+**Projects.** `chromium` runs the full matrix for every group. `firefox` and `webkit` run the default and `industrial-light` with `low` at 100%. `chromium-forced` runs every group with forced colors active at one theme (themes have no effect there), 100%, both densities, both widths, and every variant. Interaction captures (hover, keyboard focus, and pressed, driven by real input, never by class hooks) run in each project, and clip to the target with a margin and a tight tolerance (`threshold: 0.02`, `maxDiffPixelRatio: 0.0005`), since a hover changes only an edge. In CI the visual tests are split by project and gallery group ([ci.md §5.2](ci.md)). The visual tests always run 4 workers, one per vCPU of a GitHub runner, locally as well as in CI.
 
 **Baselines.**
 
 - Rendered only in `mcr.microsoft.com/playwright:v<version>-noble`, with `<version>` the installed `@playwright/test`. `scripts/visual.ts` runs the container off Linux and Playwright directly on Linux. The page is bundled with esbuild on the host (`build-visual.ts`), since esbuild's binary is platform-specific.
-- **Committed baselines come from CI**, by the manual "Update visual baselines" workflow, which deletes each group's folder, renders it, and uploads it to commit, so no stale baseline lingers. `visual.ts update` refuses outside CI, unless forced. A local check against the committed set is precise but not authoritative.
+- **Committed baselines come from CI**, by the manual "Update visual baselines" workflow, which re-renders all baselines or only some groups and themes and uploads the whole set to commit; the re-rendered ones are deleted first, so no stale baseline lingers ([ci.md §8](ci.md)). `visual.ts update` refuses outside CI, unless forced. A local check against the committed set is precise but not authoritative.
 - Each group has its own folder under each project. A group's folder stays under about 20 MB; when it would not, its content variants are cut and the cut is recorded in the gallery.
 - The page-level tolerance is `maxDiffPixelRatio: 0.002`, with animations disabled and reduced motion on.
 - `node scripts/visual.ts selftest` renders everything twice into a scratch folder and requires identical output, which proves the harness deterministic in every engine without a baseline.
@@ -130,7 +130,7 @@ A test or gate is trusted only after it has failed against a deliberately broken
 | `check:strings`    | locales   | Extraction changes the XLIFF; a unit without id or note; a non-literal id or description |
 | `check:locales`    | locales   | Any translation rule ([localization.md §6](localization.md))                             |
 | `check:api`        | core      | Any API difference from the snapshot; an undocumented public name                        |
-| `test`             | all       | Node and browser suites, in three engines in CI                                          |
+| `test`             | all       | Node and browser suites; split across CI jobs as [ci.md](ci.md) describes                |
 | `check:package`    | all       | Export, side-effect, registration, chunk, `publint`, or `attw` errors                    |
 | `check:size`       | all       | An entry over its limit, or without a reason                                             |
 | `check:consumer`   | core      | The consumer fixtures                                                                    |

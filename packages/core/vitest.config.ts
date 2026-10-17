@@ -2,11 +2,22 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { defineBrowserCommand, playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
+import { browserRun } from './scripts/browser-part.ts';
+
+const run = browserRun(
+  fileURLToPath(new URL('.', import.meta.url)),
+  ['src/**/*.test.ts', 'test/browser/**/*.test.ts'],
+  [
+    'test/browser/a11y.test.ts',
+    'test/browser/reflow.test.ts',
+    'test/browser/overlays-a11y.test.ts',
+  ],
+);
 
 const engines = ['chromium', 'firefox', 'webkit'] as const;
 type Engine = (typeof engines)[number];
 
-// Local runs use Chromium only. CI sets PUNK_BROWSERS to all three engines explicitly.
+// Local runs use Chromium only. CI runs one job per engine and part, each setting PUNK_BROWSERS.
 function selectedEngines(): Engine[] {
   const requested = process.env['PUNK_BROWSERS'];
   if (!requested) return ['chromium'];
@@ -95,7 +106,9 @@ export default defineConfig({
     ],
   },
   test: {
-    include: ['src/**/*.test.ts', 'test/browser/**/*.test.ts'],
+    include: run.include,
+    provide: run.provide,
+    passWithNoTests: run.passWithNoTests,
     browser: {
       enabled: true,
       headless: true,

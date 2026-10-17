@@ -32,68 +32,23 @@ import '../../../src/components/slider/register.ts';
 import '../../../src/components/text-field/register.ts';
 import '../../../src/components/number-field/register.ts';
 import '../../../src/components/select/register.ts';
+import { galleryGroups } from './groups.ts';
 
-// The visual matrix renders one group per run, so each group has its own page and baselines.
-export const foundationNames = [
-  'panel',
-  'divider',
-  'button',
-  'icon-button',
-  'progress-bar',
-  'tooltip',
-] as const;
-export const inventoryNames = [
-  'slot',
-  'item-stack',
-  'slot-grid',
-  'recipe',
-  'meter',
-  'status-light',
-] as const;
-export const productionNames = ['production-stat', 'connection-row'] as const;
-export const shellNames = [
-  'stack',
-  'cluster',
-  'accordion',
-  'accordion-item',
-  'tabs',
-  'tab',
-  'toolbar',
-  'window',
-] as const;
-// Overlays open on a page of their own, since the top layer covers everything else.
-// Every form control in every state, in flow: no top layer, so one page holds them all.
-export const formNames = [
-  'checkbox',
-  'switch',
-  'slider',
-  'text-field',
-  'number-field',
-  'select',
-] as const;
-export const overlayNames = ['dialog', 'window', 'popover', 'toast-stack'] as const;
+export { galleryGroups } from './groups.ts';
+export type { GalleryGroup } from './groups.ts';
+export const overlayNames = galleryGroups.overlays;
 export const componentNames = [
-  ...foundationNames,
-  ...inventoryNames,
-  ...productionNames,
-  ...shellNames,
-  ...formNames,
+  ...galleryGroups.foundation,
+  ...galleryGroups.inventory,
+  ...galleryGroups.production,
+  ...galleryGroups.shell,
+  ...galleryGroups.forms,
   'dialog',
   'popover',
   'toast-stack',
   'toast',
 ] as const;
 export type ComponentName = (typeof componentNames)[number];
-
-export const galleryGroups = {
-  foundation: foundationNames,
-  inventory: inventoryNames,
-  production: productionNames,
-  shell: shellNames,
-  forms: formNames,
-  overlays: overlayNames,
-} as const;
-export type GalleryGroup = keyof typeof galleryGroups;
 
 export const contentVariants = ['short', 'long', 'unlabeled', 'rtl'] as const;
 export type ContentVariant = (typeof contentVariants)[number];
