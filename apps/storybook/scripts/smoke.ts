@@ -137,13 +137,17 @@ async function checkApplicationShell(): Promise<void> {
   await page.close();
 }
 
-// SPEC-PHASE-4 §12: every example fits at 375px and at 187px, as the responsive ones do.
+// SPEC-PHASE-4 §12: every example, and the overview, fits at 375px and at 187px, as the responsive
+// ones do.
 async function checkExamples(): Promise<void> {
-  const ids = Object.values(entries)
-    .filter((entry) => entry.type === 'story' && entry.id.startsWith('examples-'))
-    .map((entry) => entry.id);
-  if (ids.length !== 3) failures.push(`expected 3 examples, found ${ids.length}`);
-  for (const id of ids) {
+  const stories = (prefix: string) =>
+    Object.values(entries)
+      .filter((entry) => entry.type === 'story' && entry.id.startsWith(prefix))
+      .map((entry) => entry.id);
+  const examples = stories('examples-');
+  if (examples.length !== 3) failures.push(`expected 3 examples, found ${examples.length}`);
+  // The two overview stories are the first screen, and are held to the same widths.
+  for (const id of [...examples, ...stories('overview--')]) {
     for (const width of [375, 187]) {
       const page = await openStory(id, width, 900);
       const extra = Number(
