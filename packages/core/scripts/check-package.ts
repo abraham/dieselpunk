@@ -66,6 +66,7 @@ const sentinels: Record<string, string> = {
   menu: '"punk-menu-item"',
   'toggle-group': 'not `<button>`',
   list: '"punk-list-item"',
+  table: 'data-punk-select-all',
   alert: 'part="actions"',
   badge: '"punk-badge"',
   spinner: '"punk-spinner"',

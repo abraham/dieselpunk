@@ -42,6 +42,7 @@
   "punk-menu (both tags)": "Over 5 kB: two components in one entry, with anchoring, positioning, submenus, checkable items, typeahead, and context menus; the shared modules it imports are about 2.5 kB of it.",
   "punk-toggle-group": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-list (both tags)": "Over 5 kB: two components in one entry, and the selectable base and the selection model are about 2 kB of it.",
+  "punk-table": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-alert": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-badge": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-spinner": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB."

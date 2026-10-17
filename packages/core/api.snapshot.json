@@ -1295,6 +1295,33 @@
       },
       "cssProperties": {}
     },
+    "punk-table": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "sort-direction": "SortDirection = 'ascending'",
+        "sort-key": "string = ''"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "sortDirection": "SortDirection = 'ascending'",
+        "sortKey": "string = ''",
+        "values": "string[]"
+      },
+      "methods": {},
+      "events": {
+        "punk-selection-change": "",
+        "punk-sort-change": ""
+      },
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "scroller": ""
+      },
+      "cssProperties": {
+        "--punk-table-max-height": "= none"
+      }
+    },
     "punk-tabs": {
       "attributes": {
         "activation": "TabActivation = 'auto'",

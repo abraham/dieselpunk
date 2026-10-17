@@ -75,6 +75,8 @@ export { PunkToggleGroup } from './components/toggle-group/index.ts';
 export type { ToggleGroupSelection } from './components/toggle-group/index.ts';
 export { PunkList, PunkListItem } from './components/list/index.ts';
 export type { ListSelection } from './components/list/index.ts';
+export { PunkTable } from './components/table/index.ts';
+export type { PunkSortChangeDetail, SortDirection } from './components/table/index.ts';
 export { PunkAlert } from './components/alert/index.ts';
 export type { AlertVariant } from './components/alert/index.ts';
 export { PunkBadge } from './components/badge/index.ts';

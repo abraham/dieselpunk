@@ -317,6 +317,13 @@
     "limit": "5.75 kB"
   },
   {
+    "name": "punk-table",
+    "path": "dist/components/table/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
     "name": "punk-alert",
     "path": "dist/components/alert/register.js",
     "ignore": ["lit"],
