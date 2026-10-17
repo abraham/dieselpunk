@@ -343,5 +343,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "3 kB"
+  },
+  {
+    "name": "punk-drawer",
+    "path": "dist/components/drawer/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6.25 kB"
   }
 ]

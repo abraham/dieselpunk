@@ -387,6 +387,45 @@
         "--punk-divider-gap": "= var(--punk-space-2)"
       }
     },
+    "punk-drawer": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "heading": "string = ''",
+        "modal": "boolean = false",
+        "open": "boolean = false",
+        "placement": "DrawerPlacement = 'start'"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "heading": "string = ''",
+        "modal": "boolean = false",
+        "open": "boolean = false",
+        "placement": "DrawerPlacement = 'start'"
+      },
+      "methods": {
+        "close": "",
+        "show": ""
+      },
+      "events": {
+        "punk-close": "",
+        "punk-open": ""
+      },
+      "slots": {
+        "(default)": "",
+        "footer": ""
+      },
+      "parts": {
+        "body": "",
+        "close-button": "",
+        "drawer": "",
+        "footer": "",
+        "header": "",
+        "title": ""
+      },
+      "cssProperties": {
+        "--punk-drawer-size": "= 320px"
+      }
+    },
     "punk-fieldset": {
       "attributes": {
         "disabled": "boolean = false",
