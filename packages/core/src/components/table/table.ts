@@ -2,6 +2,7 @@ import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { Ledger } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import type { PunkSelectionChangeDetail } from '../slot-grid/slot-grid.ts';
@@ -91,7 +92,7 @@ export class PunkTable extends PunkElement {
   @state() private caption = '';
 
   #observer: ResizeObserver | undefined;
-  #authoredSort = new Map<HTMLElement, string | null>();
+  readonly #sortCells = new Ledger();
   #warned = '';
 
   constructor() {
@@ -143,11 +144,7 @@ export class PunkTable extends PunkElement {
     super.disconnectedCallback();
     this.#observer?.disconnect();
     this.#observer = undefined;
-    for (const [cell, authored] of this.#authoredSort) {
-      if (authored === null) cell.removeAttribute('aria-sort');
-      else cell.setAttribute('aria-sort', authored);
-    }
-    this.#authoredSort.clear();
+    this.#sortCells.restoreAll();
     for (const row of this.#rows()) row.removeAttribute('data-selected');
   }
 
@@ -195,18 +192,11 @@ export class PunkTable extends PunkElement {
   /** Writes `aria-sort` on the sortable header cells, and gives back what the author had on any that left. */
   #syncSort(): void {
     const cells = [...(this.#table?.querySelectorAll<HTMLElement>('th[data-sort]') ?? [])];
-    for (const [cell, authored] of this.#authoredSort) {
-      if (cells.includes(cell)) continue;
-      if (authored === null) cell.removeAttribute('aria-sort');
-      else cell.setAttribute('aria-sort', authored);
-      this.#authoredSort.delete(cell);
-    }
+    this.#sortCells.restoreAll(new Set(cells));
     const direction = this.sortDirection === 'descending' ? 'descending' : 'ascending';
     for (const cell of cells) {
-      if (!this.#authoredSort.has(cell))
-        this.#authoredSort.set(cell, cell.getAttribute('aria-sort'));
       const sorted = this.sortKey !== '' && cell.dataset['sort'] === this.sortKey;
-      cell.setAttribute('aria-sort', sorted ? direction : 'none');
+      this.#sortCells.write(cell, 'aria-sort', sorted ? direction : 'none');
     }
   }
 

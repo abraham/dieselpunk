@@ -4,6 +4,8 @@ import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { childChanged, owner, release } from '../../internal/owner.ts';
+import type { Owned, Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { createToastTimer } from '../../internal/toast-timer.ts';
@@ -23,12 +25,6 @@ declare global {
   interface HTMLElementEventMap {
     'punk-dismiss': CustomEvent<PunkDismissDetail>;
   }
-}
-
-/** What a stack lets its toasts tell it. */
-export interface ToastOwner {
-  toastChanged(toast: PunkToast): void;
-  toastLeft(toast: PunkToast): void;
 }
 
 const variants: readonly string[] = ['info', 'success', 'warning', 'danger'];
@@ -63,7 +59,7 @@ export const isDismissing = (toast: PunkToast): boolean => dismissing.has(toast)
  *
  * @fires punk-dismiss - It is being dismissed. `detail` is `{ reason }`: `user`, `timeout`, `method`, or `limit`. Cancel it to keep the toast, for example when a framework removes it.
  */
-export class PunkToast extends PunkElement {
+export class PunkToast extends PunkElement implements Owned<PunkToast> {
   readonly #localeWatcher = new LocaleWatcher(this);
 
   static override styles = toastStyles;
@@ -77,8 +73,15 @@ export class PunkToast extends PunkElement {
   /** A line above the message. */
   @property({ reflect: true }) heading = '';
 
-  /** The stack that manages this toast, which places it in the right live region. */
-  @property({ attribute: false }) owner: ToastOwner | null = null;
+  /**
+   * The stack that manages this toast, which places it in the right live region.
+   * @internal
+   */
+  [owner]: Owner<PunkToast> | null = null;
+  static {
+    // The dev transform gives a decorator on a symbol key no key, so the property is made here.
+    this.createProperty(owner, { attribute: false });
+  }
 
   @state() protected leaving = false;
 
@@ -125,7 +128,7 @@ export class PunkToast extends PunkElement {
     this.#stopTimer();
     this.#hovered = false;
     this.#focused = false;
-    this.owner?.toastLeft(this);
+    this[owner]?.[release](this);
   }
 
   get #variant(): ToastVariant {
@@ -140,7 +143,7 @@ export class PunkToast extends PunkElement {
 
   protected override updated(changed: PropertyValues<this>): void {
     if (changed.has('variant') && changed.get('variant') !== undefined) {
-      this.owner?.toastChanged(this);
+      this[owner]?.[childChanged](this, changed);
     }
     this.#syncTimer();
     const hasText = Boolean(this.heading) || this.#slots.has('');

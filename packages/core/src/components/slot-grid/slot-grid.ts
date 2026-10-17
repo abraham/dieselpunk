@@ -4,8 +4,10 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { nextIndex, stepIndex } from '../../internal/grid-navigation.ts';
+import { Ledger, childChanged, owner, release } from '../../internal/owner.ts';
+import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
-import type { ItemOwner, PunkSelectableBase } from '../../internal/selectable-base.ts';
+import type { PunkSelectableBase } from '../../internal/selectable-base.ts';
 import { SelectionModel } from '../../internal/selection-model.ts';
 import type { SelectionMode } from '../../internal/selection-model.ts';
 import { devWarn } from '../../utilities/warn.ts';
@@ -30,7 +32,7 @@ type Item = PunkSelectableBase;
 const ANONYMOUS = '\u0000';
 const modes: readonly string[] = ['single', 'multiple'];
 
-const isItem = (element: Element): element is Item => 'managed' in element;
+const isItem = (element: Element): element is Item => owner in element;
 const isPending = (element: Element): boolean =>
   element.localName.includes('-') && !customElements.get(element.localName);
 
@@ -62,7 +64,7 @@ function setAttribute(element: Element, name: string, value: string | null): voi
  *
  * @fires punk-selection-change - The user changed the selection. `detail` is `{ values, items }`.
  */
-export class PunkSlotGrid extends PunkElement implements ItemOwner {
+export class PunkSlotGrid extends PunkElement implements Owner<Item> {
   static override styles = slotGridStyles;
 
   /** The most columns to use. A narrower container uses fewer, and slots never shrink. */
@@ -93,7 +95,7 @@ export class PunkSlotGrid extends PunkElement implements ItemOwner {
   #keys = new Map<Item, string>();
   #anonymous = new WeakMap<Item, string>();
   #anonymousCount = 0;
-  #disabledByGrid = new Set<Item>();
+  readonly #ledger = new Ledger();
   #waiting = new Set<string>();
   #tabStop: Item | undefined;
   #lastFocused: Item | undefined;
@@ -131,13 +133,22 @@ export class PunkSlotGrid extends PunkElement implements ItemOwner {
   }
 
   /** @internal */
-  itemChanged(item: HTMLElement, changed: ReadonlyMap<PropertyKey, unknown>): void {
+  [childChanged](item: Item, changed: ReadonlyMap<PropertyKey, unknown>): void {
     if (!changed.has('disabled') && !changed.has('value')) {
       // Our own writes and ones that agree with the selection need no work.
-      const key = this.#keys.get(item as Item);
-      if (key !== undefined && (item as Item).selected === this.#model.has(key)) return;
+      const key = this.#keys.get(item);
+      if (key !== undefined && item.selected === this.#model.has(key)) return;
     }
     this.#scheduleSync();
+  }
+
+  /** @internal */
+  [release](item: Item): void {
+    item[owner] = null;
+    this.#keys.delete(item);
+    this.#ledger.restore(item);
+    if (this.#tabStop === item) this.#tabStop = undefined;
+    if (this.#lastFocused === item) this.#lastFocused = undefined;
   }
 
   #scheduleSync(): void {
@@ -171,17 +182,11 @@ export class PunkSlotGrid extends PunkElement implements ItemOwner {
     }
 
     const current = new Set(found);
-    for (const item of this.#items) if (!current.has(item)) this.#release(item);
+    for (const item of this.#items) if (!current.has(item)) this[release](item);
     for (const item of found) {
-      if (item.managed !== this) item.managed = this;
-      if (this.disabled) {
-        if (!item.disabled) {
-          item.disabled = true;
-          this.#disabledByGrid.add(item);
-        }
-      } else if (this.#disabledByGrid.delete(item)) {
-        item.disabled = false;
-      }
+      if (item[owner] !== this) item[owner] = this;
+      if (this.disabled) this.#ledger.disable(item);
+      else this.#ledger.enable(item);
     }
 
     const taken = new Set<string>();
@@ -228,14 +233,6 @@ export class PunkSlotGrid extends PunkElement implements ItemOwner {
     this.#placeTabStop();
     this.#structural = problems;
     this.#report();
-  }
-
-  #release(item: Item): void {
-    item.managed = null;
-    this.#keys.delete(item);
-    if (this.#disabledByGrid.delete(item)) item.disabled = false;
-    if (this.#tabStop === item) this.#tabStop = undefined;
-    if (this.#lastFocused === item) this.#lastFocused = undefined;
   }
 
   #waitFor(tag: string): void {

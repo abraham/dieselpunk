@@ -11,6 +11,7 @@ import {
 } from '../../../test/browser/helpers.ts';
 import '../../../test/browser/commands.ts';
 import { setLocale } from '../../../test/browser/locale.ts';
+import { setExternalAria } from '../../internal/anchor.ts';
 import './register.ts';
 import type { ButtonSize, ButtonType, ButtonVariant, PunkButton } from './index.ts';
 
@@ -328,13 +329,13 @@ describe('aria-label and description (12.4.5, 12.4.6)', () => {
     const button = await mount();
     expect(inner(button).hasAttribute('aria-describedby')).toBe(false);
 
-    button.setExternalAria({ description: 'Saves the file' });
+    button[setExternalAria]({ description: 'Saves the file' });
     await button.updateComplete;
     const id = inner(button).getAttribute('aria-describedby');
     expect(id).toBeTruthy();
     expect(button.shadowRoot?.getElementById(id ?? '')?.textContent).toBe('Saves the file');
 
-    button.setExternalAria({ description: null });
+    button[setExternalAria]({ description: null });
     await button.updateComplete;
     expect(inner(button).hasAttribute('aria-describedby')).toBe(false);
     expect(button.shadowRoot?.getElementById('description')).toBeNull();

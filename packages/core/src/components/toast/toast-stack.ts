@@ -4,9 +4,11 @@ import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { Ledger, childChanged, owner, release } from '../../internal/owner.ts';
+import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { PunkToast, isDismissing } from './toast.ts';
-import type { ToastOwner, ToastVariant } from './toast.ts';
+import type { ToastVariant } from './toast.ts';
 import { toastStackStyles } from './toast.styles.ts';
 
 export type ToastPlacement = 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
@@ -43,7 +45,7 @@ const DEFAULT_LIMIT = 5;
  *
  * @csspart stack - The region that holds the toasts.
  */
-export class PunkToastStack extends PunkElement implements ToastOwner {
+export class PunkToastStack extends PunkElement implements Owner<PunkToast> {
   readonly #localeWatcher = new LocaleWatcher(this);
 
   static override styles = toastStackStyles;
@@ -57,7 +59,7 @@ export class PunkToastStack extends PunkElement implements ToastOwner {
   /** The name of the region. Without it, the localized "Notifications". */
   @property({ reflect: true }) label = '';
 
-  readonly #authorSlots = new WeakMap<PunkToast, string | null>();
+  readonly #ledger = new Ledger();
 
   /** Creates a toast, shows it, and returns it. */
   show(options: PunkToastOptions): PunkToast {
@@ -81,19 +83,15 @@ export class PunkToastStack extends PunkElement implements ToastOwner {
     for (const toast of this.#toasts) toast.dismiss('method');
   }
 
-  /** Protocol: a toast tells its stack that its variant changed, so it moves to the matching live region. */
-  toastChanged(toast: PunkToast): void {
+  /** @internal A toast's variant changed, so it moves to the matching live region. */
+  [childChanged](toast: PunkToast): void {
     this.#place(toast);
   }
 
-  /** Protocol: a toast tells its stack that it was removed or dismissed. */
-  toastLeft(toast: PunkToast): void {
-    if (toast.owner === this) toast.owner = null;
-    if (!this.#authorSlots.has(toast)) return;
-    const authored = this.#authorSlots.get(toast) ?? null;
-    this.#authorSlots.delete(toast);
-    if (authored === null) toast.removeAttribute('slot');
-    else toast.setAttribute('slot', authored);
+  /** @internal A toast was removed or dismissed: it gets the author's `slot` back. */
+  [release](toast: PunkToast): void {
+    if (toast[owner] === this) toast[owner] = null;
+    this.#ledger.restore(toast);
   }
 
   override connectedCallback(): void {
@@ -114,10 +112,9 @@ export class PunkToastStack extends PunkElement implements ToastOwner {
   }
 
   #place(toast: PunkToast): void {
-    if (!this.#authorSlots.has(toast)) this.#authorSlots.set(toast, toast.getAttribute('slot'));
-    toast.owner = this;
+    toast[owner] = this;
     const slot = toast.variant === 'warning' || toast.variant === 'danger' ? 'assertive' : 'polite';
-    if (toast.getAttribute('slot') !== slot) toast.setAttribute('slot', slot);
+    this.#ledger.write(toast, 'slot', slot);
   }
 
   #enforceLimit(): void {

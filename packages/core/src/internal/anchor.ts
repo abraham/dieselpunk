@@ -12,13 +12,16 @@ export interface ExternalAria {
   haspopup?: PopupKind | null;
 }
 
+/** On an anchor such as `punk-button`: writes this ARIA to its own inner control. */
+export const setExternalAria = Symbol();
+
 /** An anchor, such as `punk-button`, that writes this ARIA to its own inner control. */
 export interface ExternalAriaAnchor extends HTMLElement {
-  setExternalAria(aria: ExternalAria): void;
+  [setExternalAria](aria: ExternalAria): void;
 }
 
 export function isExternalAriaAnchor(element: Element): element is ExternalAriaAnchor {
-  return typeof (element as Partial<ExternalAriaAnchor>).setExternalAria === 'function';
+  return typeof (element as Partial<ExternalAriaAnchor>)[setExternalAria] === 'function';
 }
 
 /** The element with id `forId` in `host`'s root, else the previous sibling. */
@@ -47,13 +50,13 @@ export function describeAnchor(
 ): (() => void) | undefined {
   if (isExternalAriaAnchor(anchor)) {
     const push = (): void =>
-      anchor.setExternalAria({ description: host.textContent?.trim() ?? '' });
+      anchor[setExternalAria]({ description: host.textContent?.trim() ?? '' });
     push();
     const observer = new MutationObserver(push);
     observer.observe(host, { childList: true, characterData: true, subtree: true });
     return () => {
       observer.disconnect();
-      anchor.setExternalAria({ description: null });
+      anchor[setExternalAria]({ description: null });
     };
   }
 
@@ -96,10 +99,10 @@ export interface AnchorState {
  */
 export function wireAnchorState(anchor: HTMLElement, haspopup: PopupKind | null): AnchorState {
   if (isExternalAriaAnchor(anchor)) {
-    anchor.setExternalAria({ expanded: false, haspopup });
+    anchor[setExternalAria]({ expanded: false, haspopup });
     return {
-      setExpanded: (expanded) => anchor.setExternalAria({ expanded }),
-      unwire: () => anchor.setExternalAria({ expanded: null, haspopup: null }),
+      setExpanded: (expanded) => anchor[setExternalAria]({ expanded }),
+      unwire: () => anchor[setExternalAria]({ expanded: null, haspopup: null }),
     };
   }
 

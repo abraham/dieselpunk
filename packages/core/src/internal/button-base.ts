@@ -6,8 +6,10 @@ import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { ExternalAria, PopupKind } from './anchor.ts';
+import { setExternalAria } from './anchor.ts';
 import { isFieldsetDisabled } from './fieldset.ts';
 import { PunkElement } from './punk-element.ts';
+import { focusItem, itemDisabled, setTabStop } from './roving.ts';
 
 export type ButtonVariant = 'default' | 'primary' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -92,26 +94,36 @@ export abstract class PunkButtonBase extends PunkElement {
    * Anchor protocol: ARIA that cannot reach the inner button by an id reference, because the
    * button is inside this element's shadow root. `description` is the text of the description.
    * A property that is left out is not changed, and `null` removes it.
+   * @internal
    */
-  setExternalAria(aria: ExternalAria): void {
+  [setExternalAria](aria: ExternalAria): void {
     if ('description' in aria) this.#description = aria.description ?? null;
     if ('expanded' in aria) this.#expanded = aria.expanded ?? null;
     if ('haspopup' in aria) this.#haspopup = aria.haspopup ?? null;
     this.requestUpdate();
   }
 
-  /** Roving protocol: whether the button can take focus from a roving group's arrow keys. */
-  get isDisabled(): boolean {
+  /**
+   * Roving protocol: whether the button can take focus from a roving group's arrow keys.
+   * @internal
+   */
+  get [itemDisabled](): boolean {
     return this.#disabled;
   }
 
-  /** Roving protocol: moves focus to the inner button. */
-  focusItem(): void {
+  /**
+   * Roving protocol: moves focus to the inner button.
+   * @internal
+   */
+  [focusItem](): void {
     this.focus();
   }
 
-  /** Roving protocol: `true` is the group's one tab stop, `false` is skipped by Tab, `null` hands control back. */
-  setTabStop(on: boolean | null): void {
+  /**
+   * Roving protocol: `true` is the group's one tab stop, `false` is skipped by Tab, `null` hands control back.
+   * @internal
+   */
+  [setTabStop](on: boolean | null): void {
     this.#tabStop = on;
     this.requestUpdate();
   }

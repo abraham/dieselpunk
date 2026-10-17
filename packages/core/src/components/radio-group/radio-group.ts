@@ -7,7 +7,9 @@ import { PunkFormControl } from '../../internal/form-control.ts';
 import type { FormValue, Validation } from '../../internal/form-control.ts';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg } from '../../internal/localize.ts';
+import { childChanged, owner, release } from '../../internal/owner.ts';
 import { nextRovingIndex } from '../../internal/roving-keys.ts';
+import { itemDisabled, setTabStop } from '../../internal/roving.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { PunkRadio } from './radio.ts';
@@ -102,7 +104,7 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    for (const radio of this.#radios) this.#release(radio);
+    for (const radio of this.#radios) this[release](radio);
     this.#radios = [];
     this.#built = false;
   }
@@ -118,9 +120,15 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
     this.#tabStop()?.focus(options);
   }
 
-  /** @internal */
-  radioChanged(): void {
+  /** @internal A radio's `disabled` or `value` changed. */
+  [childChanged](): void {
     this.#schedule();
+  }
+
+  /** @internal */
+  [release](radio: PunkRadio): void {
+    radio[owner] = null;
+    radio[setTabStop](null);
   }
 
   protected override formValue(): FormValue {
@@ -163,7 +171,7 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
   }
 
   #tabStop(): PunkRadio | undefined {
-    const enabled = this.#radios.filter((radio) => !radio.isDisabled);
+    const enabled = this.#radios.filter((radio) => !radio[itemDisabled]);
     return enabled.find((radio) => radio.checked) ?? enabled[0];
   }
 
@@ -181,8 +189,8 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
     const found = [...this.children].filter(
       (child): child is PunkRadio => child instanceof PunkRadio,
     );
-    for (const radio of this.#radios) if (!found.includes(radio)) this.#release(radio);
-    for (const radio of found) radio.group = this;
+    for (const radio of this.#radios) if (!found.includes(radio)) this[release](radio);
+    for (const radio of found) radio[owner] = this;
     this.#radios = found;
     if (!this.#built && this.#requested === undefined) {
       this.#check(found.filter((radio) => radio.checked).at(-1));
@@ -200,11 +208,6 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
     this.commit();
   }
 
-  #release(radio: PunkRadio): void {
-    radio.group = null;
-    radio.setTabStop(null);
-  }
-
   #apply(value: string): void {
     this.#check(value === '' ? undefined : this.#radios.find((radio) => radio.value === value));
   }
@@ -216,12 +219,12 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
 
   #placeTabStop(): void {
     const stop = this.#tabStop();
-    for (const radio of this.#radios) radio.setTabStop(radio === stop);
+    for (const radio of this.#radios) radio[setTabStop](radio === stop);
   }
 
   /** The user chose `radio`. */
   #choose(radio: PunkRadio): void {
-    if (radio.checked || radio.isDisabled || this.isDisabled) return;
+    if (radio.checked || radio[itemDisabled] || this.isDisabled) return;
     this.#requested = undefined;
     this.#check(radio);
     this.commit();
@@ -259,7 +262,7 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
     const to = nextRovingIndex(
       event.key,
       from,
-      this.#radios.map((other) => other.isDisabled),
+      this.#radios.map((other) => other[itemDisabled]),
       { orientation: vertical ? 'vertical' : 'horizontal', rtl: this.matches(':dir(rtl)') },
     );
     const target = this.#radios[to];

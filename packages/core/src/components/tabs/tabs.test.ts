@@ -1,5 +1,6 @@
 import { commands, userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { owner } from '../../internal/owner.ts';
 import type { MockInstance } from 'vitest';
 import {
   addStylesheets,
@@ -430,7 +431,7 @@ describe('changing the tabs', () => {
     tabs.append(added);
     wrapper.append(latePanel);
     await settle(tabs);
-    expect(added.owner).toBe(tabs);
+    expect(added[owner]).toBe(tabs);
     expect(latePanel.hidden).toBe(true);
     added.selected = true;
     await settle(tabs);
@@ -443,7 +444,7 @@ describe('changing the tabs', () => {
     const removed = tab[1] as PunkTab;
     removed.remove();
     await settle(tabs);
-    expect(removed.owner).toBeNull();
+    expect(removed[owner]).toBeNull();
     expect(removed.hasAttribute('aria-controls')).toBe(false);
   });
 

@@ -12,8 +12,10 @@ import '../../test/browser/commands.ts';
 import { themes } from '../tokens/themes.ts';
 import { registerElement } from '../utilities/register-element.ts';
 import { receptacleStyles } from '../styles/receptacle.ts';
+import { childChanged, owner, release } from './owner.ts';
+import type { Owner } from './owner.ts';
 import { PunkSelectableBase } from './selectable-base.ts';
-import type { ItemOwner, PunkActivateDetail } from './selectable-base.ts';
+import type { PunkActivateDetail } from './selectable-base.ts';
 
 // The smallest possible subclass: the DOM shape that `receptacleStyles` documents.
 class TestSelectable extends PunkSelectableBase {
@@ -60,8 +62,11 @@ function key(type: 'keydown' | 'keyup', init: KeyboardEventInit): KeyboardEvent 
   return new KeyboardEvent(type, { bubbles: true, cancelable: true, composed: true, ...init });
 }
 
-function owner() {
-  return { itemChanged: vi.fn<ItemOwner['itemChanged']>() };
+function fakeOwner() {
+  return {
+    [childChanged]: vi.fn<Owner<PunkSelectableBase>[typeof childChanged]>(),
+    [release]: vi.fn<Owner<PunkSelectableBase>[typeof release]>(),
+  };
 }
 
 function listen(target: HTMLElement = document.body) {
@@ -142,7 +147,7 @@ describe('semantics', () => {
     element.setAttribute('role', 'option');
     element.setAttribute('tabindex', '-1');
     element.setAttribute('aria-selected', 'true');
-    element.managed = owner();
+    element[owner] = fakeOwner();
     element.disabled = true;
     await element.updateComplete;
     expect(element.getAttribute('role')).toBe('option');
@@ -154,10 +159,10 @@ describe('semantics', () => {
 
   it('tells a grid when its disabled, value, or selected state changes, and not otherwise', async () => {
     const element = await mount();
-    const grid = owner();
-    element.managed = grid;
+    const grid = fakeOwner();
+    element[owner] = grid;
     await element.updateComplete;
-    grid.itemChanged.mockClear();
+    grid[childChanged].mockClear();
 
     element.disabled = true;
     await element.updateComplete;
@@ -165,39 +170,39 @@ describe('semantics', () => {
     await element.updateComplete;
     element.selected = true;
     await element.updateComplete;
-    expect(grid.itemChanged).toHaveBeenCalledTimes(3);
-    const [item, changed] = grid.itemChanged.mock.calls[0] ?? [];
+    expect(grid[childChanged]).toHaveBeenCalledTimes(3);
+    const [item, changed] = grid[childChanged].mock.calls[0] ?? [];
     expect(item).toBe(element);
     expect(changed?.has('disabled')).toBe(true);
 
-    grid.itemChanged.mockClear();
+    grid[childChanged].mockClear();
     element.requestUpdate();
     await element.updateComplete;
-    expect(grid.itemChanged).not.toHaveBeenCalled();
+    expect(grid[childChanged]).not.toHaveBeenCalled();
   });
 
   it('stops telling a grid once it lets go', async () => {
     const element = await mount();
-    const grid = owner();
-    element.managed = grid;
+    const grid = fakeOwner();
+    element[owner] = grid;
     await element.updateComplete;
-    element.managed = null;
-    grid.itemChanged.mockClear();
+    element[owner] = null;
+    grid[childChanged].mockClear();
     element.disabled = true;
     await element.updateComplete;
-    expect(grid.itemChanged).not.toHaveBeenCalled();
+    expect(grid[childChanged]).not.toHaveBeenCalled();
   });
 
   it('takes its own semantics back when a grid lets go', async () => {
     const element = await mount();
     element.selected = true;
-    element.managed = owner();
+    element[owner] = fakeOwner();
     element.setAttribute('role', 'option');
     element.setAttribute('tabindex', '-1');
     element.setAttribute('aria-selected', 'true');
     await element.updateComplete;
 
-    element.managed = null;
+    element[owner] = null;
     await element.updateComplete;
     expect(element.getAttribute('role')).toBe('button');
     expect(element.getAttribute('tabindex')).toBe('0');

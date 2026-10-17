@@ -32,7 +32,7 @@
 ## 4. Relationships across shadow roots
 
 - Id references stay inside one tree: a tab and its panel, an accordion trigger and its region, a field's label, hint, and message.
-- **External ARIA protocol.** An overlay that must describe or expand its anchor calls `setExternalAria({ description, expanded, haspopup })` when the anchor implements it (the button family, whose inner `<button>` is the real target), and otherwise writes the attribute to the anchor itself. It adds only what it needs, preserves what was there, and removes only what it added.
+- **External ARIA protocol.** An overlay that must describe or expand its anchor calls `[setExternalAria]({ description, expanded, haspopup })` when the anchor implements it (the button family, whose inner `<button>` is the real target), and otherwise writes the attribute to the anchor itself. It adds only what it needs, preserves what was there, and removes only what it added.
 - **Tooltips describe from the host.** A tooltip's host, which sits beside its anchor in the same tree, gets `role="tooltip"` and an id, and the anchor's `aria-describedby` gains that id. A tooltip is never nested in its anchor, which would add its text to the anchor's name.
 
 ## 5. Keyboard and focus

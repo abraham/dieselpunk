@@ -1,5 +1,6 @@
 import { commands, userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { owner } from '../../internal/owner.ts';
 import type { MockInstance } from 'vitest';
 import {
   addStylesheets,
@@ -356,8 +357,8 @@ describe('punk-accordion', () => {
     const removed = items[1] as PunkAccordionItem;
     removed.remove();
     await new Promise((resolve) => setTimeout(resolve));
-    expect(removed.owner).toBeNull();
-    expect(added.owner).toBe(group);
+    expect(removed[owner]).toBeNull();
+    expect(added[owner]).toBe(group);
   });
 
   it('ignores children that are not items', async () => {

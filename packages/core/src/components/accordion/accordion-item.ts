@@ -1,7 +1,10 @@
 import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { childChanged, owner } from '../../internal/owner.ts';
+import type { Owned, Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
+import { isFocusTarget, itemDisabled } from '../../internal/roving.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { accordionItemStyles } from './accordion.styles.ts';
@@ -14,11 +17,6 @@ declare global {
   interface HTMLElementEventMap {
     'punk-toggle': CustomEvent<PunkToggleDetail>;
   }
-}
-
-/** What an accordion lets its items tell it. */
-export interface AccordionOwner {
-  itemExpanded(item: PunkAccordionItem): void;
 }
 
 /**
@@ -40,7 +38,7 @@ export interface AccordionOwner {
  *
  * @fires {CustomEvent<{ expanded: boolean }>} punk-toggle - A user expanded or collapsed it. It is not sent when `expanded` is set from code.
  */
-export class PunkAccordionItem extends PunkElement {
+export class PunkAccordionItem extends PunkElement implements Owned<PunkAccordionItem> {
   static override styles = accordionItemStyles;
 
   /** The heading text, and the name of the button. Use the `heading` slot for rich content. */
@@ -55,20 +53,33 @@ export class PunkAccordionItem extends PunkElement {
   /** Stops the heading from being focused or toggled. */
   @property({ type: Boolean, reflect: true }) disabled = false;
 
-  /** The accordion that manages this item, which collapses its other items. */
-  @property({ attribute: false }) owner: AccordionOwner | null = null;
+  /**
+   * The accordion that manages this item, which collapses its other items.
+   * @internal
+   */
+  [owner]: Owner<PunkAccordionItem> | null = null;
+  static {
+    // The dev transform gives a decorator on a symbol key no key, so the property is made here.
+    this.createProperty(owner, { attribute: false });
+  }
 
   readonly #slots = new SlotPresence(this, ['heading']);
   #warnedLevel = false;
   #warnedHeading = false;
 
-  /** Roving protocol: whether the header can be reached by the accordion's arrow keys. */
-  get isDisabled(): boolean {
+  /**
+   * Roving protocol: whether the header can be reached by the accordion's arrow keys.
+   * @internal
+   */
+  get [itemDisabled](): boolean {
     return this.disabled;
   }
 
-  /** Whether `element` is this item's button. */
-  isTrigger(element: EventTarget | undefined): boolean {
+  /**
+   * Roving protocol: whether `element` is this item's button.
+   * @internal
+   */
+  [isFocusTarget](element: EventTarget | undefined): boolean {
     return element !== undefined && element === this.renderRoot.querySelector('.trigger');
   }
 
@@ -90,7 +101,7 @@ export class PunkAccordionItem extends PunkElement {
   }
 
   protected override updated(changed: PropertyValues<this>): void {
-    if (changed.has('expanded') && this.expanded) this.owner?.itemExpanded(this);
+    if (changed.has('expanded') && this.expanded) this[owner]?.[childChanged](this, changed);
     if (!this.heading && !this.#slots.has('heading') && !this.#warnedHeading) {
       this.#warnedHeading = true;
       devWarn(this, 'It has no heading. Set `heading` or fill the `heading` slot.');

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, track } from '../../test/browser/helpers.ts';
 import '../components/button/register.ts';
 import type { PunkButton } from '../components/button/index.ts';
-import { describeAnchor, resolveAnchor, wireAnchorState } from './anchor.ts';
+import { describeAnchor, resolveAnchor, setExternalAria, wireAnchorState } from './anchor.ts';
 
 afterEach(() => {
   cleanup();
@@ -151,8 +151,8 @@ describe('PunkButtonBase protocol', () => {
   it('changes only the properties it is given', async () => {
     const { anchor } = pair('<punk-button>Save</punk-button>');
     const button = anchor as PunkButton;
-    button.setExternalAria({ expanded: true, haspopup: 'dialog' });
-    button.setExternalAria({ expanded: false });
+    button[setExternalAria]({ expanded: true, haspopup: 'dialog' });
+    button[setExternalAria]({ expanded: false });
     await button.updateComplete;
     const inner = button.shadowRoot?.querySelector('button') as HTMLButtonElement;
     expect(inner.getAttribute('aria-expanded')).toBe('false');

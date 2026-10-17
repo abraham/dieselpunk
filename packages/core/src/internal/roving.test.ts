@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, track } from '../../test/browser/helpers.ts';
 import '../components/button/register.ts';
 import type { PunkButton } from '../components/button/index.ts';
-import { RovingController } from './roving.ts';
+import { RovingController, itemDisabled } from './roving.ts';
 import type { RovingOptions } from './roving.ts';
 
 afterEach(cleanup);
@@ -144,7 +144,8 @@ describe('RovingController', () => {
     );
     const [, two] = items() as [PunkButton, PunkButton];
     await two.updateComplete;
-    expect(two.isDisabled).toBe(true);
+    expect(two[itemDisabled]).toBe(true);
+    expect('isDisabled' in two || 'setTabStop' in two || 'focusItem' in two).toBe(false);
     const controller = roving();
     controller.connect();
     expect(controller.current).toBe(items()[0]);
