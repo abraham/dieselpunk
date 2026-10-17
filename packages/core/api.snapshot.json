@@ -693,6 +693,84 @@
         "--punk-progress-height": "= calc(var(--punk-control-height-sm) * 0.6)"
       }
     },
+    "punk-radio": {
+      "attributes": {
+        "checked": "boolean = false",
+        "disabled": "boolean = false",
+        "value": "string = ''"
+      },
+      "properties": {
+        "checked": "boolean = false",
+        "disabled": "boolean = false",
+        "isDisabled": "boolean",
+        "value": "string = ''"
+      },
+      "methods": {
+        "focusItem": "",
+        "setTabStop": ""
+      },
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "control": "",
+        "dot": "",
+        "label": "",
+        "ring": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-radio-group": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "disabled": "boolean = false",
+        "label": "string = ''",
+        "name": "string = ''",
+        "orientation": "RadioGroupOrientation = 'vertical'",
+        "required": "boolean = false",
+        "value": "string"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "disabled": "boolean = false",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "name": "string = ''",
+        "orientation": "RadioGroupOrientation = 'vertical'",
+        "required": "boolean = false",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "value": "string",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "Event",
+        "input": "Event"
+      },
+      "slots": {
+        "(default)": "",
+        "hint": ""
+      },
+      "parts": {
+        "hint": "",
+        "label": "",
+        "message": "",
+        "radios": ""
+      },
+      "cssProperties": {}
+    },
     "punk-recipe": {
       "attributes": {
         "available": "boolean = false",

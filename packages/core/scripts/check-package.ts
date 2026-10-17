@@ -59,6 +59,7 @@ const sentinels: Record<string, string> = {
   'text-field': '-webkit-search-cancel-button',
   'number-field': '-webkit-inner-spin-button',
   select: 'optgroup',
+  'radio-group': '"punk-radio"',
   textarea: 'field-sizing',
   fieldset: 'It has no legend',
   alert: 'part="actions"',

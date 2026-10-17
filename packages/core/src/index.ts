@@ -63,6 +63,8 @@ export type {
   ConnectionStatus,
   PunkRemoveDetail,
 } from './components/connection-row/index.ts';
+export { PunkRadioGroup, PunkRadio } from './components/radio-group/index.ts';
+export type { RadioGroupOrientation } from './components/radio-group/index.ts';
 export { PunkTextarea } from './components/textarea/index.ts';
 export { PunkFieldset } from './components/fieldset/index.ts';
 export { PunkAlert } from './components/alert/index.ts';
