@@ -357,5 +357,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "4 kB"
+  },
+  {
+    "name": "punk-pagination",
+    "path": "dist/components/pagination/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "4.5 kB"
   }
 ]

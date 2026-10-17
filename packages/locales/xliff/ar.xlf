@@ -132,6 +132,21 @@
   <target>إزالة الاتصال: <x id="0" equiv-text="${source}"/>، <x id="1" equiv-text="${destination}"/></target>
   <note from="lit-localize">The name of the button that removes a connection, with the text of its two nodes.</note>
 </trans-unit>
+<trans-unit id="pageNumber">
+  <source>Page <x id="0" equiv-text="${shown}"/></source>
+  <target>الصفحة <x id="0" equiv-text="${shown}"/></target>
+  <note from="lit-localize">The name of a button that goes to one page of results, for example: Page 3.</note>
+</trans-unit>
+<trans-unit id="nextPage">
+  <source>Next page</source>
+  <target>الصفحة التالية</target>
+  <note from="lit-localize">The name of the button that goes to the next page of results.</note>
+</trans-unit>
+<trans-unit id="previousPage">
+  <source>Previous page</source>
+  <target>الصفحة السابقة</target>
+  <note from="lit-localize">The name of the button that goes to the previous page of results.</note>
+</trans-unit>
 <trans-unit id="showPath">
   <source>Show full path</source>
   <target>إظهار المسار الكامل</target>
@@ -141,6 +156,11 @@
   <source>Breadcrumb</source>
   <target>مسار التنقل</target>
   <note from="lit-localize">The name of the landmark around a breadcrumb trail.</note>
+</trans-unit>
+<trans-unit id="pagination">
+  <source>Pagination</source>
+  <target>ترقيم الصفحات</target>
+  <note from="lit-localize">The name of the landmark around the buttons that move between pages of results.</note>
 </trans-unit>
 </body>
 </file>

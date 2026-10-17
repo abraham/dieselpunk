@@ -26,6 +26,10 @@ const german = {
     dismiss: 'Schließen',
     breadcrumb: 'Navigationspfad',
     showPath: 'Vollständigen Pfad anzeigen',
+    pagination: 'Seitennavigation',
+    previousPage: 'Vorherige Seite',
+    nextPage: 'Nächste Seite',
+    pageNumber: str`Seite ${0}`,
   },
 };
 

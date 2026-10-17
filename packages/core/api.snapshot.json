@@ -809,6 +809,34 @@
       },
       "cssProperties": {}
     },
+    "punk-pagination": {
+      "attributes": {
+        "label": "string = ''",
+        "page": "number = 1",
+        "pages": "number = 1",
+        "siblings": "number = 1"
+      },
+      "properties": {
+        "label": "string = ''",
+        "page": "number = 1",
+        "pages": "number = 1",
+        "siblings": "number = 1"
+      },
+      "methods": {},
+      "events": {
+        "punk-page-change": ""
+      },
+      "slots": {},
+      "parts": {
+        "gap": "",
+        "list": "",
+        "nav": "",
+        "next": "",
+        "page": "",
+        "previous": ""
+      },
+      "cssProperties": {}
+    },
     "punk-panel": {
       "attributes": {
         "density": "PanelDensity | undefined",
