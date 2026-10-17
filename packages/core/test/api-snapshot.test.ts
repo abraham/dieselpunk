@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { describeApi, diffApi, isSame } from '../scripts/api-snapshot.ts';
+import { describeApi, diffApi, isSame, undocumentedApi } from '../scripts/api-snapshot.ts';
 import type { Manifest } from '../scripts/api-snapshot.ts';
 
 const manifest = (): Manifest => ({
@@ -82,5 +82,55 @@ describe('diffApi', () => {
     ]);
     assert.deepEqual(difference.added, ['exports ./new']);
     assert.ok(!isSame(difference));
+  });
+});
+
+describe('undocumentedApi', () => {
+  const documented = (): Manifest => ({
+    modules: [
+      {
+        declarations: [
+          {
+            tagName: 'punk-box',
+            attributes: [{ name: 'open', description: 'Whether it is open.' }],
+            members: [
+              { kind: 'field', name: 'open', description: 'Whether it is open.' },
+              { kind: 'field', name: 'hidden', privacy: 'private' },
+              { kind: 'method', name: 'show', description: 'Opens it.' },
+            ],
+            events: [{ name: 'punk-open', description: 'It opened.' }],
+            slots: [{ name: '', description: 'The content.' }],
+            cssParts: [{ name: 'box', description: 'The box.' }],
+            cssProperties: [{ name: '--punk-box-width', description: 'Its width.' }],
+          },
+        ],
+      },
+    ],
+  });
+
+  it('finds nothing when every public name has a description', () => {
+    assert.deepEqual(undocumentedApi(documented()), []);
+  });
+
+  it('names each kind of public entry that has none, and skips a private member', () => {
+    const box = documented().modules[0]!.declarations![0]!;
+    const manifest: Manifest = { modules: [{ declarations: [box] }] };
+    box.attributes = [{ name: 'open' }];
+    box.members = [
+      { kind: 'method', name: 'show', description: '  ' },
+      { kind: 'field', name: 'hidden', privacy: 'private' },
+    ];
+    box.events = [{ name: 'punk-open' }];
+    box.slots = [{ name: '' }];
+    box.cssParts = [{ name: 'box' }];
+    box.cssProperties = [{ name: '--punk-box-width' }];
+    assert.deepEqual(undocumentedApi(manifest), [
+      'punk-box attribute open',
+      'punk-box css property --punk-box-width',
+      'punk-box event punk-open',
+      'punk-box member show',
+      'punk-box part box',
+      'punk-box slot (default)',
+    ]);
   });
 });

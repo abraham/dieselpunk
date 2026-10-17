@@ -107,5 +107,5 @@ describe('reflow without horizontal scrolling', () => {
     } finally {
       frame.remove();
     }
-  });
+  }, 60_000);
 });

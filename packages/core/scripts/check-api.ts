@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { describeApi, diffApi, isSame } from './api-snapshot.ts';
+import { describeApi, diffApi, isSame, undocumentedApi } from './api-snapshot.ts';
 import type { ApiSnapshot, Manifest } from './api-snapshot.ts';
 
 /**
@@ -20,6 +20,15 @@ const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Manifest;
 const pkg = JSON.parse(readFileSync(new URL('package.json', root), 'utf8')) as {
   exports: Record<string, unknown>;
 };
+// A name the manifest lists with no description is public and undocumented (SPEC §5.3).
+const undocumented = undocumentedApi(manifest);
+if (undocumented.length > 0) {
+  console.error(
+    `These public names have no description:\n${undocumented.map((line) => `  ${line}`).join('\n')}`,
+  );
+  process.exit(1);
+}
+
 const current = describeApi(manifest, Object.keys(pkg.exports));
 const text = `${JSON.stringify(current, null, 2)}\n`;
 

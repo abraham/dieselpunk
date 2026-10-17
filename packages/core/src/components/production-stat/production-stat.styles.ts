@@ -34,9 +34,10 @@ export const productionStatStyles = css`
     min-inline-size: 0;
   }
 
-  /* Wraps, so the figures go under the label where the row is narrow. */
+  /* The label's own width, so the figures go under it before a word of it is split. */
   .inline .head {
-    flex: 1 1 8ch;
+    flex: 1 1 auto;
+    max-inline-size: 100%;
   }
 
   /* After the label in the document, before it on screen. */

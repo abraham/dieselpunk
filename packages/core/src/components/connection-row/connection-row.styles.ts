@@ -117,11 +117,13 @@ export const connectionRowStyles = css`
       gap: ${token('space-2')} ${token('space-3')};
     }
 
+    /* Only the source shares its line with the button; the grid places the rest in order. */
     .nodes {
-      grid-row: 1;
-      grid-column: 1;
-      flex-direction: column;
-      align-items: flex-start;
+      display: contents;
+    }
+
+    .direction {
+      grid-row: 2;
     }
 
     .close-button {
@@ -129,15 +131,13 @@ export const connectionRowStyles = css`
       grid-column: 2;
     }
 
+    .destination,
     .details,
     .status {
       grid-column: 1 / -1;
     }
 
-    .both {
-      --_turn: 90deg;
-    }
-
+    .both,
     .forward,
     :host(:dir(rtl)) .forward {
       --_turn: 90deg;

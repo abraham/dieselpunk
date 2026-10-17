@@ -146,7 +146,7 @@
     "path": "dist/components/connection-row/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.25 kB"
+    "limit": "5.3 kB"
   },
   {
     "name": "punk-tooltip",

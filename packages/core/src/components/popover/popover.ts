@@ -100,6 +100,7 @@ export class PunkPopover extends PunkElement {
     this.open = false;
   }
 
+  /** Opens it when closed, and closes it when open. */
   toggle(): void {
     if (this.open) this.hide();
     else this.show();

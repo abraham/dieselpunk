@@ -109,6 +109,7 @@ const preview: Preview = {
             'Localization',
             'Performance',
             'Accessibility and layout',
+            'Screen reader checklist',
           ],
         ],
       },

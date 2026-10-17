@@ -2,6 +2,7 @@
 
 interface Named {
   name: string;
+  description?: string;
   type?: { text?: string };
   default?: string;
 }
@@ -108,3 +109,29 @@ export function diffApi(before: ApiSnapshot, after: ApiSnapshot): ApiDifference 
 
 export const isSame = (difference: ApiDifference): boolean =>
   difference.removed.length + difference.added.length + difference.changed.length === 0;
+
+/** Every public name that the manifest lists with no description, as `tag kind name`. */
+export function undocumentedApi(manifest: Manifest): string[] {
+  const found: string[] = [];
+  for (const module of manifest.modules) {
+    for (const declaration of module.declarations ?? []) {
+      const tag = declaration.tagName;
+      if (!tag) continue;
+      const groups: Array<[string, Named[]]> = [
+        ['attribute', declaration.attributes ?? []],
+        ['member', (declaration.members ?? []).filter(isPublic)],
+        ['event', declaration.events ?? []],
+        ['slot', declaration.slots ?? []],
+        ['part', declaration.cssParts ?? []],
+        ['css property', declaration.cssProperties ?? []],
+      ];
+      for (const [kind, entries] of groups) {
+        for (const entry of entries) {
+          if (!entry.description?.trim())
+            found.push(`${tag} ${kind} ${slotName(entry.name) || '(default)'}`);
+        }
+      }
+    }
+  }
+  return found.sort();
+}

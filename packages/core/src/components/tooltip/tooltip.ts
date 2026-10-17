@@ -78,11 +78,13 @@ export class PunkTooltip extends PunkElement {
     return this.renderRoot.querySelector<HTMLElement>('.surface');
   }
 
+  /** Opens it now, with no delay. */
   show(): void {
     this.#clearTimers();
     this.open = true;
   }
 
+  /** Closes it now. */
   hide(): void {
     this.#clearTimers();
     this.open = false;

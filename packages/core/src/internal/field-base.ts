@@ -50,6 +50,7 @@ export abstract class PunkFieldBase extends PunkFormControl {
     (this.control as HTMLInputElement | null)?.select?.();
   }
 
+  /** Focuses the control inside the field. */
   override focus(options?: FocusOptions): void {
     this.control?.focus(options);
   }

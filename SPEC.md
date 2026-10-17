@@ -182,7 +182,7 @@ Raised controls use a light top/left edge, dark bottom/right edge, and a subtle 
 
 Motion is short and functional: button depression, progress updates, panel appearance, slot selection, and warning pulses. All animation must respect `prefers-reduced-motion`.
 
-Sound is an optional adapter package, disabled by default. No sound file is included in core. Consumers may map interaction events to licensed audio assets.
+Sound is an optional adapter package, disabled by default, and is not built yet. No sound file is included in core. Consumers may map interaction events to licensed audio assets.
 
 ## 7. Component Inventory
 
@@ -484,6 +484,8 @@ Example:
 - Visual regression tests: Playwright screenshots in Chromium, Firefox, and WebKit.
 - Type tests: public exports, event typings, and property types.
 - Custom Elements Manifest validation in CI.
+- Public API snapshot: the manifest's attributes, properties, methods, events, slots, parts, and CSS properties, and the package's `exports`, are compared with a committed file, and a public name with no description fails.
+- Localization: every message is extracted to XLIFF and shown through a pseudo-locale, and each shipped locale is checked for completeness and placeholders.
 
 ### 14.2 Visual Test Matrix
 
@@ -502,6 +504,7 @@ Every component is captured in:
 - Individual leaf component: no more than 5 kB minified and compressed unless documented.
 - A 100-slot grid must maintain responsive keyboard navigation and scrolling on a mid-range mobile device.
 - Components avoid continuous animation, layout polling, and document-wide observers.
+- A dashboard of hundreds of stats and rows, and an idle page, are gated on listeners, observers, timers, renders, and layout reads, not on frame times.
 
 ## 15. Documentation Site
 
@@ -513,7 +516,8 @@ The documentation app must function as a workbench rather than a marketing landi
 - state and theme matrices;
 - keyboard instructions alongside interactive examples;
 - framework integration examples for plain HTML, React, Vue, and Svelte;
-- an asset policy page explaining how to provide original item icons and textures.
+- an asset policy page explaining how to provide original item icons and textures;
+- guides for localization, performance, and a screen reader checklist with a results table, run by a person before a release.
 
 The first screen opens directly to the component workbench with the inventory components visible: the Inventory overview. (Phase 1 opened on a Foundations overview, which remains as a story.)
 
@@ -540,7 +544,7 @@ Window, dialog, tabs, toolbar, accordion, stack, cluster, form controls, popover
 
 ### Phase 4: Production Interfaces
 
-Production stat, connection row, advanced examples, localization packs, optional interaction-sound adapter, and performance tuning.
+Production stat, connection row, advanced examples, localization packs (`@dieselpunk/locales`), and performance tuning, then release readiness for 1.0. The interaction-sound adapter of Section 6.5 is not part of this phase: it stays a later, optional package.
 
 ## 18. Definition of Done for Version 1.0
 

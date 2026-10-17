@@ -291,6 +291,28 @@ async function checkInterfaceSettings(): Promise<void> {
 }
 
 // The Localization guide lists every message of the XLIFF, with its English and description.
+async function checkScreenReaderChecklist(): Promise<void> {
+  const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
+  await page.goto(
+    `http://localhost:${port}/iframe.html?id=guides-screen-reader-checklist--docs&viewMode=docs`,
+  );
+  await page.waitForSelector('body.sb-show-main', { timeout: 15000 });
+  await page.waitForTimeout(500);
+  const text = String(await page.evaluate("document.querySelector('.sbdocs')?.textContent ?? ''"));
+  const results = Number(
+    await page.evaluate(
+      "document.querySelectorAll('.sbdocs table')[0]?.querySelectorAll('tbody tr').length ?? 0",
+    ),
+  );
+  if (results !== 8)
+    failures.push(`guides-screen-reader-checklist--docs has ${results} result rows, expected 8`);
+  for (const name of ['NVDA', 'VoiceOver', 'TalkBack', 'Run record']) {
+    if (!text.includes(name))
+      failures.push(`guides-screen-reader-checklist--docs does not mention ${name}`);
+  }
+  await page.close();
+}
+
 async function checkLocalizationGuide(): Promise<void> {
   const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
   await page.goto(
@@ -345,6 +367,7 @@ try {
   await checkLogistics();
   await checkInterfaceSettings();
   await checkLocalizationGuide();
+  await checkScreenReaderChecklist();
   await checkFrameworkGuides();
 } finally {
   await browser.close();

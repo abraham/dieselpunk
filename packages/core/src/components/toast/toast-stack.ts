@@ -81,10 +81,12 @@ export class PunkToastStack extends PunkElement implements ToastOwner {
     for (const toast of this.#toasts) toast.dismiss('method');
   }
 
+  /** Protocol: a toast tells its stack that its variant changed, so it moves to the matching live region. */
   toastChanged(toast: PunkToast): void {
     this.#place(toast);
   }
 
+  /** Protocol: a toast tells its stack that it was removed or dismissed. */
   toastLeft(toast: PunkToast): void {
     if (toast.owner === this) toast.owner = null;
     if (!this.#authorSlots.has(toast)) return;

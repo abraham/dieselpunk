@@ -62,6 +62,7 @@ export class PunkAccordionItem extends PunkElement {
   #warnedLevel = false;
   #warnedHeading = false;
 
+  /** Roving protocol: whether the header can be reached by the accordion's arrow keys. */
   get isDisabled(): boolean {
     return this.disabled;
   }
@@ -71,6 +72,7 @@ export class PunkAccordionItem extends PunkElement {
     return element !== undefined && element === this.renderRoot.querySelector('.trigger');
   }
 
+  /** Moves focus to the header button. */
   focusHeader(): void {
     this.renderRoot.querySelector<HTMLElement>('.trigger')?.focus();
   }
