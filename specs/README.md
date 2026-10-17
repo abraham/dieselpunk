@@ -8,7 +8,7 @@ Living specifications for `@dieselpunk/core` and `@dieselpunk/locales`. Each one
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | [product.md](product.md)                               | Purpose, goals, non-goals, design principles, release criteria                                                         |
 | [components.md](components.md)                         | The component catalog: every implemented and planned component, its purpose, and its status                            |
-| [toolchain.md](toolchain.md)                           | Repository layout, TypeScript and Node, builds, scripts, dependencies, CI                                              |
+| [toolchain.md](toolchain.md)                           | Repository layout, TypeScript and Node, builds, scripts, dependencies                                                  |
 | [package-contract.md](package-contract.md)             | Exports, registration, naming, events, development warnings, the manifest, the API snapshot, versioning                |
 | [visual-system.md](visual-system.md)                   | Tokens, themes, density, contrast, surfaces, focus, forced colors, motion, typography, responsive layout               |
 | [component-model.md](component-model.md)               | `PunkElement`, base classes, controllers, pure logic modules, properties, ownership, composition                       |
@@ -21,6 +21,7 @@ Living specifications for `@dieselpunk/core` and `@dieselpunk/locales`. Each one
 | [localization.md](localization.md)                     | Messages, locale changes, the locales package, translation gates, number formatting, direction                         |
 | [performance.md](performance.md)                       | Size budgets, runtime cost rules, and the deterministic gates that hold them                                           |
 | [testing.md](testing.md)                               | Test layers, the gallery, engines, visual regression, mutation checking, the gate list                                 |
+| [ci.md](ci.md)                                         | The CI workflows: jobs, shared setup, splitting by gallery group, generated matrices, change detection, budgets        |
 | [workbench.md](workbench.md)                           | The Storybook workbench, its examples, guides, and smoke test, and its publication at dieselpunk.dev                   |
 
 Read [product.md](product.md) first. The architecture specs can then be read in any order; each names the specs it depends on.

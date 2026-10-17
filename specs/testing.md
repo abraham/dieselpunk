@@ -85,7 +85,7 @@ Suites over the gallery:
 | Zoom      | 100% and 200% (half the viewport width with `deviceScaleFactor: 2`)  |
 | Content   | The gallery's variants, cut per group where noted                    |
 
-**Projects.** `chromium` runs the full matrix for every group. `firefox` and `webkit` run the default and `industrial-light` with `low` at 100%. `chromium-forced` runs every group with forced colors active at one theme (themes have no effect there), 100%, both densities, both widths, and every variant. Interaction captures (hover, keyboard focus, and pressed, driven by real input, never by class hooks) run in each project, and clip to the target with a margin and a tight tolerance (`threshold: 0.02`, `maxDiffPixelRatio: 0.0005`), since a hover changes only an edge. In CI each project is its own job (`npm run test:visual -w @dieselpunk/core -- --project=<name> --shard=<n>/<total>`), so an engine's failure is reported on its own; `chromium`, which renders the full matrix, is split into two shards. The visual tests always run 4 workers, one per vCPU of a GitHub runner, locally as well as in CI.
+**Projects.** `chromium` runs the full matrix for every group. `firefox` and `webkit` run the default and `industrial-light` with `low` at 100%. `chromium-forced` runs every group with forced colors active at one theme (themes have no effect there), 100%, both densities, both widths, and every variant. Interaction captures (hover, keyboard focus, and pressed, driven by real input, never by class hooks) run in each project, and clip to the target with a margin and a tight tolerance (`threshold: 0.02`, `maxDiffPixelRatio: 0.0005`), since a hover changes only an edge. In CI the visual tests are split by project and gallery group ([ci.md §5.2](ci.md)). The visual tests always run 4 workers, one per vCPU of a GitHub runner, locally as well as in CI.
 
 **Baselines.**
 
@@ -130,7 +130,7 @@ A test or gate is trusted only after it has failed against a deliberately broken
 | `check:strings`    | locales   | Extraction changes the XLIFF; a unit without id or note; a non-literal id or description |
 | `check:locales`    | locales   | Any translation rule ([localization.md §6](localization.md))                             |
 | `check:api`        | core      | Any API difference from the snapshot; an undocumented public name                        |
-| `test`             | all       | Node and browser suites; in CI, Node in `verify` and each engine in its own job          |
+| `test`             | all       | Node and browser suites; split across CI jobs as [ci.md](ci.md) describes                |
 | `check:package`    | all       | Export, side-effect, registration, chunk, `publint`, or `attw` errors                    |
 | `check:size`       | all       | An entry over its limit, or without a reason                                             |
 | `check:consumer`   | core      | The consumer fixtures                                                                    |

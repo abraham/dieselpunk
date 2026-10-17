@@ -98,15 +98,7 @@ Root scripts aggregate the workspaces (`--workspaces --if-present`) or delegate 
 
 ## 8. Continuous integration
 
-`.github/workflows/ci.yml` has four jobs, all on Node 26, running in parallel, and a fifth that reports them.
-
-1. **Checks** (`verify`): `npm ci`, install Chromium (for the consumer and framework checks), then in order: `check:toolchain`, `format:check`, `lint`, `typecheck`, `build`, `check:contrast`, `check:strings`, `check:api`, `test:node` in every workspace, `check:package`, `check:size`, `check:consumer`, `check:frameworks`.
-2. **Smoke** (`smoke`): `npm ci`, install Chromium, `build`, and `test:smoke`. It is its own job because loading every story is the longest single check, and it needs only a build.
-3. **Browser suites** (`browser`): one job per engine (Chromium, Firefox, WebKit), each installing only its engine and running `test:browser` in every workspace with `PUNK_BROWSERS` set to that engine. The matrix does not fail fast, so one engine's failure does not hide another's.
-4. **Visual** (`visual`): one job per Playwright project (`chromium`, `chromium-forced`, `firefox`, `webkit`), with `chromium`, which renders the full matrix, split into two shards, each running inside `mcr.microsoft.com/playwright:v<version>-noble`, where `<version>` is the installed `@playwright/test`, with `HOME=/root` (GitHub starts container jobs with a `$HOME` owned by another user, and Firefox then refuses to launch as root). Each runs `test:visual` for its project and shard and, on failure, uploads its report as `visual-report-<project>-<shard>`. The matrix does not fail fast.
-5. **Result** (`ci-success`): runs after the other jobs whatever their outcome, and passes only if every one of them succeeded; a failed, cancelled, or skipped job fails it. It is the single status check that branch protection requires, so adding or splitting a job changes its `needs` list and not the repository settings.
-
-`.github/workflows/update-visual-baselines.yml` is manual: it deletes the baseline folders, renders them again on the pinned image, and uploads them as an artifact to commit.
+The workflows, their jobs, how they split the suites, and their time budgets are specified in [ci.md](ci.md). Every job runs on the Node of `.nvmrc`, and every check it runs is a root script listed in [testing.md §9](testing.md), so CI never runs a command a developer cannot run locally.
 
 ## Verification
 
