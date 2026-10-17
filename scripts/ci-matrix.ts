@@ -26,7 +26,7 @@ import {
 
 /** The number of workbench entries, from Storybook's index, which needs no build. */
 function countWorkbenchEntries(): number {
-  const workbench = fileURLToPath(new URL('../apps/storybook/', import.meta.url));
+  const workbench = fileURLToPath(new URL('../packages/workbench/', import.meta.url));
   const dir = mkdtempSync(join(tmpdir(), 'punk-plan-'));
   try {
     const file = join(dir, 'index.json');

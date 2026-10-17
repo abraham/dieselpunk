@@ -109,7 +109,6 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 
 ## Gaps
 
-- **The workbench is still `@dieselpunk/storybook` in `apps/storybook`.** Closing it: move the folder to `packages/workbench` and rename the package; drop `apps/*` from the root `workspaces`; and update the root scripts, `tsconfig.scripts.json`, `scripts/ci-matrix.ts`, the prose-only rule in `packages/testing/src/ci.ts` and its test, `docs.yml` (the build command and the uploaded `dist/` path), and the specs that name `apps/storybook` ([product.md §5](product.md), [toolchain.md §1](toolchain.md)).
 - **The screen reader results table is empty** ([accessibility.md](accessibility.md) Gaps).
 - **The site is not published.** The repository's Pages source is not yet set to GitHub Actions, the custom domain is not set in the Pages settings, and dieselpunk.dev has no DNS records.
 - **Only the pre-1.0 path is built.** `docs.yml` deploys `main` to `/`. The release build into `/`, `main` into `/next/`, and the kept `/v<major>/` folders are added with the first release.

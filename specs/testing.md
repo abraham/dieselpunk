@@ -1,7 +1,7 @@
 # Testing and Quality Gates
 
 **Scope:** how the system is tested: the test layers, the shared gallery, the engines, what every component test covers, visual regression, mutation checking, the package and consumer checks, the list of CI gates, and the testing package that holds the shared tooling.
-**Code:** `packages/testing/`, `packages/*/test/`, `packages/*/scripts/check-*.ts`, `packages/core/vitest.config.ts`, `playwright.config.ts`, `scripts/visual.ts`, `build-visual.ts`, `serve-visual.ts`, `apps/storybook/scripts/smoke.ts`, `.github/workflows/`.
+**Code:** `packages/testing/`, `packages/*/test/`, `packages/*/scripts/check-*.ts`, `packages/core/vitest.config.ts`, `playwright.config.ts`, `scripts/visual.ts`, `build-visual.ts`, `serve-visual.ts`, `packages/workbench/scripts/smoke.ts`, `.github/workflows/`.
 
 ## 1. Principles
 

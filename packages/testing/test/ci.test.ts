@@ -65,7 +65,7 @@ test('a change of specs, Markdown, or the Dependabot settings is prose only', ()
   assert.ok(onlyProse(['specs/ci.md', 'README.md', 'packages/core/README.md']));
   assert.ok(onlyProse(['.github/dependabot.yml']));
   assert.ok(!onlyProse(['specs/ci.md', 'scripts/ci-matrix.ts']));
-  assert.ok(!onlyProse(['apps/storybook/src/stories/guide.md']));
+  assert.ok(!onlyProse(['packages/workbench/src/stories/guide.md']));
   assert.ok(!onlyProse(['.github/workflows/ci.yml']));
   assert.ok(!onlyProse([]));
 });

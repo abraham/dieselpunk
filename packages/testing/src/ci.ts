@@ -325,7 +325,7 @@ export function onlyProse(files: readonly string[]): boolean {
     files.every(
       (file) =>
         file.startsWith('specs/') ||
-        (file.endsWith('.md') && !file.startsWith('apps/storybook/')) ||
+        (file.endsWith('.md') && !file.startsWith('packages/workbench/')) ||
         file === '.github/dependabot.yml',
     )
   );
