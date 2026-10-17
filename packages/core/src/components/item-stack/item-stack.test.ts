@@ -1,3 +1,4 @@
+import { setLocale } from '../../../test/browser/locale.ts';
 import { commands, page, server, userEvent } from 'vitest/browser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from 'vitest';
@@ -104,13 +105,12 @@ describe('accessible name', () => {
   });
 
   it('can be replaced by a translation', async () => {
-    const { setStrings, resetStrings } = await import('../../utilities/localize.ts');
-    setStrings({ stackCapacity: '{capacity} max, {count} da', quality: 'Güte {level}' });
+    await setLocale('de');
     try {
       const element = await mount({ count: '3', capacity: '9', quality: '2' });
       expect(accessibleText(element)).toBe('Speed module, 9 max, 3 da, Güte 2');
     } finally {
-      resetStrings();
+      await setLocale('en');
     }
   });
 

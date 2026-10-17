@@ -33,12 +33,14 @@ function watchListeners() {
   const hook = (name: 'document' | 'window', target: Document | Window) => {
     const add = target.addEventListener.bind(target) as (...args: unknown[]) => void;
     const remove = target.removeEventListener.bind(target) as (...args: unknown[]) => void;
+    // The one listener that all components share for locale changes (SPEC-PHASE-4.md §7.1) is
+    // ignored by name. locale-watch.test.ts holds it to one, and to none once components have gone.
     vi.spyOn(target, 'addEventListener').mockImplementation((type, fn, options) => {
-      added.push({ target: name, type, fn });
+      if (type !== 'lit-localize-status') added.push({ target: name, type, fn });
       add(type, fn, options);
     });
     vi.spyOn(target, 'removeEventListener').mockImplementation((type, fn, options) => {
-      removed.push({ target: name, type, fn });
+      if (type !== 'lit-localize-status') removed.push({ target: name, type, fn });
       remove(type, fn, options);
     });
   };

@@ -1,3 +1,5 @@
+import { msg } from '../../internal/localize.ts';
+import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -7,7 +9,6 @@ import { SlotPresence } from '../../internal/slot-presence.ts';
 import { clampOffset, keyboardStep, offsetForCenter } from '../../internal/window-position.ts';
 import type { Box, Offset } from '../../internal/window-position.ts';
 import { renderCloseButton } from '../../styles/close-button.ts';
-import { t } from '../../utilities/localize.ts';
 import { windowStyles } from './window.styles.ts';
 
 export interface PunkMoveDetail {
@@ -64,6 +65,8 @@ const viewport = () => ({
  * @fires punk-move-end - It was placed or put back. `detail` is `{ x, y }`.
  */
 export class PunkWindow extends PunkModalSurface {
+  readonly #localeWatcher = new LocaleWatcher(this);
+
   static override styles = windowStyles;
 
   /** Makes the rest of the page inert while it is open. */
@@ -279,7 +282,7 @@ export class PunkWindow extends PunkModalSurface {
                   part="move-button"
                   class="close-button move-button"
                   type="button"
-                  aria-label=${t('moveWindow', 'Move window')}
+                  aria-label=${msg('Move window', { id: 'moveWindow', desc: 'The name of the button that starts moving a window.' })}
                   aria-pressed=${this.moving ? 'true' : 'false'}
                   @click=${this.#toggleMove}
                 >
@@ -291,7 +294,10 @@ export class PunkWindow extends PunkModalSurface {
             this.dismissible
               ? renderCloseButton({
                   part: 'close-button',
-                  label: t('close', 'Close'),
+                  label: msg('Close', {
+                    id: 'close',
+                    desc: 'The name of the button that closes a window.',
+                  }),
                   onClick: () => this.modalController.close('close-button'),
                 })
               : nothing
@@ -301,7 +307,10 @@ export class PunkWindow extends PunkModalSurface {
         <div class="status" role="status">
           ${
             this.moving
-              ? t('moving', 'Moving. Use the arrow keys, Enter to place, Escape to cancel.')
+              ? msg('Moving. Use the arrow keys, Enter to place, Escape to cancel.', {
+                  id: 'moving',
+                  desc: 'Read aloud when a window enters move mode, and says how to move and place it.',
+                })
               : ''
           }
         </div>

@@ -1,0 +1,72 @@
+{
+  "name": "@dieselpunk/locales",
+  "version": "0.0.0",
+  "description": "Translations of the messages in @dieselpunk/core, for use with Lit Localize.",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./de": {
+      "types": "./dist/de.d.ts",
+      "default": "./dist/de.js"
+    },
+    "./fr": {
+      "types": "./dist/fr.d.ts",
+      "default": "./dist/fr.js"
+    },
+    "./es": {
+      "types": "./dist/es.d.ts",
+      "default": "./dist/es.js"
+    },
+    "./ja": {
+      "types": "./dist/ja.d.ts",
+      "default": "./dist/ja.js"
+    },
+    "./ar": {
+      "types": "./dist/ar.d.ts",
+      "default": "./dist/ar.js"
+    },
+    "./document": {
+      "types": "./dist/document.d.ts",
+      "default": "./dist/document.js"
+    }
+  },
+  "scripts": {
+    "generate": "lit-localize build",
+    "extract": "lit-localize extract",
+    "build": "npm run generate && tsc -p tsconfig.build.json && node scripts/check-locales.ts",
+    "typecheck": "npm run generate && tsc -p tsconfig.json",
+    "check:strings": "node scripts/check-strings.ts",
+    "check:locales": "node scripts/check-locales.ts",
+    "check:package": "node scripts/check-package.ts && publint --strict && attw --pack . --profile esm-only",
+    "check:size": "size-limit",
+    "pretest:node": "npm run generate",
+    "pretest:browser": "npm run generate",
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "node --test \"test/*.test.ts\"",
+    "test:browser": "vitest run"
+  },
+  "peerDependencies": {
+    "@dieselpunk/core": "*",
+    "@lit/localize": "^0.12.0"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@lit/localize": "^0.12.2",
+    "@lit/localize-tools": "^0.8.2",
+    "@size-limit/esbuild": "^14.2.0",
+    "@size-limit/file": "^14.2.0",
+    "@vitest/browser-playwright": "^5.0.5",
+    "axe-core": "^4.14.0",
+    "playwright": "^1.64.1",
+    "publint": "^0.3.25",
+    "size-limit": "^14.2.0",
+    "vitest": "^5.0.5"
+  }
+}

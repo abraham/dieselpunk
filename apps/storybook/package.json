@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "storybook dev -p 6006",
     "build": "storybook build -o dist",
-    "typecheck": "npm run build -w @dieselpunk/core && tsc -p tsconfig.json",
+    "typecheck": "npm run build -w @dieselpunk/core && npm run build -w @dieselpunk/locales && tsc -p tsconfig.json",
     "test:smoke": "node scripts/smoke.ts"
   },
   "dependencies": {
     "@dieselpunk/core": "^0.0.0",
+    "@dieselpunk/locales": "^0.0.0",
+    "@lit/localize": "^0.12.2",
     "lit": "^3.3.3"
   },
   "devDependencies": {

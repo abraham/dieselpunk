@@ -1,3 +1,5 @@
+import { msg } from '../../internal/localize.ts';
+import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
@@ -7,7 +9,6 @@ import { SlotPresence } from '../../internal/slot-presence.ts';
 import { createToastTimer } from '../../internal/toast-timer.ts';
 import type { ToastTimer } from '../../internal/toast-timer.ts';
 import { renderCloseButton } from '../../styles/close-button.ts';
-import { t } from '../../utilities/localize.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { toastStyles } from './toast.styles.ts';
 
@@ -63,6 +64,8 @@ export const isDismissing = (toast: PunkToast): boolean => dismissing.has(toast)
  * @fires punk-dismiss - It is being dismissed. `detail` is `{ reason }`: `user`, `timeout`, `method`, or `limit`. Cancel it to keep the toast, for example when a framework removes it.
  */
 export class PunkToast extends PunkElement {
+  readonly #localeWatcher = new LocaleWatcher(this);
+
   static override styles = toastStyles;
 
   /** A shape and a color. `warning` and `danger` are announced at once, `info` and `success` politely. Unknown values use `info`. */
@@ -232,7 +235,10 @@ export class PunkToast extends PunkElement {
         </div>
         ${renderCloseButton({
           part: 'dismiss-button',
-          label: t('dismiss', 'Dismiss'),
+          label: msg('Dismiss', {
+            id: 'dismiss',
+            desc: 'The name of the button that dismisses a toast.',
+          }),
           onClick: () => this.dismiss('user'),
         })}
       </div>

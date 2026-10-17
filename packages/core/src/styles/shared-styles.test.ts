@@ -15,6 +15,7 @@ import { themeNames, themes } from '../tokens/themes.ts';
 import { registerElement } from '../utilities/register-element.ts';
 import { closeButtonStyles, renderCloseButton } from './close-button.ts';
 import { fieldStyles } from './field.ts';
+import { readoutStyles } from './readout.ts';
 
 // The markup `fieldStyles` documents, with the states as properties.
 class TestFieldBox extends PunkElement {
@@ -57,6 +58,16 @@ class TestCloseHost extends PunkElement {
   }
 }
 registerElement('punk-test-close-host', TestCloseHost);
+
+class TestReadout extends PunkElement {
+  static override styles = readoutStyles;
+  protected override render() {
+    return html`<div class="readout">
+      <span class="readout-muted">Output</span> <span class="value">12</span>
+    </div>`;
+  }
+}
+registerElement('punk-test-readout', TestReadout);
 
 beforeEach(addStylesheets);
 
@@ -219,5 +230,49 @@ describe('closeButtonStyles', () => {
     const style = getComputedStyle(button);
     expect(style.borderTopStyle).toBe('solid');
     expect(style.borderTopWidth).toBe('2px');
+  });
+});
+
+describe('readoutStyles', () => {
+  async function readout(parent: Element) {
+    const element = document.createElement('punk-test-readout') as TestReadout;
+    track(element, parent);
+    await element.updateComplete;
+    return (selector: string) => element.shadowRoot?.querySelector(selector) as HTMLElement;
+  }
+
+  it('is a panel-inset plate with text and text-muted, in every theme and density', async () => {
+    for (const theme of themeNames) {
+      for (const density of ['compact', 'low']) {
+        const inner = await readout(themed(theme, density));
+        const tokens = themes[theme].tokens;
+        expect(getComputedStyle(inner('.readout')).backgroundColor, theme).toBe(
+          rgb(tokens['color-panel-inset'] as string),
+        );
+        expect(getComputedStyle(inner('.readout')).color).toBe(rgb(tokens['color-text'] as string));
+        expect(getComputedStyle(inner('.readout-muted')).color).toBe(
+          rgb(tokens['color-text-muted'] as string),
+        );
+      }
+    }
+  });
+
+  it('keeps the plate whatever surface it is put on', async () => {
+    const panel = themed('industrial');
+    panel.style.background = 'rgb(255, 0, 255)';
+    const inner = await readout(panel);
+    expect(getComputedStyle(inner('.readout')).backgroundColor).toBe(
+      rgb(themes['industrial'].tokens['color-panel-inset'] as string),
+    );
+  });
+
+  it('draws a 2px system-color border instead of the bevel under forced colors', async () => {
+    await commands.setForcedColors('active');
+    const inner = await readout(themed('industrial'));
+    const style = getComputedStyle(inner('.readout'));
+    expect(style.borderTopWidth).toBe('2px');
+    expect(style.borderTopStyle).toBe('solid');
+    expect(style.boxShadow).toBe('none');
+    expect(getComputedStyle(inner('.readout-muted')).color).toBe(style.color);
   });
 });

@@ -57,22 +57,27 @@ export abstract class PunkFormControl extends PunkElement {
     this.addEventListener('focusin', () => this.#readLabels());
   }
 
+  /** The form that owns the control, or `null`. */
   get form(): HTMLFormElement | null {
     return this.internals.form;
   }
 
+  /** The `<label>` elements that name the control. */
   get labels(): NodeList {
     return this.internals.labels;
   }
 
+  /** The control's validity state, as a native control's. */
   get validity(): ValidityState {
     return this.internals.validity;
   }
 
+  /** The message the browser shows for the current error, or an empty string. */
   get validationMessage(): string {
     return this.internals.validationMessage;
   }
 
+  /** Whether the control takes part in constraint validation. */
   get willValidate(): boolean {
     return this.internals.willValidate;
   }
@@ -87,10 +92,12 @@ export abstract class PunkFormControl extends PunkElement {
     return this.touched && !this.internals.validity.valid;
   }
 
+  /** Whether the control is valid. Fires `invalid` when it is not. */
   checkValidity(): boolean {
     return this.internals.checkValidity();
   }
 
+  /** Like `checkValidity()`, and shows the message on the control. */
   reportValidity(): boolean {
     this.touched = true;
     return this.internals.reportValidity();
@@ -147,6 +154,7 @@ export abstract class PunkFormControl extends PunkElement {
     devWarn(this, 'It has no accessible name. Set `label` or `aria-label`.');
   }
 
+  /** Called by the browser when the form is reset: restores the value the author wrote. */
   formResetCallback(): void {
     this.touched = false;
     this.resetToDefault();
@@ -158,6 +166,7 @@ export abstract class PunkFormControl extends PunkElement {
     this.requestUpdate();
   }
 
+  /** Called by the browser to restore the value after navigation or autofill. */
   formStateRestoreCallback(state: FormValue): void {
     this.restoreState(state);
     this.commit();

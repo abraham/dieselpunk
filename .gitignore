@@ -7,3 +7,5 @@ test-results/
 .DS_Store
 custom-elements.json
 *.core
+packages/locales/src/generated/
+packages/core/test/browser/fixtures/generated/

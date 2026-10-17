@@ -25,11 +25,15 @@ const fixtureDir = join(packageDir, 'test/package');
 const rootPackage = JSON.parse(readFileSync(join(packageDir, '../../package.json'), 'utf8')) as {
   devDependencies: Record<string, string>;
 };
+const corePackage = JSON.parse(readFileSync(join(packageDir, 'package.json'), 'utf8')) as {
+  dependencies: Record<string, string>;
+};
+const localesDir = join(packageDir, '../locales');
 const OLDEST_TYPESCRIPT = '5.0.4';
 const NEWEST_TYPESCRIPT = rootPackage.devDependencies['typescript'] ?? '~6.0.3';
 
-if (!existsSync(join(packageDir, 'dist'))) {
-  console.error('dist/ is missing. Run `npm run build` first.');
+if (!existsSync(join(packageDir, 'dist')) || !existsSync(join(localesDir, 'dist'))) {
+  console.error('dist/ is missing in core or in locales. Run `npm run build` first.');
   process.exit(1);
 }
 
@@ -91,13 +95,29 @@ const expectedTags: Record<string, string[]> = {
   ],
 };
 
+// Every tag of the library, so a page that registers one it did not ask for is told.
+const allTags = [
+  ...new Set([
+    ...expectedTags['app']!,
+    'punk-button',
+    'punk-panel',
+    'punk-divider',
+    'punk-connection-row',
+    'punk-production-stat',
+  ]),
+];
+
 const run = (command: string, args: string[], cwd: string): string =>
   execFileSync(command, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 
 const work = mkdtempSync(join(tmpdir(), 'punk-consumer-'));
 const problems: string[] = [];
 
-function install(project: string, tarball: string, typescript: string): void {
+function install(
+  project: string,
+  tarballs: { core: string; locales: string },
+  typescript: string,
+): void {
   mkdirSync(project, { recursive: true });
   writeFileSync(
     join(project, 'package.json'),
@@ -105,7 +125,12 @@ function install(project: string, tarball: string, typescript: string): void {
       name: 'consumer',
       private: true,
       type: 'module',
-      dependencies: { '@dieselpunk/core': `file:${tarball}` },
+      dependencies: {
+        '@dieselpunk/core': `file:${tarballs.core}`,
+        '@dieselpunk/locales': `file:${tarballs.locales}`,
+        // The consumer's own copy, which core and the translations must share (§13.7).
+        '@lit/localize': corePackage.dependencies['@lit/localize'],
+      },
       devDependencies: { typescript },
     }),
   );
@@ -225,6 +250,81 @@ async function checkShell(browser: Browser, port: number): Promise<void> {
   await tab.close();
 }
 
+// SPEC-PHASE-4 §13.7: a production view from the registration entries, in the locales of
+// `@dieselpunk/locales`, set from the consumer's own Lit Localize.
+async function checkProduction(browser: Browser, port: number): Promise<void> {
+  const tab = await browser.newPage();
+  const messages: string[] = [];
+  tab.on('console', (message) => {
+    if (['error', 'warning'].includes(message.type())) messages.push(message.text());
+  });
+  tab.on('pageerror', (error) => messages.push(error.message));
+  await tab.goto(`http://localhost:${port}/production.html`);
+  await tab.waitForSelector('html[data-production="ready"]');
+  // This script is type-checked without DOM types, so what runs in the page is a string.
+  const read = async (): Promise<Record<string, string | null>> =>
+    (await tab.evaluate(`(() => {
+      const root = document.documentElement;
+      const row = document.querySelector('punk-connection-row');
+      const stat = document.querySelector('punk-production-stat');
+      return {
+        lang: root.lang,
+        dir: root.dir,
+        remove: row.shadowRoot.querySelector('[part="remove-button"]')?.getAttribute('aria-label') ?? null,
+        value: stat.shadowRoot.querySelector('[part="value"]')?.textContent.trim() ?? null,
+        formatted: new Intl.NumberFormat(root.lang).format(1234567.89),
+        defined: ${JSON.stringify(allTags)}.filter((tag) => customElements.get(tag) !== undefined).sort().join(' '),
+      };
+    })()`)) as Record<string, string | null>;
+
+  const german = await read();
+  const expectedDefined = [
+    'punk-connection-row',
+    'punk-meter',
+    'punk-production-stat',
+    'punk-status-light',
+    'punk-window',
+  ].join(' ');
+  if (german['defined'] !== expectedDefined) {
+    problems.push(`production.html defines [${german['defined']}], expected [${expectedDefined}]`);
+  }
+  if (german['lang'] !== 'de' || german['dir'] !== 'ltr') {
+    problems.push(
+      `production.html: after setLocale('de') lang is ${german['lang']} and dir ${german['dir']}`,
+    );
+  }
+  if (!german['remove']?.startsWith('Verbindung entfernen')) {
+    problems.push(`production.html: the remove button is named ${german['remove']} in German`);
+  }
+  if (german['value'] !== german['formatted']) {
+    problems.push(
+      `production.html: the stat shows ${german['value']}, and German is ${german['formatted']}`,
+    );
+  }
+
+  await tab.evaluate(`window.production.setLocale('ar')`);
+  await tab.waitForFunction(`document.documentElement.lang === 'ar'`);
+  const arabic = await read();
+  if (arabic['dir'] !== 'rtl') problems.push(`production.html: dir is ${arabic['dir']} in Arabic`);
+  if (arabic['remove'] === german['remove'] || !arabic['remove']?.includes('إزالة')) {
+    problems.push(`production.html: the remove button is named ${arabic['remove']} in Arabic`);
+  }
+  if (arabic['value'] !== arabic['formatted']) {
+    problems.push(
+      `production.html: the stat shows ${arabic['value']}, and Arabic is ${arabic['formatted']}`,
+    );
+  }
+
+  await tab.getByRole('button', { name: /^إزالة/ }).click();
+  const removed = (await tab.evaluate(`document.documentElement.dataset.removed ?? null`)) as
+    string | null;
+  if (removed !== 'belt-1:punk-connection-row') {
+    problems.push(`production.html: the remove button reported ${removed}`);
+  }
+  if (messages.length > 0) problems.push(`production.html logged: ${messages.join(' | ')}`);
+  await tab.close();
+}
+
 async function checkPages(outDir: string): Promise<void> {
   const probe = await probeScript();
   const server = createServer((request, response) => {
@@ -240,6 +340,7 @@ async function checkPages(outDir: string): Promise<void> {
   const browser = await chromium.launch();
   try {
     await checkShell(browser, port);
+    await checkProduction(browser, port);
     for (const page of ['plain', 'app']) {
       const tab = await browser.newPage();
       const messages: string[] = [];
@@ -311,37 +412,53 @@ async function checkPages(outDir: string): Promise<void> {
 }
 
 try {
-  const [packed] = JSON.parse(
-    run('npm', ['pack', '--json', '--pack-destination', work], packageDir),
-  ) as Array<{ filename: string }>;
-  const tarball = join(work, packed?.filename ?? '');
+  const pack = (directory: string): string => {
+    const [packed] = JSON.parse(
+      run('npm', ['pack', '--json', '--pack-destination', work], directory),
+    ) as Array<{ filename: string }>;
+    return join(work, packed?.filename ?? '');
+  };
+  const tarballs = { core: pack(packageDir), locales: pack(localesDir) };
 
   console.log('Type-checking the consumer:');
   const oldest = join(work, 'oldest');
   const newest = join(work, 'newest');
-  install(oldest, tarball, OLDEST_TYPESCRIPT);
+  install(oldest, tarballs, OLDEST_TYPESCRIPT);
   typecheck(oldest, `TypeScript ${OLDEST_TYPESCRIPT}`);
-  install(newest, tarball, NEWEST_TYPESCRIPT);
+  install(newest, tarballs, NEWEST_TYPESCRIPT);
   typecheck(newest, `TypeScript ${NEWEST_TYPESCRIPT}`);
 
   console.log('Bundling and running the consumer in a browser:');
   const outDir = join(work, 'out');
-  await build({
+  const built = await build({
     absWorkingDir: newest,
     entryPoints: {
       plain: 'src/plain.js',
       app: 'src/app.ts',
       shell: 'src/shell.ts',
       'shell-style': 'src/shell-style.js',
+      production: 'src/production.ts',
     },
     bundle: true,
     format: 'esm',
     outdir: outDir,
+    metafile: true,
     logLevel: 'silent',
   });
+  // Lit Localize holds the active locale as module state, so a second copy would never hear
+  // `setLocale`. The consumer, core, and the translations must all resolve one.
+  const copies = new Set(
+    Object.keys(built.metafile.inputs)
+      .map((input) => /^(.*\/?node_modules\/@lit\/localize\/)/.exec(input)?.[1])
+      .filter((root): root is string => root !== undefined),
+  );
+  if (copies.size !== 1) {
+    problems.push(`The consumer bundles ${copies.size} copies of @lit/localize: ${[...copies]}`);
+  }
   cpSync(join(fixtureDir, 'plain.html'), join(outDir, 'plain.html'));
   cpSync(join(fixtureDir, 'app.html'), join(outDir, 'app.html'));
   cpSync(join(fixtureDir, 'shell.html'), join(outDir, 'shell.html'));
+  cpSync(join(fixtureDir, 'production.html'), join(outDir, 'production.html'));
   await checkPages(outDir);
 } catch (error) {
   problems.push(String((error as { stderr?: string }).stderr ?? error));

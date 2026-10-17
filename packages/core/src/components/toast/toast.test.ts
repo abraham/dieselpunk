@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from 'vitest';
 import { addStylesheets, cleanup, rgb, track } from '../../../test/browser/helpers.ts';
 import '../../../test/browser/commands.ts';
-import { resetStrings, setStrings } from '../../utilities/localize.ts';
+import { setLocale } from '../../../test/browser/locale.ts';
 import '../button/register.ts';
 import './register.ts';
 import type { PunkDismissDetail, PunkToast, ToastVariant } from './index.ts';
@@ -19,7 +19,7 @@ afterEach(async () => {
   cleanup();
   vi.useRealTimers();
   vi.restoreAllMocks();
-  resetStrings();
+  await setLocale('en');
   await commands.setForcedColors(null);
   Reflect.deleteProperty(document, 'hidden');
 });
@@ -81,8 +81,7 @@ describe('structure', () => {
     const toast = await mount();
     expect(dismissButton(toast).localName).toBe('button');
     expect(dismissButton(toast).getAttribute('aria-label')).toBe('Dismiss');
-    setStrings({ dismiss: 'Schließen' });
-    toast.requestUpdate();
+    await setLocale('de');
     await toast.updateComplete;
     expect(dismissButton(toast).getAttribute('aria-label')).toBe('Schließen');
   });

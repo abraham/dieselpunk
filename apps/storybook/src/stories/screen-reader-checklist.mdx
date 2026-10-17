@@ -1,0 +1,205 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Guides/Screen reader checklist" />
+
+# Screen reader checklist
+
+Nothing in CI can run a screen reader, so this list is run by a person before a release. The automated tests check roles, names, and states in the accessibility tree; this list checks what a person hears and where focus goes. A failure becomes an issue, and an unrun combination is named in the release record.
+
+## How to run it
+
+1. Open the Storybook page named under each scenario, in the browser and screen reader of a column of the results table.
+2. Do the steps, and compare what you hear and where focus goes with "Expect".
+3. Write `Pass`, `Fail` with an issue number, or `Not run` in the table, and fill in the run record.
+
+Run it at the default theme and density. Turn on a second pass in the Interface settings example with `ar` (right to left) and `de` for the scenarios that hold words the library writes: the dialog, the toast, the form, and the connection row.
+
+## Scenarios
+
+### 1. Slot grid and its selection
+
+Page: Components / Slot Grid, the single and the multiple selection stories.
+
+1. Tab to the grid. Press the arrow keys, then `Home`, `End`, `Ctrl+Home`, and `Ctrl+End`.
+2. Press `Space` or `Enter` on an item, and then on another.
+3. Tab out and back in.
+
+Expect: the grid is named and is announced as a list of options (or a group of buttons with no selection). Each item is read with its label and, in a selection grid, whether it is selected. Arrow keys move focus and the reader says the new item, and they never change the selection. There is one tab stop, and Tab returns to the item that last had focus. A disabled item is read as unavailable.
+
+### 2. Tabs
+
+Page: Components / Tabs.
+
+1. Tab to the tab list, and use the arrow keys, `Home`, and `End`.
+2. Tab from the tab list.
+
+Expect: the list is announced as tabs, with the selected one marked and its position (for example "2 of 3"). Moving by arrow keys selects each tab, except in the manual story, where `Enter` or `Space` does. `Tab` goes to the panel. A disabled tab is skipped and read as unavailable.
+
+### 3. Window and dialog
+
+Page: Components / Dialog and Components / Window, and the Focus and overlays guide.
+
+1. Activate the button that opens the dialog.
+2. Move through it with `Tab` and `Shift+Tab`.
+3. Press `Escape`, then open it again and use its button to close it.
+4. In the window, use the move button and the close button.
+
+Expect: opening moves focus into the dialog, and the reader says its role and its heading. Focus stays inside while it is open, and what is behind it is not reachable. Closing returns focus to the button that opened it. The window's move mode is announced, and its close button has a name.
+
+### 4. Toast stack and its two live regions
+
+Page: Components / Toast.
+
+1. Activate a button that adds an `info` toast, then a `success`, a `warning`, and a `danger` toast.
+2. Tab to a toast's dismiss button, and activate it.
+
+Expect: `info` and `success` are spoken politely, after the current speech; `warning` and `danger` interrupt it. Each toast is spoken once, with no repeat when another arrives. The dismiss button has a name, and a toast with an action reads that button too. A toast that is waiting for its timer does not time out while its button has focus.
+
+### 5. Form with a validation message
+
+Page: Guides / Forms and Components / Text Field.
+
+1. Tab into a required field and out of it without typing.
+2. Type a valid value, and a value that is not.
+3. Reset the form.
+
+Expect: the field is read with its label, its required state, and its hint. After you leave it, the message is shown, and the field is read as invalid with the message as its description. A valid value clears both. The message is not repeated on every key press.
+
+### 6. Popover menu
+
+Page: Components / Popover, the menu story.
+
+1. Activate the trigger.
+2. Use the arrow keys, `Home`, and `End`, and activate an item.
+3. Open it again and press `Escape`.
+
+Expect: the trigger is read as expanded or collapsed, and opening it moves focus into the menu, which is announced as a menu with items. Arrow keys move among the items, and a disabled item is read as unavailable. Activating an item or pressing `Escape` closes it and returns focus to the trigger.
+
+### 7. A stat that announces
+
+Page: Components / Production Stat, and the Production dashboard example.
+
+1. Find a stat with `announce` and change its value from the controls.
+2. Open the Production dashboard example and leave it for a few updates.
+3. Turn on "Pause updates", then turn it off.
+
+Expect: the stat with `announce` is spoken once for each change, as its label, value, unit, and trend word, and a compact value is read in full. The dashboard speaks nothing for its updates and never moves focus. When you read the dashboard by hand, each stat is read as its label, value, unit, trend, and change, and "no value" where it has none.
+
+### 8. Removing a connection row
+
+Page: Examples / Logistics network, and Components / Connection Row, the removal pattern.
+
+1. Tab to a row. Read it, then Tab once more.
+2. Activate its remove button, and choose Remove in the dialog.
+3. Activate Undo in the toast.
+4. Filter to "blocked" and remove the last row left.
+
+Expect: a row is read as its source, the direction word, its destination, its details, and its status, and the one tab stop is the button, named "Remove connection:" with the two nodes. The dialog is announced as an alert dialog and asks first. After the removal, focus is on the next row's remove button, which is read. After Undo, the row is back and focus is on it. After the last row goes, focus is on the list's heading, which is read.
+
+## Results
+
+Fill in a cell for each scenario and combination. This table is empty until a person runs the list; `Not run` is a result, and it is recorded.
+
+<table>
+  <thead>
+    <tr>
+      <th>Scenario</th>
+      <th>NVDA, Firefox (Windows)</th>
+      <th>NVDA, Chrome (Windows)</th>
+      <th>VoiceOver, Safari (macOS)</th>
+      <th>VoiceOver, Safari (iOS)</th>
+      <th>TalkBack, Chrome (Android)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1. Slot grid and selection</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+    </tr>
+    <tr>
+      <td>2. Tabs</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+    </tr>
+    <tr>
+      <td>3. Window and dialog</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+    </tr>
+    <tr>
+      <td>4. Toast stack</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+    </tr>
+    <tr>
+      <td>5. Form validation message</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+    </tr>
+    <tr>
+      <td>6. Popover menu</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+    </tr>
+    <tr>
+      <td>7. A stat that announces</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+    </tr>
+    <tr>
+      <td>8. Removing a connection row</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+      <td>Not run</td>
+    </tr>
+  </tbody>
+</table>
+
+## Run record
+
+One row for each run of the list.
+
+<table>
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Person</th>
+      <th>Versions (screen reader, browser, system)</th>
+      <th>Commit</th>
+      <th>Issues opened</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>

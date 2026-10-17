@@ -1,3 +1,4 @@
+import { msg } from '../../internal/localize.ts';
 import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
@@ -5,7 +6,6 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { PunkFieldBase } from '../../internal/field-base.ts';
 import type { FormValue } from '../../internal/form-control.ts';
-import { t } from '../../utilities/localize.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { numberFieldStyles } from './number-field.styles.ts';
 
@@ -209,9 +209,12 @@ export class PunkNumberField extends PunkFieldBase {
         @blur=${() => this.#stopRepeat()}
       />`,
       after: html`<span class="steppers" ?hidden=${this.hideSteppers}
-        >${this.#stepper(1, t('increase', 'Increase'))}${this.#stepper(
+        >${this.#stepper(1, msg('Increase', { id: 'increase', desc: 'The tooltip of the stepper that raises the value of a number field. It is not announced.' }))}${this.#stepper(
           -1,
-          t('decrease', 'Decrease'),
+          msg('Decrease', {
+            id: 'decrease',
+            desc: 'The tooltip of the stepper that lowers the value of a number field. It is not announced.',
+          }),
         )}</span
       >`,
     });

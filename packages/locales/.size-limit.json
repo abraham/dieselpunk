@@ -1,0 +1,58 @@
+[
+  {
+    "name": "de",
+    "path": "dist/de.js",
+    "ignore": ["@lit/localize"],
+    "gzip": true,
+    "limit": "1 kB"
+  },
+  {
+    "name": "fr",
+    "path": "dist/fr.js",
+    "ignore": ["@lit/localize"],
+    "gzip": true,
+    "limit": "1 kB"
+  },
+  {
+    "name": "es",
+    "path": "dist/es.js",
+    "ignore": ["@lit/localize"],
+    "gzip": true,
+    "limit": "1 kB"
+  },
+  {
+    "name": "ja",
+    "path": "dist/ja.js",
+    "ignore": ["@lit/localize"],
+    "gzip": true,
+    "limit": "1 kB"
+  },
+  {
+    "name": "ar",
+    "path": "dist/ar.js",
+    "ignore": ["@lit/localize"],
+    "gzip": true,
+    "limit": "1 kB"
+  },
+  {
+    "name": "loader",
+    "path": "dist/index.js",
+    "ignore": [
+      "@lit/localize",
+      "./dist/de.js",
+      "./dist/fr.js",
+      "./dist/es.js",
+      "./dist/ja.js",
+      "./dist/ar.js"
+    ],
+    "gzip": true,
+    "limit": "1 kB"
+  },
+  {
+    "name": "document",
+    "path": "dist/document.js",
+    "ignore": ["@lit/localize"],
+    "gzip": true,
+    "limit": "0.5 kB"
+  }
+]

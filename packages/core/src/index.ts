@@ -55,4 +55,11 @@ export type {
 } from './components/toast/index.ts';
 export { PunkToolbar } from './components/toolbar/index.ts';
 export type { PunkOverflowDetail } from './components/toolbar/index.ts';
-export { setStrings } from './utilities/localize.ts';
+export { PunkProductionStat } from './components/production-stat/index.ts';
+export type { ProductionStatLayout, ProductionTrend } from './components/production-stat/index.ts';
+export { PunkConnectionRow } from './components/connection-row/index.ts';
+export type {
+  ConnectionDirection,
+  ConnectionStatus,
+  PunkRemoveDetail,
+} from './components/connection-row/index.ts';

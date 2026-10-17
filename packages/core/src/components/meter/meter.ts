@@ -1,10 +1,11 @@
+import { msg } from '../../internal/localize.ts';
+import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
-import { t } from '../../utilities/localize.ts';
 import { formatPercent, resolveLang } from '../../utilities/locale.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { DEFAULT_SEGMENTS, resolveMeter } from './meter-state.ts';
@@ -30,6 +31,8 @@ export type MeterOrientation = 'horizontal' | 'vertical';
  * @cssprop [--punk-meter-thickness=calc(var(--punk-control-height-sm) * 0.6)] - Thickness of the track.
  */
 export class PunkMeter extends PunkElement {
+  readonly #localeWatcher = new LocaleWatcher(this);
+
   static override styles = meterStyles;
 
   /** The current value, from `min` to `max`. Values outside it are clamped. */
@@ -112,9 +115,15 @@ export class PunkMeter extends PunkElement {
     const percent = formatPercent(meter.ratio, lang);
     const word =
       meter.state === 'suboptimal'
-        ? t('meterWarning', 'warning')
+        ? msg('warning', {
+            id: 'meterWarning',
+            desc: 'The state word of a meter that is in its warning range.',
+          })
         : meter.state === 'critical'
-          ? t('meterCritical', 'critical')
+          ? msg('critical', {
+              id: 'meterCritical',
+              desc: 'The state word of a meter that is in its critical range.',
+            })
           : '';
     const text = word === '' ? percent : `${percent}, ${word}`;
     const direction = this.orientation === 'vertical' ? 'vertical' : 'horizontal';

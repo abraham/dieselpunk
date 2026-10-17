@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": [],
+    "paths": { "#dev": ["../core/src/utilities/dev.ts"] }
+  },
+  "include": ["src/**/*.ts", "test/browser/**/*.ts", "../core/src/**/*.ts"],
+  "exclude": ["../core/src/**/*.test.ts"]
+}

@@ -330,4 +330,116 @@ test.describe('ARIA snapshots', () => {
         - button "Locked" [disabled]
     `);
   });
+
+  const sparkline =
+    '<svg slot="sparkline" viewBox="0 0 8 4" aria-hidden="true"><path d="M0 4 8 0"/></svg>';
+
+  // The stat has no role, so its tree is the text it reads as, in order; `announce` is the only
+  // thing that gives it one. The expected text is in each row.
+  const stats: Array<[string, string, string]> = [
+    [
+      'every part',
+      `<punk-production-stat label="Iron plates" value="1240" unit="/min" trend="up" delta="0.12" delta-percent>${art}${sparkline}</punk-production-stat>`,
+      '- text: Iron plates 1,240 /min up +12%',
+    ],
+    [
+      'compact, with the full number',
+      '<punk-production-stat label="Iron plates" value="1234567.89" compact unit="/min"></punk-production-stat>',
+      '- text: Iron plates 1,234,567.89 /min',
+    ],
+    [
+      'no value',
+      '<punk-production-stat label="Output" unit="/min"></punk-production-stat>',
+      '- text: Output no value /min',
+    ],
+    [
+      'falling, with a change',
+      '<punk-production-stat label="Heat" value="87" unit="%" trend="down" delta="-3"></punk-production-stat>',
+      '- text: Heat 87 % down -3',
+    ],
+    [
+      'unchanged',
+      '<punk-production-stat label="Fuel" value="0" trend="flat"></punk-production-stat>',
+      '- text: Fuel 0 unchanged',
+    ],
+    [
+      'announcing',
+      '<punk-production-stat label="Power" value="12.5" unit="MW" announce></punk-production-stat>',
+      '- status: Power 12.5 MW',
+    ],
+  ];
+  for (const [name, markup, expected] of stats) {
+    test(`production stat, ${name}`, async ({ page }) => {
+      await render(page, markup);
+      await expect(page.locator('#case')).toMatchAriaSnapshot(expected);
+    });
+  }
+
+  // The row has no role either: the nodes, the direction as a word, the details, and the status
+  // text read in that order, and the remove button is the only thing in the tree with a role.
+  const nodes = '<span slot="source">Iron smelter</span><span slot="destination">Assembler</span>';
+  const label = 'Remove connection: Iron smelter, Assembler';
+  const rows: Array<[string, string, string]> = [
+    [
+      'forward',
+      `<punk-connection-row direction="forward">${nodes}</punk-connection-row>`,
+      '- text: Iron smelter to Assembler',
+    ],
+    [
+      'backward',
+      `<punk-connection-row direction="backward">${nodes}</punk-connection-row>`,
+      '- text: Iron smelter from Assembler',
+    ],
+    [
+      'both ways',
+      `<punk-connection-row direction="both">${nodes}</punk-connection-row>`,
+      '- text: Iron smelter to and from Assembler',
+    ],
+    [
+      'info, with status text',
+      `<punk-connection-row status="info">${nodes}<span slot="status">Waiting</span></punk-connection-row>`,
+      '- text: Iron smelter to Assembler Waiting',
+    ],
+    [
+      'success, with details and status text',
+      `<punk-connection-row status="success">${nodes}<span>2 per second</span><span slot="status">Running</span></punk-connection-row>`,
+      '- text: Iron smelter to Assembler 2 per second Running',
+    ],
+    [
+      'warning',
+      `<punk-connection-row status="warning">${nodes}<span slot="status">Low on fuel</span></punk-connection-row>`,
+      '- text: Iron smelter to Assembler Low on fuel',
+    ],
+    [
+      'danger',
+      `<punk-connection-row status="danger">${nodes}<span slot="status">Offline</span></punk-connection-row>`,
+      '- text: Iron smelter to Assembler Offline',
+    ],
+    [
+      'neutral, with status text',
+      `<punk-connection-row>${nodes}<span slot="status">Idle</span></punk-connection-row>`,
+      '- text: Iron smelter to Assembler Idle',
+    ],
+    [
+      'removable',
+      `<punk-connection-row removable value="a">${nodes}</punk-connection-row>`,
+      `- text: Iron smelter to Assembler\n- 'button "${label}"'`,
+    ],
+    [
+      'removable, with a remove label',
+      `<punk-connection-row removable remove-label="Remove the iron line">${nodes}</punk-connection-row>`,
+      '- text: Iron smelter to Assembler\n- button "Remove the iron line"',
+    ],
+    [
+      'removable and disabled',
+      `<punk-connection-row removable disabled>${nodes}</punk-connection-row>`,
+      `- text: Iron smelter to Assembler\n- 'button "${label}" [disabled]'`,
+    ],
+  ];
+  for (const [name, markup, expected] of rows) {
+    test(`connection row, ${name}`, async ({ page }) => {
+      await render(page, markup);
+      await expect(page.locator('#case')).toMatchAriaSnapshot(expected);
+    });
+  }
 });

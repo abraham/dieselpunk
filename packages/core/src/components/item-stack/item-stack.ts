@@ -1,14 +1,35 @@
+import { msg, str } from '../../internal/localize.ts';
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { PunkReceptacleBase } from '../../internal/receptacle-base.ts';
 import { receptacleStyles } from '../../styles/receptacle.ts';
-import { format, t } from '../../utilities/localize.ts';
 import { formatNumber, formatPercent, resolveLang } from '../../utilities/locale.ts';
 import { itemStackStyles } from './item-stack.styles.ts';
 
 const MAX_QUALITY = 5;
+
+const stackCount = (count: string) =>
+  msg(str`${count}`, { id: 'stackCount', desc: 'The count of an item stack.' });
+
+const stackCapacity = (count: string, capacity: string) =>
+  msg(str`${count} of ${capacity}`, {
+    id: 'stackCapacity',
+    desc: 'The count of an item stack out of its capacity, for example 75 of 100.',
+  });
+
+const durabilityText = (percent: string) =>
+  msg(str`durability ${percent}`, {
+    id: 'durability',
+    desc: 'The durability of an item stack as a percentage, for example durability 40%.',
+  });
+
+const qualityText = (level: string) =>
+  msg(str`quality ${level}`, {
+    id: 'quality',
+    desc: 'The quality level of an item stack, a whole number from 1 to 5.',
+  });
 
 /**
  * An item in a receptacle, with its count, durability, and quality. The accessible name carries
@@ -118,19 +139,10 @@ export class PunkItemStack extends PunkReceptacleBase {
     const full = (value: number) => formatNumber(value, lang);
     return [
       this.name,
-      capacity === undefined
-        ? format('stackCount', '{count}', { count: full(count) })
-        : format('stackCapacity', '{count} of {capacity}', {
-            count: full(count),
-            capacity: full(capacity),
-          }),
-      durability === undefined
-        ? ''
-        : format('durability', 'durability {percent}', {
-            percent: formatPercent(durability, lang),
-          }),
-      quality === 0 ? '' : format('quality', 'quality {level}', { level: full(quality) }),
-      this.invalid ? t('invalid', 'invalid') : '',
+      capacity === undefined ? stackCount(full(count)) : stackCapacity(full(count), full(capacity)),
+      durability === undefined ? '' : durabilityText(formatPercent(durability, lang)),
+      quality === 0 ? '' : qualityText(full(quality)),
+      this.invalidText(),
     ];
   }
 

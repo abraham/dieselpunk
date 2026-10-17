@@ -1,9 +1,10 @@
+import { msg } from './localize.ts';
+import { LocaleWatcher } from './locale-watch.ts';
 import { html, nothing } from 'lit';
 import type { TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { t } from '../utilities/localize.ts';
 import type { ExternalAria, PopupKind } from './anchor.ts';
 import { isFieldsetDisabled } from './fieldset.ts';
 import { PunkElement } from './punk-element.ts';
@@ -21,6 +22,8 @@ const sizes: readonly string[] = ['sm', 'md', 'lg'];
  * `aria-label` and an external description onto the inner button.
  */
 export abstract class PunkButtonBase extends PunkElement {
+  readonly #localeWatcher = new LocaleWatcher(this);
+
   static formAssociated = true;
 
   static override shadowRootOptions: ShadowRootInit = {
@@ -174,7 +177,7 @@ export abstract class PunkButtonBase extends PunkElement {
           : html`<span id="description" class="visually-hidden">${this.#description}</span>`
       }
       <span class="visually-hidden" role="status"
-        >${this.loading ? t('loading', 'Loading') : ''}</span
+        >${this.loading ? msg('Loading', { id: 'loading', desc: 'Hidden text that tells assistive technology a button is busy.' }) : ''}</span
       >
     `;
   }

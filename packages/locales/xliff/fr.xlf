@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="fr" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="invalid">
+  <source>invalid</source>
+  <target>non valide</target>
+  <note from="lit-localize">A word added to the name of a slot or an item stack that is marked invalid.</note>
+</trans-unit>
+<trans-unit id="invalidField">
+  <source>invalid</source>
+  <target>non valide</target>
+  <note from="lit-localize">A word shown before the message of a field that fails validation, for example: invalid: Please fill out this field.</note>
+</trans-unit>
+<trans-unit id="loading">
+  <source>Loading</source>
+  <target>Chargement</target>
+  <note from="lit-localize">Hidden text that tells assistive technology a button is busy.</note>
+</trans-unit>
+<trans-unit id="moving">
+  <source>Moving. Use the arrow keys, Enter to place, Escape to cancel.</source>
+  <target>Déplacement. Utilisez les touches fléchées, Entrée pour placer, Échap pour annuler.</target>
+  <note from="lit-localize">Read aloud when a window enters move mode, and says how to move and place it.</note>
+</trans-unit>
+<trans-unit id="craftable">
+  <source>can craft <x id="0" equiv-text="${times}"/></source>
+  <target>quantité fabricable : <x id="0" equiv-text="${times}"/></target>
+  <note from="lit-localize">Says how many times a recipe can be made now.</note>
+</trans-unit>
+<trans-unit id="unavailable">
+  <source>unavailable</source>
+  <target>indisponible</target>
+  <note from="lit-localize">Says that a recipe cannot be made now.</note>
+</trans-unit>
+<trans-unit id="stackCapacity">
+  <source><x id="0" equiv-text="${count}"/> of <x id="1" equiv-text="${capacity}"/></source>
+  <target><x id="0" equiv-text="${count}"/> sur <x id="1" equiv-text="${capacity}"/></target>
+  <note from="lit-localize">The count of an item stack out of its capacity, for example 75 of 100.</note>
+</trans-unit>
+<trans-unit id="stackCount">
+  <source><x id="0" equiv-text="${count}"/></source>
+  <target><x id="0" equiv-text="${count}"/></target>
+  <note from="lit-localize">The count of an item stack.</note>
+</trans-unit>
+<trans-unit id="durability">
+  <source>durability <x id="0" equiv-text="${percent}"/></source>
+  <target>durabilité <x id="0" equiv-text="${percent}"/></target>
+  <note from="lit-localize">The durability of an item stack as a percentage, for example durability 40%.</note>
+</trans-unit>
+<trans-unit id="close">
+  <source>Close</source>
+  <target>Fermer</target>
+  <note from="lit-localize">The name of the button that closes a window.</note>
+</trans-unit>
+<trans-unit id="dismiss">
+  <source>Dismiss</source>
+  <target>Ignorer</target>
+  <note from="lit-localize">The name of the button that dismisses a toast.</note>
+</trans-unit>
+<trans-unit id="decrease">
+  <source>Decrease</source>
+  <target>Diminuer</target>
+  <note from="lit-localize">The tooltip of the stepper that lowers the value of a number field. It is not announced.</note>
+</trans-unit>
+<trans-unit id="increase">
+  <source>Increase</source>
+  <target>Augmenter</target>
+  <note from="lit-localize">The tooltip of the stepper that raises the value of a number field. It is not announced.</note>
+</trans-unit>
+<trans-unit id="moveWindow">
+  <source>Move window</source>
+  <target>Déplacer la fenêtre</target>
+  <note from="lit-localize">The name of the button that starts moving a window.</note>
+</trans-unit>
+<trans-unit id="notifications">
+  <source>Notifications</source>
+  <target>Notifications</target>
+  <note from="lit-localize">The name of the region that holds toasts.</note>
+</trans-unit>
+<trans-unit id="quality">
+  <source>quality <x id="0" equiv-text="${level}"/></source>
+  <target>qualité <x id="0" equiv-text="${level}"/></target>
+  <note from="lit-localize">The quality level of an item stack, a whole number from 1 to 5.</note>
+</trans-unit>
+<trans-unit id="meterCritical">
+  <source>critical</source>
+  <target>critique</target>
+  <note from="lit-localize">The state word of a meter that is in its critical range.</note>
+</trans-unit>
+<trans-unit id="meterWarning">
+  <source>warning</source>
+  <target>avertissement</target>
+  <note from="lit-localize">The state word of a meter that is in its warning range.</note>
+</trans-unit>
+<trans-unit id="statNoValue">
+  <source>no value</source>
+  <target>aucune valeur</target>
+  <note from="lit-localize">Hidden text for the dash of a measurement not there yet.</note>
+</trans-unit>
+<trans-unit id="trendDown">
+  <source>down</source>
+  <target>en baisse</target>
+  <note from="lit-localize">A measurement is falling.</note>
+</trans-unit>
+<trans-unit id="trendUp">
+  <source>up</source>
+  <target>en hausse</target>
+  <note from="lit-localize">A measurement is rising.</note>
+</trans-unit>
+<trans-unit id="trendFlat">
+  <source>unchanged</source>
+  <target>inchangé</target>
+  <note from="lit-localize">A measurement is steady.</note>
+</trans-unit>
+<trans-unit id="connectionBoth">
+  <source>to and from</source>
+  <target>vers et depuis</target>
+  <note from="lit-localize">Says that a connection runs both ways.</note>
+</trans-unit>
+<trans-unit id="connectionFrom">
+  <source>from</source>
+  <target>depuis</target>
+  <note from="lit-localize">Says that a connection runs from the second node.</note>
+</trans-unit>
+<trans-unit id="connectionTo">
+  <source>to</source>
+  <target>vers</target>
+  <note from="lit-localize">Says that a connection runs to the second node.</note>
+</trans-unit>
+<trans-unit id="removeConnection">
+  <source>Remove connection: <x id="0" equiv-text="${source}"/>, <x id="1" equiv-text="${destination}"/></source>
+  <target>Supprimer la connexion : <x id="0" equiv-text="${source}"/>, <x id="1" equiv-text="${destination}"/></target>
+  <note from="lit-localize">The name of the button that removes a connection, with the text of its two nodes.</note>
+</trans-unit>
+</body>
+</file>
+</xliff>

@@ -136,6 +136,202 @@ async function checkApplicationShell(): Promise<void> {
   if (problems.length > 0) failures.push(`overview--application-shell: ${problems.join(' | ')}`);
   await page.close();
 }
+
+// SPEC-PHASE-4 §12: every example fits at 375px and at 187px, as the responsive ones do.
+async function checkExamples(): Promise<void> {
+  const ids = Object.values(entries)
+    .filter((entry) => entry.type === 'story' && entry.id.startsWith('examples-'))
+    .map((entry) => entry.id);
+  if (ids.length !== 3) failures.push(`expected 3 examples, found ${ids.length}`);
+  for (const id of ids) {
+    for (const width of [375, 187]) {
+      const page = await openStory(id, width, 900);
+      const extra = Number(
+        await page.evaluate(
+          'document.documentElement.scrollWidth - document.documentElement.clientWidth',
+        ),
+      );
+      if (extra > 1) failures.push(`${id} scrolls sideways by ${extra}px at ${width}px`);
+      await page.close();
+    }
+  }
+}
+
+// The element that has focus, as its tag and `value`, through shadow roots.
+const focused = `(() => {
+  const host = document.activeElement;
+  return host ? host.localName + ':' + (host.getAttribute('value') ?? host.id ?? '') : 'none';
+})()`;
+
+// The dashboard updates once a second, can be paused from a switch that is on screen, and never
+// moves focus or announces (WCAG 2.2.2).
+async function checkDashboard(): Promise<void> {
+  const page = await openStory('examples-production-dashboard--production-dashboard', 1100, 1000);
+  const problems: string[] = [];
+  const ticks = async () =>
+    Number(await page.evaluate("document.querySelector('[data-ticks]')?.dataset.ticks ?? '-1'"));
+  const paused = page.getByText('Pause updates');
+  if (!(await paused.isVisible())) problems.push('Pause updates is not on screen');
+  const toggle = page.locator('punk-switch');
+  await toggle.focus();
+  const before = await ticks();
+  await page.waitForTimeout(2500);
+  const running = (await ticks()) - before;
+  if (running < 2) problems.push(`only ${running} updates in 2.5 seconds`);
+  if (!String(await page.evaluate(focused)).startsWith('punk-switch')) {
+    problems.push(`an update moved focus to ${await page.evaluate(focused)}`);
+  }
+  const announcing = Number(
+    await page.evaluate(
+      "document.querySelectorAll('punk-production-stat[announce], punk-production-stat[role], [aria-live]').length",
+    ),
+  );
+  if (announcing > 0) problems.push(`${announcing} elements announce`);
+  const first = String(
+    await page.evaluate("document.querySelector('punk-production-stat').shadowRoot.textContent"),
+  );
+
+  await page.keyboard.press('Space');
+  await page.waitForTimeout(300);
+  const stopped = await ticks();
+  await page.waitForTimeout(2500);
+  if ((await ticks()) !== stopped) problems.push('Pause updates did not stop the timer');
+  if ((await page.evaluate("document.querySelector('[data-ticks]').dataset.paused")) !== 'true') {
+    problems.push('the story does not say that it is paused');
+  }
+  await page.keyboard.press('Space');
+  await page.waitForTimeout(2500);
+  if ((await ticks()) <= stopped) problems.push('turning Pause updates off did not resume');
+  if (first === '') problems.push('the first stat has no text');
+  if (problems.length > 0) failures.push(`examples-production-dashboard: ${problems.join(' | ')}`);
+  await page.close();
+}
+
+// Removing a connection asks first, moves focus to the next row's button, or to the heading after
+// the last row, and offers Undo.
+async function checkLogistics(): Promise<void> {
+  const page = await openStory('examples-logistics-network--logistics-network', 1100, 1200);
+  const problems: string[] = [];
+  const rows = () => page.locator('punk-connection-row');
+  const first = Number(await rows().count());
+  if (first !== 12) problems.push(`${first} rows, expected 12`);
+  const settle = () => page.waitForTimeout(400);
+
+  await rows().first().locator('[part="remove-button"]').click();
+  const dialog = page.getByRole('alertdialog', { name: 'Remove this connection?' });
+  if (!(await dialog.isVisible())) problems.push('a removal did not ask first');
+  await page.keyboard.press('Escape');
+  await settle();
+  if ((await rows().count()) !== 12) problems.push('Escape removed the row');
+
+  await rows().first().locator('[part="remove-button"]').click();
+  await page.getByRole('button', { name: 'Remove', exact: true }).click();
+  await settle();
+  if ((await rows().count()) !== 11) problems.push('Remove did not remove the row');
+  if (String(await page.evaluate(focused)) !== 'punk-connection-row:c2') {
+    problems.push(`after a removal focus is on ${await page.evaluate(focused)}, not the next row`);
+  }
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await settle();
+  if ((await rows().count()) !== 12) problems.push('Undo did not put the row back');
+  if (String(await page.evaluate(focused)) !== 'punk-connection-row:c1') {
+    problems.push(`after Undo focus is on ${await page.evaluate(focused)}`);
+  }
+
+  // Filtered to the blocked rows, removing the last one sends focus to the heading.
+  await page.locator('punk-select select').selectOption('blocked');
+  await settle();
+  if ((await rows().count()) !== 2)
+    problems.push(`${await rows().count()} blocked rows, expected 2`);
+  await rows().last().locator('[part="remove-button"]').click();
+  await page.getByRole('button', { name: 'Remove', exact: true }).click();
+  await settle();
+  if (String(await page.evaluate(focused)) !== 'h3:network-heading') {
+    problems.push(
+      `after the last row focus is on ${await page.evaluate(focused)}, not the heading`,
+    );
+  }
+  if (problems.length > 0) failures.push(`examples-logistics-network: ${problems.join(' | ')}`);
+  await page.close();
+}
+
+// A language from the select changes the words, `lang`, and `dir` of the page.
+async function checkInterfaceSettings(): Promise<void> {
+  const page = await openStory('examples-interface-settings--interface-settings', 1100, 1000);
+  const problems: string[] = [];
+  const root = (name: string) => page.evaluate(`document.documentElement.${name}`);
+  const name = () =>
+    page.evaluate(
+      "document.querySelector('punk-connection-row').shadowRoot.querySelector('[part=\"remove-button\"]').getAttribute('aria-label')",
+    );
+  const english = await name();
+  if (english !== 'Remove connection: Iron smelter, Assembler')
+    problems.push(`English name "${english}"`);
+  const language = page.locator('punk-select').first().locator('select');
+  for (const [code, dir] of [
+    ['ar', 'rtl'],
+    ['de', 'ltr'],
+    ['ja', 'ltr'],
+    ['fr', 'ltr'],
+    ['es', 'ltr'],
+    ['en', 'ltr'],
+  ]) {
+    await language.selectOption(code as string);
+    await page.waitForFunction(`document.documentElement.lang === '${code}'`, undefined, {
+      timeout: 5000,
+    });
+    await page.waitForTimeout(200);
+    if ((await root('dir')) !== dir) problems.push(`${code}: dir is ${await root('dir')}`);
+    const label = await name();
+    if (code === 'en' ? label !== english : label === english)
+      problems.push(`${code}: the button is named "${label}"`);
+  }
+  if (problems.length > 0) failures.push(`examples-interface-settings: ${problems.join(' | ')}`);
+  await page.close();
+}
+
+// The Localization guide lists every message of the XLIFF, with its English and description.
+async function checkScreenReaderChecklist(): Promise<void> {
+  const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
+  await page.goto(
+    `http://localhost:${port}/iframe.html?id=guides-screen-reader-checklist--docs&viewMode=docs`,
+  );
+  await page.waitForSelector('body.sb-show-main', { timeout: 15000 });
+  await page.waitForTimeout(500);
+  const text = String(await page.evaluate("document.querySelector('.sbdocs')?.textContent ?? ''"));
+  const results = Number(
+    await page.evaluate(
+      "document.querySelectorAll('.sbdocs table')[0]?.querySelectorAll('tbody tr').length ?? 0",
+    ),
+  );
+  if (results !== 8)
+    failures.push(`guides-screen-reader-checklist--docs has ${results} result rows, expected 8`);
+  for (const name of ['NVDA', 'VoiceOver', 'TalkBack', 'Run record']) {
+    if (!text.includes(name))
+      failures.push(`guides-screen-reader-checklist--docs does not mention ${name}`);
+  }
+  await page.close();
+}
+
+async function checkLocalizationGuide(): Promise<void> {
+  const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
+  await page.goto(
+    `http://localhost:${port}/iframe.html?id=guides-localization--docs&viewMode=docs`,
+  );
+  await page.waitForSelector('body.sb-show-main', { timeout: 15000 });
+  await page.waitForTimeout(500);
+  const rows = Number(
+    await page.evaluate("document.querySelectorAll('.sbdocs table tbody tr').length"),
+  );
+  const text = String(await page.evaluate("document.querySelector('.sbdocs')?.textContent ?? ''"));
+  if (rows < 26)
+    failures.push(`guides-localization--docs lists ${rows} messages, expected at least 26`);
+  for (const id of ['removeConnection', 'statNoValue', 'connectionBoth']) {
+    if (!text.includes(id)) failures.push(`guides-localization--docs does not list ${id}`);
+  }
+  await page.close();
+}
+
 try {
   for (const entry of Object.values(entries)) {
     const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
@@ -166,6 +362,12 @@ try {
   }
   await checkResponsiveExamples();
   await checkApplicationShell();
+  await checkExamples();
+  await checkDashboard();
+  await checkLogistics();
+  await checkInterfaceSettings();
+  await checkLocalizationGuide();
+  await checkScreenReaderChecklist();
   await checkFrameworkGuides();
 } finally {
   await browser.close();

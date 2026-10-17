@@ -88,9 +88,10 @@ describe('reflow without horizontal scrolling', () => {
         }
       }
       expect(problems).toEqual([]);
-      // 32 galleries a width is near the default limit when three engines share a runner.
+      // 32 galleries a width is near the limit when three engines share a runner, and the production
+      // group made each gallery larger.
     },
-    60_000,
+    120_000,
   );
 
   it('keeps an open tooltip narrower than the viewport', async () => {
@@ -106,5 +107,5 @@ describe('reflow without horizontal scrolling', () => {
     } finally {
       frame.remove();
     }
-  });
+  }, 60_000);
 });
