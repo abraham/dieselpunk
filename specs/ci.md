@@ -1,7 +1,7 @@
 # Continuous Integration
 
 **Scope:** the GitHub Actions workflows that check, render, and publish the repository: their jobs, how work is split and parallelized, how setup is shared, what decides which jobs run, and the time budgets that keep it fast as the library grows.
-**Code:** `.github/workflows/ci.yml`, `.github/workflows/visual.yml`, `.github/workflows/update-visual-baselines.yml`, `.github/workflows/docs.yml`, `.github/actions/setup/`, `scripts/ci-matrix.ts`, `packages/core/test/browser/fixtures/groups.ts`, `packages/core/test/visual/tags.ts`.
+**Code:** `.github/workflows/ci.yml`, `.github/workflows/visual.yml`, `.github/workflows/update-visual-baselines.yml`, `.github/workflows/docs.yml`, `.github/actions/setup/`, `scripts/ci-matrix.ts`, `scripts/merge-baselines.ts`, `packages/core/test/browser/fixtures/groups.ts`, `packages/core/test/visual/tags.ts`.
 
 ## 1. Goals
 
@@ -107,7 +107,7 @@ A Node test covers the packing. **Why:** when components double, new groups and 
 
 ## 8. Other workflows
 
-- **Visual jobs are one reusable workflow,** `visual.yml` (`workflow_call`), with a `mode` input of `check` or `update`. `ci.yml` calls it with `check`. `update-visual-baselines.yml` calls it with `update` on the same matrix, and each job uploads its groups' baselines as an artifact, merged into one artifact to commit. The update workflow takes optional `groups` and `themes` inputs (all by default): a palette change in one theme re-renders only that theme's baselines in each group. The baselines being rendered are deleted first, so baselines of removed tests do not linger, and those outside the inputs are kept. **Why:** rendering every baseline in one job grows with every component, two definitions of the visual matrix would drift, and a change to one theme should not rewrite every other theme's files.
+- **Visual jobs are one reusable workflow,** `visual.yml` (`workflow_call`), with a `mode` input of `check` or `update`. `ci.yml` calls it with `check`. `update-visual-baselines.yml` calls it with `update` on the same matrix, and each job uploads its groups' baselines as an artifact, merged into one artifact to commit. The update workflow takes optional `groups` and `themes` inputs (all by default): a palette change in one theme re-renders only that theme's baselines in each group. The baselines being rendered are deleted first, so baselines of removed tests do not linger, and those outside the inputs are kept. `scripts/merge-baselines.ts` does the merge; it reads a baseline's theme from its file name, and a capture named for no theme belongs to the default theme, as its test's tag says. **Why:** rendering every baseline in one job grows with every component, two definitions of the visual matrix would drift, and a change to one theme should not rewrite every other theme's files.
 - **Docs** (`docs.yml`) builds and deploys the workbench on a push to `main` and runs no tests ([workbench.md §8](workbench.md)).
 
 ## 9. Budgets
@@ -125,14 +125,13 @@ The packing cap of §6 is set so a packed job meets its target. The `plan` job w
 ## Verification
 
 - `ci-success` is the required check on `main`.
-- A Node test covers `scripts/ci-matrix.ts`: packing, the split by theme, the oversized-unit failure, and change detection.
+- A Node test covers `scripts/ci-matrix.ts`: packing, the split by theme, the oversized-unit failure, selections, and change detection. Another covers `scripts/merge-baselines.ts`: what a selection replaces and keeps.
 - `test/visual-ci.test.ts` fails if any workflow pins a Playwright image other than the installed version.
 - The budgets of §9 are reported, not asserted; a missed target is visible in the `plan` summary.
 
 ## Gaps
 
-The workflows are the first step toward this design: `plan`, `static`, `integration`, `smoke`, `browser` (one job per engine), `visual`, and `ci-success`. Every job sets up through `.github/actions/setup`. `plan` generates the visual and smoke matrices, and the visual tests carry their group, theme, `@cross-engine`, and `@forced` tags. Missing:
+The workflows are the first step toward this design: `plan`, `static`, `integration`, `smoke`, `browser` (one job per engine), `visual` (through `visual.yml`, shared with the baseline workflow), and `ci-success`. Every job sets up through `.github/actions/setup`. `plan` generates the visual and smoke matrices, and the visual tests carry their group, theme, `@cross-engine`, and `@forced` tags. Missing:
 
 - **`plan` computes no `browser` matrix.** The gallery suites cannot select groups or themes (`PUNK_GALLERY_GROUPS`, `PUNK_GALLERY_THEMES`), the component tests have no parts, and `browser` runs one job per engine with everything; `integration` and `browser` do not wait for `plan`.
-- **The baseline workflow renders everything in one job,** does not share the visual job definition, and cannot update one group or theme.
 - **No change detection, no `concurrency` group, no timeouts,** and no budget summary.

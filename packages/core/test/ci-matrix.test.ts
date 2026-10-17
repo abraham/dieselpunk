@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { countTests, grepFor, planSmoke, planVisual } from '../../../scripts/ci-matrix.ts';
+import {
+  countTests,
+  grepFor,
+  parseSelection,
+  planSmoke,
+  planVisual,
+} from '../../../scripts/ci-matrix.ts';
 import type { Budget, Count } from '../../../scripts/ci-matrix.ts';
 import { themeNames } from '../src/tokens/themes.ts';
 import { groupNames } from './browser/fixtures/groups.ts';
@@ -87,6 +93,45 @@ test('a project with no weight fails the plan', () => {
   );
 });
 
+test('a selection plans only its groups and themes, and each job greps its themes', () => {
+  const jobs = planVisual(
+    [
+      count('chromium', 'shell', 'steel', 10),
+      count('chromium', 'shell', 'steel-light', 10),
+      count('chromium', 'shell', 'brass', 10),
+      count('chromium', 'forms', 'steel', 10),
+      count('firefox', 'shell', 'brass', 10),
+    ],
+    budget,
+    { groups: ['shell'], themes: ['steel', 'steel-light'] },
+  );
+  assert.deepEqual(
+    jobs.map(({ id, name }) => [id, name]),
+    [['chromium-shell-steel-steel-light', 'chromium · shell · steel, steel-light']],
+  );
+  const grep = new RegExp(jobs[0]!.grep);
+  assert.ok(grep.test(line('shell', 'steel-light')));
+  assert.ok(!grep.test(line('shell', 'brass')));
+  assert.ok(!grep.test(line('forms', 'steel')));
+});
+
+test('a selection that matches no test fails the plan', () => {
+  assert.throws(
+    () => planVisual([count('chromium', 'shell', 'steel', 1)], budget, { themes: ['brass'] }),
+    /No visual tests match/,
+  );
+});
+
+test('a selection is read from a list, and unknown names fail', () => {
+  assert.deepEqual(parseSelection('', ''), {});
+  assert.deepEqual(parseSelection(`${groupNames[0]}, ${groupNames[1]}`, ` ${themeNames[0]} `), {
+    groups: [groupNames[0], groupNames[1]],
+    themes: [themeNames[0]],
+  });
+  assert.throws(() => parseSelection('attic'), /Unknown group: attic/);
+  assert.throws(() => parseSelection('', 'sepia'), /Unknown theme: sepia/);
+});
+
 test('a grep selects its groups and no others', () => {
   const grep = new RegExp(grepFor([{ group: 'shell' }, { group: 'forms' }]));
   assert.ok(grep.test(line('shell', 'industrial')));
@@ -96,7 +141,7 @@ test('a grep selects its groups and no others', () => {
 });
 
 test('a grep by theme does not match a theme whose name starts with it', () => {
-  const grep = new RegExp(grepFor([{ group: 'overlays', theme: 'steel' }, { group: 'forms' }]));
+  const grep = new RegExp(grepFor([{ group: 'overlays', themes: ['steel'] }, { group: 'forms' }]));
   assert.ok(grep.test(line('overlays', 'steel')));
   assert.ok(!grep.test(line('overlays', 'steel-light')));
   assert.ok(!grep.test(line('shell', 'steel')));

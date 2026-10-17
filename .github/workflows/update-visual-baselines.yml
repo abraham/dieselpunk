@@ -1,27 +1,40 @@
 name: Update visual baselines
 
 # Baselines are only valid when rendered on the Linux image CI checks with (specs/testing.md §6).
-# Run this manually, download the artifact, and commit it under packages/core/test/visual/__screenshots__.
+# Run this manually, download the `visual-baselines` artifact, and replace
+# packages/core/test/visual/__screenshots__ with it. It holds every baseline: the selected ones
+# re-rendered, and the rest as committed (specs/ci.md §8).
 on:
   workflow_dispatch:
+    inputs:
+      groups:
+        description: Gallery groups to re-render, comma-separated; empty for all.
+        type: string
+        default: ''
+      themes:
+        description: Themes to re-render, comma-separated; empty for all.
+        type: string
+        default: ''
 
 jobs:
-  baselines:
+  plan:
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
-      options: --ipc=host
-    env:
-      # Firefox refuses to start as root when $HOME belongs to another user, as it does by default here.
-      HOME: /root
+    outputs:
+      visual: ${{ steps.matrix.outputs.visual }}
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
-      # Start from nothing so baselines for removed tests do not linger and never fail.
-      - run: rm -rf packages/core/test/visual/__screenshots__
-      - run: npm run test:visual:update --workspace @dieselpunk/core
-      - uses: actions/upload-artifact@v7
-        with:
-          name: visual-baselines
-          path: packages/core/test/visual/__screenshots__/
-          if-no-files-found: error
+      - id: matrix
+        env:
+          PUNK_GALLERY_GROUPS: ${{ inputs.groups }}
+          PUNK_GALLERY_THEMES: ${{ inputs.themes }}
+        run: node scripts/ci-matrix.ts
+
+  baselines:
+    needs: plan
+    uses: ./.github/workflows/visual.yml
+    with:
+      mode: update
+      matrix: ${{ needs.plan.outputs.visual }}
+      groups: ${{ inputs.groups }}
+      themes: ${{ inputs.themes }}

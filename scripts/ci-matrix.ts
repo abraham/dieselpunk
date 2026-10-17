@@ -45,8 +45,14 @@ export const visualBudget: Budget = {
 
 interface Unit {
   group: string;
-  theme?: string;
+  themes?: readonly string[];
   cost: number;
+}
+
+/** The groups and themes to render; all of either when absent. */
+export interface Selection {
+  groups?: readonly string[];
+  themes?: readonly string[];
 }
 
 interface ReportSuite {
@@ -57,18 +63,43 @@ interface ReportSuite {
 
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // A tag ends at a space or the end, so `@theme:industrial` does not match `@theme:industrial-light`.
-const hasTag = (tag: string) => `(?=.*${escape(tag)}(?=\\s|$))`;
+const oneOf = (prefix: string, names: readonly string[]) =>
+  `${escape(prefix)}(?:${names.map(escape).join('|')})(?=\\s|$)`;
 
 /** A `--grep` that selects exactly the tests of these units. */
-export function grepFor(units: ReadonlyArray<{ group: string; theme?: string }>): string {
-  if (units.every((unit) => !unit.theme)) {
-    const groups = units.map((unit) => escape(unit.group)).join('|');
-    return `${escape(groupTag(''))}(?:${groups})(?=\\s|$)`;
+export function grepFor(
+  units: ReadonlyArray<{ group: string; themes?: readonly string[] | undefined }>,
+): string {
+  if (units.every((unit) => !unit.themes)) {
+    return oneOf(
+      groupTag(''),
+      units.map((unit) => unit.group),
+    );
   }
   const alternatives = units.map(
-    ({ group, theme }) => hasTag(groupTag(group)) + (theme ? hasTag(themeTag(theme)) : ''),
+    ({ group, themes }) =>
+      `(?=.*${oneOf(groupTag(''), [group])})` +
+      (themes ? `(?=.*${oneOf(themeTag(''), themes)})` : ''),
   );
   return `^(?:${alternatives.join('|')})`;
+}
+
+/** Reads comma- or space-separated group and theme names, and rejects unknown ones. */
+export function parseSelection(groups = '', themes = ''): Selection {
+  const list = (text: string, known: readonly string[], kind: string) => {
+    const names = text.split(/[\s,]+/).filter(Boolean);
+    const unknown = names.filter((name) => !known.includes(name));
+    if (unknown.length > 0) {
+      throw new Error(`Unknown ${kind}: ${unknown.join(', ')}. Known: ${known.join(', ')}.`);
+    }
+    return names.length > 0 ? names : undefined;
+  };
+  const selection: Selection = {};
+  const g = list(groups, groupNames, 'group');
+  const t = list(themes, themeNames, 'theme');
+  if (g) selection.groups = g;
+  if (t) selection.themes = t;
+  return selection;
 }
 
 /** Counts the tests of a `playwright test --list --reporter=json` report by project, group, and theme. */
@@ -107,8 +138,20 @@ export function countTests(report: { suites: ReportSuite[] }): Count[] {
   return [...counts.values()];
 }
 
-/** Packs the visual tests into jobs of whole groups, or of a group's themes when a group is over the cap. */
-export function planVisual(counts: readonly Count[], budget: Budget = visualBudget): VisualJob[] {
+/**
+ * Packs the visual tests into jobs of whole groups, or of a group's themes when a group is over the
+ * cap. With a selection, only those groups and themes are planned.
+ */
+export function planVisual(
+  all: readonly Count[],
+  budget: Budget = visualBudget,
+  selection: Selection = {},
+): VisualJob[] {
+  const counts = all.filter(
+    (count) =>
+      (!selection.groups || selection.groups.includes(count.group)) &&
+      (!selection.themes || selection.themes.includes(count.theme)),
+  );
   const projects = [...new Set(counts.map((count) => count.project))];
   const order = (group: string) => (groupNames as readonly string[]).indexOf(group);
   const jobs: VisualJob[] = [];
@@ -126,7 +169,8 @@ export function planVisual(counts: readonly Count[], budget: Budget = visualBudg
       const themes = mine.filter((count) => count.group === group);
       const cost = themes.reduce((sum, count) => sum + count.tests, 0) * weight;
       if (cost <= budget.cap) {
-        units.push({ group, cost });
+        const restricted = selection.themes ? { themes: themes.map((count) => count.theme) } : {};
+        units.push({ group, cost, ...restricted });
         continue;
       }
       for (const { theme, tests } of themes) {
@@ -136,7 +180,7 @@ export function planVisual(counts: readonly Count[], budget: Budget = visualBudg
               `Split the group into two groups (specs/ci.md §6).`,
           );
         }
-        units.push({ group, theme, cost: tests * weight });
+        units.push({ group, themes: [theme], cost: tests * weight });
       }
     }
 
@@ -161,17 +205,20 @@ export function planVisual(counts: readonly Count[], budget: Budget = visualBudg
     }
 
     for (const bin of bins) {
-      const all = bins.length === 1;
-      const parts = bin.map(({ group, theme }) => (theme ? `${group} · ${theme}` : group));
-      const slug = bin.flatMap(({ group, theme }) => (theme ? [group, theme] : [group]));
+      const whole = bins.length === 1 && !selection.themes;
+      const parts = bin.map(({ group, themes }) =>
+        themes ? `${group} · ${themes.join(', ')}` : group,
+      );
+      const slug = bin.flatMap(({ group, themes }) => [group, ...(themes ?? [])]);
       jobs.push({
-        id: [project, ...(all ? ['all'] : slug)].join('-'),
-        name: `${project} · ${all ? 'all groups' : parts.join(', ')}`,
+        id: [project, ...(whole ? ['all'] : slug)].join('-'),
+        name: `${project} · ${whole ? 'all groups' : parts.join(', ')}`,
         project,
         grep: grepFor(bin),
       });
     }
   }
+  if (jobs.length === 0) throw new Error('No visual tests match the selected groups and themes.');
   return jobs;
 }
 
@@ -218,7 +265,12 @@ function listVisualTests(): Count[] {
 }
 
 if (import.meta.main) {
-  const visual = planVisual(listVisualTests());
+  // The baseline workflow renders a subset (specs/ci.md §8); CI renders everything.
+  const selection = parseSelection(
+    process.env['PUNK_GALLERY_GROUPS'],
+    process.env['PUNK_GALLERY_THEMES'],
+  );
+  const visual = planVisual(listVisualTests(), visualBudget, selection);
   const entries = countWorkbenchEntries();
   const smoke = planSmoke(entries);
   const output = process.env['GITHUB_OUTPUT'];

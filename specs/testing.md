@@ -90,7 +90,7 @@ Suites over the gallery:
 **Baselines.**
 
 - Rendered only in `mcr.microsoft.com/playwright:v<version>-noble`, with `<version>` the installed `@playwright/test`. `scripts/visual.ts` runs the container off Linux and Playwright directly on Linux. The page is bundled with esbuild on the host (`build-visual.ts`), since esbuild's binary is platform-specific.
-- **Committed baselines come from CI**, by the manual "Update visual baselines" workflow, which deletes each group's folder, renders it, and uploads it to commit, so no stale baseline lingers. `visual.ts update` refuses outside CI, unless forced. A local check against the committed set is precise but not authoritative.
+- **Committed baselines come from CI**, by the manual "Update visual baselines" workflow, which re-renders all baselines or only some groups and themes and uploads the whole set to commit; the re-rendered ones are deleted first, so no stale baseline lingers ([ci.md §8](ci.md)). `visual.ts update` refuses outside CI, unless forced. A local check against the committed set is precise but not authoritative.
 - Each group has its own folder under each project. A group's folder stays under about 20 MB; when it would not, its content variants are cut and the cut is recorded in the gallery.
 - The page-level tolerance is `maxDiffPixelRatio: 0.002`, with animations disabled and reduced motion on.
 - `node scripts/visual.ts selftest` renders everything twice into a scratch folder and requires identical output, which proves the harness deterministic in every engine without a baseline.

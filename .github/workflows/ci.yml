@@ -81,35 +81,12 @@ jobs:
           browsers: ${{ matrix.browser }}
       - run: npm run test:browser --workspaces --if-present
 
-  # Runs in the image the baselines were rendered on, so pixels match (specs/testing.md §6).
   visual:
-    name: visual (${{ matrix.name }})
     needs: plan
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.plan.outputs.visual) }}
-    container:
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
-      options: --ipc=host
-    env:
-      # Firefox refuses to start as root when $HOME belongs to another user, as it does by default here.
-      HOME: /root
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
-      - working-directory: packages/core
-        env:
-          PROJECT: ${{ matrix.project }}
-          GREP: ${{ matrix.grep }}
-        run: node scripts/visual.ts check --project="$PROJECT" --grep="$GREP"
-      - uses: actions/upload-artifact@v7
-        if: failure()
-        with:
-          name: visual-report-${{ matrix.id }}
-          path: packages/core/test-results/
-          retention-days: 7
+    uses: ./.github/workflows/visual.yml
+    with:
+      mode: check
+      matrix: ${{ needs.plan.outputs.visual }}
 
   # The one check to require in branch protection: it passes only when every job above passed.
   ci-success:
