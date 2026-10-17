@@ -89,7 +89,7 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 
 **Getting started.** The Integration guide is the entry for newcomers and is linked from the sidebar header: it shows `npm install`, the class and register imports, the stylesheets, and a plain HTML page that loads the packages through an import map, so a reader can copy a working page.
 
-**Package links.** The `homepage` field of `@dieselpunk/core` and `@dieselpunk/locales` is `https://dieselpunk.dev`, and each component's manifest description links its docs page.
+**Package links.** The `homepage` field of `@dieselpunk/core` and `@dieselpunk/locales` is `https://dieselpunk.dev`, their `repository` is `abraham/dieselpunk` with the package's folder as its `directory`, and each component's manifest description links its docs page.
 
 ## 8. Publishing
 
@@ -114,5 +114,5 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 - **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, or 404 page.
 - **No published-ids file or check** in CI.
 - **The guides and overviews are not scanned by axe.** Closing it: run axe over every docs page and example in the smoke test, outside the Storybook chrome.
-- **The packages have no `homepage` or `repository` field,** and manifest descriptions do not link their docs pages.
+- **Manifest descriptions do not link their docs pages.**
 - **The Integration guide has no `npm install` step or plain HTML import-map page,** since the packages are not on npm yet.
