@@ -1112,6 +1112,74 @@
       },
       "cssProperties": {}
     },
+    "punk-textarea": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "autocomplete": "string | null = null",
+        "autogrow": "boolean = false",
+        "disabled": "boolean = false",
+        "label": "string = ''",
+        "maxlength": "number | null = null",
+        "minlength": "number | null = null",
+        "name": "string = ''",
+        "placeholder": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "rows": "number = 3",
+        "show-count": "boolean = false",
+        "value": "string = ''"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "autocomplete": "string | null = null",
+        "autogrow": "boolean = false",
+        "disabled": "boolean = false",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "maxlength": "number | null = null",
+        "minlength": "number | null = null",
+        "name": "string = ''",
+        "placeholder": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "rows": "number = 3",
+        "showCount": "boolean = false",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "value": "string = ''",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "select": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "",
+        "input": ""
+      },
+      "slots": {
+        "hint": ""
+      },
+      "parts": {
+        "control": "",
+        "count": "",
+        "field": "",
+        "hint": "",
+        "label": "",
+        "message": ""
+      },
+      "cssProperties": {
+        "--punk-textarea-max-height": "= 20lh"
+      }
+    },
     "punk-toast": {
       "attributes": {
         "duration": "number | null = null",

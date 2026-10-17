@@ -9,7 +9,7 @@ import { PunkFormControl } from './form-control.ts';
 import type { Validation } from './form-control.ts';
 import { SlotPresence } from './slot-presence.ts';
 
-export type FieldControl = HTMLInputElement | HTMLSelectElement;
+export type FieldControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 /** What a field renders around its native control. */
 export interface FieldParts {

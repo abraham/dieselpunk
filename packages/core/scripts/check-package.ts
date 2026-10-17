@@ -59,6 +59,7 @@ const sentinels: Record<string, string> = {
   'text-field': '-webkit-search-cancel-button',
   'number-field': '-webkit-inner-spin-button',
   select: 'optgroup',
+  textarea: 'field-sizing',
   alert: 'part="actions"',
   badge: '"punk-badge"',
   spinner: '"punk-spinner"',
