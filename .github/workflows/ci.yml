@@ -6,11 +6,12 @@ on:
   pull_request:
 
 jobs:
-  # Computes the matrices from the gallery groups and the test listing (specs/ci.md §6).
+  # Computes the matrices from the gallery groups, the test listing, and the workbench index (specs/ci.md §6).
   plan:
     runs-on: ubuntu-latest
     outputs:
       visual: ${{ steps.matrix.outputs.visual }}
+      smoke: ${{ steps.matrix.outputs.smoke }}
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
@@ -47,7 +48,15 @@ jobs:
       - run: npm run check:frameworks
 
   smoke:
+    name: smoke (${{ matrix.part }})
+    needs: plan
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.smoke) }}
+    env:
+      PUNK_SMOKE_PART: ${{ matrix.part }}
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup

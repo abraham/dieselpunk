@@ -1,5 +1,7 @@
 import { execFileSync } from 'node:child_process';
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { themeNames } from '../packages/core/src/tokens/themes.ts';
 import { groupNames } from '../packages/core/test/browser/fixtures/groups.ts';
@@ -173,6 +175,38 @@ export function planVisual(counts: readonly Count[], budget: Budget = visualBudg
   return jobs;
 }
 
+/** One smoke job: the `PUNK_SMOKE_PART` it checks. */
+export interface SmokeJob {
+  part: string;
+}
+
+// The pool renders an entry in about 0.07s locally, perhaps three times that on a runner, so 400
+// entries and the flows fit the 3-minute target with the build (specs/ci.md §9).
+export const smokeEntriesPerPart = 400;
+
+/** Enough parts that none checks more than `perPart` entries. */
+export function planSmoke(entries: number, perPart = smokeEntriesPerPart): SmokeJob[] {
+  const parts = Math.max(1, Math.ceil(entries / perPart));
+  return Array.from({ length: parts }, (_, index) => ({ part: `${index + 1}/${parts}` }));
+}
+
+/** The number of workbench entries, from Storybook's index, which needs no build. */
+function countWorkbenchEntries(): number {
+  const workbench = fileURLToPath(new URL('../apps/storybook/', import.meta.url));
+  const dir = mkdtempSync(join(tmpdir(), 'punk-plan-'));
+  try {
+    const file = join(dir, 'index.json');
+    execFileSync('npx', ['storybook', 'index', '-o', file, '--quiet', '--disable-telemetry'], {
+      cwd: workbench,
+      stdio: ['ignore', 'ignore', 'inherit'],
+    });
+    const { entries } = JSON.parse(readFileSync(file, 'utf8')) as { entries: object };
+    return Object.keys(entries).length;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 function listVisualTests(): Count[] {
   const core = fileURLToPath(new URL('../packages/core/', import.meta.url));
   const report = execFileSync('npx', ['playwright', 'test', '--list', '--reporter=json'], {
@@ -185,15 +219,21 @@ function listVisualTests(): Count[] {
 
 if (import.meta.main) {
   const visual = planVisual(listVisualTests());
+  const entries = countWorkbenchEntries();
+  const smoke = planSmoke(entries);
   const output = process.env['GITHUB_OUTPUT'];
   if (output) {
-    appendFileSync(output, `visual=${JSON.stringify(visual)}\n`);
+    appendFileSync(output, `visual=${JSON.stringify(visual)}\nsmoke=${JSON.stringify(smoke)}\n`);
   } else {
-    console.log(JSON.stringify({ visual }, null, 2));
+    console.log(JSON.stringify({ visual, smoke }, null, 2));
   }
   const summary = process.env['GITHUB_STEP_SUMMARY'];
   if (summary) {
     const rows = visual.map((job) => `| ${job.name} |`).join('\n');
-    appendFileSync(summary, `### Visual jobs\n\n| Job |\n| --- |\n${rows}\n`);
+    appendFileSync(
+      summary,
+      `### Visual jobs\n\n| Job |\n| --- |\n${rows}\n\n` +
+        `### Smoke\n\n${entries} workbench entries in ${smoke.length} part(s).\n`,
+    );
   }
 }

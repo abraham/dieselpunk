@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { countTests, grepFor, planVisual } from '../../../scripts/ci-matrix.ts';
+import { countTests, grepFor, planSmoke, planVisual } from '../../../scripts/ci-matrix.ts';
 import type { Budget, Count } from '../../../scripts/ci-matrix.ts';
 import { themeNames } from '../src/tokens/themes.ts';
 import { groupNames } from './browser/fixtures/groups.ts';
@@ -130,4 +130,12 @@ test('a test without exactly one known group and theme fails the plan', () => {
     () => countTests(report([`@group:${group}`, '@theme:sepia'])),
     /unknown theme "sepia"/,
   );
+});
+
+test('the smoke test gets a part for each full set of entries', () => {
+  const parts = (entries: number) => planSmoke(entries, 100).map((job) => job.part);
+  assert.deepEqual(parts(0), ['1/1']);
+  assert.deepEqual(parts(100), ['1/1']);
+  assert.deepEqual(parts(101), ['1/2', '2/2']);
+  assert.deepEqual(parts(250), ['1/3', '2/3', '3/3']);
 });

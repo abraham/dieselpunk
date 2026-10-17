@@ -48,6 +48,8 @@ The workbench is where people build with and review the library, not a marketing
 - the examples' flows: dashboard updates, pause, and resume without focus moves or announcements; logistics removal, cancel, Undo, filter, and focus targets; interface-settings `lang`, `dir`, and names for every locale;
 - guide content: each framework guide contains its app's code, the Localization table lists every message id, and the checklist has its rows and combinations.
 
+An entry counts as loaded when Storybook's preview reports it rendered (or failed), and two frames later; entries load 4 at a time, and the flows run after them, one at a time. `PUNK_SMOKE_PART=<n>/<total>` checks one slice of the entries, with the flows in the first part ([ci.md §5.4](ci.md)).
+
 ## 6. Authoring rules
 
 - MDX here has no GitHub-flavored Markdown: pipe tables do not render, so docs pages use JSX tables.

@@ -90,7 +90,7 @@ Theme names are read from the token source (`packages/core/src/tokens/themes.ts`
 
 ## 6. Matrix generation
 
-`scripts/ci-matrix.ts` writes the matrices as JSON outputs of the `plan` job, consumed with `fromJSON`. It reads the groups (§5.1), the number of visual tests per group and project (`playwright test --list`), the component test files, and the workbench entry count, and packs them into jobs by a per-job cost cap (§9):
+`scripts/ci-matrix.ts` writes the matrices as JSON outputs of the `plan` job, consumed with `fromJSON`. It reads the groups (§5.1), the number of visual tests per group and project (`playwright test --list`), the component test files, and the workbench entry count (`storybook index`, which needs no build), and packs them into jobs by a per-job cost cap (§9):
 
 - each unit's cost is its test count times a per-engine weight, kept in the script beside the cap;
 - the unit is a group. When a group alone exceeds the cap in a project that renders every theme (`chromium`, and the Chromium gallery suites), it is split into one unit per theme, named for both ("chromium · shell · high-contrast");
@@ -131,9 +131,8 @@ The packing cap of §6 is set so a packed job meets its target. The `plan` job w
 
 ## Gaps
 
-The workflows are the first step toward this design: `plan`, `static`, `integration`, `smoke`, `browser` (one job per engine), `visual`, and `ci-success`. Every job sets up through `.github/actions/setup`. `plan` generates the visual matrix, and the visual tests carry their group, theme, `@cross-engine`, and `@forced` tags. Missing:
+The workflows are the first step toward this design: `plan`, `static`, `integration`, `smoke`, `browser` (one job per engine), `visual`, and `ci-success`. Every job sets up through `.github/actions/setup`. `plan` generates the visual and smoke matrices, and the visual tests carry their group, theme, `@cross-engine`, and `@forced` tags. Missing:
 
-- **`plan` computes only the visual matrix.** The gallery suites cannot select groups or themes (`PUNK_GALLERY_GROUPS`, `PUNK_GALLERY_THEMES`), the component tests have no parts, and `browser` runs one job per engine with everything; `integration`, `smoke`, and `browser` do not wait for `plan`.
-- **The smoke test is sequential,** with a fixed wait per entry, and has no parts.
+- **`plan` computes no `browser` matrix.** The gallery suites cannot select groups or themes (`PUNK_GALLERY_GROUPS`, `PUNK_GALLERY_THEMES`), the component tests have no parts, and `browser` runs one job per engine with everything; `integration` and `browser` do not wait for `plan`.
 - **The baseline workflow renders everything in one job,** does not share the visual job definition, and cannot update one group or theme.
 - **No change detection, no `concurrency` group, no timeouts,** and no budget summary.
