@@ -30,6 +30,7 @@ const german = {
     previousPage: 'Vorherige Seite',
     nextPage: 'Nächste Seite',
     pageNumber: str`Seite ${0}`,
+    removeTag: str`${0} entfernen`,
   },
 };
 

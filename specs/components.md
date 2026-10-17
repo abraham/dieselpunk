@@ -17,7 +17,7 @@ A planned component is built only after its section exists in its family spec, w
 
 ## 2. Implemented
 
-52 tags in 45 registration entries.
+53 tags in 46 registration entries.
 
 ### 2.1 Layout and surfaces
 
@@ -77,6 +77,7 @@ A planned component is built only after its section exists in its family spec, w
 | `punk-spinner`          | A standalone loading indicator for regions, not buttons                                                      | Implemented | [data-display.md §4](data-display.md) |
 | `punk-kbd`              | A keyboard key, shown as a keycap; a shortcut is several in a row                                            | Implemented | [data-display.md §5](data-display.md) |
 | `punk-description-list` | Label and value pairs for details and specification sheets                                                   | Implemented | [data-display.md §6](data-display.md) |
+| `punk-tag`              | A chip for a filter, a chosen value, or a label, optionally removable                                        | Implemented | [data-display.md §7](data-display.md) |
 
 ### 2.7 Overlays and feedback
 
@@ -119,7 +120,6 @@ None: every component that general-purpose use needs is implemented. The part of
 | `punk-date-field`, `punk-time-field`               | Date and time entry                                                              | Native `<input type="date">` and `"time"` on `PunkFieldBase`; the picker is the platform's                                                                                              | [forms.md](forms.md)                                   |
 | `punk-file-field`                                  | Choosing files, with an optional drop zone and a list of the chosen files        | Native `<input type="file">`; drop is an enhancement, never the only way                                                                                                                | [forms.md](forms.md)                                   |
 | `punk-range-slider`                                | A low and high value chosen on one track                                         | Two `slider` thumbs on the slider's math and pointer model; submits two values                                                                                                          | [forms.md](forms.md)                                   |
-| `punk-tag`                                         | A removable chip for a filter, a selected value, or a label                      | Text and a native remove button named with the tag's text, as the connection row's                                                                                                      | [data-display.md](data-display.md)                     |
 | Data modes of the slot grid, list, table, and tree | Collections of thousands of items with only the visible ones in the DOM          | `@lit-labs/virtualizer`, as a peer dependency of an optional package, not core; `items` and `renderItem`, `aria-setsize` and `aria-posinset`, selection by value, roving focus by index | [performance.md §4.1](performance.md)                  |
 
 ## 5. Not planned

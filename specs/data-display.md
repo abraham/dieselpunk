@@ -1,7 +1,7 @@
 # Data Display
 
-**Scope:** components that present data and status in the flow of a page: the table, the alert, the badge, the spinner, the keyboard key, and the description list.
-**Code:** `src/components/table/`, `alert/`, `badge/`, `spinner/`, `kbd/`, `description-list/`; `src/styles/status-shape.ts`, `close-button.ts`, `visually-hidden.ts`.
+**Scope:** components that present data and status in the flow of a page: the table, the alert, the badge, the spinner, the keyboard key, the description list, and the tag.
+**Code:** `src/components/table/`, `alert/`, `badge/`, `spinner/`, `kbd/`, `description-list/`, `tag/`; `src/styles/status-shape.ts`, `close-button.ts`, `visually-hidden.ts`.
 
 ## 1. Table
 
@@ -61,6 +61,16 @@
 - Terms are `text-muted` and values `text`, in tabular figures so numbers line up. Long words break rather than overflow.
 - **Warnings:** a child that is not a `<dt>` or a `<dd>`; a first child that is a `<dd>`.
 
+## 7. Tag
+
+`punk-tag`: a chip for a filter, a chosen value, or a label. `removable`, `remove-label`, `disabled`, `value`, with the default slot for its text.
+
+- Its text on a `panel-inset` plate in `text`, as the badge's. The host has no role, and the text is read where it stands.
+- **Removal.** `removable` adds the shared native close button at the inline end, named by `remove-label` or the localized "Remove" and the tag's text ("Remove Copper"). The text is read when the tag connects and on `slotchange`, never in a render. The button sends `punk-remove` with `{ value, item }`, the connection row's event, and cannot be canceled. The tag does not remove itself: the application removes it and moves focus, since the focused button goes with it; the docs show focus moving to the next tag.
+- `disabled` disables the button and leaves the text as readable as it was.
+- The button is smaller than the window's to sit in the plate, and keeps the 40px target for a coarse pointer. A long text wraps; the button stays inside the container.
+- **Warning:** no text.
+
 ## Verification
 
 - `table.test.ts`: the native table and its name, the adopted styles and their zero specificity, the region only while overflowing, sorting by click and from script, `aria-sort` restoration, the direction shapes under forced colors, selection by row and select-all, `values`, and the warnings.
@@ -69,8 +79,9 @@
 - `spinner.test.ts` and `spinner.reduced-motion.test.ts`: the status text and its locale, slotted text, sizes, the ring stopping under reduced motion.
 - `kbd.test.ts`: the native `<kbd>`, no role, a shortcut in the name of its button, the mono face and deeper edge, text contrast on the cap in every theme, forced colors, wrapping, and the warning.
 - `description-list.test.ts`: the shadow `<dl>` and its slotted pairs, the term and definition roles, terms beside values and further values below, right to left, terms above values when narrow, long words at 187px, the colors and tabular figures in every theme, and both warnings.
+- `tag.test.ts`: no role and no button unless removable, the button's name from the text, `remove-label`, and the locale, `punk-remove` by click, Enter, and Space and not from the text, `disabled`, the button's side in both directions, contrast in every theme, forced colors, wrapping, and the warning.
 - The `data` gallery group: axe, reflow, manifest, strings, and the visual matrix.
-- `aria.spec.ts`: a sorted table with a selected row, an announcing alert, a badge in a button, a spinner, keys in a button and in a paragraph, and a description list, in the three engines.
+- `aria.spec.ts`: a sorted table with a selected row, an announcing alert, a badge in a button, a spinner, keys in a button and in a paragraph, a description list, and tags with and without a remove button, in the three engines.
 
 ## Gaps
 

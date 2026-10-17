@@ -179,6 +179,7 @@ const cases: Record<string, Case> = {
   previousPage: { show: () => mount('<punk-pagination page="2" pages="3"></punk-pagination>') },
   nextPage: { show: () => mount('<punk-pagination page="2" pages="3"></punk-pagination>') },
   pageNumber: { show: () => mount('<punk-pagination page="2" pages="3"></punk-pagination>') },
+  removeTag: { show: () => mount('<punk-tag removable>Copper</punk-tag>') },
 };
 
 /** The pieces of a template that are fixed text: the whole string, or what lies between values. */

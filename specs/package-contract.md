@@ -90,7 +90,7 @@ import '@dieselpunk/core/slot-grid/register.js'; // defines punk-slot-grid
 | `punk-close`                       | `{ reason, returnValue? }` | window, dialog, popover, drawer, menu          | no         |
 | `punk-move-start`, `punk-move-end` | `{ x, y }`                 | window                                         | no         |
 | `punk-dismiss`                     | `{ reason }`               | toast, alert                                   | yes        |
-| `punk-remove`                      | `{ value, item }`          | connection row                                 | no         |
+| `punk-remove`                      | `{ value, item }`          | connection row, tag                            | no         |
 | `punk-sort-change`                 | `{ key, direction }`       | table                                          | no         |
 | `punk-page-change`                 | `{ page }`                 | pagination                                     | no         |
 

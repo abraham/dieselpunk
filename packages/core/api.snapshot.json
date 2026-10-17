@@ -1456,6 +1456,33 @@
       },
       "cssProperties": {}
     },
+    "punk-tag": {
+      "attributes": {
+        "disabled": "boolean = false",
+        "removable": "boolean = false",
+        "remove-label": "string = ''",
+        "value": "string = ''"
+      },
+      "properties": {
+        "disabled": "boolean = false",
+        "removable": "boolean = false",
+        "removeLabel": "string = ''",
+        "value": "string = ''"
+      },
+      "methods": {},
+      "events": {
+        "punk-remove": ""
+      },
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "label": "",
+        "remove-button": "",
+        "tag": ""
+      },
+      "cssProperties": {}
+    },
     "punk-text-field": {
       "attributes": {
         "aria-label": "string | null = null",

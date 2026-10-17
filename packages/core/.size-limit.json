@@ -378,5 +378,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "1.75 kB"
+  },
+  {
+    "name": "punk-tag",
+    "path": "dist/components/tag/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "3.75 kB"
   }
 ]

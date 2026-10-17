@@ -162,6 +162,11 @@
   <target>ترقيم الصفحات</target>
   <note from="lit-localize">The name of the landmark around the buttons that move between pages of results.</note>
 </trans-unit>
+<trans-unit id="removeTag">
+  <source>Remove <x id="0" equiv-text="${label}"/></source>
+  <target>إزالة <x id="0" equiv-text="${label}"/></target>
+  <note from="lit-localize">The name of the button that removes a tag, with the tag's text.</note>
+</trans-unit>
 </body>
 </file>
 </xliff>

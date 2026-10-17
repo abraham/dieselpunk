@@ -39,7 +39,7 @@
 | `forms`      | checkbox, switch, slider, text field, number field, select                                                |
 | `inputs`     | radio group and radio, textarea, combobox, fieldset                                                       |
 | `navigation` | toggle group, list and list item, breadcrumb and item, pagination, menu items                             |
-| `data`       | table, alert, badge, spinner, keyboard key, description list                                              |
+| `data`       | table, alert, badge, spinner, keyboard key, description list, tag                                         |
 | `overlays`   | each overlay open on its own page: modal window, dialog, popover in both modes, toast stack, drawer, menu |
 
 Each renders in four content variants: `short`, `long` (German), `unlabeled` (optional labels missing), and `rtl`. Fields marked as touched show their messages. The full gallery (`componentNames`, used by the axe, reflow, and manifest suites) also holds the dialog, popover, drawer, and menu closed, an empty toast stack, and inline toasts of each variant; an open modal would make the rest of the page inert, so overlays are open only in `overlays`.

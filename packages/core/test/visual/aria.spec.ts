@@ -641,6 +641,21 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
+  test('tag', { tag: at('data') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-tag>Idle</punk-tag>
+       <punk-tag removable value="cu">Copper</punk-tag>
+       <punk-tag removable disabled>Tin</punk-tag>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - text: Idle Copper
+      - button "Remove Copper"
+      - text: Tin
+      - button "Remove Tin" [disabled]
+    `);
+  });
+
   const sparkline =
     '<svg slot="sparkline" viewBox="0 0 8 4" aria-hidden="true"><path d="M0 4 8 0"/></svg>';
 

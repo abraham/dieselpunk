@@ -48,6 +48,7 @@ import '../../../src/components/breadcrumb/register.ts';
 import '../../../src/components/pagination/register.ts';
 import '../../../src/components/kbd/register.ts';
 import '../../../src/components/description-list/register.ts';
+import '../../../src/components/tag/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -1046,6 +1047,18 @@ const builders: Record<ComponentName, Builder> = {
       <div class="stack">
         <div style="max-inline-size: 480px">${list}</div>
         <div style="max-inline-size: 240px">${list}</div>
+      </div>
+    `;
+  },
+
+  tag: (c) => {
+    const [idle, , running] = c.statuses;
+    return `
+      <div class="row">
+        <punk-tag>${idle}</punk-tag>
+        <punk-tag removable value="a">${running}</punk-tag>
+        <punk-tag removable value="b">${c.item || c.makes}</punk-tag>
+        <punk-tag removable disabled value="c">${c.recipe || c.needs}</punk-tag>
       </div>
     `;
   },
