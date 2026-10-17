@@ -1,5 +1,6 @@
 import { commands, page, userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { owner } from '../../internal/owner.ts';
 import {
   addStylesheets,
   cleanup,
@@ -171,7 +172,7 @@ describe('disabled and ownership', () => {
     track(radio);
     await new Promise((resolve) => setTimeout(resolve));
     await radio.updateComplete;
-    expect(radio.group).toBeNull();
+    expect(radio[owner]).toBeNull();
     expect(radio.getAttribute('tabindex')).toBe('0');
   });
 });

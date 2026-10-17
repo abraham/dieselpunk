@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { owner } from '../../internal/owner.ts';
 import { registerElement } from '../../utilities/register-element.ts';
 import { PunkTab, PunkTabs } from './index.ts';
 
@@ -15,7 +16,7 @@ describe('tabs defined before their tabs', () => {
     registerElement('punk-tab', PunkTab);
     const tab = tabs.querySelector('punk-tab') as PunkTab;
     await tab.updateComplete;
-    expect(tab.owner).toBe(tabs);
+    expect(tab[owner]).toBe(tabs);
     expect(tab.selected).toBe(true);
     expect(document.getElementById('a')?.getAttribute('role')).toBe('tabpanel');
     tabs.remove();

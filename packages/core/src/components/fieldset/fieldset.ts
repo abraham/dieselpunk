@@ -2,6 +2,7 @@ import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { Ledger } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { devWarn } from '../../utilities/warn.ts';
@@ -50,12 +51,12 @@ export class PunkFieldset extends PunkElement {
   @property({ type: Boolean, reflect: true }) disabled = false;
 
   readonly #slots = new SlotPresence(this, ['legend', 'hint', 'error']);
-  readonly #disabledByUs = new Set<HTMLElement & { disabled: boolean }>();
+  readonly #ledger = new Ledger();
   #warnedName = false;
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.#restore();
+    this.#ledger.restoreAll();
   }
 
   protected override updated(changed: PropertyValues<this>): void {
@@ -67,30 +68,17 @@ export class PunkFieldset extends PunkElement {
 
   #sync(): void {
     if (!this.disabled || !this.isConnected) {
-      this.#restore();
+      this.#ledger.restoreAll();
       return;
     }
     const legends = [...this.children].filter((child) => child.slot === 'legend');
-    const found = new Set<HTMLElement & { disabled: boolean }>();
+    const found = new Set<Element>();
     for (const element of this.querySelectorAll('*')) {
       if (!isControl(element) || legends.some((legend) => legend.contains(element))) continue;
       found.add(element);
-      if (!element.disabled) {
-        element.disabled = true;
-        this.#disabledByUs.add(element);
-      }
+      this.#ledger.disable(element);
     }
-    for (const element of this.#disabledByUs) {
-      if (!found.has(element)) {
-        element.disabled = false;
-        this.#disabledByUs.delete(element);
-      }
-    }
-  }
-
-  #restore(): void {
-    for (const element of this.#disabledByUs) element.disabled = false;
-    this.#disabledByUs.clear();
+    this.#ledger.restoreAll(found);
   }
 
   readonly #onSlotChange = (): void => {

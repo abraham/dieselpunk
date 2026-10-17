@@ -1,11 +1,12 @@
 import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { childChanged, owner, release } from '../../internal/owner.ts';
+import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { nextRovingIndex } from '../../internal/roving-keys.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { PunkAccordionItem } from './accordion-item.ts';
-import type { AccordionOwner } from './accordion-item.ts';
 import { accordionStyles } from './accordion.styles.ts';
 
 /**
@@ -19,7 +20,7 @@ import { accordionStyles } from './accordion.styles.ts';
  *
  * @csspart accordion - The wrapper around the items.
  */
-export class PunkAccordion extends PunkElement implements AccordionOwner {
+export class PunkAccordion extends PunkElement implements Owner<PunkAccordionItem> {
   static override styles = accordionStyles;
 
   /** Lets several items be expanded at once. */
@@ -28,10 +29,15 @@ export class PunkAccordion extends PunkElement implements AccordionOwner {
   #items: PunkAccordionItem[] = [];
   #warned = false;
 
-  /** Called by an item that is now expanded: in single mode the others collapse. */
-  itemExpanded(item: PunkAccordionItem): void {
-    if (this.multiple) return;
+  /** @internal An item that is now expanded: in single mode the others collapse. */
+  [childChanged](item: PunkAccordionItem): void {
+    if (this.multiple || !item.expanded) return;
     for (const other of this.#items) if (other !== item) other.expanded = false;
+  }
+
+  /** @internal */
+  [release](item: PunkAccordionItem): void {
+    item[owner] = null;
   }
 
   /** Single mode keeps the first of several expanded items, and says so once. */
@@ -54,8 +60,8 @@ export class PunkAccordion extends PunkElement implements AccordionOwner {
     const items = slot
       .assignedElements({ flatten: true })
       .filter((element): element is PunkAccordionItem => element instanceof PunkAccordionItem);
-    for (const item of this.#items) if (!items.includes(item)) item.owner = null;
-    for (const item of items) item.owner = this;
+    for (const item of this.#items) if (!items.includes(item)) this[release](item);
+    for (const item of items) item[owner] = this;
     this.#items = items;
     this.#normalize();
   };

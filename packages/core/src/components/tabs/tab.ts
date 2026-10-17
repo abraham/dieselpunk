@@ -1,16 +1,13 @@
 import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { childChanged, owner } from '../../internal/owner.ts';
+import type { Owned, Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import type { RovingItem } from '../../internal/roving.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { uid } from '../../internal/ids.ts';
 import { tabStyles } from './tabs.styles.ts';
-
-/** What a `punk-tabs` lets its tabs tell it. */
-export interface TabOwner {
-  tabChanged(tab: PunkTab, changed: ReadonlyMap<PropertyKey, unknown>): void;
-}
 
 interface PunkTabsLike extends Element {
   refreshTabs?(): void;
@@ -29,7 +26,7 @@ interface PunkTabsLike extends Element {
  * @csspart icon - The wrapper around the icon.
  * @csspart label - The wrapper around the label.
  */
-export class PunkTab extends PunkElement implements RovingItem {
+export class PunkTab extends PunkElement implements RovingItem, Owned<PunkTab> {
   static override styles = tabStyles;
 
   /** The `id` of the panel this tab shows, looked up in the same tree as the tab. */
@@ -41,8 +38,15 @@ export class PunkTab extends PunkElement implements RovingItem {
   /** Stops the tab from being selected or focused. */
   @property({ type: Boolean, reflect: true }) disabled = false;
 
-  /** The tabs that manage this tab. */
-  @property({ attribute: false }) owner: TabOwner | null = null;
+  /**
+   * The tabs that manage this tab.
+   * @internal
+   */
+  [owner]: Owner<PunkTab> | null = null;
+  static {
+    // The dev transform gives a decorator on a symbol key no key, so the property is made here.
+    this.createProperty(owner, { attribute: false });
+  }
 
   /** Set by the tabs, for the edge that faces the panel. */
   @property({ attribute: false }) orientation: 'horizontal' | 'vertical' = 'horizontal';
@@ -55,7 +59,7 @@ export class PunkTab extends PunkElement implements RovingItem {
     if (!this.hasAttribute('role')) this.setAttribute('role', 'tab');
     if (!this.id) this.id = uid('punk-tab');
     // A tab upgraded after its tabs rendered is not announced by a slotchange.
-    if (!this.owner) this.closest<PunkTabsLike>('punk-tabs')?.refreshTabs?.();
+    if (!this[owner]) this.closest<PunkTabsLike>('punk-tabs')?.refreshTabs?.();
   }
 
   /** Roving protocol: whether the tab can be reached by the arrow keys. */
@@ -87,7 +91,7 @@ export class PunkTab extends PunkElement implements RovingItem {
 
   protected override updated(changed: PropertyValues<this>): void {
     if (changed.has('selected') || changed.has('disabled') || changed.has('panel')) {
-      this.owner?.tabChanged(this, changed);
+      this[owner]?.[childChanged](this, changed);
     }
   }
 

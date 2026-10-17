@@ -132,8 +132,8 @@ Several containers manage light-DOM children they do not render: the slot grid i
 - **Children are found on `slotchange`**, never by observing the DOM. A child that is not yet defined is waited for with `customElements.whenDefined`. A child that upgrades after the owner rendered gets no `slotchange`, so it announces itself to its owner when it connects.
 - **Children tell their owner,** not the other way round. A child holds an `owner` reference, set by the owner, and calls it when something the owner depends on changes (disabled, value, selected, expanded). The owner coalesces these into one update per microtask.
 - **Everything is given back.** When a child leaves or the owner disconnects, every attribute the owner wrote is restored to what the author had.
-- **One protocol.** The owner and child roles are one generic protocol in `internal/`: an `owner` slot on the child, a single `childChanged(child, keys)` notification, a `release(child)` on leave, and the restore bookkeeping. Each owner implements only what it does with a change.
-- **Protocol methods are private to the library**, keyed by symbols from `internal/` ([package-contract.md §9](package-contract.md)).
+- **One protocol.** The owner and child roles are one generic protocol in `internal/owner.ts`: an `[owner]` slot on the child, set and cleared by its owner; a single `[childChanged](child, changed)` notification with Lit's changed properties; and `[release](child)`, which the owner runs when a child leaves its slot and a child runs itself when it disconnects (a toast). Its `Ledger` is the restore bookkeeping: it remembers each attribute's value before the owner's first write and the elements the owner disabled, and gives back exactly those. Owners of plain elements (the toggle group's buttons, the breadcrumb's items, the table's header cells, the fieldset's controls, the tabs' panels) use the ledger alone. Each owner implements only what it does with a change.
+- **Protocol methods are private to the library**, keyed by symbols from `internal/` ([package-contract.md §9](package-contract.md)). Lit's decorators do not receive a symbol key from the development transform, so a child creates its `[owner]` property with `createProperty` in a static block.
 
 ## 9. Composition
 
@@ -168,6 +168,5 @@ Several containers manage light-DOM children they do not render: the slot grid i
 
 ## Gaps
 
-- **Four owner protocols, not one.** The slot grid (`ItemOwner.itemChanged`, which the list reuses), accordion (`AccordionOwner.itemExpanded`), tabs (`TabOwner.tabChanged`), toast stack (`ToastOwner.toastChanged`, `toastLeft`), and radio group (`RadioOwner.radioChanged`) each define their own interface, and the toggle group, breadcrumb, table, and fieldset keep their own restore bookkeeping. Closing it: extract the generic protocol of §8 into `internal/owner.ts`, port the owners, and keep their behavior tests unchanged.
 - **`position.ts` is tested in the browser.** It is pure, but its tests are a Vitest file beside it. Closing it: move them to `test/position.test.ts` under `node --test`.
 - **Protocol members are public** ([package-contract.md](package-contract.md) Gaps).

@@ -1,9 +1,10 @@
 import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { childChanged, owner, release } from '../../internal/owner.ts';
+import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { nextRovingIndex } from '../../internal/roving-keys.ts';
-import type { ItemOwner } from '../../internal/selectable-base.ts';
 import { SelectionModel } from '../../internal/selection-model.ts';
 import type { SelectionMode } from '../../internal/selection-model.ts';
 import { devWarn } from '../../utilities/warn.ts';
@@ -41,7 +42,7 @@ function write(element: Element, name: string, value: string | null): void {
  *
  * @fires punk-selection-change - The user changed the selection. `detail` is `{ values, items }`.
  */
-export class PunkList extends PunkElement implements ItemOwner {
+export class PunkList extends PunkElement implements Owner<PunkListItem> {
   static override styles = listStyles;
 
   /** `none` is a plain list. Unknown values behave as `none`. */
@@ -86,7 +87,7 @@ export class PunkList extends PunkElement implements ItemOwner {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    for (const item of this.#items) this.#release(item);
+    for (const item of this.#items) this[release](item);
     this.#items = [];
     this.#built = false;
   }
@@ -99,11 +100,17 @@ export class PunkList extends PunkElement implements ItemOwner {
   }
 
   /** @internal */
-  itemChanged(item: HTMLElement, changed: ReadonlyMap<PropertyKey, unknown>): void {
+  [childChanged](item: PunkListItem, changed: ReadonlyMap<PropertyKey, unknown>): void {
     if (!changed.has('disabled') && !changed.has('value')) {
-      if ((item as PunkListItem).selected === this.#model.has((item as PunkListItem).value)) return;
+      if (item.selected === this.#model.has(item.value)) return;
     }
     this.#schedule();
+  }
+
+  /** @internal */
+  [release](item: PunkListItem): void {
+    item[owner] = null;
+    if (this.#last === item) this.#last = undefined;
   }
 
   #schedule(): void {
@@ -133,8 +140,8 @@ export class PunkList extends PunkElement implements ItemOwner {
     if (report && report !== this.#reported) for (const problem of problems) devWarn(this, problem);
     this.#reported = report;
 
-    for (const item of this.#items) if (!found.includes(item)) this.#release(item);
-    for (const item of found) if (item.managed !== this) item.managed = this;
+    for (const item of this.#items) if (!found.includes(item)) this[release](item);
+    for (const item of found) if (item[owner] !== this) item[owner] = this;
     this.#items = found;
 
     const mode = this.#mode;
@@ -148,11 +155,6 @@ export class PunkList extends PunkElement implements ItemOwner {
       this.#model.set(found.filter((item) => item.selected).map((item) => item.value));
     this.#built = true;
     this.#render();
-  }
-
-  #release(item: PunkListItem): void {
-    item.managed = null;
-    if (this.#last === item) this.#last = undefined;
   }
 
   #render(): void {

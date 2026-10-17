@@ -4,6 +4,7 @@ import { property, state } from 'lit/decorators.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg } from '../../internal/localize.ts';
+import { Ledger } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { PunkBreadcrumbItem } from './breadcrumb-item.ts';
@@ -42,7 +43,7 @@ export class PunkBreadcrumb extends PunkElement {
 
   readonly #localeWatcher = new LocaleWatcher(this);
   #items: PunkBreadcrumbItem[] = [];
-  #authored = new Map<PunkBreadcrumbItem, { slot: string | null; hidden: boolean }>();
+  readonly #ledger = new Ledger();
   #warnedStray = false;
   // The collapsed count the last render drew, so a slot change knows whether to draw again.
   #rendered = 0;
@@ -58,7 +59,7 @@ export class PunkBreadcrumb extends PunkElement {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    for (const item of this.#items) this.#release(item);
+    for (const item of this.#items) this.#ledger.restore(item);
     this.#items = [];
   }
 
@@ -69,15 +70,6 @@ export class PunkBreadcrumb extends PunkElement {
 
   protected override willUpdate(changed: PropertyValues): void {
     if (changed.has('maxItems') || changed.has('expanded')) this.#sync();
-  }
-
-  #release(item: PunkBreadcrumbItem): void {
-    const authored = this.#authored.get(item);
-    if (!authored) return;
-    if (authored.slot === null) item.removeAttribute('slot');
-    else item.setAttribute('slot', authored.slot);
-    item.toggleAttribute('hidden', authored.hidden);
-    this.#authored.delete(item);
   }
 
   /** Places each item: the first in the default slot, the rest after the button, the middle hidden. */
@@ -91,24 +83,13 @@ export class PunkBreadcrumb extends PunkElement {
       devWarn(this, 'It contains elements that are not `punk-breadcrumb-item`.');
     }
     this.#warnedStray = stray;
-    for (const item of this.#items) if (!found.includes(item)) this.#release(item);
+    for (const item of this.#items) if (!found.includes(item)) this.#ledger.restore(item);
     this.#items = found;
 
     const collapsed = this.#collapsed;
     found.forEach((item, index) => {
-      if (!this.#authored.has(item)) {
-        this.#authored.set(item, {
-          slot: item.getAttribute('slot'),
-          hidden: item.hasAttribute('hidden'),
-        });
-      }
-      const slot = index === 0 ? null : 'rest';
-      if (item.getAttribute('slot') !== slot) {
-        if (slot === null) item.removeAttribute('slot');
-        else item.setAttribute('slot', slot);
-      }
-      const hide = index >= 1 && index <= collapsed;
-      if (item.hasAttribute('hidden') !== hide) item.toggleAttribute('hidden', hide);
+      this.#ledger.write(item, 'slot', index === 0 ? null : 'rest');
+      this.#ledger.write(item, 'hidden', index >= 1 && index <= collapsed ? '' : null);
     });
   }
 

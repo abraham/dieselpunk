@@ -97,14 +97,14 @@
     "path": "dist/components/slot/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "4.8 kB"
+    "limit": "4.85 kB"
   },
   {
     "name": "punk-item-stack (receptacle, durability, quality, and number formatting)",
     "path": "dist/components/item-stack/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.5 kB"
+    "limit": "6.55 kB"
   },
   {
     "name": "punk-slot-grid",
@@ -216,7 +216,7 @@
     "path": "dist/components/toast/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.4 kB"
+    "limit": "6.6 kB"
   },
   {
     "name": "punk-checkbox",

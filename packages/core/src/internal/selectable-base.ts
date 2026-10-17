@@ -1,17 +1,13 @@
 import type { CSSResultGroup, CSSResultOrNative, PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { childChanged, owner } from './owner.ts';
+import type { Owned, Owner } from './owner.ts';
 import { PunkElement } from './punk-element.ts';
 import { selectableStyles } from './selectable-base.styles.ts';
 
 export interface PunkActivateDetail {
   value: string;
   item: HTMLElement;
-}
-
-/** A grid that owns its items' role, tab stop, and selected state. */
-export interface ItemOwner {
-  /** Called while `item` is updating, with the properties that changed. */
-  itemChanged(item: HTMLElement, changed: ReadonlyMap<PropertyKey, unknown>): void;
 }
 
 declare global {
@@ -28,7 +24,7 @@ declare global {
  * state words there (hidden visually where they are not shown). Key events that arrive already
  * default-prevented are ignored, which is how a grid claims the keys it handles.
  */
-export abstract class PunkSelectableBase extends PunkElement {
+export abstract class PunkSelectableBase extends PunkElement implements Owned<PunkSelectableBase> {
   protected static override finalizeStyles(styles?: CSSResultGroup): CSSResultOrNative[] {
     return super.finalizeStyles([selectableStyles, styles ?? []]);
   }
@@ -55,11 +51,15 @@ export abstract class PunkSelectableBase extends PunkElement {
   }
 
   /**
-   * Set by a grid that owns this item's role, `tabindex`, and `aria-selected`. The grid is told
+   * Set by a grid or list that owns this item's role, `tabindex`, and `aria-selected`. It is told
    * when `disabled`, `value`, or `selected` change, since it cannot observe attributes.
    * @internal
    */
-  @property({ attribute: false }) managed: ItemOwner | null = null;
+  [owner]: Owner<PunkSelectableBase> | null = null;
+  static {
+    // The dev transform gives a decorator on a symbol key no key, so the property is made here.
+    this.createProperty(owner, { attribute: false });
+  }
 
   #selected: boolean | undefined;
   #managedBefore = false;
@@ -122,10 +122,10 @@ export abstract class PunkSelectableBase extends PunkElement {
     super.willUpdate(changed);
     this.#syncSemantics();
     if (
-      this.managed &&
+      this[owner] &&
       (changed.has('disabled') || changed.has('value') || changed.has('selected'))
     ) {
-      this.managed.itemChanged(this, changed);
+      this[owner][childChanged](this, changed);
     }
   }
 
@@ -134,7 +134,7 @@ export abstract class PunkSelectableBase extends PunkElement {
     if (this.disabled) this.setAttribute('aria-disabled', 'true');
     else this.removeAttribute('aria-disabled');
 
-    if (this.managed) {
+    if (this[owner]) {
       this.#managedBefore = true;
       this.removeAttribute('aria-pressed');
       return;

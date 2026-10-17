@@ -215,4 +215,3 @@ The application names the grid with `aria-label`; a missing name warns.
 
 - **Tabs reimplement roving.** `punk-tabs` handles keys itself because `RovingController` has no hook for activation. Closing it: give the controller an `onMove(item, key)` hook that tabs use for automatic and manual activation, and delete the duplicate key handling.
 - **The listbox grid's screen reader behavior is unverified** ([accessibility.md](accessibility.md) Gaps).
-- **The toggle group and list repeat the slot grid's ownership bookkeeping,** which [component-model.md](component-model.md) Gaps already asks to extract into one protocol.

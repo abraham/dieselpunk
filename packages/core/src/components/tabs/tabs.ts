@@ -2,13 +2,14 @@ import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { Ledger, childChanged, owner, release } from '../../internal/owner.ts';
+import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import type { RovingOrientation } from '../../internal/roving-keys.ts';
 import { navigateTabs, resolveSelection } from '../../internal/tab-navigation.ts';
 import type { TabActivation } from '../../internal/tab-navigation.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { PunkTab } from './tab.ts';
-import type { TabOwner } from './tab.ts';
 import { tabsStyles } from './tabs.styles.ts';
 
 export type TabsOrientation = RovingOrientation;
@@ -25,13 +26,6 @@ declare global {
   interface HTMLElementEventMap {
     'punk-tab-change': CustomEvent<PunkTabChangeDetail>;
   }
-}
-
-interface PanelSnapshot {
-  role: string | null;
-  labelledby: string | null;
-  tabindex: string | null;
-  hidden: boolean;
 }
 
 const TABBABLE = [
@@ -68,7 +62,7 @@ const TABBABLE = [
  *
  * @fires punk-tab-change - The user selected a tab. `detail` is `{ value, tab, panel }`. It is not sent when the application changes the selection.
  */
-export class PunkTabs extends PunkElement implements TabOwner {
+export class PunkTabs extends PunkElement implements Owner<PunkTab> {
   static override styles = tabsStyles;
 
   /** Which way the tabs are laid out. Unknown values use `horizontal`. */
@@ -95,7 +89,7 @@ export class PunkTabs extends PunkElement implements TabOwner {
   #stop: PunkTab | null = null;
   #lastIndex = 0;
   #requested: string | null = null;
-  #panels = new Map<HTMLElement, PanelSnapshot>();
+  readonly #panels = new Ledger();
   #warned = new Set<string>();
   #waitingForParse = false;
 
@@ -121,7 +115,7 @@ export class PunkTabs extends PunkElement implements TabOwner {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.#releasePanels(new Map());
+    this.#panels.restoreAll();
     for (const tab of this.#tabs) tab.removeAttribute('aria-controls');
   }
 
@@ -143,13 +137,21 @@ export class PunkTabs extends PunkElement implements TabOwner {
   }
 
   /** @internal */
-  tabChanged(tab: PunkTab, changed: ReadonlyMap<PropertyKey, unknown>): void {
+  [childChanged](tab: PunkTab, changed: ReadonlyMap<PropertyKey, unknown>): void {
     if (!this.#tabs.includes(tab)) return;
     const agrees = tab.selected === (tab === this.#selected);
     if (changed.has('selected') && !agrees && tab.selected) this.#sync(tab);
     else if (changed.has('selected') && !agrees) this.#sync();
     else if (changed.has('disabled')) this.#sync();
     else if (changed.has('panel')) this.#syncPanels();
+  }
+
+  /** @internal */
+  [release](tab: PunkTab): void {
+    tab[owner] = null;
+    tab.setTabStop(null);
+    tab.removeAttribute('aria-controls');
+    if (tab === this.#selected) this.#lastIndex = this.#tabs.indexOf(tab);
   }
 
   readonly #handleSlotChange = (event: Event): void => {
@@ -162,16 +164,10 @@ export class PunkTabs extends PunkElement implements TabOwner {
     const tabs = (assigned ?? slot?.assignedElements({ flatten: true }) ?? []).filter(
       (element): element is PunkTab => element instanceof PunkTab,
     );
-    for (const tab of this.#tabs) {
-      if (tabs.includes(tab)) continue;
-      tab.owner = null;
-      tab.setTabStop(null);
-      tab.removeAttribute('aria-controls');
-      if (tab === this.#selected) this.#lastIndex = this.#tabs.indexOf(tab);
-    }
+    for (const tab of this.#tabs) if (!tabs.includes(tab)) this[release](tab);
     this.#tabs = tabs;
     for (const tab of tabs) {
-      tab.owner = this;
+      tab[owner] = this;
       tab.orientation = this.#orientation;
     }
     if (this.#selected && !tabs.includes(this.#selected)) this.#selected = null;
@@ -254,40 +250,18 @@ export class PunkTabs extends PunkElement implements TabOwner {
       wanted.set(panel, tab);
     }
 
-    this.#releasePanels(wanted);
+    this.#panels.restoreAll(new Set(wanted.keys()));
     const shown = new Set(wanted.values());
     for (const tab of this.#tabs) if (!shown.has(tab)) tab.removeAttribute('aria-controls');
     for (const [panel, tab] of wanted) {
-      if (!this.#panels.has(panel)) {
-        this.#panels.set(panel, {
-          role: panel.getAttribute('role'),
-          labelledby: panel.getAttribute('aria-labelledby'),
-          tabindex: panel.getAttribute('tabindex'),
-          hidden: panel.hasAttribute('hidden'),
-        });
+      this.#panels.write(panel, 'role', 'tabpanel');
+      this.#panels.write(panel, 'aria-labelledby', tab.id);
+      this.#panels.write(panel, 'hidden', tab === this.#selected ? null : '');
+      // The author's own tabindex is kept; otherwise a panel with nothing to Tab to takes one.
+      if (this.#panels.authored(panel, 'tabindex') === null) {
+        this.#panels.write(panel, 'tabindex', panel.querySelector(TABBABLE) ? null : '0');
       }
-      panel.setAttribute('role', 'tabpanel');
-      panel.setAttribute('aria-labelledby', tab.id);
       tab.setAttribute('aria-controls', panel.id);
-      panel.hidden = tab !== this.#selected;
-      if (this.#panels.get(panel)?.tabindex === null) {
-        if (panel.querySelector(TABBABLE)) panel.removeAttribute('tabindex');
-        else panel.setAttribute('tabindex', '0');
-      }
-    }
-  }
-
-  /** Restores every managed panel that is not in `keep`. */
-  #releasePanels(keep: ReadonlyMap<HTMLElement, PunkTab>): void {
-    for (const [panel, snapshot] of this.#panels) {
-      if (keep.has(panel)) continue;
-      const restore = (name: string, value: string | null) =>
-        value === null ? panel.removeAttribute(name) : panel.setAttribute(name, value);
-      restore('role', snapshot.role);
-      restore('aria-labelledby', snapshot.labelledby);
-      restore('tabindex', snapshot.tabindex);
-      panel.hidden = snapshot.hidden;
-      this.#panels.delete(panel);
     }
   }
 

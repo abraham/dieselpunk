@@ -2,6 +2,7 @@ import { html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { Ledger } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { nextRovingIndex } from '../../internal/roving-keys.ts';
 import { SelectionModel } from '../../internal/selection-model.ts';
@@ -10,15 +11,6 @@ import type { PunkSelectionChangeDetail } from '../slot-grid/slot-grid.ts';
 import { toggleGroupStyles } from './toggle-group.styles.ts';
 
 export type ToggleGroupSelection = 'single' | 'multiple';
-
-const OWNED = ['role', 'aria-checked', 'aria-pressed', 'tabindex'] as const;
-type Owned = (typeof OWNED)[number];
-
-function write(element: Element, name: string, value: string | null): void {
-  if (element.getAttribute(name) === value) return;
-  if (value === null) element.removeAttribute(name);
-  else element.setAttribute(name, value);
-}
 
 /**
  * A set of native `<button>` children that stay pressed: view modes, alignment, filters. Give it an
@@ -68,8 +60,7 @@ export class PunkToggleGroup extends PunkElement {
 
   #model = new SelectionModel('single');
   #buttons: HTMLButtonElement[] = [];
-  #authored = new Map<HTMLButtonElement, Record<Owned, string | null>>();
-  #disabledByUs = new Set<HTMLButtonElement>();
+  readonly #ledger = new Ledger();
   #requested: string[] | undefined;
   #last: HTMLButtonElement | undefined;
   #built = false;
@@ -120,17 +111,8 @@ export class PunkToggleGroup extends PunkElement {
 
     for (const button of this.#buttons) if (!found.includes(button)) this.#release(button);
     for (const button of found) {
-      if (!this.#authored.has(button)) {
-        const saved = {} as Record<Owned, string | null>;
-        for (const name of OWNED) saved[name] = button.getAttribute(name);
-        this.#authored.set(button, saved);
-      }
-      if (this.disabled && !button.disabled) {
-        button.disabled = true;
-        this.#disabledByUs.add(button);
-      } else if (!this.disabled && this.#disabledByUs.delete(button)) {
-        button.disabled = false;
-      }
+      if (this.disabled) this.#ledger.disable(button);
+      else this.#ledger.enable(button);
     }
     this.#buttons = found;
 
@@ -143,10 +125,11 @@ export class PunkToggleGroup extends PunkElement {
     );
     // Before anything is assigned, buttons the markup marked pressed or checked start pressed.
     const authored = found
-      .filter((button) => {
-        const saved = this.#authored.get(button);
-        return saved?.['aria-pressed'] === 'true' || saved?.['aria-checked'] === 'true';
-      })
+      .filter(
+        (button) =>
+          this.#ledger.authored(button, 'aria-pressed') === 'true' ||
+          this.#ledger.authored(button, 'aria-checked') === 'true',
+      )
       .map((button) => button.value);
     this.#model.set(this.#requested ?? before ?? authored);
     this.#built = true;
@@ -154,10 +137,7 @@ export class PunkToggleGroup extends PunkElement {
   }
 
   #release(button: HTMLButtonElement): void {
-    const saved = this.#authored.get(button);
-    if (saved) for (const name of OWNED) write(button, name, saved[name]);
-    this.#authored.delete(button);
-    if (this.#disabledByUs.delete(button)) button.disabled = false;
+    this.#ledger.restore(button);
     if (this.#last === button) this.#last = undefined;
   }
 
@@ -170,11 +150,12 @@ export class PunkToggleGroup extends PunkElement {
       (!single && this.#last && enabled.includes(this.#last) ? this.#last : undefined) ??
       enabled.find(pressed) ??
       enabled[0];
+    const ledger = this.#ledger;
     for (const button of this.#buttons) {
-      write(button, 'role', single ? 'radio' : (this.#authored.get(button)?.role ?? null));
-      write(button, 'aria-checked', single ? String(pressed(button)) : null);
-      write(button, 'aria-pressed', single ? null : String(pressed(button)));
-      write(button, 'tabindex', button === stop ? '0' : '-1');
+      ledger.write(button, 'role', single ? 'radio' : ledger.authored(button, 'role'));
+      ledger.write(button, 'aria-checked', single ? String(pressed(button)) : null);
+      ledger.write(button, 'aria-pressed', single ? null : String(pressed(button)));
+      ledger.write(button, 'tabindex', button === stop ? '0' : '-1');
     }
   }
 

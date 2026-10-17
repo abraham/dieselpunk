@@ -1,5 +1,6 @@
 import { userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { owner } from '../../internal/owner.ts';
 import { addStylesheets, cleanup, track } from '../../../test/browser/helpers.ts';
 import '../../../test/browser/commands.ts';
 import { setLocale } from '../../../test/browser/locale.ts';
@@ -109,10 +110,10 @@ describe('the live regions', () => {
     const stack = await mount('', '<punk-toast variant="danger" duration="0">Down</punk-toast>');
     const toast = toastsOf(stack)[0] as PunkToast;
     expect(toast.getAttribute('slot')).toBe('assertive');
-    expect(toast.owner).toBe(stack);
+    expect(toast[owner]).toBe(stack);
     toast.remove();
     expect(toast.hasAttribute('slot')).toBe(false);
-    expect(toast.owner).toBeNull();
+    expect(toast[owner]).toBeNull();
   });
 
   it('places a toast again when it is moved into another stack', async () => {
@@ -122,7 +123,7 @@ describe('the live regions', () => {
     await flush();
     second.append(toast);
     await flush();
-    expect(toast.owner).toBe(second);
+    expect(toast[owner]).toBe(second);
     expect(regionOf(toast)?.getAttribute('role')).toBe('alert');
     expect(regionOf(toast)?.getRootNode()).toBe(second.shadowRoot);
   });
