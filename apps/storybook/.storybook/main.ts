@@ -1,9 +1,16 @@
 import type { StorybookConfig } from '@storybook/web-components-vite';
+import remarkGfm from 'remark-gfm';
 import { defaultClientConditions, mergeConfig } from 'vite';
 
 const config: StorybookConfig = {
   framework: '@storybook/web-components-vite',
-  addons: ['@storybook/addon-docs'],
+  addons: [
+    {
+      name: '@storybook/addon-docs',
+      // MDX 2+ has no tables without GitHub-flavored Markdown.
+      options: { mdxPluginOptions: { mdxCompileOptions: { remarkPlugins: [remarkGfm] } } },
+    },
+  ],
   stories: ['../src/stories/**/*.stories.ts', '../src/stories/**/*.mdx'],
   core: { disableTelemetry: true },
   // The workbench imports the package through its exports map, so it needs the build in dist/.

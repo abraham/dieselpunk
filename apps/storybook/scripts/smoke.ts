@@ -410,6 +410,16 @@ async function checkLocalizationGuide(): Promise<void> {
   await page.close();
 }
 
+// Markdown tables need GitHub-flavored Markdown in the MDX compiler; without it they render as text.
+async function checkMarkdownTables(): Promise<void> {
+  for (const name of ['forms', 'integration', 'performance', 'accessibility-and-layout']) {
+    const page = await openDocs(`guides-${name}--docs`);
+    const tables = Number(await page.evaluate("document.querySelectorAll('.sbdocs table').length"));
+    if (tables === 0) failures.push(`guides-${name}--docs renders its Markdown tables as text`);
+    await page.close();
+  }
+}
+
 // Sorted, so that a part is the same set of entries on every run.
 const mine = Object.values(entries)
   .sort((a, b) => a.id.localeCompare(b.id))
@@ -434,6 +444,7 @@ try {
     await checkLocalizationGuide();
     await checkScreenReaderChecklist();
     await checkFrameworkGuides();
+    await checkMarkdownTables();
   }
 } finally {
   await browser.close();
