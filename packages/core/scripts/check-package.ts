@@ -63,6 +63,7 @@ const sentinels: Record<string, string> = {
   textarea: 'field-sizing',
   fieldset: 'It has no legend',
   'toggle-group': 'not `<button>`',
+  list: '"punk-list-item"',
   alert: 'part="actions"',
   badge: '"punk-badge"',
   spinner: '"punk-spinner"',

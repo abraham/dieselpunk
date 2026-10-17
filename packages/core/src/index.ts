@@ -69,6 +69,8 @@ export { PunkTextarea } from './components/textarea/index.ts';
 export { PunkFieldset } from './components/fieldset/index.ts';
 export { PunkToggleGroup } from './components/toggle-group/index.ts';
 export type { ToggleGroupSelection } from './components/toggle-group/index.ts';
+export { PunkList, PunkListItem } from './components/list/index.ts';
+export type { ListSelection } from './components/list/index.ts';
 export { PunkAlert } from './components/alert/index.ts';
 export type { AlertVariant } from './components/alert/index.ts';
 export { PunkBadge } from './components/badge/index.ts';

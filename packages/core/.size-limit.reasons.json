@@ -39,6 +39,7 @@
   "punk-textarea": "Over 5 kB: the form base and field styles are about 4.4 kB of it and are counted in each form control, and the localization runtime is 0.41 kB.",
   "punk-fieldset": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-toggle-group": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
+  "punk-list (both tags)": "Over 5 kB: two components in one entry, and the selectable base and the selection model are about 2 kB of it.",
   "punk-alert": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-badge": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-spinner": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB."

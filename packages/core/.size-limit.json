@@ -296,6 +296,13 @@
     "limit": "4.5 kB"
   },
   {
+    "name": "punk-list (both tags)",
+    "path": "dist/components/list/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5.75 kB"
+  },
+  {
     "name": "punk-alert",
     "path": "dist/components/alert/register.js",
     "ignore": ["lit"],

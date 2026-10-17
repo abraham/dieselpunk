@@ -444,6 +444,57 @@
         "--punk-slot-size": "= 40px"
       }
     },
+    "punk-list": {
+      "attributes": {
+        "selection": "ListSelection = 'none'"
+      },
+      "properties": {
+        "selection": "ListSelection = 'none'",
+        "values": "string[]"
+      },
+      "methods": {},
+      "events": {
+        "punk-selection-change": ""
+      },
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "list": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-list-item": {
+      "attributes": {
+        "disabled": "boolean = false",
+        "selected": "boolean",
+        "value": "string = ''"
+      },
+      "properties": {
+        "disabled": "boolean = false",
+        "selected": "boolean",
+        "value": "string = ''"
+      },
+      "methods": {},
+      "events": {
+        "punk-activate": ""
+      },
+      "slots": {
+        "(default)": "",
+        "description": "",
+        "end": "",
+        "start": ""
+      },
+      "parts": {
+        "check": "",
+        "description": "",
+        "end": "",
+        "item": "",
+        "label": "",
+        "start": ""
+      },
+      "cssProperties": {}
+    },
     "punk-meter": {
       "attributes": {
         "aria-label": "string | null = null",
