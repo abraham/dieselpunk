@@ -337,6 +337,12 @@ A compact metric containing label, value, trend, unit, and optional sparkline sl
 
 Represents a logistics or circuit connection with source, direction, destination, status, and a removable action. Applications provide node icons and labels.
 
+- Properties: `direction` (`forward`, `backward`, or `both`), `status` (`neutral`, `info`, `success`, `warning`, or `danger`), `removable`, `remove-label`, `disabled`, and `value`.
+- DOM order is always source, the direction as a localized hidden word, destination, details, status, and the button. The arrow flips in right-to-left, and below 360px of row width the nodes stack and it points down or up.
+- The status is a shape as well as its text. The host has no role.
+- With `removable`, a native button is the row's only tab stop. It is named from the text of the two nodes, or from `remove-label`. It sends `punk-remove` with `{ value, item }`, which bubbles and cannot be canceled; the application removes the row and moves focus. `disabled` disables the button.
+- Slots: `source`, `destination`, the default slot (details), and `status`. Parts: `row`, `source`, `direction`, `destination`, `details`, `status`, `indicator`, `status-label`, `remove-button`.
+
 ### 7.5 Feedback and Overlays
 
 #### `<punk-tooltip>`

@@ -142,6 +142,13 @@
     "limit": "5 kB"
   },
   {
+    "name": "punk-connection-row",
+    "path": "dist/components/connection-row/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5.25 kB"
+  },
+  {
     "name": "punk-tooltip",
     "path": "dist/components/tooltip/register.js",
     "ignore": ["lit"],

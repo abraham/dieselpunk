@@ -90,6 +90,22 @@
   <source>unchanged</source>
   <note from="lit-localize">A measurement is steady.</note>
 </trans-unit>
+<trans-unit id="connectionBoth">
+  <source>to and from</source>
+  <note from="lit-localize">Says that a connection runs both ways.</note>
+</trans-unit>
+<trans-unit id="connectionFrom">
+  <source>from</source>
+  <note from="lit-localize">Says that a connection runs from the second node.</note>
+</trans-unit>
+<trans-unit id="connectionTo">
+  <source>to</source>
+  <note from="lit-localize">Says that a connection runs to the second node.</note>
+</trans-unit>
+<trans-unit id="removeConnection">
+  <source>Remove connection: <x id="0" equiv-text="${source}"/>, <x id="1" equiv-text="${destination}"/></source>
+  <note from="lit-localize">The name of the button that removes a connection, with the text of its two nodes.</note>
+</trans-unit>
 </body>
 </file>
 </xliff>

@@ -77,14 +77,21 @@ export interface CloseButtonOptions {
   /** The localized accessible name. */
   label: string;
   onClick: (event: Event) => void;
+  disabled?: boolean;
 }
 
-export function renderCloseButton({ part, label, onClick }: CloseButtonOptions): TemplateResult {
+export function renderCloseButton({
+  part,
+  label,
+  onClick,
+  disabled = false,
+}: CloseButtonOptions): TemplateResult {
   return html`<button
     part=${part}
     class="close-button"
     type="button"
     aria-label=${label}
+    ?disabled=${disabled}
     @click=${onClick}
   >
     <span class="glyph" aria-hidden="true"></span>

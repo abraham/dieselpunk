@@ -16,6 +16,7 @@ import '../../../src/components/recipe/register.ts';
 import '../../../src/components/meter/register.ts';
 import '../../../src/components/status-light/register.ts';
 import '../../../src/components/production-stat/register.ts';
+import '../../../src/components/connection-row/register.ts';
 import '../../../src/components/stack/register.ts';
 import '../../../src/components/cluster/register.ts';
 import '../../../src/components/accordion/register.ts';
@@ -49,7 +50,7 @@ export const inventoryNames = [
   'meter',
   'status-light',
 ] as const;
-export const productionNames = ['production-stat'] as const;
+export const productionNames = ['production-stat', 'connection-row'] as const;
 export const shellNames = [
   'stack',
   'cluster',
@@ -487,6 +488,27 @@ const builders: Record<ComponentName, Builder> = {
         <punk-production-stat ${label} unit="/min"></punk-production-stat>
         <punk-production-stat ${label} value="640" unit="/min" layout="inline" trend="up" delta="40"><span slot="icon" aria-hidden="true">${gear}</span>${spark}</punk-production-stat>
         <punk-production-stat ${label} value="123456789.5" unit="kW" layout="inline" trend="up" delta="1500"></punk-production-stat>
+      </div>
+    `;
+  },
+
+  'connection-row': (c) => {
+    // Without visible text the nodes take the same words, since a row with no nodes has no name.
+    const source = `<span slot="source">${gear}${c.item || 'Iron smelter'}</span>`;
+    const destination = `<span slot="destination">${gear}${c.recipe || 'Assembler'}</span>`;
+    const nodes = source + destination;
+    const details = `<span>${c.body}</span>`;
+    const [idle, scheduled, running, low, offline] = c.statuses;
+    const text = (value: string) => `<span slot="status">${value}</span>`;
+    return `
+      <div class="stack">
+        <punk-connection-row>${nodes}</punk-connection-row>
+        <punk-connection-row direction="backward" removable value="belt-2">${nodes}${details}</punk-connection-row>
+        <punk-connection-row direction="both" status="info" removable>${nodes}${text(scheduled)}</punk-connection-row>
+        <punk-connection-row status="success" removable>${nodes}${details}${text(running)}</punk-connection-row>
+        <punk-connection-row status="warning" removable disabled>${nodes}${text(low)}</punk-connection-row>
+        <punk-connection-row status="danger" removable remove-label="${c.stop}">${nodes}${details}${text(offline)}</punk-connection-row>
+        <punk-connection-row>${nodes}${text(idle)}</punk-connection-row>
       </div>
     `;
   },

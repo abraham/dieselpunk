@@ -41,6 +41,7 @@ const sentinels: Record<string, string> = {
   'slot-grid': '--punk-slot-gap',
   recipe: 'can craft ',
   'production-stat': '--punk-stat-value-min',
+  'connection-row': '"punk-remove"',
   meter: '--punk-meter-length',
   'status-light': 'The text carries the meaning',
   stack: '--punk-stack-gap',

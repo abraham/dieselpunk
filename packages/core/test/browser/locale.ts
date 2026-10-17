@@ -8,6 +8,10 @@ const german = {
   templates: {
     loading: 'Laden',
     statNoValue: 'kein Wert',
+    connectionTo: 'nach',
+    connectionFrom: 'von',
+    connectionBoth: 'hin und zurück',
+    removeConnection: str`Verbindung entfernen: ${0}, ${1}`,
     invalid: 'ungültig',
     close: 'Schließen',
     increase: 'Erhöhen',

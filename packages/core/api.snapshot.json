@@ -175,6 +175,46 @@
         "--punk-cluster-gap": "= var(--punk-space-2)"
       }
     },
+    "punk-connection-row": {
+      "attributes": {
+        "direction": "ConnectionDirection = 'forward'",
+        "disabled": "boolean = false",
+        "removable": "boolean = false",
+        "remove-label": "string = ''",
+        "status": "ConnectionStatus = 'neutral'",
+        "value": "string = ''"
+      },
+      "properties": {
+        "direction": "ConnectionDirection = 'forward'",
+        "disabled": "boolean = false",
+        "removable": "boolean = false",
+        "removeLabel": "string = ''",
+        "status": "ConnectionStatus = 'neutral'",
+        "value": "string = ''"
+      },
+      "methods": {},
+      "events": {
+        "punk-remove": ""
+      },
+      "slots": {
+        "(default)": "",
+        "destination": "",
+        "source": "",
+        "status": ""
+      },
+      "parts": {
+        "destination": "",
+        "details": "",
+        "direction": "",
+        "indicator": "",
+        "remove-button": "",
+        "row": "",
+        "source": "",
+        "status": "",
+        "status-label": ""
+      },
+      "cssProperties": {}
+    },
     "punk-dialog": {
       "attributes": {
         "alert": "boolean = false",
