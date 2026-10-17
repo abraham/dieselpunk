@@ -1,7 +1,7 @@
 # Testing and Quality Gates
 
 **Scope:** how the system is tested: the test layers, the shared gallery, the engines, what every component test covers, visual regression, mutation checking, the package and consumer checks, the list of CI gates, and the testing package that holds the shared tooling.
-**Code:** `packages/testing/`, `packages/*/test/`, `packages/*/scripts/check-*.ts`, `packages/core/vitest.config.ts`, `playwright.config.ts`, `scripts/visual.ts`, `build-visual.ts`, `serve-visual.ts`, `apps/storybook/scripts/smoke.ts`, `.github/workflows/`.
+**Code:** `packages/testing/`, `packages/*/test/`, `packages/*/scripts/check-*.ts`, `packages/core/vitest.config.ts`, `playwright.config.ts`, `scripts/visual.ts`, `build-visual.ts`, `serve-visual.ts`, `packages/workbench/scripts/smoke.ts`, `.github/workflows/`.
 
 ## 1. Principles
 
@@ -116,6 +116,7 @@ A test or gate is trusted only after it has failed against a deliberately broken
 - **`check:api`** ([package-contract.md §8](package-contract.md)).
 - **`check:consumer`** packs both packages, installs the tarballs into throwaway projects with the oldest supported TypeScript (5.0) and the root's, type-checks the fixtures with `skipLibCheck: false` and `@ts-expect-error` guards on unions and event details, bundles them, and drives them in Chromium:
   - `plain.html` and `app.html`: each page defines exactly the tags it imported, upgrades them, applies `tokens.css`, and logs nothing.
+  - `import-map.html`: the Integration guide's page without a build step, served from the installed project's own `node_modules/` and resolved by an import map, defines exactly a panel, a divider (which loads the `#dev` warning module), and a button, applies `tokens.css`, and logs nothing.
   - `shell.ts`: the acceptance scenario's assembler ([product.md §8](product.md)): the window opens and is named, a tab switch changes the panel, a selection is reported, a form submits a control's value, Escape closes the window, and only the expected tags are defined.
   - `production.ts`: stats, a meter, a status light, and a connection row in a window; Lit Localize configured from the consumer's own copy; German and Arabic set `lang`, `dir`, and the remove button's name; a remove click reports its detail; and the bundle holds one `@lit/localize`.
   - An older TypeScript is installed into the throwaway project, never aliased in the repository, since an alias's binary can replace the real `tsc`.

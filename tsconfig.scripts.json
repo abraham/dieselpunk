@@ -16,7 +16,7 @@
     "packages/locales/scripts/**/*.ts",
     "packages/locales/test/*.ts",
     "packages/locales/vitest.config.ts",
-    "apps/storybook/scripts/**/*.ts",
+    "packages/workbench/scripts/**/*.ts",
     "packages/core/test/*.ts",
     "packages/core/test/visual/*.spec.ts",
     "packages/core/playwright.config.ts",

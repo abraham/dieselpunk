@@ -366,6 +366,42 @@ async function checkPages(outDir: string): Promise<void> {
   }
 }
 
+// The Integration guide's page without a build step: the installed packages served as they are,
+// resolved by an import map.
+async function checkImportMap(project: string): Promise<void> {
+  cpSync(join(fixtureDir, 'import-map.html'), join(project, 'import-map.html'));
+  const { server, port } = await serveStatic(project);
+  const browser = await chromium.launch();
+  try {
+    const tab = await browser.newPage();
+    const messages = watchPage(tab);
+    await tab.goto(`http://localhost:${port}/import-map.html`);
+    // The divider loads the warning module, so the page also needs the map's `#dev` entry.
+    const expected = ['punk-button', 'punk-divider', 'punk-panel'];
+    await tab
+      .waitForFunction(
+        `${JSON.stringify(expected)}.every((tag) => customElements.get(tag))`,
+        undefined,
+        { timeout: 5000 },
+      )
+      .catch(() => undefined);
+    const report = (await tab.evaluate(`({
+      defined: ${JSON.stringify(allTags)}.filter((tag) => customElements.get(tag) !== undefined),
+      upgraded: Boolean(document.querySelector('punk-button')?.shadowRoot),
+      canvas: getComputedStyle(document.documentElement).getPropertyValue('--punk-color-canvas').trim(),
+    })`)) as { defined: string[]; upgraded: boolean; canvas: string };
+    if (JSON.stringify(report.defined.sort()) !== JSON.stringify(expected)) {
+      problems.push(`import-map.html defines [${report.defined}], expected [${expected}]`);
+    }
+    if (!report.upgraded) problems.push('import-map.html: the elements were not upgraded');
+    if (!report.canvas) problems.push('import-map.html: tokens.css did not apply');
+    if (messages.length > 0) problems.push(`import-map.html logged: ${messages.join(' | ')}`);
+  } finally {
+    await browser.close();
+    server.close();
+  }
+}
+
 try {
   const tarballs = { core: pack(packageDir, work), locales: pack(localesDir, work) };
 
@@ -409,6 +445,7 @@ try {
   cpSync(join(fixtureDir, 'shell.html'), join(outDir, 'shell.html'));
   cpSync(join(fixtureDir, 'production.html'), join(outDir, 'production.html'));
   await checkPages(outDir);
+  await checkImportMap(newest);
 } catch (error) {
   problems.push(String((error as { stderr?: string }).stderr ?? error));
 } finally {

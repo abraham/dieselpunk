@@ -1,7 +1,7 @@
 # Documentation Site
 
-**Scope:** the Storybook workbench in `apps/storybook` and its publication as the public documentation at **https://dieselpunk.dev**: what it is for, how it consumes the library, what it contains, how it is tested, and how it is built, hosted, and deployed.
-**Code:** `apps/storybook/.storybook/`, `src/stories/`, `src/lib/`, `src/icons/`, `src/styles/workbench.css`, `public/`, `scripts/smoke.ts`, `.github/workflows/docs.yml`.
+**Scope:** the Storybook workbench, the private package `@dieselpunk/workbench` in `packages/workbench`, and its publication as the public documentation at **https://dieselpunk.dev**: what it is for, how it consumes the library, what it contains, how it is tested, and how it is built, hosted, and deployed.
+**Code:** `packages/workbench/`: `.storybook/`, `src/stories/`, `src/lib/`, `src/icons/`, `src/styles/workbench.css`, `public/`, `scripts/smoke.ts`, `scripts/site.ts`; `.github/workflows/docs.yml`.
 
 ## 1. Purpose
 
@@ -9,6 +9,8 @@ The workbench is where people build with and review the library, not a marketing
 
 ## 2. Build and consumption
 
+- **The package.** `packages/workbench` is `@dieselpunk/workbench`: `private: true`, never published, and without `check:package`, `check:size`, or `check:api`. Its scripts are `dev`, `build`, `build:site`, `typecheck`, and `test:smoke`; the root `start`, `storybook`, and `test:smoke` delegate to it. It depends on `@dieselpunk/core` and `@dieselpunk/locales`, and on `@dieselpunk/testing` for development, and imports each only by package name ([testing.md §10](testing.md)). **Why:** with every workspace in `packages/`, the root `workspaces` is one glob, and the import rule, `tsconfig.scripts.json`, and CI change detection have one layout to know; an `apps/` folder held this one workspace only.
+- **Addresses do not depend on the folder.** Storybook ids come from titles and export names (§7), so moving or renaming the package changes no published page.
 - Storybook for web components with Vite (`@storybook/web-components-vite`).
 - The workbench imports the **built** packages through their public exports, including `custom-elements.json`, exactly as an external consumer does, so it exercises the real `exports` map. The root `storybook` script builds core first; its `typecheck` reads whatever was last built, so run `npm run build` before it, as CI does ([ci.md §3](ci.md)).
 - The `development` export condition is on in every build, so development warnings (a missing name, a bad range) show in stories.
@@ -25,18 +27,18 @@ The workbench is where people build with and review the library, not a marketing
 
 ## 4. Guides
 
-| Guide                    | Covers                                                                                                                                                                                         |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Integration              | Plain HTML and TypeScript: class versus register imports, CSS, typing, forms, and localization setup                                                                                           |
-| React, Vue, Svelte       | Properties versus attributes, `punk-` and native events, binding a value, calling methods, typing; each shows its fixture's code with `?raw`, so the page is what `check:frameworks` built     |
-| Forms                    | Association, what each control submits, defaults and reset, validation timing, fieldsets, names and labels, events, platform limits                                                            |
-| Focus and overlays       | Modality, the Escape order, backdrop clicks, popover focus modes, toast announcements and modals, window move mode                                                                             |
-| Responsive layouts       | Windows and footers at 560px and 320px, a tall modal, a settings row from stack, cluster, and a container query; containers decide                                                             |
-| Accessibility and layout | Reflow, right-to-left, forced colors, reduced motion, focus, each family's keyboard model and non-color cues                                                                                   |
-| Localization             | Configuring Lit Localize, merging application messages, `bindDocumentLocale`, writing XLIFF, the rules, what does not change, and a table of every message read from the XLIFF                 |
-| Performance              | Budgets, what each component costs, updating many stats, `content-visibility` for long lists with measurements and caveats, a list of connection rows virtualized with `@lit-labs/virtualizer` |
-| Screen reader checklist  | The manual scenarios and combinations of [accessibility.md §13](accessibility.md), and the results table                                                                                       |
-| Asset policy             | What is original, what applications must supply, and the rule against game-derived assets                                                                                                      |
+| Guide                    | Covers                                                                                                                                                                                                |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Integration              | Installing, plain HTML and TypeScript: class versus register imports, CSS, a page without a build step through an import map (the page `check:consumer` loads), typing, forms, and localization setup |
+| React, Vue, Svelte       | Properties versus attributes, `punk-` and native events, binding a value, calling methods, typing; each shows its fixture's code with `?raw`, so the page is what `check:frameworks` built            |
+| Forms                    | Association, what each control submits, defaults and reset, validation timing, fieldsets, names and labels, events, platform limits                                                                   |
+| Focus and overlays       | Modality, the Escape order, backdrop clicks, popover focus modes, toast announcements and modals, window move mode                                                                                    |
+| Responsive layouts       | Windows and footers at 560px and 320px, a tall modal, a settings row from stack, cluster, and a container query; containers decide                                                                    |
+| Accessibility and layout | Reflow, right-to-left, forced colors, reduced motion, focus, each family's keyboard model and non-color cues                                                                                          |
+| Localization             | Configuring Lit Localize, merging application messages, `bindDocumentLocale`, writing XLIFF, the rules, what does not change, and a table of every message read from the XLIFF                        |
+| Performance              | Budgets, what each component costs, updating many stats, `content-visibility` for long lists with measurements and caveats, a list of connection rows virtualized with `@lit-labs/virtualizer`        |
+| Screen reader checklist  | The manual scenarios and combinations of [accessibility.md §13](accessibility.md), and the results table                                                                                              |
+| Asset policy             | What is original, what applications must supply, and the rule against game-derived assets                                                                                                             |
 
 ## 5. Smoke test
 
@@ -46,13 +48,13 @@ The workbench is where people build with and review the library, not a marketing
 - sideways scrolling of more than 1px at 375px and 187px for the overviews, the examples, and the responsive-layout stories;
 - the Application shell's keyboard flows: tabs, the live form, the Stop dialog and its focus return, and the Actions menu;
 - the examples' flows: dashboard updates, pause, and resume without focus moves or announcements; logistics removal, cancel, Undo, filter, and focus targets; interface-settings `lang`, `dir`, and names for every locale;
-- guide content: each framework guide contains its app's code, the Localization table lists every message id, and the checklist has its rows and combinations.
+- guide content: each framework guide contains its app's code, the Integration guide contains its import-map page, the Localization table lists every message id, the checklist has its rows and combinations, and the guides with Markdown tables render them as tables.
 
 An entry counts as loaded when Storybook's preview reports it rendered (or failed), and two frames later; entries load 4 at a time, and the flows run after them, one at a time. `PUNK_SMOKE_PART=<n>/<total>` checks one slice of the entries, with the flows in the first part ([ci.md §5.4](ci.md)).
 
 ## 6. Authoring rules
 
-- MDX here has no GitHub-flavored Markdown: pipe tables do not render, so docs pages use JSX tables.
+- MDX is compiled with GitHub-flavored Markdown (`remark-gfm`), so docs pages use pipe tables; JSX tables are for tables built from data.
 - Slot content in a story's controls is a string argument named `<slot>-slot` (`default-slot`, `header-slot`), which the manifest helpers render. Demo icons are therefore available as SVG strings.
 - A story never produces a development warning: an icon button has a label, a grid has a name.
 - A story with a timer stops it when the story is not shown.
@@ -75,7 +77,7 @@ An entry counts as loaded when Storybook's preview reports it rendered (or faile
 
 Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does not exist.
 
-**Stable addresses.** A published page's address is its Storybook id (`?path=/docs/<id>` and `?path=/story/<id>`), derived from its title and export name. Once published, an id is public surface like the API: renaming a title or export changes the address, so a page that moves keeps its old id with an explicit `id` or is listed as removed in the published-ids file (`apps/storybook/published-ids.json`), which a CI check compares with the build.
+**Stable addresses.** A published page's address is its Storybook id (`?path=/docs/<id>` and `?path=/story/<id>`), derived from its title and export name. Once published, an id is public surface like the API: renaming a title or export changes the address, so a page that moves keeps its old id with an explicit `id` or is listed as removed in the published-ids file (`packages/workbench/published-ids.json`), which a CI check compares with the build.
 
 **Identity.** The Storybook manager uses a theme built from the industrial tokens (canvas, panel, text, accent, and fonts), with the site title "Dieselpunk" and an original logo and favicon in `public/`, so the chrome matches the components. Every page has a title, a description, and social-card metadata with an original image. Nothing in them is derived from game assets ([product.md §4](product.md)).
 
@@ -87,12 +89,12 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 
 **Getting started.** The Integration guide is the entry for newcomers and is linked from the sidebar header: it shows `npm install`, the class and register imports, the stylesheets, and a plain HTML page that loads the packages through an import map, so a reader can copy a working page.
 
-**Package links.** The `homepage` field of `@dieselpunk/core` and `@dieselpunk/locales` is `https://dieselpunk.dev`, and each component's manifest description links its docs page.
+**Package links.** The `homepage` field of `@dieselpunk/core` and `@dieselpunk/locales` is `https://dieselpunk.dev`, their `repository` is `abraham/dieselpunk` with the package's folder as its `directory`, and each component's manifest description links its docs page.
 
 ## 8. Publishing
 
 - **Host:** GitHub Pages for `abraham/dieselpunk`, deployed by GitHub Actions. The custom domain is set in the repository's Pages settings; deployments from Actions need no `CNAME` file. **Why:** it is part of the repository's existing CI, needs no other account or secret, and serves static files, which is all a Storybook build is.
-- **Workflow** (`.github/workflows/docs.yml`) builds and deploys, and nothing else: it runs no tests and does not wait for CI, which tests the same commit on its own. On a published release it builds the release into `/`; on a push to `main` it builds `main` into `/next/` (or `/` before 1.0). It also runs on demand (`workflow_dispatch`). Each run: `npm ci`, build core, locales, and the workbench, add the manifest, sitemap, and robots file (`npm run build:site -w @dieselpunk/storybook`, from `scripts/site.ts`) and earlier major versions, and deploy the assembled folder with `actions/upload-pages-artifact` and `actions/deploy-pages`. A failed build deploys nothing. **Why:** documentation should follow `main` promptly, and a failing or slow test elsewhere in CI should not hold back a docs fix.
+- **Workflow** (`.github/workflows/docs.yml`) builds and deploys, and nothing else: it runs no tests and does not wait for CI, which tests the same commit on its own. On a published release it builds the release into `/`; on a push to `main` it builds `main` into `/next/` (or `/` before 1.0). It also runs on demand (`workflow_dispatch`). Each run: `npm ci`, build core, locales, and the workbench, add the manifest, sitemap, and robots file (`npm run build:site -w @dieselpunk/workbench`, from `scripts/site.ts`) and earlier major versions, and deploy the assembled folder with `actions/upload-pages-artifact` and `actions/deploy-pages`. A failed build deploys nothing. **Why:** documentation should follow `main` promptly, and a failing or slow test elsewhere in CI should not hold back a docs fix.
 - **Pull requests** do not run the docs workflow; CI builds the workbench and runs the smoke test on them.
 - **Concurrency:** one deployment at a time; a newer run cancels a queued older one.
 - **Rollback** is re-running the docs workflow for the previous release.
@@ -101,17 +103,15 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 ## Verification
 
 - `npm run build` builds the workbench; `test:smoke` runs §5 in CI.
-- Every guide's framework code is the code `check:frameworks` builds.
+- Every guide's framework code is the code `check:frameworks` builds, and the Integration guide's import-map page is the page `check:consumer` loads from a fresh install.
 - Foundations data is measured from the built CSS, so it cannot drift from what consumers get.
 - Nothing gates a deploy but a successful build: a commit that fails CI on `main` is still published, and the CI failure is fixed on `main`.
 
 ## Gaps
 
 - **The screen reader results table is empty** ([accessibility.md](accessibility.md) Gaps).
-- **The site is not published.** The repository's Pages source is not yet set to GitHub Actions, the custom domain is not set in the Pages settings, and dieselpunk.dev has no DNS records.
 - **Only the pre-1.0 path is built.** `docs.yml` deploys `main` to `/`. The release build into `/`, `main` into `/next/`, and the kept `/v<major>/` folders are added with the first release.
 - **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, or 404 page.
 - **No published-ids file or check** in CI.
 - **The guides and overviews are not scanned by axe.** Closing it: run axe over every docs page and example in the smoke test, outside the Storybook chrome.
-- **The packages have no `homepage` or `repository` field,** and manifest descriptions do not link their docs pages.
-- **The Integration guide has no `npm install` step or plain HTML import-map page,** since the packages are not on npm yet.
+- **Manifest descriptions do not link their docs pages.**

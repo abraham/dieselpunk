@@ -30,8 +30,7 @@ packages/
   testing/                @dieselpunk/testing (private): the shared test tooling (testing.md §10)
     src/                  one module per export, run from source
     test/                 Node tests of the tooling itself
-apps/
-  storybook/              the workbench (private)
+  workbench/              @dieselpunk/workbench (private): the Storybook workbench (workbench.md)
 ```
 
 A component's tests live beside it. Tests that span components (the gallery suites, form participation, focus and modality, performance) live in `packages/core/test/browser/`. Pure-logic tests live in `packages/core/test/*.test.ts` and run under Node. The machinery tests run on, shared by more than one workspace, lives in `packages/testing` and holds no test of another package.
@@ -74,7 +73,7 @@ There is no `tsx`, `ts-node`, or script build step: every script runs as `node <
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | core      | `tsc -p tsconfig.build.json` (emits `dist/` from `src/`, no tests), then `scripts/build-css.ts` (`tokens.css`, `themes.css`), then the Custom Elements Manifest |
 | locales   | `lit-localize build` (generated runtime modules from the XLIFF), then `tsc`, then `check:locales`                                                               |
-| storybook | Builds the workbench against the built packages                                                                                                                 |
+| workbench | Builds the workbench against the built packages                                                                                                                 |
 
 The root `build` runs every workspace in dependency order. Generated files (`dist/`, `custom-elements.json`, `packages/locales/src/generated/`, the test pseudo-locale) are not committed. Scripts that read generated sources make them first (`pretest:browser`, and `typecheck` for the locale modules and pseudo-locale). No typecheck builds `dist/`, so the workbench's `typecheck` runs after `build`.
 

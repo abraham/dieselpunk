@@ -118,9 +118,15 @@ async function checkEntry(entry: Entry): Promise<void> {
   await page.close();
 }
 
-// Each framework guide shows its fixture app's source, which a failed `?raw` import would leave out.
+// Each framework guide, and the Integration guide's page without a build step, shows its fixture's
+// source, which a failed `?raw` import would leave out.
 async function checkFrameworkGuides(): Promise<void> {
-  const guides = { react: 'createRoot', vue: 'createApp', svelte: 'mount(' };
+  const guides = {
+    react: 'createRoot',
+    vue: 'createApp',
+    svelte: 'mount(',
+    integration: 'importmap',
+  };
   for (const [name, marker] of Object.entries(guides)) {
     const page = await openDocs(`guides-${name}--docs`);
     // The code blocks are highlighted after the docs report they rendered.
@@ -135,7 +141,7 @@ async function checkFrameworkGuides(): Promise<void> {
         () => true,
         () => false,
       );
-    if (!shown) failures.push(`guides-${name}--docs does not show the fixture app's code`);
+    if (!shown) failures.push(`guides-${name}--docs does not show its fixture's code`);
     await page.close();
   }
 }
