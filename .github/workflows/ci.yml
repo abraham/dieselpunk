@@ -10,13 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
       # The consumer and framework checks drive Chromium; the browser suites and smoke test have their own jobs.
-      - run: npx playwright install --with-deps chromium
+      - uses: ./.github/actions/setup
+        with:
+          browsers: chromium
       - run: npm run check:toolchain
       - run: npm run format:check
       - run: npm run lint
@@ -35,13 +32,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run build
+          browsers: chromium
+          build: true
       - run: npm run test:smoke
 
   browser:
@@ -55,12 +49,9 @@ jobs:
       PUNK_BROWSERS: ${{ matrix.browser }}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps ${{ matrix.browser }}
+          browsers: ${{ matrix.browser }}
       - run: npm run test:browser --workspaces --if-present
 
   # Runs in the image the baselines were rendered on, so pixels match (specs/testing.md §6).
@@ -85,11 +76,7 @@ jobs:
       HOME: /root
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup
       - run: npm run test:visual -w @dieselpunk/core -- --project=${{ matrix.project }} --shard=${{ matrix.shard }}/${{ matrix.shards }}
       - uses: actions/upload-artifact@v7
         if: failure()

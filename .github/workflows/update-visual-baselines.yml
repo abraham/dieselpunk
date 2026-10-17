@@ -16,11 +16,7 @@ jobs:
       HOME: /root
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup
       # Start from nothing so baselines for removed tests do not linger and never fail.
       - run: rm -rf packages/core/test/visual/__screenshots__
       - run: npm run test:visual:update --workspace @dieselpunk/core
