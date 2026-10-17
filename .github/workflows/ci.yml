@@ -6,6 +6,17 @@ on:
   pull_request:
 
 jobs:
+  # Computes the matrices from the gallery groups and the test listing (specs/ci.md §6).
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      visual: ${{ steps.matrix.outputs.visual }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - id: matrix
+        run: node scripts/ci-matrix.ts
+
   static:
     runs-on: ubuntu-latest
     steps:
@@ -63,18 +74,13 @@ jobs:
 
   # Runs in the image the baselines were rendered on, so pixels match (specs/testing.md §6).
   visual:
-    name: visual (${{ matrix.project }} ${{ matrix.shard }}/${{ matrix.shards }})
+    name: visual (${{ matrix.name }})
+    needs: plan
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # Chromium renders the full matrix, about nine times the other projects, so it is split.
-        include:
-          - { project: chromium, shard: 1, shards: 2 }
-          - { project: chromium, shard: 2, shards: 2 }
-          - { project: chromium-forced, shard: 1, shards: 1 }
-          - { project: firefox, shard: 1, shards: 1 }
-          - { project: webkit, shard: 1, shards: 1 }
+        include: ${{ fromJSON(needs.plan.outputs.visual) }}
     container:
       image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --ipc=host
@@ -84,18 +90,22 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
-      - run: npm run test:visual -w @dieselpunk/core -- --project=${{ matrix.project }} --shard=${{ matrix.shard }}/${{ matrix.shards }}
+      - working-directory: packages/core
+        env:
+          PROJECT: ${{ matrix.project }}
+          GREP: ${{ matrix.grep }}
+        run: node scripts/visual.ts check --project="$PROJECT" --grep="$GREP"
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: visual-report-${{ matrix.project }}-${{ matrix.shard }}
+          name: visual-report-${{ matrix.id }}
           path: packages/core/test-results/
           retention-days: 7
 
   # The one check to require in branch protection: it passes only when every job above passed.
   ci-success:
     if: always()
-    needs: [static, integration, smoke, browser, visual]
+    needs: [plan, static, integration, smoke, browser, visual]
     runs-on: ubuntu-latest
     steps:
       - if: >-

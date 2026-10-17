@@ -1,19 +1,21 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { autoLightThemeName, defaultThemeName, themeNames } from '../../src/tokens/themes.ts';
+import { galleryGroups, groupNames } from '../browser/fixtures/groups.ts';
+import type { GalleryGroup } from '../browser/fixtures/groups.ts';
+import { at } from './tags.ts';
 
 // The matrix from specs/testing.md §6, run once for each gallery group (specs/testing.md §3).
 // Chromium runs all of it. Firefox and WebKit run the default theme at compact density and
 // `industrial-light` at low density, at 100% only. The forced-colors project ignores themes, so
 // it runs one theme at 100% zoom. The baselines of a group are in a folder of that name.
-// Projects select their tests by tag (playwright.config.ts), so a test never skips itself after
-// its page is open (specs/ci.md §5.2).
+// Projects select their tests by tag (playwright.config.ts), and CI jobs by group and theme, so a
+// test never skips itself after its page is open (specs/ci.md §5.2).
 
 const everyProject = ['@cross-engine', '@forced'];
 
-const groups = ['foundation', 'inventory', 'production', 'shell', 'forms', 'overlays'] as const;
 // An overlay is open on a page of its own, so each is a page, and only two contents are captured.
-const overlayPages = ['dialog', 'window', 'popover', 'toast-stack'] as const;
-const themes = ['industrial', 'industrial-light', 'high-contrast', 'reduced-texture'] as const;
+const overlayPages = galleryGroups.overlays;
 const densities = ['compact', 'low'] as const;
 const containers = [
   { name: 'desktop', width: 1024 },
@@ -29,21 +31,21 @@ const overlayContents = ['short', 'rtl'] as const; // The stat and the row take 
 // `production` to keep the group under 20 MB (specs/testing.md §6).
 const productionContents = ['short', 'long', 'rtl'] as const;
 
-const crossEngineCombos = new Set(['industrial/compact', 'industrial-light/low']);
+const crossEngineCombos = new Set([`${defaultThemeName}/compact`, `${autoLightThemeName}/low`]);
 
 async function open(page: Page, query: Record<string, string>): Promise<void> {
   await page.goto(`/matrix.html?${new URLSearchParams(query)}`);
   await page.waitForSelector('html[data-ready]');
 }
 
-for (const group of groups) {
+for (const group of groupNames) {
   test.describe(`${group} group`, () => {
     for (const zoom of zooms) {
       test.describe(`${zoom.name}% zoom`, () => {
         // 200% zoom is half the layout width at double the pixel density.
         test.use({ deviceScaleFactor: zoom.scale });
 
-        for (const theme of themes) {
+        for (const theme of themeNames) {
           for (const density of densities) {
             for (const container of containers) {
               for (const content of group === 'overlays'
@@ -59,8 +61,9 @@ for (const group of groups) {
                     container.name === 'desktop' &&
                     content === 'short';
                   // Forced colors ignore the theme.
-                  const forced = theme === 'industrial' && zoom.name === '100';
+                  const forced = theme === defaultThemeName && zoom.name === '100';
                   const tag = [
+                    ...at(group, theme),
                     ...(crossEngine ? ['@cross-engine'] : []),
                     ...(forced ? ['@forced'] : []),
                   ];
@@ -92,9 +95,9 @@ for (const group of groups) {
 test.describe('interaction states', { tag: everyProject }, () => {
   const gallery = (page: Page) => page.locator('.gallery');
 
-  test.describe('button', () => {
+  test.describe('button', { tag: at('foundation') }, () => {
     test.beforeEach(async ({ page }) => {
-      await open(page, { theme: 'industrial', density: 'compact', component: 'button' });
+      await open(page, { theme: defaultThemeName, density: 'compact', component: 'button' });
     });
 
     const target = (page: Page) =>
@@ -123,9 +126,9 @@ test.describe('interaction states', { tag: everyProject }, () => {
     });
   });
 
-  test.describe('slot', () => {
+  test.describe('slot', { tag: at('inventory') }, () => {
     test.beforeEach(async ({ page }) => {
-      await open(page, { theme: 'industrial', density: 'compact', component: 'slot' });
+      await open(page, { theme: defaultThemeName, density: 'compact', component: 'slot' });
     });
 
     // The second slot of the first row: empty-state variants do not hide the item art.
@@ -151,9 +154,13 @@ test.describe('interaction states', { tag: everyProject }, () => {
     });
   });
 
-  test.describe('connection row', () => {
+  test.describe('connection row', { tag: at('production') }, () => {
     test.beforeEach(async ({ page }) => {
-      await open(page, { theme: 'industrial', density: 'compact', component: 'connection-row' });
+      await open(page, {
+        theme: defaultThemeName,
+        density: 'compact',
+        component: 'connection-row',
+      });
     });
 
     // The first row that can be removed and is not disabled.
@@ -191,9 +198,9 @@ test.describe('interaction states', { tag: everyProject }, () => {
     });
   });
 
-  test.describe('slot grid', () => {
+  test.describe('slot grid', { tag: at('inventory') }, () => {
     test('keyboard focus on an interior item', async ({ page }) => {
-      await open(page, { theme: 'industrial', density: 'compact', component: 'slot-grid' });
+      await open(page, { theme: defaultThemeName, density: 'compact', component: 'slot-grid' });
       const grid = page.locator('punk-slot-grid').first();
       // Tab lands on the selected item, and the arrow moves past the disabled one to Slot 4.
       await page.keyboard.press('Tab');
@@ -206,11 +213,11 @@ test.describe('interaction states', { tag: everyProject }, () => {
     });
   });
 
-  test.describe('form controls', () => {
+  test.describe('form controls', { tag: at('forms') }, () => {
     const first = (page: Page, tag: string) => page.locator(`${tag}:not([disabled])`).first();
 
     test('checkbox hover', async ({ page }) => {
-      await open(page, { theme: 'industrial', density: 'compact', component: 'checkbox' });
+      await open(page, { theme: defaultThemeName, density: 'compact', component: 'checkbox' });
       await first(page, 'punk-checkbox').hover();
       await expect(gallery(page)).toHaveScreenshot(['forms', 'interaction-checkbox-hover.png']);
     });
@@ -218,7 +225,7 @@ test.describe('interaction states', { tag: everyProject }, () => {
     // The checkbox's hover is above; the rest of the controls are hovered in the same way.
     for (const tag of ['switch', 'slider', 'text-field', 'number-field', 'select']) {
       test(`${tag} hover`, async ({ page }) => {
-        await open(page, { theme: 'industrial', density: 'compact', component: tag });
+        await open(page, { theme: defaultThemeName, density: 'compact', component: tag });
         await first(page, `punk-${tag}`).hover();
         await expect(gallery(page)).toHaveScreenshot(['forms', `interaction-${tag}-hover.png`]);
       });
@@ -227,7 +234,7 @@ test.describe('interaction states', { tag: everyProject }, () => {
     // Pressed, with the pointer still down; a field has no pressed look of its own.
     for (const tag of ['checkbox', 'switch', 'slider']) {
       test(`${tag} active`, async ({ page }) => {
-        await open(page, { theme: 'industrial', density: 'compact', component: tag });
+        await open(page, { theme: defaultThemeName, density: 'compact', component: tag });
         await first(page, `punk-${tag}`).hover();
         await page.mouse.down();
         await expect(gallery(page)).toHaveScreenshot(['forms', `interaction-${tag}-active.png`]);
@@ -237,7 +244,7 @@ test.describe('interaction states', { tag: everyProject }, () => {
 
     for (const tag of ['checkbox', 'switch', 'slider', 'text-field', 'number-field', 'select']) {
       test(`${tag} focus-visible`, async ({ page }) => {
-        await open(page, { theme: 'industrial', density: 'compact', component: tag });
+        await open(page, { theme: defaultThemeName, density: 'compact', component: tag });
         await page.keyboard.press('Tab');
         await expect(first(page, `punk-${tag}`)).toBeFocused();
         await expect(gallery(page)).toHaveScreenshot(['forms', `interaction-${tag}-focus.png`]);
@@ -251,7 +258,7 @@ test.describe('interaction states', { tag: everyProject }, () => {
 // page, since it is in the top layer and not in the gallery.
 interface Capture {
   name: string;
-  from: 'foundation' | 'inventory' | 'shell' | 'overlays';
+  from: GalleryGroup;
   query?: Record<string, string>;
   /** The element that is hovered, focused, and pressed. */
   target: (page: Page) => Locator;
@@ -318,10 +325,10 @@ async function shotAround(
 test.describe('interaction states of the remaining components', { tag: everyProject }, () => {
   for (const capture of captures) {
     const component = capture.query?.['component'] ?? capture.name;
-    const query = { theme: 'industrial', density: 'compact', component, ...capture.query };
+    const query = { theme: defaultThemeName, density: 'compact', component, ...capture.query };
 
     for (const state of capture.states ?? (['hover', 'focus', 'active'] as const)) {
-      test(`${capture.name} ${state}`, async ({ page }) => {
+      test(`${capture.name} ${state}`, { tag: at(capture.from) }, async ({ page }) => {
         await open(page, query);
         const target = capture.target(page);
         const file = [capture.from, `interaction-${capture.name}-${state}.png`];
@@ -342,8 +349,8 @@ test.describe('interaction states of the remaining components', { tag: everyProj
   }
 
   // A tooltip opens at once for keyboard focus on its anchor.
-  test('tooltip opens for keyboard focus', async ({ page }) => {
-    await open(page, { theme: 'industrial', density: 'compact', component: 'tooltip' });
+  test('tooltip opens for keyboard focus', { tag: at('foundation') }, async ({ page }) => {
+    await open(page, { theme: defaultThemeName, density: 'compact', component: 'tooltip' });
     const anchor = page.locator('#gallery-anchor');
     await page.keyboard.press('Tab');
     await anchor.focus();
@@ -357,15 +364,15 @@ test.describe('interaction states of the remaining components', { tag: everyProj
   });
 
   // Hovering an item of a grid, and moving along a toolbar with the arrow keys.
-  test('slot grid hover', async ({ page }) => {
-    await open(page, { theme: 'industrial', density: 'compact', component: 'slot-grid' });
+  test('slot grid hover', { tag: at('inventory') }, async ({ page }) => {
+    await open(page, { theme: defaultThemeName, density: 'compact', component: 'slot-grid' });
     const grid = page.locator('punk-slot-grid').first();
     await grid.locator('punk-slot[value="s2"]').hover();
     await shotAround(page, ['inventory', 'interaction-slot-grid-hover.png'], grid);
   });
 
-  test('toolbar roving focus on the second item', async ({ page }) => {
-    await open(page, { theme: 'industrial', density: 'compact', component: 'toolbar' });
+  test('toolbar roving focus on the second item', { tag: at('shell') }, async ({ page }) => {
+    await open(page, { theme: defaultThemeName, density: 'compact', component: 'toolbar' });
     await page.keyboard.press('Tab');
     await page.keyboard.press('ArrowRight');
     const toolbar = page.locator('punk-toolbar').first();
@@ -375,11 +382,11 @@ test.describe('interaction states of the remaining components', { tag: everyProj
 });
 
 // A window in move mode, with the keyboard: the pressed move button and the offset window.
-test.describe('window mid-move', { tag: everyProject }, () => {
+test.describe('window mid-move', { tag: [...everyProject, ...at('overlays')] }, () => {
   test('after the move button and four arrow keys', async ({ page }) => {
     await open(page, {
       group: 'overlays',
-      theme: 'industrial',
+      theme: defaultThemeName,
       density: 'compact',
       content: 'short',
       component: 'window',

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { at } from './tags.ts';
 
 // The accessibility tree of each inventory component, as Playwright serializes it, on every
 // engine (specs/testing.md §2). The expected trees are written out so that a change to a role,
@@ -33,7 +34,7 @@ async function render(page: Page, markup: string, values?: string[]): Promise<vo
 
 // Forced colors do not change the tree, so the forced-colors project does not run these.
 test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
-  test('slot alone', async ({ page }) => {
+  test('slot alone', { tag: at('inventory') }, async ({ page }) => {
     await render(
       page,
       `<punk-slot label="Engine slot" value="e1">${art}</punk-slot>
@@ -58,7 +59,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
        <punk-slot label="Three" value="c" disabled></punk-slot>
      </punk-slot-grid>`;
 
-  test('slot grid, selection none', async ({ page }) => {
+  test('slot grid, selection none', { tag: at('inventory') }, async ({ page }) => {
     await render(page, grid('none'));
     await expect(page.locator('#case')).toMatchAriaSnapshot(`
       - group "Cargo":
@@ -68,7 +69,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
-  test('slot grid, selection single', async ({ page }) => {
+  test('slot grid, selection single', { tag: at('inventory') }, async ({ page }) => {
     await render(page, grid('single'), ['a']);
     await expect(page.locator('#case')).toMatchAriaSnapshot(`
       - listbox "Cargo":
@@ -78,7 +79,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
-  test('slot grid, selection multiple', async ({ page }) => {
+  test('slot grid, selection multiple', { tag: at('inventory') }, async ({ page }) => {
     await render(page, grid('multiple'), ['a', 'b']);
     await expect(page.locator('#case')).toMatchAriaSnapshot(`
       - listbox "Cargo":
@@ -88,7 +89,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
-  test('item stack in each state', async ({ page }) => {
+  test('item stack in each state', { tag: at('inventory') }, async ({ page }) => {
     await render(
       page,
       `<punk-item-stack name="Iron plate" count="1">${art}</punk-item-stack>
@@ -108,7 +109,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
-  test('recipe', async ({ page }) => {
+  test('recipe', { tag: at('inventory') }, async ({ page }) => {
     const parts = `${art}<span slot="ingredients">2 plates</span><span slot="products">Gear</span>`;
     await render(
       page,
@@ -121,7 +122,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
-  test('meter and status light', async ({ page }) => {
+  test('meter and status light', { tag: at('inventory') }, async ({ page }) => {
     await render(
       page,
       `<punk-meter label="Heat" value="64" show-value></punk-meter>
@@ -139,7 +140,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
-  test('tabs, with panels inside and beside', async ({ page }) => {
+  test('tabs, with panels inside and beside', { tag: at('shell') }, async ({ page }) => {
     await render(
       page,
       `<punk-tabs aria-label="Machine">
@@ -161,7 +162,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
-  test('toolbar', async ({ page }) => {
+  test('toolbar', { tag: at('shell') }, async ({ page }) => {
     await render(
       page,
       `<punk-toolbar aria-label="Tools">
@@ -178,7 +179,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
-  test('window and dialog, open', async ({ page }) => {
+  test('window and dialog, open', { tag: at('overlays') }, async ({ page }) => {
     await render(
       page,
       `<punk-window heading="Assembler" open dismissible movable>
@@ -202,7 +203,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
-  test('popover in each mode', async ({ page }) => {
+  test('popover in each mode', { tag: at('overlays') }, async ({ page }) => {
     await render(
       page,
       `<punk-button>Details</punk-button>
@@ -223,15 +224,18 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
-  test('toast stack with a polite and an assertive toast', async ({ page }) => {
-    await render(
-      page,
-      `<punk-toast-stack>
+  test(
+    'toast stack with a polite and an assertive toast',
+    { tag: at('overlays') },
+    async ({ page }) => {
+      await render(
+        page,
+        `<punk-toast-stack>
          <punk-toast duration="0">Saved</punk-toast>
          <punk-toast variant="danger" heading="Offline" duration="0">Reactor lost power</punk-toast>
        </punk-toast-stack>`,
-    );
-    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      );
+      await expect(page.locator('#case')).toMatchAriaSnapshot(`
       - region "Notifications":
         - status:
           - text: Saved
@@ -240,9 +244,10 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
           - text: Offline Reactor lost power
           - button "Dismiss"
     `);
-  });
+    },
+  );
 
-  test('checkbox, switch, and slider in each state', async ({ page }) => {
+  test('checkbox, switch, and slider in each state', { tag: at('forms') }, async ({ page }) => {
     await render(
       page,
       `<punk-checkbox>Fuel</punk-checkbox>
@@ -266,7 +271,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
-  test('text, number, and select fields', async ({ page }) => {
+  test('text, number, and select fields', { tag: at('forms') }, async ({ page }) => {
     await render(
       page,
       `<punk-text-field label="Callsign" value="Echo"><span slot="hint">Three letters</span></punk-text-field>
@@ -295,17 +300,21 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     await expect(page.getByRole('textbox', { name: 'Callsign' })).toHaveValue('Echo');
   });
 
-  test('a field names its message once the user has left it', async ({ page }) => {
-    await render(page, '<punk-text-field label="Required name" required></punk-text-field>');
-    const field = page.getByRole('textbox', { name: 'Required name' });
-    await expect(field).not.toHaveAttribute('aria-invalid', 'true');
-    await field.focus();
-    await field.blur();
-    await expect(field).toHaveAttribute('aria-invalid', 'true');
-    await expect(field).toHaveAccessibleDescription(/invalid/i);
-  });
+  test(
+    'a field names its message once the user has left it',
+    { tag: at('forms') },
+    async ({ page }) => {
+      await render(page, '<punk-text-field label="Required name" required></punk-text-field>');
+      const field = page.getByRole('textbox', { name: 'Required name' });
+      await expect(field).not.toHaveAttribute('aria-invalid', 'true');
+      await field.focus();
+      await field.blur();
+      await expect(field).toHaveAttribute('aria-invalid', 'true');
+      await expect(field).toHaveAccessibleDescription(/invalid/i);
+    },
+  );
 
-  test('accordion', async ({ page }) => {
+  test('accordion', { tag: at('shell') }, async ({ page }) => {
     await render(
       page,
       `<punk-accordion>
@@ -364,7 +373,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     ],
   ];
   for (const [name, markup, expected] of stats) {
-    test(`production stat, ${name}`, async ({ page }) => {
+    test(`production stat, ${name}`, { tag: at('production') }, async ({ page }) => {
       await render(page, markup);
       await expect(page.locator('#case')).toMatchAriaSnapshot(expected);
     });
@@ -432,7 +441,7 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     ],
   ];
   for (const [name, markup, expected] of rows) {
-    test(`connection row, ${name}`, async ({ page }) => {
+    test(`connection row, ${name}`, { tag: at('production') }, async ({ page }) => {
       await render(page, markup);
       await expect(page.locator('#case')).toMatchAriaSnapshot(expected);
     });

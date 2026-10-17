@@ -1,7 +1,7 @@
 # Continuous Integration
 
 **Scope:** the GitHub Actions workflows that check, render, and publish the repository: their jobs, how work is split and parallelized, how setup is shared, what decides which jobs run, and the time budgets that keep it fast as the library grows.
-**Code:** `.github/workflows/ci.yml`, `.github/workflows/visual.yml`, `.github/workflows/update-visual-baselines.yml`, `.github/workflows/docs.yml`, `.github/actions/setup/`, `scripts/ci-matrix.ts`, `packages/core/test/browser/fixtures/groups.ts`.
+**Code:** `.github/workflows/ci.yml`, `.github/workflows/visual.yml`, `.github/workflows/update-visual-baselines.yml`, `.github/workflows/docs.yml`, `.github/actions/setup/`, `scripts/ci-matrix.ts`, `packages/core/test/browser/fixtures/groups.ts`, `packages/core/test/visual/tags.ts`.
 
 ## 1. Goals
 
@@ -131,9 +131,9 @@ The packing cap of §6 is set so a packed job meets its target. The `plan` job w
 
 ## Gaps
 
-The workflows are the first step toward this design: `static`, `integration`, `smoke`, `browser` (one job per engine), a hand-written `visual` matrix (Chromium in two count-based shards), and `ci-success`. Every job sets up through `.github/actions/setup`. The visual tests carry the `@cross-engine` and `@forced` tags, and each project selects its tests with `grep`. Missing:
+The workflows are the first step toward this design: `plan`, `static`, `integration`, `smoke`, `browser` (one job per engine), `visual`, and `ci-success`. Every job sets up through `.github/actions/setup`. `plan` generates the visual matrix, and the visual tests carry their group, theme, `@cross-engine`, and `@forced` tags. Missing:
 
-- **No `plan` job, no generated matrix, no group or theme selection** in the gallery suites (`PUNK_GALLERY_GROUPS`, `PUNK_GALLERY_THEMES`) or the visual jobs (`@group:` and `@theme:` tags); groups are defined in the gallery only, and the visual spec lists theme names itself instead of reading the token source.
+- **`plan` computes only the visual matrix.** The gallery suites cannot select groups or themes (`PUNK_GALLERY_GROUPS`, `PUNK_GALLERY_THEMES`), the component tests have no parts, and `browser` runs one job per engine with everything; `integration`, `smoke`, and `browser` do not wait for `plan`.
 - **The smoke test is sequential,** with a fixed wait per entry, and has no parts.
 - **The baseline workflow renders everything in one job,** does not share the visual job definition, and cannot update one group or theme.
 - **No change detection, no `concurrency` group, no timeouts,** and no budget summary.
