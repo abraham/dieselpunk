@@ -63,6 +63,8 @@ export type {
   ConnectionStatus,
   PunkRemoveDetail,
 } from './components/connection-row/index.ts';
+export { PunkAlert } from './components/alert/index.ts';
+export type { AlertVariant } from './components/alert/index.ts';
 export { PunkBadge } from './components/badge/index.ts';
 export type { BadgeVariant } from './components/badge/index.ts';
 export { PunkSpinner } from './components/spinner/index.ts';

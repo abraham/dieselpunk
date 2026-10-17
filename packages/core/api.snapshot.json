@@ -63,6 +63,39 @@
       },
       "cssProperties": {}
     },
+    "punk-alert": {
+      "attributes": {
+        "announce": "boolean = false",
+        "dismissible": "boolean = false",
+        "heading": "string = ''",
+        "variant": "AlertVariant = 'info'"
+      },
+      "properties": {
+        "announce": "boolean = false",
+        "dismissible": "boolean = false",
+        "heading": "string = ''",
+        "variant": "AlertVariant = 'info'"
+      },
+      "methods": {
+        "dismiss": ""
+      },
+      "events": {
+        "punk-dismiss": ""
+      },
+      "slots": {
+        "(default)": "",
+        "actions": ""
+      },
+      "parts": {
+        "actions": "",
+        "alert": "",
+        "content": "",
+        "dismiss-button": "",
+        "heading": "",
+        "indicator": ""
+      },
+      "cssProperties": {}
+    },
     "punk-badge": {
       "attributes": {
         "variant": "BadgeVariant = 'neutral'"
