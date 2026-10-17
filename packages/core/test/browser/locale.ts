@@ -7,6 +7,7 @@ import { configureLocalization, str } from '@lit/localize';
 const german = {
   templates: {
     loading: 'Laden',
+    statNoValue: 'kein Wert',
     invalid: 'ungültig',
     close: 'Schließen',
     increase: 'Erhöhen',

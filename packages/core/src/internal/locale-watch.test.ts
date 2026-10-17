@@ -10,6 +10,7 @@ import '../components/toast/register.ts';
 import '../components/window/register.ts';
 import '../components/number-field/register.ts';
 import '../components/panel/register.ts';
+import '../components/production-stat/register.ts';
 import type { PunkButton } from '../components/button/index.ts';
 import { localeEpoch, watchLocale } from './locale-watch.ts';
 
@@ -207,6 +208,7 @@ const messageRenderers: Array<[string, Record<string, string>, string, string]> 
   ['punk-toast-stack', {}, 'Notifications', 'Benachrichtigungen'],
   ['punk-window', { heading: 'W', open: '', dismissible: '' }, 'Close', 'Schließen'],
   ['punk-number-field', { label: 'Count' }, 'Increase', 'Erhöhen'],
+  ['punk-production-stat', { label: 'Output' }, 'no value', 'kein Wert'],
 ];
 
 describe('every component that renders a message', () => {

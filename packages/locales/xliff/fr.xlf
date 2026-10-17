@@ -74,6 +74,22 @@
   <source>warning</source>
   <note from="lit-localize">The state word of a meter that is in its warning range.</note>
 </trans-unit>
+<trans-unit id="statNoValue">
+  <source>no value</source>
+  <note from="lit-localize">Hidden text for the dash of a measurement not there yet.</note>
+</trans-unit>
+<trans-unit id="trendDown">
+  <source>down</source>
+  <note from="lit-localize">A measurement is falling.</note>
+</trans-unit>
+<trans-unit id="trendUp">
+  <source>up</source>
+  <note from="lit-localize">A measurement is rising.</note>
+</trans-unit>
+<trans-unit id="trendFlat">
+  <source>unchanged</source>
+  <note from="lit-localize">A measurement is steady.</note>
+</trans-unit>
 </body>
 </file>
 </xliff>

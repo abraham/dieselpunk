@@ -1,6 +1,6 @@
 # Phase 4: Production Interfaces — Implementation Specification
 
-**Status:** Draft 1. Work package 1 (shared internals) is implemented.
+**Status:** Draft 1. Work packages 1 (shared internals) and 2 (production stat) are implemented.
 **Parent:** [SPEC.md](SPEC.md), SPEC §17 (Delivery Phases), Phase 4
 **Builds on:** [SPEC-PHASE-1.md](SPEC-PHASE-1.md), [SPEC-PHASE-2.md](SPEC-PHASE-2.md), [SPEC-PHASE-3.md](SPEC-PHASE-3.md)
 **Packages:** `@dieselpunk/core`, and one new one, `@dieselpunk/locales`
@@ -547,7 +547,7 @@ The stages of Phase 3 §10.9 are unchanged, and gain `check:strings` (a fresh ex
 | # | Package | Depends on | Output |
 |---|---------|------------|--------|
 | 1 | Shared internals | Phase 3 | The Lit Localize spike (§9.2), `msg()` in place of `t` and `format` with `locale-watch`, the existing messages as ids and descriptions, `check:strings`, `stat-format`, `readout.ts`, `check:api` and its first snapshot; logic tests. Done (§14.1). |
-| 2 | Production stat | 1 | `punk-production-stat`, tests |
+| 2 | Production stat | 1 | `punk-production-stat`, tests. Done (§14.2). |
 | 3 | Connection row | 1 | `punk-connection-row`, tests |
 | 4 | Localization packs | 1, 2, 3 | `@dieselpunk/locales`: the XLIFF for five locales, the generated modules, `loadLocale`, `mergeLocaleModules`, `bindDocumentLocale`, `check-locales`, tests |
 | 5 | Test infrastructure | 2, 3 as they land | The `production` gallery group, axe and reflow coverage, ARIA snapshots, the contrast test, the visual matrix and interaction captures, `strings.test.ts` with the pseudo-locale, the consumer fixture, baselines |
@@ -582,6 +582,18 @@ Package 8 does these in particular:
 - **`check:api`.** `scripts/api-snapshot.ts` describes the 30 elements (attributes, properties, methods, events, slots, parts, CSS properties, with each type and default) and the `exports` keys, and `api.snapshot.json` holds them. A removed, added, or changed name fails, and `npm run check:api -- --update` rewrites the file. Six node tests; mutation-checked by renaming a part.
 - **Elsewhere.** The test locale for the components' own tests is `test/browser/locale.ts`, configured once per page, and the component tests that used `setStrings` use it. The consumer fixture configures Lit Localize from its own `@lit/localize`, and the integration guide's translation section describes `msg`, `configureLocalization`, and the 18 ids. `SPEC.md` is updated for goal 5, §5.1, and §13, and CI runs `check:strings` and `check:api` after `check:contrast`.
 - **Gates.** `check:toolchain`, `lint`, `format:check`, `typecheck`, `build`, `check:contrast`, `check:strings`, `check:api`, `check:package` (the recipe sentinel is now `can craft `), `check:size`, `test:node` (203 in core, 14 in the locales package), `check:consumer`, `check:frameworks`, the workbench build and smoke test (136 entries), `visual.ts check` (1036 passed, with no baseline changed), and the full browser suite in Chromium (84 files, 1718 tests) and, on Linux in the pinned image in Chromium, Firefox, and WebKit, 252 files and 5127 tests passed, 36 skipped.
+
+### 14.2 Work Package 2 Notes
+
+- **The stat** is `components/production-stat/` (class, styles, `register.ts`, `index.ts`), exported from the package root with `ProductionStatLayout` and `ProductionTrend`. It is one readout plate (`.readout`), with the label and icon in a head row, the figures (value, unit, trend, change) in a wrapping row, and the sparkline slot under them. Its messages are `statNoValue`, `trendUp`, `trendDown`, and `trendFlat`, so the XLIFF has 22 units, and `check:strings` passes. `visuallyHidden` moved from `styles/receptacle.ts` to `styles/visually-hidden.ts`, since the stat uses it too.
+- **The icon follows the label in the DOM** and is put before it on screen with `order: -1`, so the label is read first. The change is shown with its sign and no unit, since the unit belongs to the value; a ratio with `delta-percent` is shown as a percentage.
+- **Figures that keep their width.** The first version used `font-variant-numeric: tabular-nums` alone, and 1,111 measured 52.2px and 8,888 55.4px in Chakra Petch, which has no tabular figures. The value, unit, and change are set in `font-mono` (as the item stack's count and the slider's value are) with `tabular-nums` kept, and the width test loads the font as a page would. The reserved width is `4ch` of that font.
+- **Development warnings**, once for each occurrence: no `label`, a `decimals` outside 0 to 6 (through `resolveStat`), and an unnamed, not-hidden `svg`, `canvas`, or `img` in `sparkline`.
+- **Gallery.** `fixtures/gallery.ts` gains `productionNames` and the `production` group with eight stats (plain, compact with a percentage change, down, flat, announcing with a sparkline, no value, inline with an icon, and a 12-character value inline), so the axe suite (all themes and densities), the reflow test (187 to 512px), and the manifest checks already cover it. The visual matrix's group list, its baselines, the consumer fixture, and the ARIA snapshots stay with package 5, and the stories with package 7.
+- **Tests.** 41 in `production-stat.test.ts` and `.registration.test.ts`, and a row for the stat in the locale-watch table. Mutation-checked, each change failing a test: no tabular figures, no reserved width, no mono font, no icon order, a flipped up shape, no wrapping in `inline`, no role restore (this one survived first: the test now sets a role after `announce` is turned off and updates again), `role="alert"`, no plate, a compact value not hidden, no label warning, no sparkline warning, no change shown, a visible glyph, and `inline` ignored. One change survives and is equivalent: the forced-colors glyph fill `CanvasText` against `currentColor`, since the text color is `CanvasText` there.
+- **Sizes (gzip).** `punk-production-stat` 4.96 kB of 5, with the localization runtime counted (0.47 kB); the first build was 5.05 kB, so the descriptions and a few declarations were shortened and no exception is taken. The shared runtime stays at 8.20 kB, with `visually-hidden.js` left out of its entry as `readout.js` is.
+- **Repairs found on the way.** `check:package`'s status light sentinel was `"announce"`, which the stat now contains, and is `The text carries the meaning`. ESLint's `no-unused-private-class-members` flagged the nine `#localeWatcher` fields of package 1 (a controller adds itself in its constructor, so the field is never read), and is off for that reason. `check:api` has 31 elements.
+- **Gates.** `check:toolchain`, `lint`, `format:check`, `typecheck`, `build`, `check:strings`, `check:api`, `check:package`, `check:size`, `test:node` (203 and 14), `check:consumer`, `check:frameworks`, the workbench build and smoke test (136 entries), `visual.ts check` (1036 passed, no baseline changed), the full browser suite in Chromium (86 files, 1767 tests), and, on Linux in the pinned image in Chromium, Firefox, and WebKit, 258 files and 5274 tests passed, 36 skipped.
 
 ## 15. Acceptance Criteria
 

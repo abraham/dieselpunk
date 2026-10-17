@@ -327,6 +327,12 @@ A compact status indicator with icon and text. Color is never the only indicatio
 
 A compact metric containing label, value, trend, unit, and optional sparkline slot. Numeric width remains stable with tabular figures.
 
+- Properties: `label`, `value` (a number, unset while there is none), `unit`, `decimals` (0 to 6), `compact`, `trend` (`up`, `down`, `flat`; unset follows the sign of `delta`), `delta` and `delta-percent`, `layout` (`stacked` or `inline`), and `announce`.
+- The value is formatted for the nearest `lang`, in a monospaced face with tabular figures, aligned to the inline end, and reserves `--punk-stat-value-min`. A compact value is `aria-hidden`, and the accessible text has the full number.
+- The trend is a shape and a word, never color alone, and carries no good-or-bad color.
+- The host has no role; `announce` makes it a polite live region.
+- Slots: `icon` and `sparkline`. Parts: `stat`, `icon`, `label`, `value`, `unit`, `trend`, `delta`, `sparkline`. CSS properties: `--punk-stat-value-min` and `--punk-stat-sparkline-size`.
+
 #### `<punk-connection-row>`
 
 Represents a logistics or circuit connection with source, direction, destination, status, and a removable action. Applications provide node icons and labels.

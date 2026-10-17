@@ -9,6 +9,9 @@ export default defineConfig(
   {
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
+      // A controller adds itself to its host in its constructor, so a field that only creates it
+      // (`#localeWatcher`) is never read.
+      'no-unused-private-class-members': 'off',
     },
   },
 );

@@ -15,7 +15,8 @@
       "!dist/styles/status-shape.js",
       "!dist/styles/gap.js",
       "!dist/styles/modal-surface.js",
-      "!dist/styles/readout.js"
+      "!dist/styles/readout.js",
+      "!dist/styles/visually-hidden.js"
     ],
     "ignore": ["lit"],
     "gzip": true,
@@ -132,6 +133,13 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "3 kB"
+  },
+  {
+    "name": "punk-production-stat",
+    "path": "dist/components/production-stat/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5 kB"
   },
   {
     "name": "punk-tooltip",

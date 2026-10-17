@@ -497,6 +497,52 @@
         "--punk-popover-offset": "= 8px"
       }
     },
+    "punk-production-stat": {
+      "attributes": {
+        "announce": "boolean = false",
+        "compact": "boolean = false",
+        "decimals": "number | undefined",
+        "delta": "number | undefined",
+        "delta-percent": "boolean = false",
+        "label": "string = ''",
+        "layout": "ProductionStatLayout = 'stacked'",
+        "trend": "ProductionTrend | undefined",
+        "unit": "string = ''",
+        "value": "number | undefined"
+      },
+      "properties": {
+        "announce": "boolean = false",
+        "compact": "boolean = false",
+        "decimals": "number | undefined",
+        "delta": "number | undefined",
+        "deltaPercent": "boolean = false",
+        "label": "string = ''",
+        "layout": "ProductionStatLayout = 'stacked'",
+        "trend": "ProductionTrend | undefined",
+        "unit": "string = ''",
+        "value": "number | undefined"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "icon": "",
+        "sparkline": ""
+      },
+      "parts": {
+        "delta": "",
+        "icon": "",
+        "label": "",
+        "sparkline": "",
+        "stat": "",
+        "trend": "",
+        "unit": "",
+        "value": ""
+      },
+      "cssProperties": {
+        "--punk-stat-sparkline-size": "= calc(var(--punk-control-height-md) * 2)",
+        "--punk-stat-value-min": "= 4ch"
+      }
+    },
     "punk-progress-bar": {
       "attributes": {
         "aria-label": "string | null = null",

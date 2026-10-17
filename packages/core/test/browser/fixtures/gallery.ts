@@ -15,6 +15,7 @@ import '../../../src/components/slot-grid/register.ts';
 import '../../../src/components/recipe/register.ts';
 import '../../../src/components/meter/register.ts';
 import '../../../src/components/status-light/register.ts';
+import '../../../src/components/production-stat/register.ts';
 import '../../../src/components/stack/register.ts';
 import '../../../src/components/cluster/register.ts';
 import '../../../src/components/accordion/register.ts';
@@ -48,6 +49,7 @@ export const inventoryNames = [
   'meter',
   'status-light',
 ] as const;
+export const productionNames = ['production-stat'] as const;
 export const shellNames = [
   'stack',
   'cluster',
@@ -72,6 +74,7 @@ export const overlayNames = ['dialog', 'window', 'popover', 'toast-stack'] as co
 export const componentNames = [
   ...foundationNames,
   ...inventoryNames,
+  ...productionNames,
   ...shellNames,
   ...formNames,
   'dialog',
@@ -84,6 +87,7 @@ export type ComponentName = (typeof componentNames)[number];
 export const galleryGroups = {
   foundation: foundationNames,
   inventory: inventoryNames,
+  production: productionNames,
   shell: shellNames,
   forms: formNames,
   overlays: overlayNames,
@@ -465,6 +469,24 @@ const builders: Record<ComponentName, Builder> = {
         <punk-status-light variant="warning">${low}</punk-status-light>
         <punk-status-light variant="danger" announce>${offline}</punk-status-light>
         <punk-status-light variant="success"><span slot="icon" aria-hidden="true">${plus}</span>${running}</punk-status-light>
+      </div>
+    `;
+  },
+
+  'production-stat': (c) => {
+    // Without a visible label the stats take the same text, since a stat with no label has no name.
+    const label = `label="${c.meter || 'Reactor heat'}"`;
+    const spark = `<svg slot="sparkline" aria-hidden="true" viewBox="0 0 60 16" preserveAspectRatio="none"><polyline points="0,12 12,8 24,10 36,4 48,6 60,2" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+    return `
+      <div class="stack">
+        <punk-production-stat ${label} value="1234.5" unit="/min"></punk-production-stat>
+        <punk-production-stat ${label} value="1234567" compact trend="up" delta="0.124" delta-percent></punk-production-stat>
+        <punk-production-stat ${label} value="87" unit="%" trend="down" delta="-3"></punk-production-stat>
+        <punk-production-stat ${label} value="0" unit="/s" trend="flat"></punk-production-stat>
+        <punk-production-stat ${label} value="12.5" decimals="2" unit="MW" announce>${spark}</punk-production-stat>
+        <punk-production-stat ${label} unit="/min"></punk-production-stat>
+        <punk-production-stat ${label} value="640" unit="/min" layout="inline" trend="up" delta="40"><span slot="icon" aria-hidden="true">${gear}</span>${spark}</punk-production-stat>
+        <punk-production-stat ${label} value="123456789.5" unit="kW" layout="inline" trend="up" delta="1500"></punk-production-stat>
       </div>
     `;
   },

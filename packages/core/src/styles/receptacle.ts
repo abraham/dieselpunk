@@ -1,21 +1,8 @@
 import { css } from 'lit';
 import { hostFocusRing } from './focus.ts';
 import { forcedColorsSurface } from './forced-colors.ts';
+import { visuallyHidden } from './visually-hidden.ts';
 import { token } from '../tokens/token.ts';
-
-export const visuallyHidden = css`
-  .visually-hidden {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
-    margin: -1px;
-    padding: 0;
-    border: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-`;
 
 // Each state owns one channel, so they combine and stay apart without color: selected is the
 // outer ring and a darker fill, highlighted a dotted outline, invalid an inner frame and a hatched
