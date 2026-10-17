@@ -4,6 +4,7 @@ import { property } from 'lit/decorators.js';
 import { childChanged, owner } from '../../internal/owner.ts';
 import type { Owned, Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
+import { isFocusTarget, itemDisabled } from '../../internal/roving.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { accordionItemStyles } from './accordion.styles.ts';
@@ -66,13 +67,19 @@ export class PunkAccordionItem extends PunkElement implements Owned<PunkAccordio
   #warnedLevel = false;
   #warnedHeading = false;
 
-  /** Roving protocol: whether the header can be reached by the accordion's arrow keys. */
-  get isDisabled(): boolean {
+  /**
+   * Roving protocol: whether the header can be reached by the accordion's arrow keys.
+   * @internal
+   */
+  get [itemDisabled](): boolean {
     return this.disabled;
   }
 
-  /** Whether `element` is this item's button. */
-  isTrigger(element: EventTarget | undefined): boolean {
+  /**
+   * Roving protocol: whether `element` is this item's button.
+   * @internal
+   */
+  [isFocusTarget](element: EventTarget | undefined): boolean {
     return element !== undefined && element === this.renderRoot.querySelector('.trigger');
   }
 

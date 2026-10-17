@@ -3,6 +3,7 @@ import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { PunkFormControl } from './form-control.ts';
 import type { FormValue, Validation } from './form-control.ts';
+import { focusItem, itemDisabled, setTabStop } from './roving.ts';
 import { SlotPresence } from './slot-presence.ts';
 
 // What the engine says about an unchecked required checkbox, in the user's language.
@@ -51,13 +52,27 @@ export abstract class PunkToggleBase extends PunkFormControl {
     });
   }
 
-  /** Roving protocol: moves focus to the host. */
-  focusItem(): void {
+  /**
+   * Roving protocol: whether a roving group's arrow keys skip it.
+   * @internal
+   */
+  get [itemDisabled](): boolean {
+    return this.isDisabled;
+  }
+
+  /**
+   * Roving protocol: moves focus to the host.
+   * @internal
+   */
+  [focusItem](): void {
     this.focus();
   }
 
-  /** Roving protocol: `true` is the group's one tab stop, `false` is skipped by Tab, `null` hands control back. */
-  setTabStop(on: boolean | null): void {
+  /**
+   * Roving protocol: `true` is the group's one tab stop, `false` is skipped by Tab, `null` hands control back.
+   * @internal
+   */
+  [setTabStop](on: boolean | null): void {
     this.#tabStop = on;
     this.requestUpdate();
   }

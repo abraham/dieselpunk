@@ -36,12 +36,10 @@
         "disabled": "boolean = false",
         "expanded": "boolean = false",
         "heading": "string = ''",
-        "isDisabled": "boolean",
         "level": "number = 3"
       },
       "methods": {
-        "focusHeader": "",
-        "isTrigger": ""
+        "focusHeader": ""
       },
       "events": {
         "punk-toggle": "CustomEvent<{ expanded: boolean }>"
@@ -165,17 +163,13 @@
       "properties": {
         "accessibleLabel": "string | null = null",
         "disabled": "boolean = false",
-        "isDisabled": "boolean",
         "loading": "boolean = false",
         "size": "ButtonSize = 'md'",
         "type": "ButtonType = 'button'",
         "variant": "ButtonVariant = 'default'"
       },
       "methods": {
-        "focusItem": "",
-        "formDisabledCallback": "",
-        "setExternalAria": "",
-        "setTabStop": ""
+        "formDisabledCallback": ""
       },
       "events": {},
       "slots": {
@@ -221,13 +215,11 @@
       },
       "methods": {
         "checkValidity": "",
-        "focusItem": "",
         "formDisabledCallback": "",
         "formResetCallback": "",
         "formStateRestoreCallback": "",
         "reportValidity": "",
-        "setCustomValidity": "",
-        "setTabStop": ""
+        "setCustomValidity": ""
       },
       "events": {
         "change": "Event",
@@ -505,7 +497,6 @@
       "properties": {
         "accessibleLabel": "string | null = null",
         "disabled": "boolean = false",
-        "isDisabled": "boolean",
         "label": "string = ''",
         "loading": "boolean = false",
         "size": "ButtonSize = 'md'",
@@ -514,10 +505,7 @@
         "variant": "ButtonVariant = 'default'"
       },
       "methods": {
-        "focusItem": "",
-        "formDisabledCallback": "",
-        "setExternalAria": "",
-        "setTabStop": ""
+        "formDisabledCallback": ""
       },
       "events": {},
       "slots": {
@@ -981,13 +969,9 @@
       "properties": {
         "checked": "boolean = false",
         "disabled": "boolean = false",
-        "isDisabled": "boolean",
         "value": "string = ''"
       },
-      "methods": {
-        "focusItem": "",
-        "setTabStop": ""
-      },
+      "methods": {},
       "events": {},
       "slots": {
         "(default)": ""
@@ -1347,13 +1331,11 @@
       },
       "methods": {
         "checkValidity": "",
-        "focusItem": "",
         "formDisabledCallback": "",
         "formResetCallback": "",
         "formStateRestoreCallback": "",
         "reportValidity": "",
-        "setCustomValidity": "",
-        "setTabStop": ""
+        "setCustomValidity": ""
       },
       "events": {
         "change": "Event",
@@ -1379,15 +1361,11 @@
       },
       "properties": {
         "disabled": "boolean = false",
-        "isDisabled": "boolean",
         "orientation": "'horizontal' | 'vertical' = 'horizontal'",
         "panel": "string = ''",
         "selected": "boolean = false"
       },
-      "methods": {
-        "focusItem": "",
-        "setTabStop": ""
-      },
+      "methods": {},
       "events": {},
       "slots": {
         "(default)": "",

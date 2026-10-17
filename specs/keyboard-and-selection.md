@@ -24,7 +24,7 @@ These rules hold in every component:
 
 - `new RovingController({ host, items, orientation })`; `connect()` listens on the host, `refresh()` recomputes the tab stop when items or their disabled state change, `focus(item)` moves the stop and focus together, `current` is the item that holds it, and `disconnect()` gives every item its own tab stop back.
 - Arrows (by orientation), `Home`, and `End` move focus. Focus that arrives another way (a click, script) moves the stop with it.
-- **Items are asked, not assumed.** An item takes part through the roving item protocol: `isDisabled`, `focusItem()`, and `setTabStop(on)`, with `setTabStop(null)` handing control back ([package-contract.md §9](package-contract.md)). The button base, the toggles, and tabs implement it, since their focus target may not be the host. A native button or link is adapted by writing `tabindex` and restoring the author's.
+- **Items are asked, not assumed.** An item takes part through the roving item protocol: `[itemDisabled]`, `[focusItem]()`, and `[setTabStop](on)`, with `[setTabStop](null)` handing control back, keyed by symbols from `internal/roving.ts` ([package-contract.md §9](package-contract.md)). The button base, the toggles, and tabs implement it, since their focus target may not be the host. A native button or link is adapted by writing `tabindex` and restoring the author's.
 - The pure part is `nextRovingIndex(key, from, disabled, { orientation, rtl })`.
 - It reads no layout and creates no observer.
 

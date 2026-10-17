@@ -133,7 +133,7 @@ Several containers manage light-DOM children they do not render: the slot grid i
 - **Children tell their owner,** not the other way round. A child holds an `owner` reference, set by the owner, and calls it when something the owner depends on changes (disabled, value, selected, expanded). The owner coalesces these into one update per microtask.
 - **Everything is given back.** When a child leaves or the owner disconnects, every attribute the owner wrote is restored to what the author had.
 - **One protocol.** The owner and child roles are one generic protocol in `internal/owner.ts`: an `[owner]` slot on the child, set and cleared by its owner; a single `[childChanged](child, changed)` notification with Lit's changed properties; and `[release](child)`, which the owner runs when a child leaves its slot and a child runs itself when it disconnects (a toast). Its `Ledger` is the restore bookkeeping: it remembers each attribute's value before the owner's first write and the elements the owner disabled, and gives back exactly those. Owners of plain elements (the toggle group's buttons, the breadcrumb's items, the table's header cells, the fieldset's controls, the tabs' panels) use the ledger alone. Each owner implements only what it does with a change.
-- **Protocol methods are private to the library**, keyed by symbols from `internal/` ([package-contract.md §9](package-contract.md)). Lit's decorators do not receive a symbol key from the development transform, so a child creates its `[owner]` property with `createProperty` in a static block.
+- **Protocol members are private to the library**, keyed by symbols from `internal/` and marked `@internal`, so neither the manifest nor the API snapshot lists them ([package-contract.md §9](package-contract.md)). The symbols have no description, which keeps their bytes out of each entry. Lit's decorators do not receive a symbol key from the development transform, so a child creates its `[owner]` property with `createProperty` in a static block.
 
 ## 9. Composition
 
@@ -168,4 +168,4 @@ Several containers manage light-DOM children they do not render: the slot grid i
 
 ## Gaps
 
-- **Protocol members are public** ([package-contract.md](package-contract.md) Gaps).
+None.

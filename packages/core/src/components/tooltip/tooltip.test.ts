@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from 'vitest';
 import { cleanup, focusWithKeyboard, track } from '../../../test/browser/helpers.ts';
 import '../../../test/browser/commands.ts';
+import { setExternalAria } from '../../internal/anchor.ts';
 import '../button/register.ts';
 import './register.ts';
 import { resetTooltipWarmup } from './tooltip.ts';
@@ -450,7 +451,7 @@ describe('describing the anchor (12.7.7)', () => {
     expect(tooltip.hasAttribute('id')).toBe(false);
   });
 
-  it('describes a punk-button through setExternalAria', async () => {
+  it('describes a punk-button through the anchor protocol', async () => {
     const wrapper = track(document.createElement('div'));
     const button = document.createElement('punk-button') as PunkButton;
     button.textContent = 'Save';
@@ -500,7 +501,7 @@ describe('describing the anchor (12.7.7)', () => {
     customElements.define(
       'punk-late-anchor',
       class extends HTMLElement {
-        setExternalAria(aria: { description?: string | null }) {
+        [setExternalAria](aria: { description?: string | null }) {
           described(aria.description);
         }
       },

@@ -6,6 +6,7 @@ import { Ledger, childChanged, owner, release } from '../../internal/owner.ts';
 import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import type { RovingOrientation } from '../../internal/roving-keys.ts';
+import { focusItem, setTabStop } from '../../internal/roving.ts';
 import { navigateTabs, resolveSelection } from '../../internal/tab-navigation.ts';
 import type { TabActivation } from '../../internal/tab-navigation.ts';
 import { devWarn } from '../../utilities/warn.ts';
@@ -149,7 +150,7 @@ export class PunkTabs extends PunkElement implements Owner<PunkTab> {
   /** @internal */
   [release](tab: PunkTab): void {
     tab[owner] = null;
-    tab.setTabStop(null);
+    tab[setTabStop](null);
     tab.removeAttribute('aria-controls');
     if (tab === this.#selected) this.#lastIndex = this.#tabs.indexOf(tab);
   }
@@ -198,7 +199,7 @@ export class PunkTabs extends PunkElement implements Owner<PunkTab> {
   }
 
   #applyStops(): void {
-    for (const tab of this.#tabs) tab.setTabStop(tab === this.#stop);
+    for (const tab of this.#tabs) tab[setTabStop](tab === this.#stop);
   }
 
   #panelOf(tab: PunkTab): HTMLElement | null {
@@ -317,7 +318,7 @@ export class PunkTabs extends PunkElement implements Owner<PunkTab> {
     if (!target) return;
     this.#stop = target;
     this.#applyStops();
-    target.focusItem();
+    target[focusItem]();
     const selection = result.select === null ? undefined : this.#tabs[result.select];
     if (selection) this.#select(selection, true);
   };

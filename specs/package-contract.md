@@ -122,15 +122,15 @@ Open and close events report every change of `open`, whoever made it, because an
 
 ## 9. Internal protocols
 
-Components cooperate across shadow roots and registration entries through small duck-typed protocols:
+Components cooperate across shadow roots and registration entries through small duck-typed protocols, each keyed by symbols exported from an `internal/` module:
 
-| Protocol      | Methods                                                        | Implemented by                                                           | Used by                                                    |
-| ------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| External ARIA | `setExternalAria({ description, expanded, haspopup })`         | button base                                                              | tooltip, popover, menu                                     |
-| Roving item   | `isDisabled`, `focusItem()`, `setTabStop(on \| null)`          | button base, toggles, tab, radio                                         | `RovingController`, tabs, radio group                      |
-| Owned child   | `[owner]`, `[childChanged]`, `[release]` (`internal/owner.ts`) | selectable items (and list items), accordion items, tabs, toasts, radios | slot grid, list, accordion, tabs, toast stack, radio group |
+| Protocol      | Members                                                                                                         | Implemented by                                                                          | Used by                                                    |
+| ------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| External ARIA | `[setExternalAria]({ description, expanded, haspopup })` (`internal/anchor.ts`)                                 | button base                                                                             | tooltip, popover, menu                                     |
+| Roving item   | `[itemDisabled]`, `[focusItem]()`, `[setTabStop](on \| null)`, `[isFocusTarget](target)` (`internal/roving.ts`) | button base, toggles, tab, radio; accordion items (`[itemDisabled]`, `[isFocusTarget]`) | `RovingController`, tabs, radio group, accordion           |
+| Owned child   | `[owner]`, `[childChanged]`, `[release]` (`internal/owner.ts`)                                                  | selectable items (and list items), accordion items, tabs, toasts, radios                | slot grid, list, accordion, tabs, toast stack, radio group |
 
-These are implementation contracts between the library's own classes, not application API. They are not described in the manifest, not in the API snapshot, and not covered by Semantic Versioning. They are keyed so that an application cannot call them by accident ([component-model.md §8](component-model.md)).
+These are implementation contracts between the library's own classes, not application API. The members are marked `@internal`, so they are not described in the manifest, not in the API snapshot, and not covered by Semantic Versioning. The symbols are not exported from the package, so an application cannot call them by accident ([component-model.md §8](component-model.md)). The browser tests of each pair (a tooltip describing a button, a toolbar roving over buttons and toggles, the tabs, radio group, and accordion keyboards) are what show a protocol still connects its classes.
 
 ## 10. Versioning
 
@@ -150,5 +150,4 @@ These are implementation contracts between the library's own classes, not applic
 
 ## Gaps
 
-- **Protocols are public.** `setExternalAria`, `isDisabled`, `focusItem`, `setTabStop`, and `isTrigger` are public members, described in the manifest and recorded in the snapshot, so 1.0 would freeze them. The owned-child protocol is keyed by symbols already ([component-model.md §8](component-model.md)). Closing it: key each protocol by a symbol exported from an `internal/` module (or mark the members `@internal` and exclude them from the analyzer), remove them from the snapshot, and keep a test that the protocol still connects the classes that use it.
 - **`SubmitEvent.submitter` is `null`** when a `punk-button` submits a form, because a custom element cannot be a submitter. This is a platform limit, documented on the button, and not closable inside the library.

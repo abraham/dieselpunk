@@ -37,7 +37,7 @@ One module-level stack of open overlays per page (`createOverlayStack(target)`, 
 ## 4. Anchoring and positioning
 
 - **Anchor resolution** (`resolveAnchor`): the element whose id is the overlay's `for`, in the overlay's root node; otherwise the overlay's previous element sibling. An overlay is a sibling of its anchor, never a child, so its text never joins the anchor's name.
-- **ARIA wiring** (`describeAnchor`, `wireAnchorState`): the overlay adds a description, `aria-expanded`, or `aria-haspopup` through `setExternalAria` when the anchor implements it, and on the anchor itself otherwise; it removes only what it added, on close, disconnect, or a change of anchor ([accessibility.md §4](accessibility.md)). An anchor that is a custom element not yet defined is waited for.
+- **ARIA wiring** (`describeAnchor`, `wireAnchorState`): the overlay adds a description, `aria-expanded`, or `aria-haspopup` through `[setExternalAria]` when the anchor implements it, and on the anchor itself otherwise; it removes only what it added, on close, disconnect, or a change of anchor ([accessibility.md §4](accessibility.md)). An anchor that is a custom element not yet defined is waited for.
 - **Positioning** (`computePosition`, pure): the preferred side, flipped to the opposite side if it does not fit, then shifted along the cross axis to stay 8px inside the viewport. `start` and `end` are logical. When neither side of a horizontal placement fits, it moves above or below as a flip would and clamps on both axes. A surface wider than the viewport pins to the margin.
 - **Listeners only while open:** a capturing, passive, frame-throttled `scroll` listener, a `resize` listener, and a `ResizeObserver` on the anchor exist only while the overlay is open.
 
@@ -47,7 +47,7 @@ One module-level stack of open overlays per page (`createOverlayStack(target)`, 
 - **Opening:** pointer hover opens after `delay` (default 400ms); keyboard focus that matches `:focus-visible` (read from the composed path, since the anchor may be a shadow host) opens at once; touch never opens it. `show()` opens at once.
 - **Warm-up:** at most one tooltip is open; opening one closes the other. If one closed less than 300ms ago, the next opens without delay. `resetTooltipWarmup()` exists for tests.
 - **Closing:** when the pointer has left both anchor and tooltip and the anchor has lost focus, after a 100ms grace period that entering the tooltip cancels. Escape closes it and leaves focus where it is.
-- **Description:** unless `describe="false"`, the tooltip's host gets `role="tooltip"` and an id, and describes its anchor ([§4](#4-anchoring-and-positioning)). For a button-family anchor the description text is passed through `setExternalAria` and kept current by one `MutationObserver` on the tooltip's own content for as long as it is connected, because the description must exist before the tooltip ever opens.
+- **Description:** unless `describe="false"`, the tooltip's host gets `role="tooltip"` and an id, and describes its anchor ([§4](#4-anchoring-and-positioning)). For a button-family anchor the description text is passed through `[setExternalAria]` and kept current by one `MutationObserver` on the tooltip's own content for as long as it is connected, because the description must exist before the tooltip ever opens.
 - The host is `display: contents`; the surface has no role. Width is `min(--punk-tooltip-max-width, 100vw - 16px)`.
 - **Warnings:** no anchor; focusable content.
 

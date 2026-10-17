@@ -5,6 +5,7 @@ import { childChanged, owner, release } from '../../internal/owner.ts';
 import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { nextRovingIndex } from '../../internal/roving-keys.ts';
+import { isFocusTarget, itemDisabled } from '../../internal/roving.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { PunkAccordionItem } from './accordion-item.ts';
 import { accordionStyles } from './accordion.styles.ts';
@@ -74,12 +75,12 @@ export class PunkAccordion extends PunkElement implements Owner<PunkAccordionIte
     if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
       return;
     const target = event.composedPath()[0];
-    const from = this.#items.findIndex((item) => item.isTrigger(target));
+    const from = this.#items.findIndex((item) => item[isFocusTarget](target));
     if (from < 0) return;
     const to = nextRovingIndex(
       event.key,
       from,
-      this.#items.map((item) => item.isDisabled),
+      this.#items.map((item) => item[itemDisabled]),
       { orientation: 'vertical', rtl: false },
     );
     if (to === from) return;

@@ -2,13 +2,13 @@
 // §8). The members are keyed by symbols, so an application cannot call them by accident.
 
 /** On a child: the container that manages it, set and cleared by that container. */
-export const owner = Symbol('punk.owner');
+export const owner = Symbol();
 
 /** On an owner: something it depends on changed on `child`. */
-export const childChanged = Symbol('punk.childChanged');
+export const childChanged = Symbol();
 
 /** On an owner: `child` leaves; stop managing it and give back what was written to it. */
-export const release = Symbol('punk.release');
+export const release = Symbol();
 
 export interface Owner<Child extends Element = Element> {
   /** Called with the properties that changed, as Lit reports them. */

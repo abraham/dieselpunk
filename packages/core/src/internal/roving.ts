@@ -3,16 +3,30 @@ import type { RovingOrientation } from './roving-keys.ts';
 
 export type { RovingOrientation };
 
+// The roving item protocol (specs/package-contract.md §9). Keyed by symbols, so an application
+// cannot call it by accident.
+
+/** On an item: whether the arrow keys skip it. */
+export const itemDisabled = Symbol();
+
+/** On an item: moves focus to it. */
+export const focusItem = Symbol();
+
+/** On an item: `true` is the group's tab stop, `false` is skipped by Tab, `null` hands control back. */
+export const setTabStop = Symbol();
+
+/** On an item whose focus target is inside it: whether `target` is that element. */
+export const isFocusTarget = Symbol();
+
 /** What an item in a roving group lets the group do. `PunkButtonBase` implements it. */
 export interface RovingItem {
-  readonly isDisabled: boolean;
-  focusItem(): void;
-  /** `true` is the group's tab stop, `false` is skipped by Tab, `null` hands control back. */
-  setTabStop(on: boolean | null): void;
+  readonly [itemDisabled]: boolean;
+  [focusItem](): void;
+  [setTabStop](on: boolean | null): void;
 }
 
 function isRovingItem(element: HTMLElement): element is HTMLElement & RovingItem {
-  return typeof (element as Partial<RovingItem>).setTabStop === 'function';
+  return typeof (element as Partial<RovingItem>)[setTabStop] === 'function';
 }
 
 const originalTabindex = new WeakMap<HTMLElement, string | null>();
@@ -21,7 +35,7 @@ const originalTabindex = new WeakMap<HTMLElement, string | null>();
 function adapt(element: HTMLElement): RovingItem {
   if (isRovingItem(element)) return element;
   return {
-    get isDisabled() {
+    get [itemDisabled]() {
       return (
         Boolean(element.hidden) ||
         element.hasAttribute('data-punk-overflow') ||
@@ -29,8 +43,8 @@ function adapt(element: HTMLElement): RovingItem {
         element.getAttribute('aria-disabled') === 'true'
       );
     },
-    focusItem: () => element.focus(),
-    setTabStop(on) {
+    [focusItem]: () => element.focus(),
+    [setTabStop](on) {
       if (!originalTabindex.has(element))
         originalTabindex.set(element, element.getAttribute('tabindex'));
       if (on === null) {
@@ -81,7 +95,7 @@ export class RovingController {
     this.#connected = false;
     this.#options.host.removeEventListener('keydown', this.#onKeyDown);
     this.#options.host.removeEventListener('focusin', this.#onFocusIn);
-    for (const item of this.#options.items()) adapt(item).setTabStop(null);
+    for (const item of this.#options.items()) adapt(item)[setTabStop](null);
     this.#current = null;
   }
 
@@ -94,7 +108,7 @@ export class RovingController {
   focus(item: HTMLElement): void {
     this.#current = item;
     this.refresh();
-    adapt(item).focusItem();
+    adapt(item)[focusItem]();
   }
 
   /** Recomputes the single tab stop: the remembered item if it is still enabled, else the first. */
@@ -103,10 +117,10 @@ export class RovingController {
     const items = this.#options.items();
     const adapters = items.map(adapt);
     let index = this.#current ? items.indexOf(this.#current) : -1;
-    if (index < 0 || adapters[index]?.isDisabled)
-      index = adapters.findIndex((item) => !item.isDisabled);
+    if (index < 0 || adapters[index]?.[itemDisabled])
+      index = adapters.findIndex((item) => !item[itemDisabled]);
     this.#current = index >= 0 ? (items[index] ?? null) : null;
-    adapters.forEach((item, position) => item.setTabStop(position === index));
+    adapters.forEach((item, position) => item[setTabStop](position === index));
   }
 
   #itemAt(event: Event): number {
@@ -118,7 +132,7 @@ export class RovingController {
   readonly #onFocusIn = (event: FocusEvent): void => {
     const index = this.#itemAt(event);
     const item = this.#options.items()[index];
-    if (item && !adapt(item).isDisabled && item !== this.#current) {
+    if (item && !adapt(item)[itemDisabled] && item !== this.#current) {
       this.#current = item;
       this.refresh();
     }
@@ -132,7 +146,7 @@ export class RovingController {
     const next = nextRovingIndex(
       event.key,
       from,
-      items.map((item) => adapt(item).isDisabled),
+      items.map((item) => adapt(item)[itemDisabled]),
       {
         orientation: this.#options.orientation?.() ?? 'horizontal',
         rtl: this.#options.host.matches(':dir(rtl)'),

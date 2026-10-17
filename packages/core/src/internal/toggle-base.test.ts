@@ -10,6 +10,7 @@ import '../components/button/register.ts';
 import type { PunkCheckbox } from '../components/checkbox/index.ts';
 import type { PunkSwitch } from '../components/switch/index.ts';
 import type { PunkToolbar } from '../components/toolbar/index.ts';
+import { focusItem, setTabStop } from './roving.ts';
 
 type Toggle = PunkCheckbox | PunkSwitch;
 
@@ -294,22 +295,22 @@ describe.each([
   describe('in a roving group', () => {
     it('is skipped by Tab or made the stop as the group says, and handed back', async () => {
       const element = await mount(tag);
-      element.setTabStop(false);
+      element[setTabStop](false);
       await element.updateComplete;
       expect(element.getAttribute('tabindex')).toBe('-1');
-      element.setTabStop(true);
+      element[setTabStop](true);
       await element.updateComplete;
       expect(element.getAttribute('tabindex')).toBe('0');
-      element.setTabStop(null);
+      element[setTabStop](null);
       await element.updateComplete;
       expect(element.getAttribute('tabindex')).toBe('0');
-      element.focusItem();
+      element[focusItem]();
       expect(document.activeElement).toBe(element);
     });
 
     it('stays out of a disabled one, whatever the group says', async () => {
       const element = await mount(tag, 'disabled');
-      element.setTabStop(true);
+      element[setTabStop](true);
       await element.updateComplete;
       expect(element.hasAttribute('tabindex')).toBe(false);
       expect(element.isDisabled).toBe(true);

@@ -9,6 +9,7 @@ import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg } from '../../internal/localize.ts';
 import { childChanged, owner, release } from '../../internal/owner.ts';
 import { nextRovingIndex } from '../../internal/roving-keys.ts';
+import { itemDisabled, setTabStop } from '../../internal/roving.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { PunkRadio } from './radio.ts';
@@ -127,7 +128,7 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
   /** @internal */
   [release](radio: PunkRadio): void {
     radio[owner] = null;
-    radio.setTabStop(null);
+    radio[setTabStop](null);
   }
 
   protected override formValue(): FormValue {
@@ -170,7 +171,7 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
   }
 
   #tabStop(): PunkRadio | undefined {
-    const enabled = this.#radios.filter((radio) => !radio.isDisabled);
+    const enabled = this.#radios.filter((radio) => !radio[itemDisabled]);
     return enabled.find((radio) => radio.checked) ?? enabled[0];
   }
 
@@ -218,12 +219,12 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
 
   #placeTabStop(): void {
     const stop = this.#tabStop();
-    for (const radio of this.#radios) radio.setTabStop(radio === stop);
+    for (const radio of this.#radios) radio[setTabStop](radio === stop);
   }
 
   /** The user chose `radio`. */
   #choose(radio: PunkRadio): void {
-    if (radio.checked || radio.isDisabled || this.isDisabled) return;
+    if (radio.checked || radio[itemDisabled] || this.isDisabled) return;
     this.#requested = undefined;
     this.#check(radio);
     this.commit();
@@ -261,7 +262,7 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
     const to = nextRovingIndex(
       event.key,
       from,
-      this.#radios.map((other) => other.isDisabled),
+      this.#radios.map((other) => other[itemDisabled]),
       { orientation: vertical ? 'vertical' : 'horizontal', rtl: this.matches(':dir(rtl)') },
     );
     const target = this.#radios[to];

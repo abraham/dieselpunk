@@ -11,6 +11,7 @@ import {
   track,
 } from '../../../test/browser/helpers.ts';
 import '../../../test/browser/commands.ts';
+import { setExternalAria } from '../../internal/anchor.ts';
 import './register.ts';
 import { resetTooltipWarmup } from '../tooltip/tooltip.ts';
 import type { PunkTooltip, TooltipPlacement } from '../tooltip/index.ts';
@@ -395,7 +396,7 @@ describe('inherited button behavior', () => {
 
   it('accepts an external description from another tooltip', async () => {
     const button = await mount();
-    button.setExternalAria({ description: 'Extra detail' });
+    button[setExternalAria]({ description: 'Extra detail' });
     await button.updateComplete;
     const id = inner(button).getAttribute('aria-describedby') ?? '';
     expect(button.shadowRoot?.getElementById(id)?.textContent).toBe('Extra detail');

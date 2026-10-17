@@ -5,6 +5,7 @@ import { childChanged, owner } from '../../internal/owner.ts';
 import type { Owned, Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import type { RovingItem } from '../../internal/roving.ts';
+import { focusItem, itemDisabled, setTabStop } from '../../internal/roving.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { uid } from '../../internal/ids.ts';
 import { tabStyles } from './tabs.styles.ts';
@@ -62,18 +63,27 @@ export class PunkTab extends PunkElement implements RovingItem, Owned<PunkTab> {
     if (!this[owner]) this.closest<PunkTabsLike>('punk-tabs')?.refreshTabs?.();
   }
 
-  /** Roving protocol: whether the tab can be reached by the arrow keys. */
-  get isDisabled(): boolean {
+  /**
+   * Roving protocol: whether the tab can be reached by the arrow keys.
+   * @internal
+   */
+  get [itemDisabled](): boolean {
     return this.disabled;
   }
 
-  /** Roving protocol: moves focus to the tab. */
-  focusItem(): void {
+  /**
+   * Roving protocol: moves focus to the tab.
+   * @internal
+   */
+  [focusItem](): void {
     this.focus();
   }
 
-  /** Roving protocol: `true` is the one tab stop, `false` is skipped by Tab, `null` hands control back. */
-  setTabStop(on: boolean | null): void {
+  /**
+   * Roving protocol: `true` is the one tab stop, `false` is skipped by Tab, `null` hands control back.
+   * @internal
+   */
+  [setTabStop](on: boolean | null): void {
     this.#tabStop = on;
     this.requestUpdate();
   }
