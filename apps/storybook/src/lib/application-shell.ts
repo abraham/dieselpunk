@@ -3,11 +3,13 @@ import type { TemplateResult } from 'lit';
 import { ref } from 'lit/directives/ref.js';
 import type { PunkCloseDetail, PunkSelectionChangeDetail, ToastVariant } from '@dieselpunk/core';
 import '@dieselpunk/core/button/register.js';
+import '@dieselpunk/core/connection-row/register.js';
 import '@dieselpunk/core/checkbox/register.js';
 import '@dieselpunk/core/dialog/register.js';
 import '@dieselpunk/core/item-stack/register.js';
 import '@dieselpunk/core/number-field/register.js';
 import '@dieselpunk/core/popover/register.js';
+import '@dieselpunk/core/production-stat/register.js';
 import '@dieselpunk/core/progress-bar/register.js';
 import '@dieselpunk/core/recipe/register.js';
 import '@dieselpunk/core/select/register.js';
@@ -82,6 +84,22 @@ export function applicationShell(): TemplateResult {
     notify(rootOf(event), 'Settings applied.', 'success');
   };
 
+  // The application owns the list: the row only says that its button was used.
+  const removeBelt = (event: CustomEvent<{ value: string }>) => {
+    const root = rootOf(event);
+    const row = event.currentTarget as HTMLElement;
+    const rows = [...root.querySelectorAll<HTMLElement>('punk-connection-row[removable]')];
+    const at = rows.indexOf(row);
+    row.remove();
+    const next = rows[at + 1] ?? rows[at - 1];
+    // The focused button went with the row: the next one, or the tab when none is left.
+    (
+      next?.shadowRoot?.querySelector<HTMLElement>('[part="remove-button"]') ??
+      root.querySelector<HTMLElement>('punk-tab[panel$="-logistics"]')
+    )?.focus();
+    notify(root, `Removed ${event.detail.value}.`, 'info');
+  };
+
   const liveForm = (event: Event) => showFormData(event.currentTarget as HTMLFormElement);
 
   return html`
@@ -122,6 +140,7 @@ export function applicationShell(): TemplateResult {
           <punk-tab slot="tab" panel="${id}-production">Production</punk-tab>
           <punk-tab slot="tab" panel="${id}-modules">Modules</punk-tab>
           <punk-tab slot="tab" panel="${id}-settings">Settings</punk-tab>
+          <punk-tab slot="tab" panel="${id}-logistics">Logistics</punk-tab>
         </punk-tabs>
 
         <section id="${id}-production">
@@ -137,6 +156,23 @@ export function applicationShell(): TemplateResult {
               max="100"
               show-value
             ></punk-progress-bar>
+            <div class="wb-row" role="group" aria-label="Production readout">
+              <punk-production-stat
+                label="Speed modules"
+                value="42"
+                unit="/min"
+                trend="up"
+                delta="0.08"
+                delta-percent
+              ></punk-production-stat>
+              <punk-production-stat
+                label="Gears"
+                value="310"
+                unit="/min"
+                delta="-12"
+              ></punk-production-stat>
+              <punk-production-stat label="Circuits" unit="/min"></punk-production-stat>
+            </div>
             <div class="wb-row">
               <punk-status-light variant="success">Running</punk-status-light>
               <punk-status-light variant="warning">Coolant low</punk-status-light>
@@ -202,6 +238,36 @@ export function applicationShell(): TemplateResult {
             </div>
             <output class="wb-mono" style="white-space: pre-wrap"></output>
           </form>
+        </section>
+
+        <section id="${id}-logistics">
+          <div class="wb-stack">
+            <punk-connection-row
+              removable
+              value="belt-1"
+              status="success"
+              @punk-remove=${removeBelt}
+            >
+              <span slot="source">Gear line</span>
+              <span slot="destination">Assembler 03</span>
+              <span slot="status">Running</span>
+            </punk-connection-row>
+            <punk-connection-row
+              removable
+              value="belt-2"
+              status="warning"
+              direction="backward"
+              @punk-remove=${removeBelt}
+            >
+              <span slot="source">Circuit line</span>
+              <span slot="destination">Assembler 03</span>
+              <span slot="status">Waiting for input</span>
+            </punk-connection-row>
+            <punk-connection-row value="belt-3" direction="both">
+              <span slot="source">Assembler 03</span>
+              <span slot="destination">Chest</span>
+            </punk-connection-row>
+          </div>
         </section>
 
         <punk-button slot="footer" variant="primary" @click=${start}>Resume</punk-button>

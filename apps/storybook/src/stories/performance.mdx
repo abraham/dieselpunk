@@ -1,0 +1,67 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Guides/Performance" />
+
+# Performance
+
+What the library costs, and how to keep a page that uses a lot of it cheap. Frame times on a build runner are too noisy to assert, so the tests count what makes a page cheap: listeners, observers, elements, style sheets, renders, and layout reads.
+
+## Budgets
+
+Sizes are gzip, measured with the shared parts counted once.
+
+| Entry                                    | Size            | Limit   |
+| ---------------------------------------- | --------------- | ------- |
+| Shared runtime and tokens                | 8.2 kB          | 12 kB   |
+| `production-stat`                        | 4.96 kB         | 5 kB    |
+| `connection-row`                         | 5.24 kB         | 5.25 kB |
+| a locale module of `@dieselpunk/locales` | 0.58 to 0.75 kB | 1 kB    |
+| `@dieselpunk/locales` (the loader)       | 0.81 kB         | 1 kB    |
+| `@dieselpunk/locales/document`           | 0.33 kB         | 0.5 kB  |
+
+Import what you use, from its `register.js`: an entry brings the components it needs and nothing else, and no entry brings another family. The row is over 5 kB because it carries the close button and the status shapes (3.4 kB), which the window and the toast carry as well. Each entry that renders a message also carries about 0.4 kB of the localization runtime, once per page.
+
+## What one component costs
+
+|                                                | Stat                                  | Connection row                                                   |
+| ---------------------------------------------- | ------------------------------------- | ---------------------------------------------------------------- |
+| Elements in its shadow tree                    | at most 16                            | at most 18                                                       |
+| Listeners on the page, the window, or the host | none                                  | none                                                             |
+| Listener on its own parts                      | none                                  | one `click`, on the remove button, and none when not `removable` |
+| Observers, timers, animations                  | none                                  | none                                                             |
+| Style sheets                                   | the class's, shared by every instance | the class's, shared by every instance                            |
+
+The element count does not depend on the value, the label, or the status. A page with a thousand of them holds no more of anything per instance than a page with one.
+
+## Updating many stats
+
+Set the `value` property. Setting a property to the value it has renders nothing; a new value renders that stat once, and nothing else is drawn. Setting two hundred values in one task renders each stat once, and reads no layout. A dashboard of 200 stats and 200 rows renders in about 70 ms, and one `setLocale` over it takes about 10 to 20 ms.
+
+```ts
+for (const [index, stat] of stats.entries()) stat.value = readings[index];
+```
+
+Do not set `announce` on a stat that updates every second: a live region is read out each time. The **Examples / Production dashboard** updates stats once a second, never moves focus, never announces, and has a **Pause updates** switch, since content that updates by itself must be pausable.
+
+A row reads the text of its `source` and `destination` slots when it connects and on `slotchange`, and never when it renders, so re-rendering a row does not touch the DOM of its content. A text edit inside a slotted node is not a slot change; set `remove-label` when the text changes that way.
+
+## Long lists
+
+For a list of hundreds, let the browser skip the work for what is off screen. The library does not set this, because it changes how find-in-page, focus, and scroll anchoring behave in some browsers, so it is yours to turn on, on the host:
+
+```css
+punk-connection-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 60px;
+}
+```
+
+A thousand rows laid out in about 5 ms, and in about 1 ms with this, in Chromium on a development machine (22 and 4 ms on Linux in Chromium, 67 and 49 in Firefox, 118 and 92 in WebKit). What was tested: all three engines, and that a row's name and button are still reached. What was not tested: a screen reader's list view over skipped rows, which depends on the screen reader. Test it with the one your users have.
+
+## Virtualization is your job
+
+The components do not virtualize. A list of tens of thousands of rows needs a virtual list in the application, which creates only the rows near the viewport. Each row is an ordinary element that can be created and removed freely, and nothing else holds a reference to it.
+
+## The idle library
+
+With every component on the page and no input, nothing runs: no animation frame, no timer, no interval, and no animation is pending. The only observers are the ones that are the point: a toolbar that does not wrap watches its own size, a select copies its options when they change, and an open tooltip keeps its position. A closed overlay holds no listener; an open window or tooltip holds one for Escape, and every component that renders a message shares one listener for locale changes.

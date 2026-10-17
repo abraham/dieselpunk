@@ -159,6 +159,17 @@ A validation message waits until the user has left the field, or a form has repo
 
 The two steppers of a number field are for a pointer only: they are out of the tab order and the accessibility tree, since Up and Down already serve everyone else. Each is 24px wide and 12px tall; the keys are the equivalent control (WCAG 2.2, SC 2.5.8). In a toolbar these fields are their own tab stop, since they need the arrow keys.
 
+## Production stats and connection rows
+
+Neither has a role of its own. Each draws its words as text in reading order, so a screen reader reads them in sequence.
+
+- **Stat.** The label, the value, the unit, the trend word, and the change read in that order. The trend is a shape and a word ("up", "down", "unchanged"), never color alone, and the value is formatted for the page's language. A stat is **not focusable** and has no key. With `announce` the host is a polite `role="status"`; leave it off for a stat that updates, or a dashboard reads out every update.
+- **Connection row.** Source, the direction as a word ("to", "from", "to and from"), destination, details, and status text read in that order, then the remove button. The button is the row's **only tab stop**; `Enter` and `Space` press it. Its name is "Remove connection: source, destination", or `remove-label`. The row sends `punk-remove` and removes nothing, so the application moves focus after a removal: to the next row's button, or to the list's heading after the last. See the removal pattern on the Connection Row page.
+- **Status** is a shape in a lens as well as text: a ring, a diamond, a circle, a triangle, and a square, so color is never the only cue.
+- **Right to left.** The arrow flips, the nodes keep their DOM order, and the button is at the inline end. Below 360px of row width the nodes stack and the arrow points down or up.
+- **Forced colors.** Both plates keep a 2px border. The three trends and the five statuses stay apart by shape, and the arrow and the button's X use `ButtonText`. A disabled button uses `GrayText`.
+- **Reflow.** Nothing scrolls sideways at 187px, with a long label, long node names, or a twelve-digit value. The stat's value reserves a width, so a changing number does not move what is beside it.
+
 ## Keyboard focus
 
 The focus ring appears on `:focus-visible`, so keyboard users always get one, and it is never removed without a replacement. A tooltip opens when its anchor receives keyboard focus, and Escape closes it without moving focus.

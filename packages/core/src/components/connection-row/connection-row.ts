@@ -80,7 +80,10 @@ export class PunkConnectionRow extends PunkElement {
   readonly #presence = new SlotPresence(this, ['source', 'destination', '', 'status']);
   #problems = new Set<string>();
 
-  // The text of a slot's nodes, read when the row draws.
+  // The text of the two nodes, read when the row connects and on `slotchange`, so a render reads none.
+  #source = '';
+  #destination = '';
+
   #slotText(name: string): string {
     return Array.from(this.children)
       .filter((child) => (child.getAttribute('slot') ?? '') === name)
@@ -90,7 +93,18 @@ export class PunkConnectionRow extends PunkElement {
       .trim();
   }
 
+  #readNodes(): void {
+    this.#source = this.#slotText('source');
+    this.#destination = this.#slotText('destination');
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.#readNodes();
+  }
+
   readonly #onSlotChange = (): void => {
+    this.#readNodes();
     this.#presence.handleSlotChange();
     this.requestUpdate();
   };
@@ -121,8 +135,8 @@ export class PunkConnectionRow extends PunkElement {
 
   #removeName(): string {
     if (this.removeLabel) return this.removeLabel;
-    const source = this.#slotText('source');
-    const destination = this.#slotText('destination');
+    const source = this.#source;
+    const destination = this.#destination;
     return msg(str`Remove connection: ${source}, ${destination}`, {
       id: 'removeConnection',
       desc: 'The name of the button that removes a connection, with the text of its two nodes.',

@@ -61,6 +61,8 @@ const preview: Preview = {
       storySort: {
         order: [
           'Overview',
+          'Examples',
+          ['Production dashboard', 'Logistics network', 'Interface settings'],
           'Foundations',
           ['Colors', 'Scales', 'Surfaces', 'Machine panel', 'Asset policy'],
           'Components',
@@ -77,6 +79,8 @@ const preview: Preview = {
             'Recipe',
             'Meter',
             'Status Light',
+            'Production Stat',
+            'Connection Row',
             'Stack',
             'Cluster',
             'Accordion',
@@ -102,6 +106,8 @@ const preview: Preview = {
             'Forms',
             'Focus and overlays',
             'Responsive layouts',
+            'Localization',
+            'Performance',
             'Accessibility and layout',
           ],
         ],

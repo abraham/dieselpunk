@@ -1,0 +1,94 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { messages } from '../lib/message-table.ts';
+
+<Meta title="Guides/Localization" />
+
+# Localization
+
+The components write the words they render with [Lit Localize](https://lit.dev/docs/localization/overview/): each word is a `msg()` call in English, with an id and a description, so English works with no setup. `@dieselpunk/locales` holds translations for German (`de`), French (`fr`), Spanish (`es`), Japanese (`ja`), and Arabic (`ar`, right to left). They are **drafts** until a native reader has reviewed them, and each carries that status in `locales`.
+
+The **Examples / Interface settings** story switches every language, and is the quickest way to see what changes.
+
+## Configure it once
+
+Lit Localize is configured once for a page, by the application, in runtime mode. Pass the package's loader to it:
+
+```ts
+import { configureLocalization } from '@lit/localize';
+import { sourceLocale, targetLocales, loadLocale } from '@dieselpunk/locales';
+import { bindDocumentLocale } from '@dieselpunk/locales/document';
+
+export const { getLocale, setLocale } = configureLocalization({
+  sourceLocale,
+  targetLocales,
+  loadLocale,
+});
+
+bindDocumentLocale();
+await setLocale('de');
+```
+
+`loadLocale` imports each language with its own dynamic `import()`, so a bundler gives each language its own chunk and a page fetches only the ones it uses. A code outside `targetLocales` rejects, and English has no module: it is the source.
+
+`bindDocumentLocale(root = document.documentElement)` adds one listener for `lit-localize-status`. When a locale becomes ready it sets `lang` on `root`, and `dir` from the `locales` list (`ar` is `rtl`). It returns the function that removes the listener. The page's `lang` and `dir` are the application's to set, and the components' numbers and layout follow them, so call it, or set them yourself.
+
+The application and the library must resolve **one copy** of `@lit/localize`: the configuration is module state, and a second copy would never hear `setLocale`. The package check and the consumer check both test it.
+
+## Your own messages
+
+`loadLocale` returns one module, so an application with messages of its own merges them with the library's:
+
+```ts
+import { loadLocale as loadLibrary, mergeLocaleModules } from '@dieselpunk/locales';
+
+const loadLocale = (code: string) =>
+  mergeLocaleModules(loadLibrary(code), import(`./generated/locales/${code}.js`));
+```
+
+A later module wins an id that both have, so an application can also reword one of the library's messages.
+
+## The live update
+
+`setLocale` changes the words of every component that is on the page, once, in one task, after the locale is ready. A component that renders no message is not drawn again, and one that is not on the page is drawn in the active locale when it arrives. Nothing is created again.
+
+## Writing a translation
+
+The XLIFF files in `packages/locales/xliff/` are the source of the translations: send one to a translator, and overwrite it with what comes back. `npm run extract` in the package updates them when a message is added, and `npm run check:strings` at the root fails when they are out of date. The rules, which `npm run check:locales` enforces:
+
+- Read the note: it is the description, and says where the word appears.
+- Translate the meaning of the phrase, not its words.
+- Keep each placeholder (`${count}`) exactly as it is, and never split one. The placeholders of a translation must be those of its source, in any order.
+- No leading or trailing whitespace, no control character, and none of U+202A to U+202E or U+2066 to U+2069, which would leak into the page around the message.
+- Write `invalidField` as a word that is correct before a colon: the component capitalizes it with CSS where the language has capitals.
+- Keep `moving` as one sentence, since it is read aloud as one.
+- Prefer a form that needs no plural. Messages have no plural forms.
+- A locale in `locales` needs a canonical language tag, an XLIFF file, and the `dir` that `Intl` gives.
+
+## What does not change
+
+- **The browser's validation messages** ("Please fill out this field.") follow the browser's language, not the locale. The words around them, such as "invalid", are the library's.
+- **One locale per page.** Lit Localize has one active locale, so a subtree in another language gets the same words as the rest. Set `lang` on it for the numbers and the screen reader's voice.
+- **Your own text.** Labels, node names, and other text that you pass in are yours to translate.
+
+## Every message
+
+<table>
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>English</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    {messages.map((message) => (
+      <tr key={message.id}>
+        <td>
+          <code>{message.id}</code>
+        </td>
+        <td>{message.english}</td>
+        <td>{message.description}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
