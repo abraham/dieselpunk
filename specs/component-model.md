@@ -168,5 +168,4 @@ Several containers manage light-DOM children they do not render: the slot grid i
 
 ## Gaps
 
-- **`position.ts` is tested in the browser.** It is pure, but its tests are a Vitest file beside it. Closing it: move them to `test/position.test.ts` under `node --test`.
 - **Protocol members are public** ([package-contract.md](package-contract.md) Gaps).

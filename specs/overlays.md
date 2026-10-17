@@ -132,7 +132,7 @@ An interactive anchored surface: `for`, `placement` (default `bottom`), `mode` (
 
 ## Verification
 
-- Node: `overlay-stack.test.ts`, `window-position.test.ts`, `toast-timer.test.ts`. `computePosition` has its own unit tests in `src/utilities/position.test.ts`.
+- Node: `overlay-stack.test.ts`, `window-position.test.ts`, `toast-timer.test.ts`, and `position.test.ts` for `computePosition`.
 - Browser: each component's tests, `modal.test.ts`, `anchor.test.ts`, and `test/browser/focus.test.ts` (inertness, initial focus, trapping, focus return including a moved or removed opener, the scroll-lock count, the Escape order across tooltip, popover, and window, absorbing entries, backdrop clicks, move mode, toasts inside and outside a modal). `drawer.test.ts`: modal and not, focus in and back, Escape and the close button, each edge in both directions, the size property, the slide; `drawer.reduced-motion.test.ts`.
 - `perf-shell.test.ts`: no listener or observer with every overlay closed; one `keydown` listener for any number of open overlays, removed with the last; the popover's listeners and observer only while open; ten toasts hold ten timers, none while hovered.
 - `overlays-a11y.test.ts`, the `overlays` visual group (each overlay open on its own page, including a window in move mode, a drawer, and a menu), and `aria.spec.ts`.
