@@ -45,7 +45,7 @@
     "check:strings": "node scripts/check-strings.ts",
     "check:locales": "node scripts/check-locales.ts",
     "check:package": "node scripts/check-package.ts && publint --strict && attw --pack . --profile esm-only",
-    "check:size": "size-limit",
+    "check:size": "node ../core/scripts/check-size-reasons.ts && size-limit",
     "pretest:node": "npm run generate",
     "pretest:browser": "npm run generate",
     "test": "npm run test:node && npm run test:browser",
