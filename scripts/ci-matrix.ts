@@ -254,6 +254,85 @@ function countWorkbenchEntries(): number {
   }
 }
 
+/** Whether a change touches only prose and repository settings, so only `static` runs (specs/ci.md §7). */
+export function onlyProse(files: readonly string[]): boolean {
+  return (
+    files.length > 0 &&
+    files.every(
+      (file) =>
+        file.startsWith('specs/') ||
+        (file.endsWith('.md') && !file.startsWith('apps/storybook/')) ||
+        file === '.github/dependabot.yml',
+    )
+  );
+}
+
+/** The files a pull request changes. CI checks out its merge commit, whose first parent is the base. */
+function changedFiles(): string[] {
+  return execFileSync('git', ['diff', '--name-only', 'HEAD^1', 'HEAD'], { encoding: 'utf8' })
+    .split('\n')
+    .filter(Boolean);
+}
+
+/** The target duration of each job family, in minutes (specs/ci.md §9). */
+export const targetMinutes: Record<string, number> = {
+  plan: 1,
+  static: 2,
+  integration: 3,
+  smoke: 3,
+  browser: 4,
+  visual: 4,
+};
+
+export interface JobTiming {
+  name: string;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+const clock = (seconds: number) =>
+  `${Math.floor(seconds / 60)}m ${String(Math.round(seconds % 60)).padStart(2, '0')}s`;
+
+/** A Markdown table of the slowest jobs against their targets. */
+export function budgetReport(jobs: readonly JobTiming[], limit = 10): string {
+  const rows = jobs
+    .flatMap(({ name, started_at, completed_at }) => {
+      const target = targetMinutes[name.split(/[\s(/]/)[0] ?? ''];
+      if (!target || !started_at || !completed_at) return [];
+      const seconds = (Date.parse(completed_at) - Date.parse(started_at)) / 1000;
+      return [{ name, seconds, target }];
+    })
+    .sort((a, b) => b.seconds - a.seconds)
+    .slice(0, limit);
+  const lines = rows.map(({ name, seconds, target }) => {
+    const share = Math.round((seconds / (target * 60)) * 100);
+    return `| ${name} | ${clock(seconds)} | ${target}m | ${share}%${share > 100 ? ' (over)' : ''} |`;
+  });
+  return ['| Job | Took | Target | Of target |', '| --- | --- | --- | --- |', ...lines].join('\n');
+}
+
+/** The jobs of the last successful CI run on `main`, from the GitHub API. */
+async function lastRunOnMain(): Promise<{ url: string; jobs: JobTiming[] } | undefined> {
+  const api = process.env['GITHUB_API_URL'] ?? 'https://api.github.com';
+  const repository = process.env['GITHUB_REPOSITORY'];
+  const headers = {
+    authorization: `Bearer ${process.env['GITHUB_TOKEN']}`,
+    accept: 'application/vnd.github+json',
+  };
+  const get = async <T>(path: string): Promise<T> => {
+    const response = await fetch(`${api}/repos/${repository}/${path}`, { headers });
+    if (!response.ok) throw new Error(`GET ${path}: ${response.status}`);
+    return (await response.json()) as T;
+  };
+  const { workflow_runs: runs } = await get<{
+    workflow_runs: Array<{ id: number; html_url: string }>;
+  }>('actions/workflows/ci.yml/runs?branch=main&status=success&per_page=1');
+  const run = runs[0];
+  if (!run) return undefined;
+  const { jobs } = await get<{ jobs: JobTiming[] }>(`actions/runs/${run.id}/jobs?per_page=100`);
+  return { url: run.html_url, jobs };
+}
+
 function listVisualTests(): Count[] {
   const core = fileURLToPath(new URL('../packages/core/', import.meta.url));
   const report = execFileSync('npx', ['playwright', 'test', '--list', '--reporter=json'], {
@@ -273,19 +352,38 @@ if (import.meta.main) {
   const visual = planVisual(listVisualTests(), visualBudget, selection);
   const entries = countWorkbenchEntries();
   const smoke = planSmoke(entries);
+  // A push to `main` always runs everything; a pull request of prose runs `static` alone.
+  const prose = process.env['GITHUB_EVENT_NAME'] === 'pull_request' && onlyProse(changedFiles());
   const output = process.env['GITHUB_OUTPUT'];
   if (output) {
-    appendFileSync(output, `visual=${JSON.stringify(visual)}\nsmoke=${JSON.stringify(smoke)}\n`);
+    appendFileSync(
+      output,
+      `visual=${JSON.stringify(visual)}\nsmoke=${JSON.stringify(smoke)}\nfull=${!prose}\n`,
+    );
   } else {
-    console.log(JSON.stringify({ visual, smoke }, null, 2));
+    console.log(JSON.stringify({ visual, smoke, full: !prose }, null, 2));
   }
   const summary = process.env['GITHUB_STEP_SUMMARY'];
   if (summary) {
     const rows = visual.map((job) => `| ${job.name} |`).join('\n');
     appendFileSync(
       summary,
-      `### Visual jobs\n\n| Job |\n| --- |\n${rows}\n\n` +
+      (prose ? 'This change is prose only, so only `static` runs.\n\n' : '') +
+        `### Visual jobs\n\n| Job |\n| --- |\n${rows}\n\n` +
         `### Smoke\n\n${entries} workbench entries in ${smoke.length} part(s).\n`,
     );
+    if (process.env['GITHUB_TOKEN']) {
+      // The report is information, not a gate, so a failed request only notes itself.
+      let report: string;
+      try {
+        const last = await lastRunOnMain();
+        report = last
+          ? `The slowest jobs of [the last run on main](${last.url}):\n\n${budgetReport(last.jobs)}`
+          : 'No successful run on main yet.';
+      } catch (error) {
+        report = `Unavailable: ${(error as Error).message}`;
+      }
+      appendFileSync(summary, `\n### Budgets\n\n${report}\n`);
+    }
   }
 }

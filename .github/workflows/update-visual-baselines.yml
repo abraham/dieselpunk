@@ -19,6 +19,7 @@ on:
 jobs:
   plan:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       visual: ${{ steps.matrix.outputs.visual }}
     steps:

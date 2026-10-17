@@ -26,6 +26,7 @@ jobs:
   visual:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -69,6 +70,7 @@ jobs:
     if: inputs.mode == 'update'
     needs: visual
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup

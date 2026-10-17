@@ -101,7 +101,7 @@ A Node test covers the packing. **Why:** when components double, new groups and 
 
 ## 7. What runs
 
-- **Change detection.** `plan` compares the change with its base: a change limited to `specs/**`, `*.md` outside the workbench, or `.github/dependabot.yml` runs only `static`. Every other change runs everything. A push to `main` always runs everything.
+- **Change detection.** `plan` compares the change with its base (the first parent of the pull request's merge commit): a change limited to `specs/**`, `*.md` outside the workbench, or `.github/dependabot.yml` runs only `static`. Every other change runs everything. A push to `main` always runs everything.
 - **`ci-success`** accepts a skipped job only if `plan` skipped it on purpose; a failed, cancelled, or unexpectedly skipped job fails it.
 - **Superseded runs.** A `concurrency` group keyed on the pull request cancels an older run when a newer commit arrives. Runs on `main` are never cancelled.
 
@@ -114,24 +114,24 @@ A Node test covers the packing. **Why:** when components double, new groups and 
 
 | Job                              | Target, including setup | Timeout    |
 | -------------------------------- | ----------------------- | ---------- |
+| `plan`                           | 1 minute                | 10 minutes |
 | `static`                         | 2 minutes               | 10 minutes |
 | `integration`, each `smoke` part | 3 minutes               | 10 minutes |
 | each `browser` part              | 4 minutes               | 15 minutes |
 | each `visual` job                | 4 minutes               | 15 minutes |
 | the whole run                    | 5 minutes               |            |
 
-The packing cap of §6 is set so a packed job meets its target. The `plan` job writes the previous run's slowest jobs to its summary, so a job creeping toward its target is seen before it misses it. A job that misses its target is split by the matrix, or its suite is made cheaper; the target stays.
+The packing cap of §6 is set so a packed job meets its target. The `plan` job writes the slowest jobs of the last successful run on `main` to its summary, against their targets, so a job creeping toward its target is seen before it misses it. A job that misses its target is split by the matrix, or its suite is made cheaper; the target stays. Jobs outside this table (`ci-success`, the baseline merge, the docs jobs) have a timeout of 5 or 10 minutes.
 
 ## Verification
 
 - `ci-success` is the required check on `main`.
-- A Node test covers `scripts/ci-matrix.ts`: packing, the split by theme, the oversized-unit failure, selections, and change detection. Another covers `scripts/merge-baselines.ts`: what a selection replaces and keeps.
+- A Node test covers `scripts/ci-matrix.ts`: packing, the split by theme, the oversized-unit failure, selections, change detection, and the budget report. Another covers `scripts/merge-baselines.ts`: what a selection replaces and keeps.
 - `test/visual-ci.test.ts` fails if any workflow pins a Playwright image other than the installed version.
 - The budgets of §9 are reported, not asserted; a missed target is visible in the `plan` summary.
 
 ## Gaps
 
-The workflows are the first step toward this design: `plan`, `static`, `integration`, `smoke`, `browser` (one job per engine), `visual` (through `visual.yml`, shared with the baseline workflow), and `ci-success`. Every job sets up through `.github/actions/setup`. `plan` generates the visual and smoke matrices, and the visual tests carry their group, theme, `@cross-engine`, and `@forced` tags. Missing:
+The workflows are the first step toward this design: `plan`, `static`, `integration`, `smoke`, `browser` (one job per engine), `visual` (through `visual.yml`, shared with the baseline workflow), and `ci-success`. Every job sets up through `.github/actions/setup`. `plan` generates the visual and smoke matrices and decides whether a change needs more than `static`, and the visual tests carry their group, theme, `@cross-engine`, and `@forced` tags. Missing:
 
-- **`plan` computes no `browser` matrix.** The gallery suites cannot select groups or themes (`PUNK_GALLERY_GROUPS`, `PUNK_GALLERY_THEMES`), the component tests have no parts, and `browser` runs one job per engine with everything; `integration` and `browser` do not wait for `plan`.
-- **No change detection, no `concurrency` group, no timeouts,** and no budget summary.
+- **`plan` computes no `browser` matrix.** The gallery suites cannot select groups or themes (`PUNK_GALLERY_GROUPS`, `PUNK_GALLERY_THEMES`), the component tests have no parts, and `browser` runs one job per engine with everything.

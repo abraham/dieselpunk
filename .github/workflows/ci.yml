@@ -5,21 +5,40 @@ on:
     branches: [main]
   pull_request:
 
+# A newer commit cancels a pull request's older run; each push to `main` has a group of its own.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  # The plan reads the last run's job durations for its budget summary.
+  actions: read
+
 jobs:
-  # Computes the matrices from the gallery groups, the test listing, and the workbench index (specs/ci.md §6).
+  # Computes the matrices from the gallery groups, the test listing, and the workbench index, and
+  # whether the change needs more than `static` (specs/ci.md §6, §7).
   plan:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       visual: ${{ steps.matrix.outputs.visual }}
       smoke: ${{ steps.matrix.outputs.smoke }}
+      full: ${{ steps.matrix.outputs.full }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The merge commit and its base, to list what the pull request changes.
+          fetch-depth: 2
       - uses: ./.github/actions/setup
       - id: matrix
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/ci-matrix.ts
 
   static:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
@@ -37,7 +56,10 @@ jobs:
 
   # The only checks outside the browser suites that drive a browser.
   integration:
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
@@ -50,7 +72,9 @@ jobs:
   smoke:
     name: smoke (${{ matrix.part }})
     needs: plan
+    if: needs.plan.outputs.full == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -67,7 +91,10 @@ jobs:
 
   browser:
     name: browser (${{ matrix.browser }})
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -83,6 +110,7 @@ jobs:
 
   visual:
     needs: plan
+    if: needs.plan.outputs.full == 'true'
     uses: ./.github/workflows/visual.yml
     with:
       mode: check
@@ -93,10 +121,12 @@ jobs:
     if: always()
     needs: [plan, static, integration, smoke, browser, visual]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
+      # A job may be skipped only when the plan skipped it for a prose-only change.
       - if: >-
           contains(needs.*.result, 'failure') ||
           contains(needs.*.result, 'cancelled') ||
-          contains(needs.*.result, 'skipped')
+          (needs.plan.outputs.full != 'false' && contains(needs.*.result, 'skipped'))
         run: exit 1
       - run: echo "All CI jobs passed."

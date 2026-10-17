@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  budgetReport,
   countTests,
   grepFor,
+  onlyProse,
   parseSelection,
   planSmoke,
   planVisual,
@@ -10,6 +12,32 @@ import {
 import type { Budget, Count } from '../../../scripts/ci-matrix.ts';
 import { themeNames } from '../src/tokens/themes.ts';
 import { groupNames } from './browser/fixtures/groups.ts';
+
+test('a change of specs, Markdown, or the Dependabot settings is prose only', () => {
+  assert.ok(onlyProse(['specs/ci.md', 'README.md', 'packages/core/README.md']));
+  assert.ok(onlyProse(['.github/dependabot.yml']));
+  assert.ok(!onlyProse(['specs/ci.md', 'scripts/ci-matrix.ts']));
+  assert.ok(!onlyProse(['apps/storybook/src/stories/guide.md']));
+  assert.ok(!onlyProse(['.github/workflows/ci.yml']));
+  assert.ok(!onlyProse([]));
+});
+
+test('the budget report lists the slowest jobs against their targets', () => {
+  const at = (seconds: number) => new Date(Date.UTC(2026, 0, 1, 0, 0, seconds)).toISOString();
+  const report = budgetReport(
+    [
+      { name: 'static', started_at: at(0), completed_at: at(90) },
+      { name: 'visual / chromium · shell', started_at: at(0), completed_at: at(300) },
+      { name: 'ci-success', started_at: at(0), completed_at: at(5) },
+      { name: 'smoke (1/1)', started_at: null, completed_at: null },
+    ],
+    2,
+  );
+  assert.deepEqual(report.split('\n').slice(2), [
+    '| visual / chromium · shell | 5m 00s | 4m | 125% (over) |',
+    '| static | 1m 30s | 2m | 75% |',
+  ]);
+});
 
 // The packing of the visual jobs (specs/ci.md §6). Theme names are made up except where the plan
 // checks them against the token source.
