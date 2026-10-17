@@ -207,13 +207,12 @@ The application names the grid with `aria-label`; a missing name warns.
 - Browser: each component's tests cover every key table in `ltr` and `rtl`, both orientations and activation modes, tab-stop survival, events once per user change and never for script changes, ownership restoration, and the warnings.
 - `test/browser/perf.test.ts`: a 100-item grid listens once on itself, reads no layout on a horizontal key and one rectangle per item on a vertical key, changes two `tabindex` values per move, and re-renders only the items whose selection changed.
 - `perf-shell.test.ts`: one `ResizeObserver` per non-wrapping toolbar, none with `wrap`, no layout read on an arrow key.
-- `aria.spec.ts`: slot grid in each mode, tabs with panels inside and beside, toolbar, accordion.
+- `aria.spec.ts`: slot grid in each mode, tabs with panels inside and beside, toolbar, accordion, an open menu with checkable items and a submenu, the toggle group in each mode, and the list with and without selection.
 - `menu.test.ts`: the trigger's ARIA, opening by click and by Down and Up, every key of the table in both directions, typeahead, checkbox and radio items, disabled items, submenus, Escape order, Tab, presses outside, context menus, listeners only while open, and the warnings. `toggle-group.test.ts` and `list.test.ts`: roles in each mode, keys in both directions, events once per user change and never for script changes, initial state from markup, ownership restoration, and the warnings.
 
 ## Gaps
 
 - **Tabs reimplement roving.** `punk-tabs` handles keys itself because `RovingController` has no hook for activation. Closing it: give the controller an `onMove(item, key)` hook that tabs use for automatic and manual activation, and delete the duplicate key handling.
 - **The listbox grid's screen reader behavior is unverified** ([accessibility.md](accessibility.md) Gaps).
-- **The new families have no ARIA snapshots.** The menu, toggle group, and list are covered by their component tests and the gallery's axe runs, not by `aria.spec.ts`. Closing it: snapshot each mode in the three engines.
 - **Menus open by click and keys, not by hovering.** A submenu does not open when the pointer rests on its item. Closing it: open after a short delay on pointer hover and close when the pointer leaves toward another item, keeping the keyboard model unchanged.
 - **The toggle group and list repeat the slot grid's ownership bookkeeping,** which [component-model.md](component-model.md) Gaps already asks to extract into one protocol.

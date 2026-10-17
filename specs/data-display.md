@@ -47,8 +47,8 @@
 - `badge.test.ts`: shapes and their absence for `neutral`, contrast of text and shapes in every theme, the name of the holding element, wrapping, and the warning.
 - `spinner.test.ts` and `spinner.reduced-motion.test.ts`: the status text and its locale, slotted text, sizes, the ring stopping under reduced motion.
 - The `data` gallery group: axe, reflow, manifest, strings, and the visual matrix.
+- `aria.spec.ts`: a sorted table with a selected row, an announcing alert, a badge in a button, and a spinner, in the three engines.
 
 ## Gaps
 
-- **No ARIA snapshots.** The four components are covered by their tests and the gallery's axe runs, not by `aria.spec.ts`. Closing it: snapshot a sorted, selected table, an announcing alert, a badge in a button, and a spinner in the three engines.
 - **The table's stylesheet stays after the last table leaves a root.** It is scoped to `punk-table > table` and has no effect without one, so it is harmless; closing it would need a count of tables per root.

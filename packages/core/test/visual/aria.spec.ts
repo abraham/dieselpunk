@@ -335,6 +335,291 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
+  test('radio group', { tag: at('inputs') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-radio-group label="Power source" required>
+         <punk-radio value="coal">Coal</punk-radio>
+         <punk-radio value="solar" checked>Solar</punk-radio>
+         <punk-radio value="wind" disabled>Wind</punk-radio>
+       </punk-radio-group>
+       <punk-radio-group aria-label="Belt speed" disabled>
+         <punk-radio value="slow" checked>Slow</punk-radio>
+       </punk-radio-group>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - text: Power source
+      - radiogroup "Power source":
+        - radio "Coal"
+        - radio "Solar" [checked]
+        - radio "Wind" [disabled]
+      - radiogroup "Belt speed" [disabled]:
+        - radio "Slow" [checked] [disabled]
+    `);
+  });
+
+  test('textarea and combobox', { tag: at('inputs') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-textarea label="Notes" value="Belt 3" show-count maxlength="40"></punk-textarea>
+       <punk-combobox label="Item" value="cu">
+         <option value="fe">Iron plate</option>
+         <option value="cu">Copper plate</option>
+         <option value="st" disabled>Steel plate</option>
+       </punk-combobox>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - text: Notes
+      - textbox "Notes": Belt 3
+      - text: 6/40 Item
+      - combobox "Item"
+    `);
+    await expect(page.getByRole('textbox', { name: 'Notes' })).toHaveAccessibleDescription('6/40');
+    await page.getByRole('combobox', { name: 'Item' }).press('ArrowDown');
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - combobox "Item" [expanded]
+      - listbox "Item":
+        - option "Iron plate"
+        - option "Copper plate" [selected]
+        - option "Steel plate" [disabled]
+    `);
+  });
+
+  test('fieldset', { tag: at('inputs') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-fieldset label="Cooling">
+         <punk-switch checked>Pumps</punk-switch>
+         <span slot="hint">Every reactor</span>
+         <span slot="error">Turn on a pump</span>
+       </punk-fieldset>
+       <punk-fieldset label="Remote" disabled>
+         <punk-checkbox>Shutdown</punk-checkbox>
+       </punk-fieldset>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - group "Cooling":
+        - text: Cooling Every reactor
+        - switch "Pumps" [checked]
+        - text: Turn on a pump
+      - group "Remote":
+        - text: Remote
+        - checkbox "Shutdown" [disabled]
+    `);
+    await expect(page.getByRole('group', { name: 'Cooling' })).toHaveAccessibleDescription(
+      'Every reactor Turn on a pump',
+    );
+  });
+
+  test('toggle group in each mode', { tag: at('navigation') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-toggle-group aria-label="View">
+         <button value="grid" aria-checked="true">Grid</button>
+         <button value="list">List</button>
+         <button value="map" disabled>Map</button>
+       </punk-toggle-group>
+       <punk-toggle-group aria-label="Show" selection="multiple">
+         <button value="belts" aria-pressed="true">Belts</button>
+         <button value="pipes">Pipes</button>
+       </punk-toggle-group>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - radiogroup "View":
+        - radio "Grid" [checked]
+        - radio "List"
+        - radio "Map" [disabled]
+      - group "Show":
+        - button "Belts" [pressed]
+        - button "Pipes"
+    `);
+  });
+
+  const listItems = `
+    <punk-list-item value="fe">Iron plate<span slot="end">12</span></punk-list-item>
+    <punk-list-item value="cu" selected>Copper plate</punk-list-item>
+    <punk-list-item value="st" disabled>Steel plate</punk-list-item>`;
+
+  test('list without selection', { tag: at('navigation') }, async ({ page }) => {
+    await render(page, `<punk-list aria-label="Stock">${listItems}</punk-list>`);
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - list "Stock":
+        - listitem: Iron plate 12
+        - listitem: Copper plate
+        - listitem: Steel plate
+    `);
+  });
+
+  test('list with multiple selection', { tag: at('navigation') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-list aria-label="Stock" selection="multiple">${listItems}</punk-list>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - listbox "Stock":
+        - option "Iron plate 12"
+        - option "Copper plate" [selected]
+        - option "Steel plate" [disabled]
+    `);
+  });
+
+  test('breadcrumb and pagination', { tag: at('navigation') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-breadcrumb max-items="3">
+         <punk-breadcrumb-item href="#base">Base</punk-breadcrumb-item>
+         <punk-breadcrumb-item href="#north">North works</punk-breadcrumb-item>
+         <punk-breadcrumb-item href="#line">Line 2</punk-breadcrumb-item>
+         <punk-breadcrumb-item current>Settings</punk-breadcrumb-item>
+       </punk-breadcrumb>
+       <punk-pagination page="5" pages="12"></punk-pagination>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - navigation "Breadcrumb":
+        - list:
+          - listitem:
+            - link "Base":
+              - /url: "#base"
+          - listitem:
+            - button "Show full path"
+          - listitem:
+            - link "Line 2":
+              - /url: "#line"
+          - listitem: Settings
+      - navigation "Pagination":
+        - list:
+          - listitem:
+            - button "Previous page"
+          - listitem:
+            - button "Page 1": "1"
+          - listitem:
+            - button "Page 4": "4"
+          - listitem:
+            - button "Page 5": "5"
+          - listitem:
+            - button "Page 6": "6"
+          - listitem:
+            - button "Page 12": "12"
+          - listitem:
+            - button "Next page"
+    `);
+  });
+
+  test(
+    'menu, open, with checkable items and a submenu',
+    { tag: at('overlays') },
+    async ({ page }) => {
+      await render(
+        page,
+        `<punk-button>File</punk-button>
+       <punk-menu open>
+         <punk-menu-item value="new">New<span slot="shortcut">Ctrl+N</span></punk-menu-item>
+         <punk-menu-item value="save" disabled>Save</punk-menu-item>
+         <punk-menu-item value="export">Export</punk-menu-item>
+         <punk-menu><punk-menu-item value="png">As image</punk-menu-item></punk-menu>
+         <hr>
+         <punk-menu-item type="checkbox" value="grid" checked>Show grid</punk-menu-item>
+         <punk-menu-item type="radio" value="small" checked>Small</punk-menu-item>
+         <punk-menu-item type="radio" value="large">Large</punk-menu-item>
+       </punk-menu>`,
+      );
+      await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - button "File" [expanded]
+      - menu:
+        - menuitem "New"
+        - menuitem "Save" [disabled]
+        - menuitem "Export"
+        - separator
+        - menuitemcheckbox "Show grid" [checked]
+        - menuitemradio "Small" [checked]
+        - menuitemradio "Large"
+    `);
+    },
+  );
+
+  test('drawer, open', { tag: at('overlays') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-drawer heading="Filters" modal open>
+         <p>Show belts</p>
+         <punk-button slot="footer">Apply</punk-button>
+       </punk-drawer>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - dialog "Filters":
+        - text: Filters
+        - button "Close"
+        - paragraph: Show belts
+        - button "Apply"
+    `);
+  });
+
+  test('table, sorted, with a row selected', { tag: at('data') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-table sort-key="name">
+         <table>
+           <caption>Stock</caption>
+           <thead><tr>
+             <th><input type="checkbox" data-punk-select-all aria-label="Select all"></th>
+             <th data-sort="name"><button type="button">Item</button></th>
+             <th data-sort="count"><button type="button">Count</button></th>
+           </tr></thead>
+           <tbody>
+             <tr data-value="fe"><td><input type="checkbox" data-punk-select aria-label="Select Iron" checked></td><th scope="row">Iron</th><td>120</td></tr>
+             <tr data-value="cu"><td><input type="checkbox" data-punk-select aria-label="Select Copper"></td><th scope="row">Copper</th><td>80</td></tr>
+           </tbody>
+         </table>
+       </punk-table>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - table "Stock":
+        - caption: Stock
+        - rowgroup:
+          - row "Select all Item Count":
+            - columnheader "Select all":
+              - checkbox "Select all" [checked=mixed]
+            - columnheader "Item":
+              - button "Item"
+            - columnheader "Count":
+              - button "Count"
+        - rowgroup:
+          - row "Select Iron Iron 120":
+            - cell "Select Iron":
+              - checkbox "Select Iron" [checked]
+            - rowheader "Iron"
+            - cell "120"
+          - row "Select Copper Copper 80":
+            - cell "Select Copper":
+              - checkbox "Select Copper"
+            - rowheader "Copper"
+            - cell "80"
+    `);
+    await expect(page.getByRole('columnheader', { name: 'Item' })).toHaveAttribute(
+      'aria-sort',
+      'ascending',
+    );
+  });
+
+  test('alert, badge, and spinner', { tag: at('data') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-alert variant="warning" heading="Belt blocked" dismissible>Clear it.</punk-alert>
+       <punk-alert variant="danger" announce>Reactor offline</punk-alert>
+       <punk-button>Alerts <punk-badge variant="warning">3</punk-badge></punk-button>
+       <punk-spinner></punk-spinner>
+       <punk-spinner>Loading recipes</punk-spinner>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - text: Belt blocked Clear it.
+      - button "Dismiss"
+      - alert: Reactor offline
+      - button "Alerts 3"
+      - status: Loading
+      - status: Loading recipes
+    `);
+  });
+
   const sparkline =
     '<svg slot="sparkline" viewBox="0 0 8 4" aria-hidden="true"><path d="M0 4 8 0"/></svg>';
 
