@@ -1,7 +1,7 @@
 # Layout and Actions
 
-**Scope:** the structural surfaces and layout primitives (panel, divider, stack, cluster) and the buttons (the shared button base, button, icon button).
-**Code:** `src/components/panel/`, `divider/`, `stack/`, `cluster/`, `button/`, `icon-button/`; `src/internal/button-base.ts`, `button-base.styles.ts`, `slot-presence.ts`; `src/styles/density.ts`, `gap.ts`, `surfaces.ts`, `texture.ts`.
+**Scope:** the structural surfaces and layout primitives (panel, divider, stack, cluster), the buttons (the shared button base, button, icon button), and the page navigation (breadcrumb, pagination).
+**Code:** `src/components/panel/`, `divider/`, `stack/`, `cluster/`, `button/`, `icon-button/`, `breadcrumb/`, `pagination/`; `src/internal/button-base.ts`, `button-base.styles.ts`, `slot-presence.ts`; `src/styles/density.ts`, `gap.ts`, `surfaces.ts`, `texture.ts`.
 
 ## 1. Panel
 
@@ -61,6 +61,26 @@ A square, icon-only button: one icon in the default slot (inline SVG in `current
 - **Loading** hides the icon and shows the spinner; the name, size, and tooltip are unchanged.
 - The base's inline padding is zeroed; `--punk-button-padding-inline` is not part of its API.
 
+## 7. Breadcrumb
+
+`punk-breadcrumb` with `punk-breadcrumb-item` children: the path to the current page.
+
+- **Semantics.** A `nav` landmark named by `label`, else the localized "Breadcrumb", around an `<ol>`. Each item host is `role="listitem"`; it renders a native link to `href`, named by its slotted text, or text when it has no `href`. A `current` item has `aria-current="page"` and is not underlined.
+- **Separators** are a slash shape before every item but the first, hidden from assistive technology and mirrored in `rtl`. Items wrap onto more lines and never scroll sideways.
+- **Collapsing.** With `max-items` (2 or more), a longer path shows its first item and its last `max-items - 1`; a native button named by the localized "Show full path" (showing an ellipsis) stands where the others were. Activating it shows them all and moves focus to the first revealed link. **Why** not a menu: the catalog's "collapse into a menu" would render another family's component ([component-model.md §9](component-model.md)), and revealing in place keeps every link in the list, in order.
+- **Ownership.** To place the button after the first item, the breadcrumb puts the other items in its `rest` slot by writing their `slot`, and hides collapsed ones with `hidden`, as the toast stack writes its toasts' `slot`. It gives both back when an item leaves or it disconnects.
+- **Warning:** a child that is not an item.
+
+## 8. Pagination
+
+`punk-pagination`: moving through pages of results the application holds. `page` (from 1), `pages`, `siblings` (default 1), `label`.
+
+- **Semantics.** A `nav` landmark named by `label`, else the localized "Pagination", around a list of native buttons: previous and next (named "Previous page" and "Next page", disabled at the ends) and a button for each page shown, named "Page 3" while it shows "3", with `aria-current="page"` on the current one. Numbers are formatted for the nearest `lang`, in the name as in the text.
+- **Which pages** (`page-window.ts`, pure): the first and last, the current one with `siblings` on each side, and a gap (an ellipsis hidden from assistive technology) for each run left out; a gap never stands for a single page, which is shown instead.
+- **Changes.** A click sets `page` and sends `punk-page-change` with `{ page }`. Focus stays on the pressed button, or moves to the current page when that button is gone or disabled. Setting `page` from script sends nothing.
+- **Repairs.** `pages` below 1 or not a number is 1, and a `page` outside 1 to `pages` is clamped; each warns once per occurrence.
+- **Look.** Raised buttons; the current page is set in with the inset bevel and an `accent` bar along its foot, and under forced colors a double border.
+
 ## Verification
 
 - Each component's tests, including its unstyled appearance, both directions of every property, and its warnings.
@@ -69,6 +89,8 @@ A square, icon-only button: one icon in the default slot (inline SVG in `current
 - Panel and divider tests: variants, empty strips, `density` on a subtree, separator roles and orientation, label rules and the vertical warning.
 - Stack and cluster tests: gap mapping and density, overrides, alignment in both directions, reflow at 187px.
 - `reflow.test.ts` and the `foundation` and `shell` visual groups.
+- Node: `page-window.test.ts`, every page and sibling count up to 30 pages.
+- `breadcrumb.test.ts`: the landmark and its name in each locale, links and the current page, separators, wrapping, collapsing and focus on expand, and ownership restoration. `pagination.test.ts`: the landmark, names and formatting by language, the ends, focus after a change, no event for script changes, and the repairs. Both are in the `navigation` gallery group.
 
 ## Gaps
 

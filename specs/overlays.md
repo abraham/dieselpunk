@@ -1,7 +1,7 @@
 # Overlays and Modality
 
-**Scope:** everything that floats above the page or takes it over: the top layer and its fallback, the Escape stack, modal behavior, anchoring and positioning; and the tooltip, popover, window, dialog, and toast.
-**Code:** `src/internal/overlay-stack.ts`, `overlays.ts`, `modal.ts`, `modal-surface.ts`, `anchor.ts`, `window-position.ts`, `toast-timer.ts`; `src/utilities/position.ts`; `src/styles/modal-surface.ts`, `close-button.ts`; `src/components/tooltip/`, `popover/`, `window/`, `dialog/`, `toast/`.
+**Scope:** everything that floats above the page or takes it over: the top layer and its fallback, the Escape stack, modal behavior, anchoring and positioning; and the tooltip, popover, window, dialog, toast, and drawer. The menu ([keyboard-and-selection.md §10](keyboard-and-selection.md)) and the combobox's list ([forms.md §14](forms.md)) use the same top layer, stack, and positioning.
+**Code:** `src/internal/overlay-stack.ts`, `overlays.ts`, `modal.ts`, `modal-surface.ts`, `anchor.ts`, `window-position.ts`, `toast-timer.ts`; `src/utilities/position.ts`; `src/styles/modal-surface.ts`, `close-button.ts`; `src/components/tooltip/`, `popover/`, `window/`, `dialog/`, `toast/`, `drawer/`.
 
 ## 1. Top layer and fallback
 
@@ -20,7 +20,7 @@ One module-level stack of open overlays per page (`createOverlayStack(target)`, 
 - On Escape the listener calls `stopPropagation()` and `preventDefault()` (so a native `<dialog>` beneath does not also close) and closes the topmost entry if it is dismissible.
 - A **non-dismissible** entry (a `persistent` dialog, a window without `dismissible`) absorbs Escape, so it never falls through to an overlay beneath.
 - A window in move mode pushes a second entry for as long as the mode lasts, so the first Escape cancels the move and the second closes the window.
-- Toasts are not on the stack. A tooltip is, so a tooltip over a popover over a window closes in that order.
+- Toasts are not on the stack. A tooltip is, so a tooltip over a popover over a window closes in that order. Each open menu and submenu, and an open combobox list, is an entry too, so Escape closes a submenu before its menu, and a combobox list before the dialog it is in.
 
 ## 3. Modality
 
@@ -120,12 +120,22 @@ An interactive anchored surface: `for`, `placement` (default `bottom`), `mode` (
 - **Dismissal:** `dismiss(reason)` (default `method`) sends `punk-dismiss`, which is cancelable so an application that owns the toast's lifetime can remove it itself. Unless cancelled the toast fades out, waits for its animations' `finished` (not a timer), and removes itself. Under reduced motion it goes at once.
 - **Warning:** no text.
 
+## 11. Drawer
+
+`punk-drawer`: a `PunkModalSurface` ([§6](#6-modal-surfaces)) that slides in from an edge: `placement` (`start`, the default, `end`, `top`, `bottom`; `start` and `end` are logical), `modal`, `heading`, with the default and `footer` slots.
+
+- **Modality** is the window's: `modal` uses `showModal()` with the scroll lock and inertness; without it the drawer is shown beside the page, still fixed to its edge.
+- **Dismissal.** It always has a native close button (localized "Close") in a header beside the heading, and Escape always closes it (the stack entry is dismissible). A click on the backdrop closes nothing ([§3](#3-modality)). Reasons are `escape`, `close-button`, and `method`; `close()` closes it from script.
+- **Size.** `--punk-drawer-size` is its inline size at `start` and `end` and its block size at `top` and `bottom`, at most the viewport less twice `--punk-space-4`; it spans the other axis.
+- **Motion.** It slides in from its edge over `--punk-duration-normal`; reduced motion removes the slide.
+- **Warning:** no name (from the base).
+
 ## Verification
 
 - Node: `overlay-stack.test.ts`, `window-position.test.ts`, `toast-timer.test.ts`. `computePosition` has its own unit tests in `src/utilities/position.test.ts`.
-- Browser: each component's tests, `modal.test.ts`, `anchor.test.ts`, and `test/browser/focus.test.ts` (inertness, initial focus, trapping, focus return including a moved or removed opener, the scroll-lock count, the Escape order across tooltip, popover, and window, absorbing entries, backdrop clicks, move mode, toasts inside and outside a modal).
+- Browser: each component's tests, `modal.test.ts`, `anchor.test.ts`, and `test/browser/focus.test.ts` (inertness, initial focus, trapping, focus return including a moved or removed opener, the scroll-lock count, the Escape order across tooltip, popover, and window, absorbing entries, backdrop clicks, move mode, toasts inside and outside a modal). `drawer.test.ts`: modal and not, focus in and back, Escape and the close button, each edge in both directions, the size property, the slide; `drawer.reduced-motion.test.ts`.
 - `perf-shell.test.ts`: no listener or observer with every overlay closed; one `keydown` listener for any number of open overlays, removed with the last; the popover's listeners and observer only while open; ten toasts hold ten timers, none while hovered.
-- `overlays-a11y.test.ts`, the `overlays` visual group (each overlay open on its own page, including a window in move mode), and `aria.spec.ts`.
+- `overlays-a11y.test.ts`, the `overlays` visual group (each overlay open on its own page, including a window in move mode, a drawer, and a menu), and `aria.spec.ts`.
 
 ## Gaps
 

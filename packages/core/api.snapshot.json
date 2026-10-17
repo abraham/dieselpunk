@@ -63,6 +63,99 @@
       },
       "cssProperties": {}
     },
+    "punk-alert": {
+      "attributes": {
+        "announce": "boolean = false",
+        "dismissible": "boolean = false",
+        "heading": "string = ''",
+        "variant": "AlertVariant = 'info'"
+      },
+      "properties": {
+        "announce": "boolean = false",
+        "dismissible": "boolean = false",
+        "heading": "string = ''",
+        "variant": "AlertVariant = 'info'"
+      },
+      "methods": {
+        "dismiss": ""
+      },
+      "events": {
+        "punk-dismiss": ""
+      },
+      "slots": {
+        "(default)": "",
+        "actions": ""
+      },
+      "parts": {
+        "actions": "",
+        "alert": "",
+        "content": "",
+        "dismiss-button": "",
+        "heading": "",
+        "indicator": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-badge": {
+      "attributes": {
+        "variant": "BadgeVariant = 'neutral'"
+      },
+      "properties": {
+        "variant": "BadgeVariant = 'neutral'"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "badge": "",
+        "label": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-breadcrumb": {
+      "attributes": {
+        "label": "string = ''",
+        "max-items": "number | undefined"
+      },
+      "properties": {
+        "label": "string = ''",
+        "maxItems": "number | undefined"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": "",
+        "rest": ""
+      },
+      "parts": {
+        "list": "",
+        "more": "",
+        "nav": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-breadcrumb-item": {
+      "attributes": {
+        "current": "boolean = false",
+        "href": "string = ''"
+      },
+      "properties": {
+        "current": "boolean = false",
+        "href": "string = ''"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "link": "",
+        "separator": ""
+      },
+      "cssProperties": {}
+    },
     "punk-button": {
       "attributes": {
         "aria-label": "string | null = null",
@@ -175,6 +268,66 @@
         "--punk-cluster-gap": "= var(--punk-space-2)"
       }
     },
+    "punk-combobox": {
+      "attributes": {
+        "allow-custom": "boolean = false",
+        "aria-label": "string | null = null",
+        "disabled": "boolean = false",
+        "filter": "ComboboxFilter = 'contains'",
+        "label": "string = ''",
+        "name": "string = ''",
+        "placeholder": "string = ''",
+        "required": "boolean = false",
+        "value": "string = ''"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "allowCustom": "boolean = false",
+        "disabled": "boolean = false",
+        "filter": "ComboboxFilter = 'contains'",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "name": "string = ''",
+        "placeholder": "string = ''",
+        "required": "boolean = false",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "value": "string = ''",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "select": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "Event",
+        "input": ""
+      },
+      "slots": {
+        "hint": ""
+      },
+      "parts": {
+        "control": "",
+        "field": "",
+        "hint": "",
+        "label": "",
+        "listbox": "",
+        "message": "",
+        "option": "",
+        "toggle": ""
+      },
+      "cssProperties": {
+        "--punk-combobox-max-height": "= 240px"
+      }
+    },
     "punk-connection-row": {
       "attributes": {
         "direction": "ConnectionDirection = 'forward'",
@@ -276,6 +429,71 @@
         "--punk-divider-gap": "= var(--punk-space-2)"
       }
     },
+    "punk-drawer": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "heading": "string = ''",
+        "modal": "boolean = false",
+        "open": "boolean = false",
+        "placement": "DrawerPlacement = 'start'"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "heading": "string = ''",
+        "modal": "boolean = false",
+        "open": "boolean = false",
+        "placement": "DrawerPlacement = 'start'"
+      },
+      "methods": {
+        "close": "",
+        "show": ""
+      },
+      "events": {
+        "punk-close": "",
+        "punk-open": ""
+      },
+      "slots": {
+        "(default)": "",
+        "footer": ""
+      },
+      "parts": {
+        "body": "",
+        "close-button": "",
+        "drawer": "",
+        "footer": "",
+        "header": "",
+        "title": ""
+      },
+      "cssProperties": {
+        "--punk-drawer-size": "= 320px"
+      }
+    },
+    "punk-fieldset": {
+      "attributes": {
+        "disabled": "boolean = false",
+        "label": "string = ''"
+      },
+      "properties": {
+        "disabled": "boolean = false",
+        "label": "string = ''"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": "",
+        "error": "",
+        "hint": "",
+        "legend": ""
+      },
+      "parts": {
+        "content": "",
+        "error": "",
+        "fieldset": "",
+        "hint": "",
+        "legend": ""
+      },
+      "cssProperties": {}
+    },
     "punk-icon-button": {
       "attributes": {
         "aria-label": "string | null = null",
@@ -366,6 +584,119 @@
       "cssProperties": {
         "--punk-slot-size": "= 40px"
       }
+    },
+    "punk-list": {
+      "attributes": {
+        "selection": "ListSelection = 'none'"
+      },
+      "properties": {
+        "selection": "ListSelection = 'none'",
+        "values": "string[]"
+      },
+      "methods": {},
+      "events": {
+        "punk-selection-change": ""
+      },
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "list": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-list-item": {
+      "attributes": {
+        "disabled": "boolean = false",
+        "selected": "boolean",
+        "value": "string = ''"
+      },
+      "properties": {
+        "disabled": "boolean = false",
+        "selected": "boolean",
+        "value": "string = ''"
+      },
+      "methods": {},
+      "events": {
+        "punk-activate": ""
+      },
+      "slots": {
+        "(default)": "",
+        "description": "",
+        "end": "",
+        "start": ""
+      },
+      "parts": {
+        "check": "",
+        "description": "",
+        "end": "",
+        "item": "",
+        "label": "",
+        "start": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-menu": {
+      "attributes": {
+        "context": "boolean = false",
+        "for": "string = ''",
+        "open": "boolean = false",
+        "placement": "MenuPlacement | '' = ''"
+      },
+      "properties": {
+        "context": "boolean = false",
+        "for": "string = ''",
+        "open": "boolean = false",
+        "placement": "MenuPlacement | '' = ''"
+      },
+      "methods": {
+        "hide": "",
+        "show": "",
+        "toggle": ""
+      },
+      "events": {
+        "punk-close": "",
+        "punk-open": ""
+      },
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "surface": ""
+      },
+      "cssProperties": {
+        "--punk-menu-min-width": "= 160px"
+      }
+    },
+    "punk-menu-item": {
+      "attributes": {
+        "checked": "boolean = false",
+        "disabled": "boolean = false",
+        "type": "MenuItemType = 'item'",
+        "value": "string = ''"
+      },
+      "properties": {
+        "checked": "boolean = false",
+        "disabled": "boolean = false",
+        "type": "MenuItemType = 'item'",
+        "value": "string = ''"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": "",
+        "icon": "",
+        "shortcut": ""
+      },
+      "parts": {
+        "arrow": "",
+        "check": "",
+        "icon": "",
+        "item": "",
+        "label": "",
+        "shortcut": ""
+      },
+      "cssProperties": {}
     },
     "punk-meter": {
       "attributes": {
@@ -475,6 +806,34 @@
         "prefix": "",
         "stepper": "",
         "suffix": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-pagination": {
+      "attributes": {
+        "label": "string = ''",
+        "page": "number = 1",
+        "pages": "number = 1",
+        "siblings": "number = 1"
+      },
+      "properties": {
+        "label": "string = ''",
+        "page": "number = 1",
+        "pages": "number = 1",
+        "siblings": "number = 1"
+      },
+      "methods": {},
+      "events": {
+        "punk-page-change": ""
+      },
+      "slots": {},
+      "parts": {
+        "gap": "",
+        "list": "",
+        "nav": "",
+        "next": "",
+        "page": "",
+        "previous": ""
       },
       "cssProperties": {}
     },
@@ -615,6 +974,84 @@
       "cssProperties": {
         "--punk-progress-height": "= calc(var(--punk-control-height-sm) * 0.6)"
       }
+    },
+    "punk-radio": {
+      "attributes": {
+        "checked": "boolean = false",
+        "disabled": "boolean = false",
+        "value": "string = ''"
+      },
+      "properties": {
+        "checked": "boolean = false",
+        "disabled": "boolean = false",
+        "isDisabled": "boolean",
+        "value": "string = ''"
+      },
+      "methods": {
+        "focusItem": "",
+        "setTabStop": ""
+      },
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "control": "",
+        "dot": "",
+        "label": "",
+        "ring": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-radio-group": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "disabled": "boolean = false",
+        "label": "string = ''",
+        "name": "string = ''",
+        "orientation": "RadioGroupOrientation = 'vertical'",
+        "required": "boolean = false",
+        "value": "string"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "disabled": "boolean = false",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "name": "string = ''",
+        "orientation": "RadioGroupOrientation = 'vertical'",
+        "required": "boolean = false",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "value": "string",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "Event",
+        "input": "Event"
+      },
+      "slots": {
+        "(default)": "",
+        "hint": ""
+      },
+      "parts": {
+        "hint": "",
+        "label": "",
+        "message": "",
+        "radios": ""
+      },
+      "cssProperties": {}
     },
     "punk-recipe": {
       "attributes": {
@@ -830,6 +1267,24 @@
         "--punk-slot-size": "= 40px"
       }
     },
+    "punk-spinner": {
+      "attributes": {
+        "size": "SpinnerSize = 'md'"
+      },
+      "properties": {
+        "size": "SpinnerSize = 'md'"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "label": "",
+        "spinner": ""
+      },
+      "cssProperties": {}
+    },
     "punk-stack": {
       "attributes": {
         "align": "StackAlign = 'stretch'",
@@ -949,6 +1404,33 @@
       },
       "cssProperties": {}
     },
+    "punk-table": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "sort-direction": "SortDirection = 'ascending'",
+        "sort-key": "string = ''"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "sortDirection": "SortDirection = 'ascending'",
+        "sortKey": "string = ''",
+        "values": "string[]"
+      },
+      "methods": {},
+      "events": {
+        "punk-selection-change": "",
+        "punk-sort-change": ""
+      },
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "scroller": ""
+      },
+      "cssProperties": {
+        "--punk-table-max-height": "= none"
+      }
+    },
     "punk-tabs": {
       "attributes": {
         "activation": "TabActivation = 'auto'",
@@ -1043,6 +1525,74 @@
       },
       "cssProperties": {}
     },
+    "punk-textarea": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "autocomplete": "string | null = null",
+        "autogrow": "boolean = false",
+        "disabled": "boolean = false",
+        "label": "string = ''",
+        "maxlength": "number | null = null",
+        "minlength": "number | null = null",
+        "name": "string = ''",
+        "placeholder": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "rows": "number = 3",
+        "show-count": "boolean = false",
+        "value": "string = ''"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "autocomplete": "string | null = null",
+        "autogrow": "boolean = false",
+        "disabled": "boolean = false",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "maxlength": "number | null = null",
+        "minlength": "number | null = null",
+        "name": "string = ''",
+        "placeholder": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "rows": "number = 3",
+        "showCount": "boolean = false",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "value": "string = ''",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "select": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "",
+        "input": ""
+      },
+      "slots": {
+        "hint": ""
+      },
+      "parts": {
+        "control": "",
+        "count": "",
+        "field": "",
+        "hint": "",
+        "label": "",
+        "message": ""
+      },
+      "cssProperties": {
+        "--punk-textarea-max-height": "= 20lh"
+      }
+    },
     "punk-toast": {
       "attributes": {
         "duration": "number | null = null",
@@ -1100,6 +1650,30 @@
       },
       "parts": {
         "stack": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-toggle-group": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "disabled": "boolean = false",
+        "selection": "ToggleGroupSelection = 'single'"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "disabled": "boolean = false",
+        "selection": "ToggleGroupSelection = 'single'",
+        "values": "string[]"
+      },
+      "methods": {},
+      "events": {
+        "punk-selection-change": ""
+      },
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "group": ""
       },
       "cssProperties": {}
     },

@@ -266,5 +266,103 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "7.85 kB"
+  },
+  {
+    "name": "punk-radio-group (both tags)",
+    "path": "dist/components/radio-group/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6.75 kB"
+  },
+  {
+    "name": "punk-textarea",
+    "path": "dist/components/textarea/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6.25 kB"
+  },
+  {
+    "name": "punk-combobox",
+    "path": "dist/components/combobox/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "8.75 kB"
+  },
+  {
+    "name": "punk-fieldset",
+    "path": "dist/components/fieldset/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "3.5 kB"
+  },
+  {
+    "name": "punk-menu (both tags)",
+    "path": "dist/components/menu/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "7.25 kB"
+  },
+  {
+    "name": "punk-toggle-group",
+    "path": "dist/components/toggle-group/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "4.5 kB"
+  },
+  {
+    "name": "punk-list (both tags)",
+    "path": "dist/components/list/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5.75 kB"
+  },
+  {
+    "name": "punk-table",
+    "path": "dist/components/table/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
+    "name": "punk-alert",
+    "path": "dist/components/alert/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "4.5 kB"
+  },
+  {
+    "name": "punk-badge",
+    "path": "dist/components/badge/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "3 kB"
+  },
+  {
+    "name": "punk-spinner",
+    "path": "dist/components/spinner/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "3 kB"
+  },
+  {
+    "name": "punk-drawer",
+    "path": "dist/components/drawer/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6.25 kB"
+  },
+  {
+    "name": "punk-breadcrumb (both tags)",
+    "path": "dist/components/breadcrumb/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
+    "name": "punk-pagination",
+    "path": "dist/components/pagination/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "4.5 kB"
   }
 ]

@@ -11,8 +11,22 @@ export const galleryGroups = {
   shell: ['stack', 'cluster', 'accordion', 'accordion-item', 'tabs', 'tab', 'toolbar', 'window'],
   // Every form control in every state, in flow: no top layer, so one page holds them all.
   forms: ['checkbox', 'switch', 'slider', 'text-field', 'number-field', 'select'],
+  // The form controls that group or choose, in flow like the first six.
+  inputs: ['radio-group', 'radio', 'textarea', 'combobox', 'fieldset'],
+  // Navigation and selection in flow; a menu is in the top layer, so it is open only in `overlays`.
+  navigation: [
+    'toggle-group',
+    'list',
+    'list-item',
+    'breadcrumb',
+    'breadcrumb-item',
+    'pagination',
+    'menu-item',
+  ],
+  // Readouts of data and status that sit in the page.
+  data: ['table', 'alert', 'badge', 'spinner'],
   // Overlays open on a page of their own, since the top layer covers everything else.
-  overlays: ['dialog', 'window', 'popover', 'toast-stack'],
+  overlays: ['dialog', 'window', 'popover', 'toast-stack', 'drawer', 'menu'],
 } as const;
 export type GalleryGroup = keyof typeof galleryGroups;
 

@@ -6,6 +6,9 @@ import '../../src/components/checkbox/register.ts';
 import '../../src/components/switch/register.ts';
 import '../../src/components/slider/register.ts';
 import '../../src/components/text-field/register.ts';
+import '../../src/components/textarea/register.ts';
+import '../../src/components/radio-group/register.ts';
+import '../../src/components/combobox/register.ts';
 import '../../src/components/number-field/register.ts';
 import '../../src/components/select/register.ts';
 import type { PunkFormControl } from '../../src/internal/form-control.ts';
@@ -42,13 +45,17 @@ interface Control {
 
 /** Types into the native control of a field, as a user does. */
 function typeInto(element: PunkFormControl, text: string): void {
-  const input = element.shadowRoot?.querySelector('input') as HTMLInputElement;
+  const input = element.shadowRoot?.querySelector('input, textarea') as HTMLInputElement;
   input.value = text;
   input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
 }
 
 const options =
   '<option value="">Choose</option><option value="a">Alpha</option><option value="b">Beta</option>';
+
+/** Whether focus is on the control, or on one of its own children, as a radio group's radios. */
+const focusedIn = (element: Element): boolean =>
+  document.activeElement === element || element.contains(document.activeElement);
 
 /** Picks an option in the native select, as a user does. */
 function pick(element: PunkFormControl, index: number): void {
@@ -132,6 +139,66 @@ const controls: Control[] = [
       base: 'label="Callsign"',
       attributes: 'value="Echo"',
       change: (element) => typeInto(element, 'Hotel'),
+    },
+    labelClick: 'focus',
+  },
+  {
+    tag: 'punk-textarea',
+    base: 'label="Log"',
+    content: '',
+    change: (element) => typeInto(element, 'Belt 3\nblocked'),
+    submittedDefault: '',
+    submittedChanged: 'Belt 3\nblocked',
+    required: 'required',
+    restore: ['Golf', 'Golf'],
+    authored: {
+      base: 'label="Log"',
+      attributes: 'value="Echo"',
+      change: (element) => typeInto(element, 'Hotel'),
+    },
+    labelClick: 'focus',
+  },
+  {
+    tag: 'punk-radio-group',
+    base: 'label="Source"',
+    content: '<punk-radio value="a">Alpha</punk-radio><punk-radio value="b">Beta</punk-radio>',
+    change: (element) => {
+      (element.querySelector('[value="b"]') as HTMLElement).click();
+    },
+    submittedDefault: null,
+    submittedChanged: 'b',
+    required: 'required',
+    restore: ['a', 'a'],
+    authored: {
+      base: 'label="Source"',
+      attributes: '',
+      content:
+        '<punk-radio value="a" checked>Alpha</punk-radio><punk-radio value="b">Beta</punk-radio>',
+      change: (element) => {
+        (element.querySelector('[value="b"]') as HTMLElement).click();
+      },
+    },
+    labelClick: 'focus',
+  },
+  {
+    tag: 'punk-combobox',
+    base: 'label="Squadron"',
+    content: '<option value="a">Alpha</option><option value="b">Beta</option>',
+    change: (element) => {
+      typeInto(element, 'Beta');
+      element.dispatchEvent(new FocusEvent('focusout'));
+    },
+    submittedDefault: '',
+    submittedChanged: 'b',
+    required: 'required',
+    restore: ['a', 'a'],
+    authored: {
+      base: 'label="Squadron"',
+      attributes: 'value="a"',
+      change: (element) => {
+        typeInto(element, 'Beta');
+        element.dispatchEvent(new FocusEvent('focusout'));
+      },
     },
     labelClick: 'focus',
   },
@@ -279,7 +346,7 @@ describe.each(controls)('$tag in a form', (control) => {
     await element.updateComplete;
     expect([...element.labels]).toEqual([holder.querySelector('label')]);
     await userEvent.click(holder.querySelector('#caption') as HTMLElement);
-    if (control.labelClick === 'focus') expect(document.activeElement).toBe(element);
+    if (control.labelClick === 'focus') expect(focusedIn(element)).toBe(true);
     else expect((element as unknown as { checked: boolean }).checked).toBe(true);
   });
 
@@ -300,7 +367,7 @@ describe.each(controls)('$tag in a form', (control) => {
   it.runIf(control.required !== null)('is focused when its validity is reported', async () => {
     const { element } = await mountForm(control, control.required ?? '');
     expect(element.reportValidity()).toBe(false);
-    expect(document.activeElement).toBe(element);
+    expect(focusedIn(element)).toBe(true);
   });
 
   it.runIf(control.required !== null)('is invalid for the form submission it blocks', async () => {

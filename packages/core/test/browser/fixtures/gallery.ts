@@ -32,6 +32,20 @@ import '../../../src/components/slider/register.ts';
 import '../../../src/components/text-field/register.ts';
 import '../../../src/components/number-field/register.ts';
 import '../../../src/components/select/register.ts';
+import '../../../src/components/radio-group/register.ts';
+import '../../../src/components/textarea/register.ts';
+import '../../../src/components/combobox/register.ts';
+import '../../../src/components/fieldset/register.ts';
+import '../../../src/components/menu/register.ts';
+import '../../../src/components/toggle-group/register.ts';
+import '../../../src/components/list/register.ts';
+import '../../../src/components/table/register.ts';
+import '../../../src/components/alert/register.ts';
+import '../../../src/components/badge/register.ts';
+import '../../../src/components/spinner/register.ts';
+import '../../../src/components/drawer/register.ts';
+import '../../../src/components/breadcrumb/register.ts';
+import '../../../src/components/pagination/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -43,10 +57,15 @@ export const componentNames = [
   ...galleryGroups.production,
   ...galleryGroups.shell,
   ...galleryGroups.forms,
+  ...galleryGroups.inputs,
+  ...galleryGroups.navigation,
+  ...galleryGroups.data,
   'dialog',
   'popover',
   'toast-stack',
   'toast',
+  'drawer',
+  'menu',
 ] as const;
 export type ComponentName = (typeof componentNames)[number];
 
@@ -744,6 +763,265 @@ const builders: Record<ComponentName, Builder> = {
       <punk-accordion-item heading="${c.pause}" expanded disabled><p style="margin: 0">${c.body}</p></punk-accordion-item>
       <punk-accordion-item heading="${c.stop}" level="2" expanded><span slot="icon">${gear}</span><p style="margin: 0">${c.body}</p></punk-accordion-item>
       <punk-accordion-item expanded><span slot="heading">${c.settings} <b>${c.pause}</b></span><p style="margin: 0">${c.body}</p></punk-accordion-item>
+    </div>
+  `,
+
+  'radio-group': (c) => {
+    const radios = (checked: number) =>
+      [c.start, c.pause, c.stop]
+        .map(
+          (text, index) =>
+            `<punk-radio value="r${index}"${index === checked ? ' checked' : ''}${index === 2 ? ' disabled' : ''}>${text}</punk-radio>`,
+        )
+        .join('');
+    return `
+      <div class="stack" style="max-inline-size: 420px">
+        <punk-radio-group label="${c.settings}">${radios(1)}<span slot="hint">${c.footer}</span></punk-radio-group>
+        <punk-radio-group label="${c.settings}" orientation="horizontal">${radios(0)}</punk-radio-group>
+        <punk-radio-group label="${c.settings}" disabled>${radios(0)}</punk-radio-group>
+        <punk-radio-group label="${c.settings}" required data-touched>${radios(-1)}</punk-radio-group>
+        <punk-radio-group aria-label="${c.settings}"><punk-radio value="a" checked>${c.body}</punk-radio><punk-radio value="b">${c.start}</punk-radio></punk-radio-group>
+      </div>
+    `;
+  },
+
+  radio: (c) => `
+    <div role="radiogroup" aria-label="${c.settings}" class="stack">
+      <punk-radio value="a">${c.start}</punk-radio>
+      <punk-radio value="b" checked>${c.pause}</punk-radio>
+      <punk-radio value="c" disabled>${c.stop}</punk-radio>
+      <punk-radio value="d" checked disabled>${c.start}</punk-radio>
+      <punk-radio value="e">${c.body}</punk-radio>
+    </div>
+  `,
+
+  textarea: (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-textarea label="${c.settings}"></punk-textarea>
+      <punk-textarea label="${c.settings}" value="${c.body}" show-count maxlength="120"><span slot="hint">${c.footer}</span></punk-textarea>
+      <punk-textarea label="${c.settings}" placeholder="${c.start}" rows="2" autogrow></punk-textarea>
+      <punk-textarea label="${c.settings}" value="${c.pause}" readonly></punk-textarea>
+      <punk-textarea label="${c.settings}" value="${c.pause}" disabled><span slot="hint">${c.footer}</span></punk-textarea>
+      <punk-textarea label="${c.settings}" required data-touched></punk-textarea>
+      <punk-textarea aria-label="${c.settings}" placeholder="${c.start}" rows="2"></punk-textarea>
+    </div>
+  `,
+
+  combobox: (c) => {
+    const options = `<option value="a">${c.start}</option><option value="b">${c.pause}</option><option value="c" disabled>${c.stop}</option>`;
+    return `
+      <div class="stack" style="max-inline-size: 420px">
+        <punk-combobox label="${c.settings}">${options}</punk-combobox>
+        <punk-combobox label="${c.settings}" value="b">${options}<span slot="hint">${c.footer}</span></punk-combobox>
+        <punk-combobox label="${c.settings}" placeholder="${c.start}" allow-custom value="${c.body}">${options}</punk-combobox>
+        <punk-combobox label="${c.settings}" value="a" disabled>${options}</punk-combobox>
+        <punk-combobox label="${c.settings}" required data-touched>${options}</punk-combobox>
+        <punk-combobox aria-label="${c.settings}">${options}</punk-combobox>
+      </div>
+    `;
+  },
+
+  fieldset: (c) => `
+    <div class="stack" style="max-inline-size: 480px">
+      <punk-fieldset label="${c.settings}">
+        <punk-checkbox checked>${c.start}</punk-checkbox>
+        <punk-switch>${c.pause}</punk-switch>
+        <span slot="hint">${c.footer}</span>
+      </punk-fieldset>
+      <punk-fieldset label="${c.settings}" disabled>
+        <punk-text-field label="${c.start}" value="${c.pause}"></punk-text-field>
+        <punk-checkbox checked>${c.stop}</punk-checkbox>
+      </punk-fieldset>
+      <punk-fieldset label="${c.settings}">
+        <punk-text-field label="${c.start}" required data-touched></punk-text-field>
+        <span slot="error">${c.statuses[4]}</span>
+      </punk-fieldset>
+    </div>
+  `,
+
+  'toggle-group': (c) => `
+    <div class="stack">
+      <punk-toggle-group aria-label="${c.settings}">
+        <button value="a">${c.start}</button><button value="b" aria-checked="true">${c.pause}</button><button value="c" disabled>${c.stop}</button>
+      </punk-toggle-group>
+      <punk-toggle-group aria-label="${c.settings}" selection="multiple">
+        <button value="a" aria-pressed="true">${c.start}</button><button value="b">${c.pause}</button><button value="c" aria-pressed="true">${c.stop}</button>
+      </punk-toggle-group>
+      <punk-toggle-group aria-label="${c.settings}" disabled>
+        <button value="a" aria-checked="true">${c.start}</button><button value="b">${c.pause}</button>
+      </punk-toggle-group>
+      <div style="max-inline-size: 240px">
+        <punk-toggle-group aria-label="${c.settings}"><button value="a">${c.body}</button><button value="b">${c.settings}</button></punk-toggle-group>
+      </div>
+    </div>
+  `,
+
+  list: (c) => {
+    const [idle, scheduled, running] = c.statuses;
+    const items = (selected: number[]) =>
+      [
+        [c.start, idle],
+        [c.pause, scheduled],
+        [c.stop, running],
+      ]
+        .map(
+          ([text, detail], index) =>
+            `<punk-list-item value="l${index}"${selected.includes(index) ? ' selected' : ''}${index === 2 ? ' disabled' : ''}><span slot="start">${gear}</span>${text}<span slot="description">${detail}</span><span slot="end">${index * 12}</span></punk-list-item>`,
+        )
+        .join('');
+    return `
+      <div class="stack" style="max-inline-size: 420px">
+        <punk-list aria-label="${c.settings}">${items([])}</punk-list>
+        <punk-list aria-label="${c.settings}" selection="single">${items([1])}</punk-list>
+        <punk-list aria-label="${c.settings}" selection="multiple">${items([0, 1])}</punk-list>
+      </div>
+    `;
+  },
+
+  'list-item': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-list-item value="a">${c.start}</punk-list-item>
+      <punk-list-item value="b" selected><span slot="start">${gear}</span>${c.pause}<span slot="end">7</span></punk-list-item>
+      <punk-list-item value="c" disabled>${c.stop}<span slot="description">${c.body}</span></punk-list-item>
+    </div>
+  `,
+
+  breadcrumb: (c) => {
+    const items = [c.settings, c.start, c.pause, c.stop]
+      .map(
+        (text, index) => `<punk-breadcrumb-item href="#b${index}">${text}</punk-breadcrumb-item>`,
+      )
+      .join('');
+    const current = `<punk-breadcrumb-item current>${c.body}</punk-breadcrumb-item>`;
+    return `
+      <div class="stack">
+        <punk-breadcrumb>${items}${current}</punk-breadcrumb>
+        <punk-breadcrumb max-items="3">${items}${current}</punk-breadcrumb>
+        <div style="max-inline-size: 240px"><punk-breadcrumb label="${c.settings}">${items}${current}</punk-breadcrumb></div>
+      </div>
+    `;
+  },
+
+  'breadcrumb-item': (c) => `
+    <div role="list" class="row">
+      <punk-breadcrumb-item href="#a">${c.start}</punk-breadcrumb-item>
+      <punk-breadcrumb-item href="#b" current>${c.pause}</punk-breadcrumb-item>
+      <punk-breadcrumb-item current>${c.stop}</punk-breadcrumb-item>
+    </div>
+  `,
+
+  pagination: () => `
+    <div class="stack">
+      <punk-pagination page="1" pages="5"></punk-pagination>
+      <punk-pagination page="10" pages="20"></punk-pagination>
+      <punk-pagination page="20" pages="20" siblings="2"></punk-pagination>
+      <punk-pagination page="1" pages="1"></punk-pagination>
+    </div>
+  `,
+
+  'menu-item': (c) => `
+    <div role="menu" aria-label="${c.settings}" class="stack" style="max-inline-size: 320px">
+      <punk-menu-item value="a"><span slot="icon">${gear}</span>${c.start}<span slot="shortcut">Ctrl+S</span></punk-menu-item>
+      <punk-menu-item value="b" disabled>${c.pause}</punk-menu-item>
+      <punk-menu-item value="c" type="checkbox" checked>${c.stop}</punk-menu-item>
+      <punk-menu-item value="d" type="checkbox">${c.stop}</punk-menu-item>
+      <punk-menu-item value="e" type="radio" checked>${c.settings}</punk-menu-item>
+      <punk-menu-item value="f">${c.body}</punk-menu-item>
+    </div>
+  `,
+
+  menu: (c, { open }) => `
+    <div class="row" style="align-items: flex-start; min-block-size: 320px">
+      <punk-button>${c.settings}</punk-button>
+      <punk-menu${open ? ' open' : ''}>
+        <punk-menu-item value="a"><span slot="icon">${gear}</span>${c.start}<span slot="shortcut">Ctrl+S</span></punk-menu-item>
+        <punk-menu-item value="b" disabled>${c.pause}</punk-menu-item>
+        <punk-menu-item value="c">${c.stop}</punk-menu-item>
+        <punk-menu><punk-menu-item value="c1">${c.start}</punk-menu-item></punk-menu>
+        <hr>
+        <punk-menu-item value="d" type="checkbox" checked>${c.settings}</punk-menu-item>
+        <punk-menu-item value="e" type="radio" checked>${c.start}</punk-menu-item>
+        <punk-menu-item value="f" type="radio">${c.body}</punk-menu-item>
+      </punk-menu>
+    </div>
+  `,
+
+  drawer: (c, { open }) => `
+    <punk-drawer heading="${c.title}" aria-label="${c.settings}" modal${open ? ' open' : ''}>
+      <p style="margin: 0">${c.body}</p>
+      <punk-button slot="footer" variant="primary">${c.start}</punk-button>
+      <punk-button slot="footer">${c.stop}</punk-button>
+    </punk-drawer>
+  `,
+
+  table: (c) => {
+    const [idle, scheduled, running] = c.statuses;
+    const rows = [
+      [c.start, '120', idle],
+      [c.pause, '80', scheduled],
+      [c.stop, '12', running],
+    ]
+      .map(
+        ([name, count, note], index) =>
+          `<tr data-value="t${index}"><td><input type="checkbox" data-punk-select aria-label="${name}"${index === 1 ? ' checked' : ''}></td><th scope="row">${name}</th><td>${count}</td><td>${note}</td></tr>`,
+      )
+      .join('');
+    const table = (sort: string) => `
+      <punk-table${sort}>
+        <table>
+          <caption>${c.settings}</caption>
+          <thead><tr>
+            <th><input type="checkbox" data-punk-select-all aria-label="${c.settings}"></th>
+            <th data-sort="name"><button type="button">${c.recipe || 'Item'}</button></th>
+            <th data-sort="count"><button type="button">${c.meter || 'Count'}</button></th>
+            <th>${c.divider || 'Note'}</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </punk-table>
+    `;
+    return `
+      <div class="stack">
+        ${table(' sort-key="name"')}
+        <div style="max-inline-size: 240px">${table(' sort-key="count" sort-direction="descending"')}</div>
+      </div>
+    `;
+  },
+
+  alert: (c) => {
+    const [, scheduled, running, low, offline] = c.statuses;
+    const heading = c.title ? ` heading="${c.title}"` : '';
+    return `
+      <div class="stack" style="max-inline-size: 480px">
+        <punk-alert variant="info">${scheduled}</punk-alert>
+        <punk-alert variant="success"${heading}>${running}</punk-alert>
+        <punk-alert variant="warning" dismissible>${low}<punk-button slot="actions" size="sm">${c.start}</punk-button></punk-alert>
+        <punk-alert variant="danger"${heading} dismissible announce>${offline} <span>${c.body}</span></punk-alert>
+      </div>
+    `;
+  },
+
+  badge: (c) => {
+    const [idle, scheduled, running, low, offline] = c.statuses;
+    return `
+      <div class="row">
+        <punk-badge>12</punk-badge>
+        <punk-badge>${idle}</punk-badge>
+        <punk-badge variant="info">${scheduled}</punk-badge>
+        <punk-badge variant="success">${running}</punk-badge>
+        <punk-badge variant="warning">${low}</punk-badge>
+        <punk-badge variant="danger">${offline}</punk-badge>
+        <punk-button>${c.settings} <punk-badge variant="info">3</punk-badge></punk-button>
+      </div>
+    `;
+  },
+
+  spinner: (c) => `
+    <div class="row">
+      <punk-spinner size="sm"></punk-spinner>
+      <punk-spinner></punk-spinner>
+      <punk-spinner size="lg"></punk-spinner>
+      <punk-spinner>${c.progress || c.body}</punk-spinner>
     </div>
   `,
 };

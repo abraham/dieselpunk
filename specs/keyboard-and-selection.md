@@ -1,7 +1,7 @@
 # Keyboard, Focus, and Selection
 
-**Scope:** the shared keyboard model, roving focus, activation, the selection model, and grid navigation; and the four composite widgets built on them: slot grid, tabs, toolbar, and accordion.
-**Code:** `src/internal/roving.ts`, `roving-keys.ts`, `selection-model.ts`, `grid-navigation.ts`, `tab-navigation.ts`, `selectable-base.ts`; `src/components/slot-grid/`, `tabs/`, `toolbar/`, `accordion/`.
+**Scope:** the shared keyboard model, roving focus, activation, the selection model, and grid navigation; and the composite widgets built on them: slot grid, tabs, toolbar, accordion, menu, toggle group, and list.
+**Code:** `src/internal/roving.ts`, `roving-keys.ts`, `selection-model.ts`, `grid-navigation.ts`, `tab-navigation.ts`, `selectable-base.ts`; `src/components/slot-grid/`, `tabs/`, `toolbar/`, `accordion/`, `menu/`, `toggle-group/`, `list/`.
 
 ## 1. Keyboard model
 
@@ -145,15 +145,74 @@ The application names the grid with `aria-label`; a missing name warns.
 - `punk-toggle` carries `{ expanded }` for user changes.
 - An out-of-range `level` is clamped and warns.
 
+## 10. Menu
+
+`punk-menu` with `punk-menu-item` children: the APG menu, in the top layer and on the Escape stack like the popover ([overlays.md §2](overlays.md), [§4](overlays.md)). The popover's menu mode remains for menus of the application's own markup; this family owns its items.
+
+- **Trigger.** Resolved as an overlay's anchor (`for`, else the previous sibling) and wired with `aria-haspopup="menu"` and `aria-expanded`. A click, Enter, or Space toggles the menu; Down opens it on the first enabled item and Up on the last. Opening always moves focus to an item.
+- **Items.** A `punk-menu-item` host is `role="menuitem"`, `menuitemcheckbox` (`type="checkbox"`), or `menuitemradio` (`type="radio"`), with `aria-checked` for the last two, `aria-disabled`, and `tabindex="-1"`. Its text is its name; the `shortcut` slot is shown and hidden from assistive technology, so the application adds `aria-keyshortcuts`. The menu host is `role="menu"` while open. Separators are `hr`, `punk-divider`, or `role="separator"` children.
+
+| Key                                    | Effect                                                                                  |
+| -------------------------------------- | --------------------------------------------------------------------------------------- |
+| `Up`, `Down`                           | Previous or next enabled item, without wrapping                                         |
+| `Home`, `End`                          | First or last enabled item                                                              |
+| A letter                               | The next enabled item whose text starts with it                                         |
+| `Enter`, `Space`                       | Activate the item (a click); on an item with a submenu, open it on its first item       |
+| `Right` (`Left` in `rtl`)              | On an item with a submenu, open it on its first item                                    |
+| `Left` (`Right` in `rtl`) in a submenu | Close the submenu and return to its item                                                |
+| `Escape`                               | Close the innermost open menu (the stack) and return focus to its trigger               |
+| `Tab`                                  | Close every menu, put focus on the root trigger, and let the browser move on from there |
+
+- **Activation** sends `punk-activate` (`{ value, item }`) from the item. A checkbox item toggles; a radio item is chosen among the radio items between the nearest separators; both keep the menu open. A plain item closes every open menu with reason `action` and returns focus to the root trigger. A disabled item's click is stopped before any listener after the item's own.
+- **Submenus.** A `punk-menu` placed right after an item is that item's submenu: a sibling, never a child, so its text never joins the item's name ([overlays.md §4](overlays.md)). The item gets `aria-haspopup` and `aria-expanded` and shows an arrow. A submenu opens at the item's end edge; one submenu of a menu is open at a time; closing a menu closes its submenus silently.
+- **No opening on hover.** Menus and submenus open only by click, keys, or `show()`; resting the pointer on an item never opens its submenu. **Why:** hover opening needs delays and a pointer-intent path to avoid closing a submenu as the pointer crosses other items, touch and pen have no hover, and a menu that opens on its own contradicts "hover reveals supplemental information only" ([product.md](product.md)).
+- **Light dismissal.** A press outside the root menu (submenus are inside it) closes every menu with reason `outside`; a press on a button trigger is left to its click.
+- **Context menus.** With `context` the trigger is an area and gets no popup ARIA: its `contextmenu` event (a right click, the context-menu key, Shift+F10) opens the menu at the pointer, or at the area when the event has no position, and a press anywhere outside the menu closes it.
+- **Placement.** Below the trigger at its start edge (a submenu: beside the item at its top), flipped and shifted to stay in the viewport. Listeners exist only while open: one for presses outside (root only), and frame-throttled `scroll` and `resize`.
+- `punk-open` and `punk-close` (`escape`, `outside`, `tab`, `action`, `method`) report every change of `open`.
+- **Warnings:** no trigger; no enabled item to focus.
+
+## 11. Toggle group
+
+`punk-toggle-group` with native `<button>` children identified by `value`, styled through `::slotted(button)`, so the buttons stay the application's.
+
+- **`selection="single"`** (the default): the group element in the shadow tree is a `radiogroup`, each button `role="radio"` with `aria-checked`. The arrow keys move and choose together, as in a radio group, and the chosen button is the tab stop. Once chosen, one stays pressed.
+- **`selection="multiple"`**: a `group` of toggle buttons with `aria-pressed`. The arrow keys only move focus; a click, Enter, or Space (the native button's own) presses or releases. The tab stop is the button last focused, else the first pressed, else the first.
+- **Keys.** `Left` and `Right` (swapped in `rtl`), `Up` and `Down`, `Home` and `End`, skipping disabled buttons, without wrapping.
+- **Values.** `values` reads and assigns the pressed values (copies). Before anything is assigned, buttons the markup marked `aria-pressed="true"` or `aria-checked="true"` start pressed. `punk-selection-change` carries `{ values, items }` once per user change.
+- **Ownership.** The group owns each button's `role`, `aria-checked`, `aria-pressed`, and `tabindex`, and restores the author's values when a button leaves or the group disconnects. `disabled` disables the buttons that were enabled, and enables exactly those again.
+- The group is named by the host's `aria-label`, copied to the inner group.
+- **Look.** A pressed button is set into the strip with the inset bevel and an `accent` bar along its foot; under forced colors it is `Highlight` with a double border.
+- **Warnings:** no name; a child that is not a `<button>`.
+
+## 12. List
+
+`punk-list` with `punk-list-item` children: one column of rich rows. Items extend `PunkSelectableBase` and are owned by the list as the slot grid owns its items ([§6](#6-slot-grid)).
+
+| `selection`      | Host                                     | Items      | Focus                       |
+| ---------------- | ---------------------------------------- | ---------- | --------------------------- |
+| `none` (default) | `list`                                   | `listitem` | None; rows hold the actions |
+| `single`         | `listbox`                                | `option`   | One tab stop, roving        |
+| `multiple`       | `listbox`, `aria-multiselectable="true"` | `option`   | One tab stop, roving        |
+
+- **Keys** in a selecting list: `Up` and `Down` move focus without wrapping and skip disabled items, `Home` and `End` go to the ends, `Space` selects (`single`) or toggles (`multiple`), `Shift+Up` and `Shift+Down` extend from the anchor, `Ctrl+A` or `Cmd+A` selects every enabled item, and `Enter` activates. Moving focus never selects.
+- **Pointer.** A click selects or toggles, Shift-click extends, and both also activate; the list handles clicks and Space in the capture phase, as the grid does ([§3](#3-activation)).
+- **Tab stop.** The item last focused, else the first selected, else the first enabled.
+- **Values.** Items are identified by `value`. `values` reads and assigns (copies); assigned before items exist, it applies when they arrive; before anything is assigned, items marked `selected` start selected. `punk-selection-change` carries `{ values, items }` once per user change.
+- **Rows.** A start slot, the text, a description below it, and an end slot. All of the row's text is its name. A selected row shows a check and an `accent` bar on its start edge.
+- **Warnings:** no name; a child that is not an item; items without distinct, non-empty values in a selecting list.
+
 ## Verification
 
 - Node: `selection-model.test.ts`, `grid-navigation.test.ts`, `roving.test.ts`, `tab-navigation.test.ts`, covering every table row, disabled items, removed keys, empty lists, unequal rows, and `rtl`.
 - Browser: each component's tests cover every key table in `ltr` and `rtl`, both orientations and activation modes, tab-stop survival, events once per user change and never for script changes, ownership restoration, and the warnings.
 - `test/browser/perf.test.ts`: a 100-item grid listens once on itself, reads no layout on a horizontal key and one rectangle per item on a vertical key, changes two `tabindex` values per move, and re-renders only the items whose selection changed.
 - `perf-shell.test.ts`: one `ResizeObserver` per non-wrapping toolbar, none with `wrap`, no layout read on an arrow key.
-- `aria.spec.ts`: slot grid in each mode, tabs with panels inside and beside, toolbar, accordion.
+- `aria.spec.ts`: slot grid in each mode, tabs with panels inside and beside, toolbar, accordion, an open menu with checkable items and a submenu, the toggle group in each mode, and the list with and without selection.
+- `menu.test.ts`: the trigger's ARIA, opening by click and by Down and Up, every key of the table in both directions, typeahead, checkbox and radio items, disabled items, submenus, Escape order, Tab, presses outside, context menus, listeners only while open, and the warnings. `toggle-group.test.ts` and `list.test.ts`: roles in each mode, keys in both directions, events once per user change and never for script changes, initial state from markup, ownership restoration, and the warnings.
 
 ## Gaps
 
 - **Tabs reimplement roving.** `punk-tabs` handles keys itself because `RovingController` has no hook for activation. Closing it: give the controller an `onMove(item, key)` hook that tabs use for automatic and manual activation, and delete the duplicate key handling.
 - **The listbox grid's screen reader behavior is unverified** ([accessibility.md](accessibility.md) Gaps).
+- **The toggle group and list repeat the slot grid's ownership bookkeeping,** which [component-model.md](component-model.md) Gaps already asks to extract into one protocol.

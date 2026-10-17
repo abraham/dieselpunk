@@ -54,17 +54,19 @@ Every spec applies these. Where a spec makes a trade-off, it says which principl
 
 ## 6. Component inventory
 
-[components.md](components.md) is the catalog: every implemented and planned component, its purpose, and its status. 32 tags in 29 registration entries are implemented. One entry registers a family; [package-contract.md §2](package-contract.md) has the rules.
+[components.md](components.md) is the catalog: every implemented and planned component, its purpose, and its status. 50 tags in 43 registration entries are implemented. One entry registers a family; [package-contract.md §2](package-contract.md) has the rules.
 
-| Family                 | Tags                                                                                                  | Behavior spec                                          |
-| ---------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| Layout and surfaces    | `punk-panel`, `punk-divider`, `punk-stack`, `punk-cluster`                                            | [layout-and-actions.md](layout-and-actions.md)         |
-| Actions                | `punk-button`, `punk-icon-button`                                                                     | [layout-and-actions.md](layout-and-actions.md)         |
-| Navigation, disclosure | `punk-tabs` + `punk-tab`, `punk-toolbar`, `punk-accordion` + `punk-accordion-item`                    | [keyboard-and-selection.md](keyboard-and-selection.md) |
-| Inventory              | `punk-slot`, `punk-item-stack`, `punk-slot-grid`, `punk-recipe`                                       | [inventory-and-readouts.md](inventory-and-readouts.md) |
-| Readouts               | `punk-progress-bar`, `punk-meter`, `punk-status-light`, `punk-production-stat`, `punk-connection-row` | [inventory-and-readouts.md](inventory-and-readouts.md) |
-| Overlays and feedback  | `punk-tooltip`, `punk-popover`, `punk-window`, `punk-dialog`, `punk-toast-stack` + `punk-toast`       | [overlays.md](overlays.md)                             |
-| Form controls          | `punk-checkbox`, `punk-switch`, `punk-slider`, `punk-text-field`, `punk-number-field`, `punk-select`  | [forms.md](forms.md)                                   |
+| Family                 | Tags                                                                                                                                                                                       | Behavior spec                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| Layout and surfaces    | `punk-panel`, `punk-divider`, `punk-stack`, `punk-cluster`                                                                                                                                 | [layout-and-actions.md](layout-and-actions.md)         |
+| Actions                | `punk-button`, `punk-icon-button`                                                                                                                                                          | [layout-and-actions.md](layout-and-actions.md)         |
+| Navigation, disclosure | `punk-tabs` + `punk-tab`, `punk-toolbar`, `punk-accordion` + `punk-accordion-item`, `punk-menu` + `punk-menu-item`, `punk-toggle-group`, `punk-list` + `punk-list-item`                    | [keyboard-and-selection.md](keyboard-and-selection.md) |
+| Page navigation        | `punk-breadcrumb` + `punk-breadcrumb-item`, `punk-pagination`                                                                                                                              | [layout-and-actions.md](layout-and-actions.md)         |
+| Inventory              | `punk-slot`, `punk-item-stack`, `punk-slot-grid`, `punk-recipe`                                                                                                                            | [inventory-and-readouts.md](inventory-and-readouts.md) |
+| Readouts               | `punk-progress-bar`, `punk-meter`, `punk-status-light`, `punk-production-stat`, `punk-connection-row`                                                                                      | [inventory-and-readouts.md](inventory-and-readouts.md) |
+| Data display           | `punk-table`, `punk-alert`, `punk-badge`, `punk-spinner`                                                                                                                                   | [data-display.md](data-display.md)                     |
+| Overlays and feedback  | `punk-tooltip`, `punk-popover`, `punk-window`, `punk-dialog`, `punk-toast-stack` + `punk-toast`, `punk-drawer`                                                                             | [overlays.md](overlays.md)                             |
+| Form controls          | `punk-checkbox`, `punk-switch`, `punk-slider`, `punk-text-field`, `punk-number-field`, `punk-select`, `punk-radio-group` + `punk-radio`, `punk-textarea`, `punk-combobox`, `punk-fieldset` | [forms.md](forms.md)                                   |
 
 The slot grid's keyboard and selection model is in [keyboard-and-selection.md §6](keyboard-and-selection.md); its items are in [inventory-and-readouts.md](inventory-and-readouts.md).
 

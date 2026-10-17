@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "start": "npm run storybook",
     "storybook": "npm run build -w @dieselpunk/core && npm run dev -w @dieselpunk/storybook",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present && tsc -p tsconfig.scripts.json",

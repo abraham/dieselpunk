@@ -34,5 +34,19 @@
   "punk-text-field": "Over 5 kB: the form base and field styles are about 4.4 kB of it and are counted in each form control, and the localization runtime is 0.47 kB.",
   "punk-number-field": "Over 5 kB: the form base and field styles (about 4.4 kB), the steppers and their repeat logic, and the localization runtime.",
   "punk-select": "Over 5 kB: the form base and field styles (about 4.4 kB), the observer and option copying, and the localization runtime.",
-  "punk-icon-button (includes the tooltip)": "The one cross-family entry (specs/layout-and-actions.md §6): it includes the tooltip that supplies its visible label, the button base, and the localization runtime."
+  "punk-icon-button (includes the tooltip)": "The one cross-family entry (specs/layout-and-actions.md §6): it includes the tooltip that supplies its visible label, the button base, and the localization runtime.",
+  "punk-radio-group (both tags)": "Over 5 kB: two components in one entry, and the form base (about a third of it), the validation message, the localization runtime, and the radio's own ring styles.",
+  "punk-textarea": "Over 5 kB: the form base and field styles are about 4.4 kB of it and are counted in each form control, and the localization runtime is 0.41 kB.",
+  "punk-combobox": "Over 5 kB: the form base and field styles (about 4.4 kB), the positioning module, and its own list, keys, and filtering, which no other entry shares.",
+  "punk-fieldset": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
+  "punk-menu (both tags)": "Over 5 kB: two components in one entry, with anchoring, positioning, submenus, checkable items, typeahead, and context menus; the shared modules it imports are about 2.5 kB of it.",
+  "punk-toggle-group": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
+  "punk-list (both tags)": "Over 5 kB: two components in one entry, and the selectable base and the selection model are about 2 kB of it.",
+  "punk-table": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
+  "punk-alert": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
+  "punk-badge": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
+  "punk-spinner": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
+  "punk-drawer": "Over 5 kB: the shared modal surface, controller, and close button are most of it, as they are of the window, and the drawer adds its four edges and the slide.",
+  "punk-breadcrumb (both tags)": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
+  "punk-pagination": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB."
 }
