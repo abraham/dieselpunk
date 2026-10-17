@@ -13,6 +13,7 @@ const config: StorybookConfig = {
   ],
   stories: ['../src/stories/**/*.stories.ts', '../src/stories/**/*.mdx'],
   core: { disableTelemetry: true },
+  features: { sidebarOnboardingChecklist: false, menuOnboardingChecklist: false },
   // The workbench imports the package through its exports map, so it needs the build in dist/.
   viteFinal: (viteConfig) =>
     mergeConfig(viteConfig, {
