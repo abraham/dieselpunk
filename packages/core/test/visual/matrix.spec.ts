@@ -6,7 +6,7 @@ import type { Page } from '@playwright/test';
 // `industrial-light` at low density, at 100% only. The forced-colors project ignores themes, so
 // it runs one theme at 100% zoom. The baselines of a group are in a folder of that name.
 
-const groups = ['foundation', 'inventory', 'shell', 'forms', 'overlays'] as const;
+const groups = ['foundation', 'inventory', 'production', 'shell', 'forms', 'overlays'] as const;
 // An overlay is open on a page of its own, so each is a page, and only two contents are captured.
 const overlayPages = ['dialog', 'window', 'popover', 'toast-stack'] as const;
 const themes = ['industrial', 'industrial-light', 'high-contrast', 'reduced-texture'] as const;
@@ -20,7 +20,10 @@ const zooms = [
   { name: '200', scale: 2 },
 ] as const;
 const contents = ['short', 'long', 'unlabeled', 'rtl'] as const;
-const overlayContents = ['short', 'rtl'] as const;
+const overlayContents = ['short', 'rtl'] as const; // The stat and the row take their words from the content, but a missing label is replaced by the
+// same fallback the short content has, so `unlabeled` would only repeat `short`: it is left out of
+// `production` to keep the group under 20 MB (SPEC-PHASE-4 §2 decision 16).
+const productionContents = ['short', 'long', 'rtl'] as const;
 
 const crossEngineCombos = new Set(['industrial/compact', 'industrial-light/low']);
 
@@ -39,7 +42,11 @@ for (const group of groups) {
         for (const theme of themes) {
           for (const density of densities) {
             for (const container of containers) {
-              for (const content of group === 'overlays' ? overlayContents : contents) {
+              for (const content of group === 'overlays'
+                ? overlayContents
+                : group === 'production'
+                  ? productionContents
+                  : contents) {
                 for (const component of group === 'overlays' ? overlayPages : [null]) {
                   const id = `${component ? `${component}-` : ''}${theme}-${density}-${container.name}-${zoom.name}-${content}`;
                   test(id, async ({ page, browserName }, testInfo) => {
@@ -139,6 +146,46 @@ test.describe('interaction states', () => {
       await target(page).hover();
       await page.mouse.down();
       await expect(gallery(page)).toHaveScreenshot(['inventory', 'interaction-slot-active.png']);
+      await page.mouse.up();
+    });
+  });
+
+  test.describe('connection row', () => {
+    test.beforeEach(async ({ page }) => {
+      await open(page, { theme: 'industrial', density: 'compact', component: 'connection-row' });
+    });
+
+    // The first row that can be removed and is not disabled.
+    const target = (page: Page) =>
+      page
+        .locator('punk-connection-row[removable]:not([disabled])')
+        .first()
+        .locator('[part="remove-button"]');
+
+    test('connection row hover', async ({ page }) => {
+      await target(page).hover();
+      await expect(gallery(page)).toHaveScreenshot([
+        'production',
+        'interaction-connection-row-hover.png',
+      ]);
+    });
+
+    test('connection row focus-visible', async ({ page }) => {
+      await page.keyboard.press('Tab');
+      await expect(target(page)).toBeFocused();
+      await expect(gallery(page)).toHaveScreenshot([
+        'production',
+        'interaction-connection-row-focus.png',
+      ]);
+    });
+
+    test('connection row active', async ({ page }) => {
+      await target(page).hover();
+      await page.mouse.down();
+      await expect(gallery(page)).toHaveScreenshot([
+        'production',
+        'interaction-connection-row-active.png',
+      ]);
       await page.mouse.up();
     });
   });

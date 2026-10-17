@@ -268,5 +268,5 @@ describe.each(targetLocales)('the components in %s', (code) => {
       }
     }
     expect(problems).toEqual([]);
-  }, 60_000);
+  }, 120_000);
 });

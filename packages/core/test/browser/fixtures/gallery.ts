@@ -478,37 +478,63 @@ const builders: Record<ComponentName, Builder> = {
     // Without a visible label the stats take the same text, since a stat with no label has no name.
     const label = `label="${c.meter || 'Reactor heat'}"`;
     const spark = `<svg slot="sparkline" aria-hidden="true" viewBox="0 0 60 16" preserveAspectRatio="none"><polyline points="0,12 12,8 24,10 36,4 48,6 60,2" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+    const stat = (attributes: string, content = '') =>
+      `<punk-production-stat ${label} ${attributes}>${content}</punk-production-stat>`;
+    const trends = (['up', 'down', 'flat'] as const).flatMap((trend) => [
+      stat(`value="87" unit="%" trend="${trend}"`),
+      stat(
+        `value="87" unit="%" trend="${trend}" delta="${trend === 'down' ? '-3.5' : trend === 'up' ? '3.5' : '0'}"`,
+      ),
+    ]);
     return `
       <div class="stack">
-        <punk-production-stat ${label} value="1234.5" unit="/min"></punk-production-stat>
-        <punk-production-stat ${label} value="1234567" compact trend="up" delta="0.124" delta-percent></punk-production-stat>
-        <punk-production-stat ${label} value="87" unit="%" trend="down" delta="-3"></punk-production-stat>
-        <punk-production-stat ${label} value="0" unit="/s" trend="flat"></punk-production-stat>
-        <punk-production-stat ${label} value="12.5" decimals="2" unit="MW" announce>${spark}</punk-production-stat>
-        <punk-production-stat ${label} unit="/min"></punk-production-stat>
-        <punk-production-stat ${label} value="640" unit="/min" layout="inline" trend="up" delta="40"><span slot="icon" aria-hidden="true">${gear}</span>${spark}</punk-production-stat>
-        <punk-production-stat ${label} value="123456789.5" unit="kW" layout="inline" trend="up" delta="1500"></punk-production-stat>
+        ${stat('value="1234567.89" unit="items/min"')}
+        ${stat('value="1234567.89" unit="items/min" compact')}
+        ${stat('unit="items/min"')}
+        ${trends.join('')}
+        ${stat('value="0.124" decimals="1" unit="%" delta="0.124" delta-percent')}
+        ${stat('value="12.5" decimals="2" unit="MW" announce', spark)}
+        ${stat('value="640" unit="/min" layout="inline" trend="up" delta="40"', `<span slot="icon" aria-hidden="true">${gear}</span>${spark}`)}
+        ${stat('value="123456789.5" unit="kW" layout="inline" trend="up" delta="1500"')}
+        ${stat('layout="inline"')}
       </div>
     `;
   },
 
   'connection-row': (c) => {
     // Without visible text the nodes take the same words, since a row with no nodes has no name.
-    const source = `<span slot="source">${gear}${c.item || 'Iron smelter'}</span>`;
-    const destination = `<span slot="destination">${gear}${c.recipe || 'Assembler'}</span>`;
-    const nodes = source + destination;
+    const node = (slotName: string, text: string) =>
+      `<span slot="${slotName}">${gear}${text}</span>`;
+    const nodes =
+      node('source', c.item || 'Iron smelter') + node('destination', c.recipe || 'Assembler');
+    const longNodes =
+      node('source', c.body || 'Precision gear assembler of series two') +
+      node('destination', `${c.divider || 'Intermediate products'} ${c.body}`);
     const details = `<span>${c.body}</span>`;
     const [idle, scheduled, running, low, offline] = c.statuses;
     const text = (value: string) => `<span slot="status">${value}</span>`;
+    const row = (attributes: string, content: string) =>
+      `<punk-connection-row ${attributes}>${content}</punk-connection-row>`;
     return `
       <div class="stack">
-        <punk-connection-row>${nodes}</punk-connection-row>
-        <punk-connection-row direction="backward" removable value="belt-2">${nodes}${details}</punk-connection-row>
-        <punk-connection-row direction="both" status="info" removable>${nodes}${text(scheduled)}</punk-connection-row>
-        <punk-connection-row status="success" removable>${nodes}${details}${text(running)}</punk-connection-row>
-        <punk-connection-row status="warning" removable disabled>${nodes}${text(low)}</punk-connection-row>
-        <punk-connection-row status="danger" removable remove-label="${c.stop}">${nodes}${details}${text(offline)}</punk-connection-row>
-        <punk-connection-row>${nodes}${text(idle)}</punk-connection-row>
+        ${row('', nodes)}
+        ${row('direction="backward"', nodes)}
+        ${row('direction="both"', nodes)}
+        ${row('removable value="belt-1"', nodes)}
+        ${row('direction="backward" removable value="belt-2"', nodes + details)}
+        ${row('direction="both" removable', nodes + details)}
+        ${row('status="info" removable', nodes + text(scheduled))}
+        ${row('status="success" removable', nodes + details + text(running))}
+        ${row('status="warning" removable', nodes + text(low))}
+        ${row(`status="danger" removable remove-label="${c.stop}"`, nodes + details + text(offline))}
+        ${row('', nodes + text(idle))}
+        ${row('status="danger"', nodes)}
+        ${row('status="success" removable disabled', nodes + details + text(running))}
+        ${row('removable', longNodes + details + text(low))}
+      </div>
+      <div class="stack" style="max-inline-size: 320px">
+        ${row('direction="both" status="warning" removable', nodes + details + text(low))}
+        ${row('direction="backward" status="success" removable', longNodes + text(running))}
       </div>
     `;
   },

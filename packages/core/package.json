@@ -36,6 +36,7 @@
     "build": "tsc -p tsconfig.build.json && node scripts/build-css.ts && npm run build:manifest",
     "build:css": "node scripts/build-css.ts",
     "build:manifest": "cem analyze --config custom-elements-manifest.config.mjs",
+    "build:pseudo": "node scripts/build-pseudo.ts",
     "check:api": "node scripts/check-api.ts",
     "check:contrast": "node scripts/check-contrast.ts",
     "check:consumer": "node scripts/check-consumer.ts",
@@ -45,9 +46,9 @@
     "test:visual:update": "node scripts/visual.ts update",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "node --test \"test/*.test.ts\"",
-    "pretest:browser": "npm run build:manifest",
+    "pretest:browser": "npm run build:manifest && npm run build:pseudo",
     "test:browser": "vitest run",
-    "typecheck": "tsc -p tsconfig.json",
+    "typecheck": "npm run build:pseudo && tsc -p tsconfig.json",
     "check:frameworks": "node scripts/check-frameworks.ts"
   },
   "dependencies": {
@@ -59,6 +60,7 @@
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@fontsource/chakra-petch": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@lit/localize-tools": "^0.8.2",
     "@playwright/test": "^1.64.1",
     "@size-limit/esbuild": "^14.2.0",
     "@size-limit/file": "^14.2.0",
