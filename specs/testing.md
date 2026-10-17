@@ -35,7 +35,7 @@
 | `foundation` | panel, divider, button, icon button, progress bar, tooltip                                                |
 | `inventory`  | slot, item stack, slot grid, recipe, meter, status light                                                  |
 | `production` | production stat, connection row                                                                           |
-| `shell`      | stack, cluster, accordion and its items, tabs and tab, toolbar, non-modal windows                         |
+| `shell`      | stack, cluster, accordion and its items, tabs and tab, toolbar, non-modal windows, splitter               |
 | `forms`      | checkbox, switch, slider, text field, number field, select, date field, time field                        |
 | `inputs`     | radio group and radio, textarea, combobox, fieldset, file field                                           |
 | `navigation` | toggle group, list and list item, breadcrumb and item, pagination, steps and step, menu items             |

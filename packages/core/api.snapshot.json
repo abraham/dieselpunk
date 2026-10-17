@@ -1411,6 +1411,38 @@
       },
       "cssProperties": {}
     },
+    "punk-splitter": {
+      "attributes": {
+        "label": "string = ''",
+        "max": "number = 100",
+        "min": "number = 0",
+        "orientation": "SplitterOrientation = 'horizontal'",
+        "step": "number = 5",
+        "value": "number = 50"
+      },
+      "properties": {
+        "label": "string = ''",
+        "max": "number = 100",
+        "min": "number = 0",
+        "orientation": "SplitterOrientation = 'horizontal'",
+        "step": "number = 5",
+        "value": "number = 50"
+      },
+      "methods": {},
+      "events": {
+        "punk-split-change": ""
+      },
+      "slots": {
+        "end": "",
+        "start": ""
+      },
+      "parts": {
+        "end": "",
+        "separator": "",
+        "start": ""
+      },
+      "cssProperties": {}
+    },
     "punk-stack": {
       "attributes": {
         "align": "StackAlign = 'stretch'",

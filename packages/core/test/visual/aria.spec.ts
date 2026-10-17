@@ -418,6 +418,26 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
+  test('splitter', { tag: at('shell') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-splitter value="30" label="Map width" style="block-size: 120px">
+         <div slot="start">Map</div>
+         <div slot="end">Details</div>
+       </punk-splitter>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - text: Map
+      - separator "Map width"
+      - text: Details
+    `);
+    const bar = page.getByRole('separator', { name: 'Map width' });
+    await expect(bar).toHaveAttribute('aria-valuenow', '30');
+    await bar.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(bar).toHaveAttribute('aria-valuenow', '35');
+  });
+
   test('fieldset', { tag: at('inputs') }, async ({ page }) => {
     await render(
       page,

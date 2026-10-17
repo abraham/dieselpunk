@@ -18,7 +18,7 @@ Living specifications for `@dieselpunk/core` and `@dieselpunk/locales`. Each one
 | [forms.md](forms.md)                                   | Form association, values and defaults, validation, labels; the thirteen form controls and the fieldset                 |
 | [inventory-and-readouts.md](inventory-and-readouts.md) | Receptacles and readouts; slot, item stack, recipe, progress bar, meter, status light, production stat, connection row |
 | [data-display.md](data-display.md)                     | Data and status in the page; table, alert, badge, spinner, keyboard key, description list, tag                         |
-| [layout-and-actions.md](layout-and-actions.md)         | Panel, divider, stack, cluster, button, icon button, breadcrumb, pagination, steps                                     |
+| [layout-and-actions.md](layout-and-actions.md)         | Panel, divider, stack, cluster, splitter, button, icon button, breadcrumb, pagination, steps                           |
 | [localization.md](localization.md)                     | Messages, locale changes, the locales package, translation gates, number formatting, direction                         |
 | [performance.md](performance.md)                       | Size budgets, runtime cost rules, and the deterministic gates that hold them                                           |
 | [testing.md](testing.md)                               | Test layers, the gallery, engines, visual regression, mutation checking, the gate list, the testing package            |

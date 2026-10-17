@@ -35,6 +35,7 @@ const german = {
     stepComplete: 'abgeschlossen',
     stepUpcoming: 'nicht begonnen',
     dropFiles: 'oder Dateien hier ablegen',
+    resizePanes: 'Größe ändern',
   },
 };
 

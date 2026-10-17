@@ -17,16 +17,17 @@ A planned component is built only after its section exists in its family spec, w
 
 ## 2. Implemented
 
-58 tags in 50 registration entries.
+59 tags in 51 registration entries.
 
 ### 2.1 Layout and surfaces
 
-| Tag            | Purpose                                                                                 | Status      | Spec                                              |
-| -------------- | --------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------- |
-| `punk-panel`   | A structural metal surface (raised, inset, flat) with optional header and footer strips | Implemented | [layout-and-actions.md §1](layout-and-actions.md) |
-| `punk-divider` | An etched separator, horizontal or vertical, with an optional label                     | Implemented | [layout-and-actions.md §2](layout-and-actions.md) |
-| `punk-stack`   | A vertical layout primitive with token-based gaps                                       | Implemented | [layout-and-actions.md §3](layout-and-actions.md) |
-| `punk-cluster` | A wrapping horizontal layout primitive with token-based gaps                            | Implemented | [layout-and-actions.md §3](layout-and-actions.md) |
+| Tag             | Purpose                                                                                 | Status      | Spec                                               |
+| --------------- | --------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------- |
+| `punk-panel`    | A structural metal surface (raised, inset, flat) with optional header and footer strips | Implemented | [layout-and-actions.md §1](layout-and-actions.md)  |
+| `punk-divider`  | An etched separator, horizontal or vertical, with an optional label                     | Implemented | [layout-and-actions.md §2](layout-and-actions.md)  |
+| `punk-stack`    | A vertical layout primitive with token-based gaps                                       | Implemented | [layout-and-actions.md §3](layout-and-actions.md)  |
+| `punk-cluster`  | A wrapping horizontal layout primitive with token-based gaps                            | Implemented | [layout-and-actions.md §3](layout-and-actions.md)  |
+| `punk-splitter` | Two panes with a draggable, keyboard-operable divider                                   | Implemented | [layout-and-actions.md §10](layout-and-actions.md) |
 
 ### 2.2 Actions
 
@@ -119,7 +120,6 @@ None: every component that general-purpose use needs is implemented. The part of
 | -------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | `punk-tree`, `punk-tree-item`                      | Hierarchical navigation and selection: file trees, tech trees, category browsers | APG tree view; `SelectionModel`; roving focus with expand and collapse keys                                                                                                             | [keyboard-and-selection.md](keyboard-and-selection.md) |
 | `punk-menubar`                                     | A persistent row of menus at the top of an application window                    | APG menubar, built from `punk-menu`                                                                                                                                                     | [keyboard-and-selection.md](keyboard-and-selection.md) |
-| `punk-splitter`                                    | Two panes with a draggable, keyboard-operable divider                            | APG window splitter (`separator` with a value); pointer capture with a keyboard alternative                                                                                             | [layout-and-actions.md](layout-and-actions.md)         |
 | `punk-range-slider`                                | A low and high value chosen on one track                                         | Two `slider` thumbs on the slider's math and pointer model; submits two values                                                                                                          | [forms.md](forms.md)                                   |
 | Data modes of the slot grid, list, table, and tree | Collections of thousands of items with only the visible ones in the DOM          | `@lit-labs/virtualizer`, as a peer dependency of an optional package, not core; `items` and `renderItem`, `aria-setsize` and `aria-posinset`, selection by value, roving focus by index | [performance.md §4.1](performance.md)                  |
 

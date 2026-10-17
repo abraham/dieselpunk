@@ -413,5 +413,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "6.7 kB"
+  },
+  {
+    "name": "punk-splitter",
+    "path": "dist/components/splitter/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "4.75 kB"
   }
 ]

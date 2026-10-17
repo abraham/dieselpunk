@@ -8,7 +8,17 @@ export const galleryGroups = {
   foundation: ['panel', 'divider', 'button', 'icon-button', 'progress-bar', 'tooltip'],
   inventory: ['slot', 'item-stack', 'slot-grid', 'recipe', 'meter', 'status-light'],
   production: ['production-stat', 'connection-row'],
-  shell: ['stack', 'cluster', 'accordion', 'accordion-item', 'tabs', 'tab', 'toolbar', 'window'],
+  shell: [
+    'stack',
+    'cluster',
+    'accordion',
+    'accordion-item',
+    'tabs',
+    'tab',
+    'toolbar',
+    'window',
+    'splitter',
+  ],
   // Every form control in every state, in flow: no top layer, so one page holds them all.
   forms: [
     'checkbox',

@@ -188,6 +188,10 @@ const cases: Record<string, Case> = {
     show: () => step('<punk-steps current="0"><punk-step>A</punk-step></punk-steps>'),
   },
   dropFiles: { show: () => mount('<punk-file-field label="Plans" drop-zone></punk-file-field>') },
+  resizePanes: {
+    show: () =>
+      mount('<punk-splitter><div slot="start">A</div><div slot="end">B</div></punk-splitter>'),
+  },
 };
 
 /** The first step of the steps in `markup`, which says the word for its state. */

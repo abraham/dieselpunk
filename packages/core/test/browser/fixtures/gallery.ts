@@ -53,6 +53,7 @@ import '../../../src/components/steps/register.ts';
 import '../../../src/components/date-field/register.ts';
 import '../../../src/components/time-field/register.ts';
 import '../../../src/components/file-field/register.ts';
+import '../../../src/components/splitter/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -635,6 +636,18 @@ const builders: Record<ComponentName, Builder> = {
       <punk-toolbar aria-label="${c.settings}">${actions}</punk-toolbar>
       <punk-toolbar aria-label="${c.settings}" wrap style="max-inline-size: 320px">${actions}</punk-toolbar>
       <punk-toolbar aria-label="${c.settings}" style="max-inline-size: 150px">${actions}${more}</punk-toolbar>
+    `;
+  },
+
+  splitter: (c) => {
+    const pane = (slot: string, text: string) =>
+      `<div slot="${slot}" style="padding: 8px; overflow-wrap: anywhere">${text}</div>`;
+    return `
+      <div class="stack" style="max-inline-size: 480px">
+        <punk-splitter style="block-size: 80px">${pane('start', c.title || c.body)}${pane('end', c.footer || c.body)}</punk-splitter>
+        <punk-splitter value="30" label="${c.settings}" style="block-size: 80px">${pane('start', c.start)}${pane('end', c.body)}</punk-splitter>
+        <punk-splitter orientation="vertical" value="40" style="block-size: 160px">${pane('start', c.start)}${pane('end', c.stop)}</punk-splitter>
+      </div>
     `;
   },
 

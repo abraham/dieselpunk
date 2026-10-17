@@ -187,6 +187,11 @@
   <target>o suelte archivos aquí</target>
   <note from="lit-localize">Shown beside the button of a file field that also takes files dropped on it.</note>
 </trans-unit>
+<trans-unit id="resizePanes">
+  <source>Resize</source>
+  <target>Cambiar tamaño</target>
+  <note from="lit-localize">The name of the divider between two panes that the user can move.</note>
+</trans-unit>
 </body>
 </file>
 </xliff>
