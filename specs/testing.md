@@ -1,7 +1,7 @@
 # Testing and Quality Gates
 
-**Scope:** how the system is tested: the test layers, the shared gallery, the engines, what every component test covers, visual regression, mutation checking, the package and consumer checks, and the list of CI gates.
-**Code:** `packages/*/test/`, `packages/*/scripts/check-*.ts`, `packages/core/vitest.config.ts`, `playwright.config.ts`, `scripts/visual.ts`, `build-visual.ts`, `serve-visual.ts`, `apps/storybook/scripts/smoke.ts`, `.github/workflows/`.
+**Scope:** how the system is tested: the test layers, the shared gallery, the engines, what every component test covers, visual regression, mutation checking, the package and consumer checks, the list of CI gates, and the testing package that holds the shared tooling.
+**Code:** `packages/testing/`, `packages/*/test/`, `packages/*/scripts/check-*.ts`, `packages/core/vitest.config.ts`, `playwright.config.ts`, `scripts/visual.ts`, `build-visual.ts`, `serve-visual.ts`, `apps/storybook/scripts/smoke.ts`, `.github/workflows/`.
 
 ## 1. Principles
 
@@ -10,6 +10,7 @@
 3. **Every gate is made to fail once** before it is trusted ([§7](#7-mutation-checking)).
 4. **One source of states.** The axe, reflow, manifest, strings, and visual suites all render the same gallery, so a state added once is covered everywhere.
 5. **Real engines, real platforms.** Component tests run in Chromium, Firefox, and WebKit, and are run on Linux before they are trusted, since macOS does not reproduce every Firefox and WebKit behavior.
+6. **Tooling is shared, tests are owned.** The machinery tests run on lives in `@dieselpunk/testing` ([§10](#10-the-testing-package)); the tests, fixtures, and baselines that state what a package does live in that package.
 
 ## 2. Layers
 
@@ -141,7 +142,48 @@ A test or gate is trusted only after it has failed against a deliberately broken
 | `test:smoke`       | storybook | A story or page that errors, warns, overflows, or fails its flow                         |
 | `test:visual`      | core      | A screenshot that differs from its baseline (CI visual job)                              |
 
+## 10. The testing package
+
+`packages/testing` is `@dieselpunk/testing`: the tooling that the other workspaces' tests and gates run on. It holds machinery, not claims. No test of a component, a translation, or a page lives in it; a package's tests, fixtures, gallery, baselines, and gate rules stay in that package.
+
+**Why:** today the tooling is shared by reaching across workspaces. The locales `check:size` runs `../core/scripts/check-size-reasons.ts`, its Vitest config imports core's part selection, and its browser test imports core's helpers; core imports the XLIFF reader from `../../locales/scripts/`. A move in one package breaks another's tests with no error pointing at it, and every new package would copy the reach-arounds.
+
+**Rules.**
+
+- **Private and unbuilt.** `private: true`, never published, and without `check:package`, `check:size`, or `check:api`. Its exports point at TypeScript sources: Node runs the Node modules by type stripping, and Vite bundles the browser modules with the test that imports them. Node strips types only outside `node_modules`, which holds because the workspace link resolves to `packages/testing/`; nothing runs Node with `--preserve-symlinks`.
+- **One direction.** It imports no workspace package. Core, locales, and the workbench list it in `devDependencies` and pass it what is theirs: entry points, page paths, group lists, fixture folders. **Why:** a cycle would break the root build order and let the tooling depend on the code it checks.
+- **Thin entries.** Each workspace keeps its scripts (`scripts/visual.ts`, `check-consumer.ts`, the root `scripts/ci-matrix.ts`) as entries that pass their own data to the tool, so commands, CI steps, and the other specs' names for them do not change.
+- **No reaching across workspaces.** A workspace imports another only by package name, and what two workspaces' tests share goes here. ESLint's `no-restricted-imports` rejects a relative import that leaves its workspace, and any import of `@dieselpunk/testing` from a `src/` folder.
+- **One context per export.** Node exports follow the Node-run rules of [toolchain.md §3](toolchain.md); browser exports may import Lit and the DOM. No export mixes the two.
+- **Dependencies.** It declares what its modules import: Playwright, esbuild, and `axe-core`. Test runners (`vitest`, `@playwright/test`) stay `devDependencies` of each workspace that runs them, since their binaries run from there, at the one version the root resolves.
+- **Its own tests are the exception.** The tooling's logic tests (part selection, matrix packing, baseline merging, size reasons, the pseudo-locale, the image pin) run in its `test:node`, and each tool is made to fail once like any gate (§7).
+
+**Exports.**
+
+| Export         | Context | Contents                                                                                                                                                                       | Used by                               |
+| -------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
+| `./browser`    | Browser | `track`, `cleanup`, `addStylesheets`, `rgb`, `focusWithKeyboard`, an axe runner that reaches into shadow roots, and the typings of the browser commands                        | Core and locales browser tests        |
+| `./vitest`     | Node    | The browser commands (media emulation that waits for the frame, `holdPointer`), the providers chosen by `PUNK_BROWSERS`, Lit's `optimizeDeps` entries, and part selection (§4) | Core and locales Vitest configs       |
+| `./playwright` | Node    | `at`, `groupTag`, `themeTag`, and the tolerances of §6                                                                                                                         | Core's Playwright config and specs    |
+| `./visual`     | Node    | The visual runner (`check`, `update`, `selftest`) in the pinned image or directly on Linux, and the esbuild page bundler                                                       | Core's `test:visual`                  |
+| `./server`     | Node    | A static file server confined to its root                                                                                                                                      | The visual runner, the smoke test     |
+| `./consumer`   | Node    | Packing workspaces, installing the tarballs into throwaway projects with a chosen TypeScript, and driving a page in Chromium (`probeConsumer`)                                 | `check:consumer`, `check:frameworks`  |
+| `./xliff`      | Node    | The XLIFF reader                                                                                                                                                               | Locales' checks, the pseudo-locale    |
+| `./pseudo`     | Node    | The pseudo-locale transform ([localization.md](localization.md) Verification)                                                                                                  | Core's `build-pseudo.ts`              |
+| `./size`       | Node    | The size-reason check ([performance.md §2](performance.md))                                                                                                                    | `check:size` in each package          |
+| `./ci`         | Node    | Matrix packing, change detection, and baseline merging ([ci.md](ci.md))                                                                                                        | The `plan` job, the baseline workflow |
+
+**Stays in its workspace:**
+
+- Tests and what they render: component tests, the `test/browser/` suites, the gallery and `groups.ts`, the test locale, the consumer and framework fixture apps, `aria.spec.ts`, `matrix.spec.ts`, `playwright.config.ts`, and the baselines.
+- Gate rules that state a package's contract: the contrast rules, the API snapshot, the `check-package` sentinels, the locale rules, and string extraction.
+- Helpers that know one package's components, such as `receptacle-helpers.ts`.
+- The smoke test's flows.
+
 ## Gaps
+
+- **The testing package is not created yet.** Its tooling is in `packages/core/scripts/`, `packages/core/test/browser/`, `packages/core/test/visual/tags.ts`, `packages/locales/scripts/xliff.ts`, and the root `scripts/`, joined by the relative imports §10 forbids, and the Code lines of [ci.md](ci.md), [localization.md](localization.md), and [performance.md](performance.md) name those files. Closing it: create the package, move each export's modules with their tests, leave thin entries, add the ESLint restrictions, and update those Code lines and [toolchain.md §1](toolchain.md).
+- **The locales browser test renders core's gallery** through a relative import, which §10 forbids, and the gallery is core's and stays there. Closing it: either move that suite to a private workspace that depends on both packages, or give it its own sample of each family.
 
 - **Committed baselines were rendered on arm64,** in the pinned image, not by the CI workflow on amd64. They matched CI renders when that was last compared, but the current set has not been. Closing it: run the "Update visual baselines" workflow and commit its output if it differs.
 - **Older interaction captures use the page-level tolerance.** The button, slot, connection row, and form-control captures predate the clipped, tight-tolerance captures, and a subtle hover change on them can pass. Closing it: clip them the same way.
