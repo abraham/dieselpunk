@@ -70,10 +70,23 @@ The slot grid's keyboard and selection model is in [keyboard-and-selection.md §
 
 ## 7. Platforms
 
-- **Browsers:** the current and previous major versions of Chrome, Edge, Firefox, and Safari. Emitted code is ESNext and is not downleveled, so source uses only what that baseline supports.
+- **Browsers:** the latest two major versions of Chrome, Firefox, and Safari (§7.1).
 - **Input:** mouse, pen, touch, keyboard, and assistive technology. Hover reveals supplemental information only, never a required action.
 - **Integration:** plain HTML and TypeScript with no global setup. React, Vue, and Svelte through integration guides backed by tested fixture apps ([workbench.md §4](workbench.md)), not wrappers.
 - **Locales:** English, German, French, Spanish, Japanese, and Arabic (right to left), with one active message locale per page ([localization.md](localization.md)).
+
+### 7.1 Browser support
+
+**Supported:** the latest two major versions of **Chrome**, **Firefox**, and **Safari**, on desktop and on mobile (Chrome on Android, Safari on iOS and iPadOS). As each browser ships a new major version, the oldest supported one drops out.
+
+- **Supported means** every component works as its spec says and meets the release criteria (§9) there. A defect in a supported browser is a bug in the library.
+- **Other browsers** built on the same engines (Edge, Opera, Samsung Internet, and the like) are expected to work but are not tested, and a defect that only they show is fixed when it is cheap to fix.
+- **Older versions** are not supported. The library does not detect the browser, warn, or degrade on purpose for them.
+- **Language and platform features.** Emitted code is ESNext and is not downleveled or polyfilled, so source and styles use only JavaScript, DOM, and CSS features that every supported version ships: custom elements and Shadow DOM, `ElementInternals` and form association, `<dialog>` and the Popover API, `:focus-visible`, `:dir()`, container queries, `color-mix()`, logical properties, and `Intl`. A feature becomes usable when the oldest supported version of all three browsers has it.
+- **Fallbacks** exist only where a feature is missing in a supported version. A fallback is removed once every supported version has the feature.
+- **Testing.** CI runs every browser suite and the visual matrix in Playwright's Chromium, Firefox, and WebKit builds, which track the current releases ([testing.md §4](testing.md)). The previous major version, and the branded browsers on real devices, are covered by the manual screen reader checklist ([accessibility.md §13](accessibility.md)), which uses Chrome, Firefox, and Safari.
+
+**Gaps.** No gate checks that source uses only features of the supported versions. Closing it: a shared `browserslist` query (`last 2 Chrome versions, last 2 Firefox versions, last 2 Safari versions, last 2 iOS versions, last 2 ChromeAndroid versions`) read by a JavaScript API check in ESLint and a CSS feature check, so a feature newer than the oldest supported version fails lint. The top-layer fallbacks of [overlays.md §1](overlays.md) are reviewed against that query and removed if every supported version has `showModal` and the Popover API.
 
 ## 8. Acceptance scenario
 

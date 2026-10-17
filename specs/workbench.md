@@ -81,6 +81,8 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 
 **Accessibility.** The site's own pages (overviews, guides, and examples) meet the same WCAG 2.2 AA target as the components. The Storybook manager chrome is a third-party application and is tested only for what this site configures in it (theme contrast, the logo's name).
 
+**Browsers.** The site supports the same browsers as the library: the latest two major versions of Chrome, Firefox, and Safari ([product.md §7.1](product.md)).
+
 **Getting started.** The Integration guide is the entry for newcomers and is linked from the sidebar header: it shows `npm install`, the class and register imports, the stylesheets, and a plain HTML page that loads the packages through an import map, so a reader can copy a working page.
 
 **Package links.** The `homepage` field of `@dieselpunk/core` and `@dieselpunk/locales` is `https://dieselpunk.dev`, and each component's manifest description links its docs page.
