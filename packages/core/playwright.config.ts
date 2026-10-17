@@ -10,6 +10,8 @@ export default defineConfig({
   testMatch: '*.spec.ts',
   snapshotPathTemplate: `${process.env['PUNK_VISUAL_SNAPSHOTS'] ?? '{testDir}/__screenshots__'}/{projectName}/{arg}{ext}`,
   fullyParallel: true,
+  // Playwright's default of half the reported cores gave one worker on GitHub's 4-vCPU runners.
+  workers: 4,
   forbidOnly: Boolean(process.env['CI']),
   retries: 0,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'test-results/visual-report' }]],
