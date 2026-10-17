@@ -60,6 +60,7 @@ const sentinels: Record<string, string> = {
   'number-field': '-webkit-inner-spin-button',
   select: 'optgroup',
   textarea: 'field-sizing',
+  fieldset: 'It has no legend',
   alert: 'part="actions"',
   badge: '"punk-badge"',
   spinner: '"punk-spinner"',

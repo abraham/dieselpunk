@@ -275,6 +275,13 @@
     "limit": "6.25 kB"
   },
   {
+    "name": "punk-fieldset",
+    "path": "dist/components/fieldset/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "3.5 kB"
+  },
+  {
     "name": "punk-alert",
     "path": "dist/components/alert/register.js",
     "ignore": ["lit"],

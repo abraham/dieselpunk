@@ -327,6 +327,32 @@
         "--punk-divider-gap": "= var(--punk-space-2)"
       }
     },
+    "punk-fieldset": {
+      "attributes": {
+        "disabled": "boolean = false",
+        "label": "string = ''"
+      },
+      "properties": {
+        "disabled": "boolean = false",
+        "label": "string = ''"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": "",
+        "error": "",
+        "hint": "",
+        "legend": ""
+      },
+      "parts": {
+        "content": "",
+        "error": "",
+        "fieldset": "",
+        "hint": "",
+        "legend": ""
+      },
+      "cssProperties": {}
+    },
     "punk-icon-button": {
       "attributes": {
         "aria-label": "string | null = null",

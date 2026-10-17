@@ -64,6 +64,7 @@ export type {
   PunkRemoveDetail,
 } from './components/connection-row/index.ts';
 export { PunkTextarea } from './components/textarea/index.ts';
+export { PunkFieldset } from './components/fieldset/index.ts';
 export { PunkAlert } from './components/alert/index.ts';
 export type { AlertVariant } from './components/alert/index.ts';
 export { PunkBadge } from './components/badge/index.ts';
