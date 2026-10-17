@@ -848,6 +848,24 @@
         "--punk-slot-size": "= 40px"
       }
     },
+    "punk-spinner": {
+      "attributes": {
+        "size": "SpinnerSize = 'md'"
+      },
+      "properties": {
+        "size": "SpinnerSize = 'md'"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "label": "",
+        "spinner": ""
+      },
+      "cssProperties": {}
+    },
     "punk-stack": {
       "attributes": {
         "align": "StackAlign = 'stretch'",

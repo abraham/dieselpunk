@@ -65,3 +65,5 @@ export type {
 } from './components/connection-row/index.ts';
 export { PunkBadge } from './components/badge/index.ts';
 export type { BadgeVariant } from './components/badge/index.ts';
+export { PunkSpinner } from './components/spinner/index.ts';
+export type { SpinnerSize } from './components/spinner/index.ts';

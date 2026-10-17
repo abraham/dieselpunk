@@ -273,5 +273,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "3 kB"
+  },
+  {
+    "name": "punk-spinner",
+    "path": "dist/components/spinner/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "3 kB"
   }
 ]
