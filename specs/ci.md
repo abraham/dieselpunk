@@ -131,9 +131,8 @@ The packing cap of §6 is set so a packed job meets its target. The `plan` job w
 
 ## Gaps
 
-The workflows are the first step toward this design: `verify`, `smoke`, `browser` (one job per engine), a hand-written `visual` matrix (Chromium in two count-based shards), and `ci-success`. Missing:
+The workflows are the first step toward this design: `verify`, `smoke`, `browser` (one job per engine), a hand-written `visual` matrix (Chromium in two count-based shards), and `ci-success`. The visual tests carry the `@cross-engine` and `@forced` tags, and each project selects its tests with `grep`. Missing:
 
-- **Runtime skips in the visual spec.** `matrix.spec.ts` skips from inside the test body, so the Firefox and WebKit jobs open a page for each of the 846 tests they do not run. Closing it: tags and per-project `grep` (§5.2).
 - **No shared setup action;** every job repeats setup, the Playwright browsers are downloaded in each job, and Node is downloaded in each job.
 - **`verify` installs Chromium** for the two checks that need it; `static` and `integration` are not split.
 - **`typecheck` builds core and locales** through the workbench's typecheck script, and `build` then builds them again.

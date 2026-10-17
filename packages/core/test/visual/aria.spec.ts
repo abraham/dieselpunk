@@ -31,13 +31,8 @@ async function render(page: Page, markup: string, values?: string[]): Promise<vo
   );
 }
 
-test.describe('ARIA snapshots', () => {
-  // Playwright reads the fixtures from the first parameter, so it has to be a pattern.
-  // eslint-disable-next-line no-empty-pattern
-  test.beforeEach(({}, testInfo) => {
-    test.skip(testInfo.project.name === 'chromium-forced', 'Forced colors do not change the tree');
-  });
-
+// Forced colors do not change the tree, so the forced-colors project does not run these.
+test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
   test('slot alone', async ({ page }) => {
     await render(
       page,

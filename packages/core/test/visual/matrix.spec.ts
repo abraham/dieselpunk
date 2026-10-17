@@ -5,6 +5,10 @@ import type { Locator, Page } from '@playwright/test';
 // Chromium runs all of it. Firefox and WebKit run the default theme at compact density and
 // `industrial-light` at low density, at 100% only. The forced-colors project ignores themes, so
 // it runs one theme at 100% zoom. The baselines of a group are in a folder of that name.
+// Projects select their tests by tag (playwright.config.ts), so a test never skips itself after
+// its page is open (specs/ci.md §5.2).
+
+const everyProject = ['@cross-engine', '@forced'];
 
 const groups = ['foundation', 'inventory', 'production', 'shell', 'forms', 'overlays'] as const;
 // An overlay is open on a page of its own, so each is a page, and only two contents are captured.
@@ -49,21 +53,18 @@ for (const group of groups) {
                   : contents) {
                 for (const component of group === 'overlays' ? overlayPages : [null]) {
                   const id = `${component ? `${component}-` : ''}${theme}-${density}-${container.name}-${zoom.name}-${content}`;
-                  test(id, async ({ page, browserName }, testInfo) => {
-                    const forced = testInfo.project.name === 'chromium-forced';
-                    const reduced =
-                      crossEngineCombos.has(`${theme}/${density}`) &&
-                      zoom.name === '100' &&
-                      container.name === 'desktop' &&
-                      content === 'short';
-                    test.skip(
-                      forced
-                        ? theme !== 'industrial' || zoom.name !== '100'
-                        : browserName !== 'chromium' && !reduced,
-                      forced
-                        ? 'Forced colors ignore the theme'
-                        : 'Firefox and WebKit run the reduced matrix',
-                    );
+                  const crossEngine =
+                    crossEngineCombos.has(`${theme}/${density}`) &&
+                    zoom.name === '100' &&
+                    container.name === 'desktop' &&
+                    content === 'short';
+                  // Forced colors ignore the theme.
+                  const forced = theme === 'industrial' && zoom.name === '100';
+                  const tag = [
+                    ...(crossEngine ? ['@cross-engine'] : []),
+                    ...(forced ? ['@forced'] : []),
+                  ];
+                  test(id, { tag }, async ({ page }) => {
                     await page.setViewportSize({
                       width: Math.round(container.width / zoom.scale),
                       height: 900,
@@ -88,7 +89,7 @@ for (const group of groups) {
 }
 
 // Interaction states are driven with real input, never with CSS class hooks.
-test.describe('interaction states', () => {
+test.describe('interaction states', { tag: everyProject }, () => {
   const gallery = (page: Page) => page.locator('.gallery');
 
   test.describe('button', () => {
@@ -314,7 +315,7 @@ async function shotAround(
   });
 }
 
-test.describe('interaction states of the remaining components', () => {
+test.describe('interaction states of the remaining components', { tag: everyProject }, () => {
   for (const capture of captures) {
     const component = capture.query?.['component'] ?? capture.name;
     const query = { theme: 'industrial', density: 'compact', component, ...capture.query };
@@ -374,7 +375,7 @@ test.describe('interaction states of the remaining components', () => {
 });
 
 // A window in move mode, with the keyboard: the pressed move button and the offset window.
-test.describe('window mid-move', () => {
+test.describe('window mid-move', { tag: everyProject }, () => {
   test('after the move button and four arrow keys', async ({ page }) => {
     await open(page, {
       group: 'overlays',
