@@ -64,7 +64,7 @@ export const Inventory: Story = {
                 </punk-item-stack>
               </punk-slot-grid>
             </div>
-            <div class="wb-stack" style="flex: 1; min-inline-size: 220px">
+            <div class="wb-stack" style="flex: 1; min-inline-size: min(220px, 100%)">
               <span class="wb-caption">Recipe</span>
               <punk-recipe name="Speed module" duration="6" available craftable-count="4" selected>
                 ${item('module', 'icon')}
