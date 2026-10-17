@@ -624,6 +624,23 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
+  test('description list', { tag: at('data') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-description-list>
+         <dt>Speed</dt><dd>0.75</dd>
+         <dt>Output</dt><dd>1,240 /min</dd><dd>80 MW</dd>
+       </punk-description-list>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - term: Speed
+      - definition: "0.75"
+      - term: Output
+      - definition: 1,240 /min
+      - definition: 80 MW
+    `);
+  });
+
   const sparkline =
     '<svg slot="sparkline" viewBox="0 0 8 4" aria-hidden="true"><path d="M0 4 8 0"/></svg>';
 

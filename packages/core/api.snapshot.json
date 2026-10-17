@@ -357,6 +357,19 @@
       },
       "cssProperties": {}
     },
+    "punk-description-list": {
+      "attributes": {},
+      "properties": {},
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "list": ""
+      },
+      "cssProperties": {}
+    },
     "punk-dialog": {
       "attributes": {
         "alert": "boolean = false",

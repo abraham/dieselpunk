@@ -24,7 +24,7 @@ export const galleryGroups = {
     'menu-item',
   ],
   // Readouts of data and status that sit in the page.
-  data: ['table', 'alert', 'badge', 'spinner', 'kbd'],
+  data: ['table', 'alert', 'badge', 'spinner', 'kbd', 'description-list'],
   // Overlays open on a page of their own, since the top layer covers everything else.
   overlays: ['dialog', 'window', 'popover', 'toast-stack', 'drawer', 'menu'],
 } as const;

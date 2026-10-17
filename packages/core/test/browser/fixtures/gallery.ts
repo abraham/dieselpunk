@@ -47,6 +47,7 @@ import '../../../src/components/drawer/register.ts';
 import '../../../src/components/breadcrumb/register.ts';
 import '../../../src/components/pagination/register.ts';
 import '../../../src/components/kbd/register.ts';
+import '../../../src/components/description-list/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -1033,6 +1034,21 @@ const builders: Record<ComponentName, Builder> = {
       <punk-button>${c.settings} <punk-kbd>F2</punk-kbd></punk-button>
     </div>
   `,
+
+  'description-list': (c) => {
+    const list = `
+      <punk-description-list>
+        <dt>${c.makes}</dt><dd>${c.needs}</dd>
+        <dt>${c.settings}</dt><dd>0.75</dd><dd>1,240 /min</dd>
+        <dt>${c.statuses[2]}</dt><dd>${c.body}</dd>
+      </punk-description-list>`;
+    return `
+      <div class="stack">
+        <div style="max-inline-size: 480px">${list}</div>
+        <div style="max-inline-size: 240px">${list}</div>
+      </div>
+    `;
+  },
 };
 
 /** HTML for one component's states. */

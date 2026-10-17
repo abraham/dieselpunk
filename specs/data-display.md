@@ -1,7 +1,7 @@
 # Data Display
 
-**Scope:** components that present data and status in the flow of a page: the table, the alert, the badge, the spinner, and the keyboard key.
-**Code:** `src/components/table/`, `alert/`, `badge/`, `spinner/`, `kbd/`; `src/styles/status-shape.ts`, `close-button.ts`, `visually-hidden.ts`.
+**Scope:** components that present data and status in the flow of a page: the table, the alert, the badge, the spinner, the keyboard key, and the description list.
+**Code:** `src/components/table/`, `alert/`, `badge/`, `spinner/`, `kbd/`, `description-list/`; `src/styles/status-shape.ts`, `close-button.ts`, `visually-hidden.ts`.
 
 ## 1. Table
 
@@ -51,6 +51,16 @@
 - A long name wraps rather than overflow its container.
 - **Warning:** no text.
 
+## 6. Description list
+
+`punk-description-list`: label and value pairs for details and specification sheets. The application writes native `<dt>` and `<dd>` elements as its children.
+
+- **Semantics.** The shadow tree is a `<dl>` around one slot, so the terms and values are a description list in the flat tree and keep their `term` and `definition` roles. **Why** not a light-DOM `<dl>` like the table's `<table>`: its `<dt>` and `<dd>` could then be styled only by a second stylesheet outside the shadow roots, and the table's is the only one ([component-model.md §7](component-model.md)). `::slotted()` reaches the pairs because they are direct children.
+- **Layout.** A two-column grid: each term at the start, its values beside it on the same text baseline. A term may have several values, each on its own row in the value column, and several terms may share the values that follow them. The term column is at most 40% of the width.
+- **Narrow.** Below 320px of its own width (a container query on the host) each term sits above its values.
+- Terms are `text-muted` and values `text`, in tabular figures so numbers line up. Long words break rather than overflow.
+- **Warnings:** a child that is not a `<dt>` or a `<dd>`; a first child that is a `<dd>`.
+
 ## Verification
 
 - `table.test.ts`: the native table and its name, the adopted styles and their zero specificity, the region only while overflowing, sorting by click and from script, `aria-sort` restoration, the direction shapes under forced colors, selection by row and select-all, `values`, and the warnings.
@@ -58,8 +68,9 @@
 - `badge.test.ts`: shapes and their absence for `neutral`, contrast of text and shapes in every theme, the name of the holding element, wrapping, and the warning.
 - `spinner.test.ts` and `spinner.reduced-motion.test.ts`: the status text and its locale, slotted text, sizes, the ring stopping under reduced motion.
 - `kbd.test.ts`: the native `<kbd>`, no role, a shortcut in the name of its button, the mono face and deeper edge, text contrast on the cap in every theme, forced colors, wrapping, and the warning.
+- `description-list.test.ts`: the shadow `<dl>` and its slotted pairs, the term and definition roles, terms beside values and further values below, right to left, terms above values when narrow, long words at 187px, the colors and tabular figures in every theme, and both warnings.
 - The `data` gallery group: axe, reflow, manifest, strings, and the visual matrix.
-- `aria.spec.ts`: a sorted table with a selected row, an announcing alert, a badge in a button, a spinner, and keys in a button and in a paragraph, in the three engines.
+- `aria.spec.ts`: a sorted table with a selected row, an announcing alert, a badge in a button, a spinner, keys in a button and in a paragraph, and a description list, in the three engines.
 
 ## Gaps
 

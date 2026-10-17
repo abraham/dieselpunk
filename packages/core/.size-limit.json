@@ -371,5 +371,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "2.25 kB"
+  },
+  {
+    "name": "punk-description-list",
+    "path": "dist/components/description-list/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "1.75 kB"
   }
 ]

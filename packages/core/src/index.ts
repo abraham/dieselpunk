@@ -89,3 +89,4 @@ export { PunkBreadcrumb, PunkBreadcrumbItem } from './components/breadcrumb/inde
 export { PunkPagination } from './components/pagination/index.ts';
 export type { PunkPageChangeDetail } from './components/pagination/index.ts';
 export { PunkKbd } from './components/kbd/index.ts';
+export { PunkDescriptionList } from './components/description-list/index.ts';
