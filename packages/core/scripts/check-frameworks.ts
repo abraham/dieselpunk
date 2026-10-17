@@ -11,7 +11,7 @@ import svelteModule from 'esbuild-svelte';
 import { chromium } from 'playwright';
 import type { Page } from 'playwright';
 
-// SPEC-PHASE-3.md §10.9: a React, a Vue, and a Svelte app, each built against the package as a
+// specs/testing.md §8: a React, a Vue, and a Svelte app, each built against the package as a
 // consumer would use it and driven in Chromium with real input. The apps report what they
 // received, and this script compares it with what the input should have produced. The guides show
 // these apps' code, so a guide that stops working breaks this check. Run after `npm run build`.

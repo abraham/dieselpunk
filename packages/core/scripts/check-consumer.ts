@@ -18,7 +18,7 @@ import type { Browser } from 'playwright';
 
 // Installs the packed tarball into throwaway projects, the way a consumer would, then type-checks
 // the fixture under the oldest and newest supported TypeScript and runs it in a browser.
-// Run after `npm run build`. Rules are in SPEC-PHASE-1.md sections 5.1 and 13.3.
+// Run after `npm run build`. Rules are in specs/testing.md §8.
 
 const packageDir = fileURLToPath(new URL('..', import.meta.url));
 const fixtureDir = join(packageDir, 'test/package');
@@ -167,7 +167,7 @@ async function probeScript(): Promise<string> {
   return result.outputFiles.map((file) => file.text).join('\n');
 }
 
-// SPEC §19: the assembler built from the registration entries, driven with real input.
+// specs/product.md §8: the assembler built from the registration entries, driven with real input.
 async function checkShell(browser: Browser, port: number): Promise<void> {
   const tab = await browser.newPage();
   const messages: string[] = [];
@@ -250,7 +250,7 @@ async function checkShell(browser: Browser, port: number): Promise<void> {
   await tab.close();
 }
 
-// SPEC-PHASE-4 §13.7: a production view from the registration entries, in the locales of
+// specs/testing.md §8: a production view from the registration entries, in the locales of
 // `@dieselpunk/locales`, set from the consumer's own Lit Localize.
 async function checkProduction(browser: Browser, port: number): Promise<void> {
   const tab = await browser.newPage();

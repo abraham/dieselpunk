@@ -8,7 +8,7 @@ const config: StorybookConfig = {
   // The workbench imports the package through its exports map, so it needs the build in dist/.
   viteFinal: (viteConfig) =>
     mergeConfig(viteConfig, {
-      // The `development` condition turns on the library's dev warnings (SPEC-PHASE-1 §5.4).
+      // The `development` condition turns on the library's dev warnings (specs/package-contract.md §6).
       resolve: { conditions: ['development', ...defaultClientConditions] },
     }),
 };

@@ -36,7 +36,7 @@ const FOCUS_SURFACES = TEXT_SURFACES;
 const OUTLINES = ['accent', 'warning'];
 const OUTLINE_SURFACES = ['canvas', 'panel', 'panel-raised'];
 
-/** Checks every theme against the rules in SPEC-PHASE-1.md section 6.8 and SPEC-PHASE-2.md section 6.3. */
+/** Checks every theme against the rules in specs/visual-system.md §4.1. */
 export function evaluateContrast(
   themeMap: Readonly<Record<string, Theme>> = themes,
 ): ContrastFailure[] {

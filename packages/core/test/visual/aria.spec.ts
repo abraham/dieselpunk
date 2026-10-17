@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 // The accessibility tree of each inventory component, as Playwright serializes it, on every
-// engine (SPEC-PHASE-2.md §10.3). The expected trees are written out so that a change to a role,
+// engine (specs/testing.md §2). The expected trees are written out so that a change to a role,
 // a name, or a state shows in review. The page is the visual matrix with its content replaced,
 // which registers every component.
 

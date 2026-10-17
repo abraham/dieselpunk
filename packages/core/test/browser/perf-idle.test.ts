@@ -5,7 +5,7 @@ import type { ComponentName } from './fixtures/gallery.ts';
 
 type GalleryModule = typeof GalleryModule_;
 
-// SPEC-PHASE-4 §11.2, the idle library: with every component mounted at once and no input for a
+// specs/performance.md §5, the idle library: with every component mounted at once and no input for a
 // second, nothing of the library is running. Counted, not timed.
 
 // The gallery imports every component, so loading it is what defines every element. It is loaded

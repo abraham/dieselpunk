@@ -3,7 +3,7 @@ import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { arch } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
-// Runs the visual tests on the Linux image that baselines come from (SPEC-PHASE-1.md §10.3).
+// Runs the visual tests on the Linux image that baselines come from (specs/testing.md §6).
 //   node scripts/visual.ts check      compare against the committed baselines
 //   node scripts/visual.ts update     rewrite the baselines (CI only; see below)
 //   node scripts/visual.ts selftest   render twice into a scratch folder and require identical output

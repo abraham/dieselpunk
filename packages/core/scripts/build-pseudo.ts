@@ -8,7 +8,7 @@ import { LOCALE, pseudoXliff } from './pseudo.ts';
 
 // Writes the pseudo-locale XLIFF from the source units of the locales package, and runs
 // `lit-localize build` on it into test/browser/fixtures/generated/, which is not committed.
-// SPEC-PHASE-4 §13.5.
+// specs/localization.md, Verification.
 
 const packageDir = fileURLToPath(new URL('..', import.meta.url));
 const outputDir = join(packageDir, 'test/browser/fixtures/generated');

@@ -16,7 +16,7 @@ import { bindDocumentLocale } from '@dieselpunk/locales/document';
 
 // A production view built from the registration entries a developer would pick, with the
 // translations of `@dieselpunk/locales` and Lit Localize configured from this project's own copy
-// (SPEC-PHASE-4 §13.7).
+// (specs/testing.md §8).
 
 document.body.innerHTML = `
   <punk-window heading="Smelter" open>

@@ -6,7 +6,7 @@ import './commands.ts';
 import { buildGallery, contentVariants, galleryCss } from './fixtures/gallery.ts';
 import type { ContentVariant } from './fixtures/gallery.ts';
 
-// SPEC-PHASE-4 §14, package 8: the review of the two new components in the narrowest renders. The
+// specs/inventory-and-readouts.md §9 and §10: the stat and the row in the narrowest renders. The
 // baselines show a person what is wrong; this measures what a person would see: a word split
 // inside itself, text drawn over text, a box past the edge, a clipped line, and a button too small.
 
@@ -127,7 +127,7 @@ function problemsIn(frame: HTMLElement, where: string, rtl: boolean): string[] {
         if (lines.length > 0) {
           const natural = rects.reduce((sum, rect) => sum + rect.width, 0);
           // A word wider than the room it could have had is split as a last resort, and that is
-          // the design (SPEC-PHASE-4 §8.1); one that fits is a defect.
+          // the design (specs/inventory-and-readouts.md §9); one that fits is a defect.
           if (natural + reserved(node, host) <= roomOf(host)) {
             problems.push(
               `${where}: ${name}: "${match[0]}" (${natural.toFixed(0)}px) is split though ${roomOf(host).toFixed(0)}px is there [parent ${node.parentElement!.className}/${node.parentElement!.slot} ${(node.parentElement!.parentElement ?? node.parentElement!).getBoundingClientRect().width.toFixed(0)} reserved ${reserved(node, host)}]`,

@@ -7,13 +7,13 @@ import '../../src/components/connection-row/register.ts';
 import type { PunkConnectionRow } from '../../src/components/connection-row/index.ts';
 import type { PunkProductionStat } from '../../src/components/production-stat/index.ts';
 
-// SPEC-PHASE-4 §11.2: what keeps a dashboard of stats and rows cheap, counted and not timed. A
+// specs/performance.md §3 and §4: what keeps a dashboard of stats and rows cheap, counted and not timed. A
 // runner is too noisy to assert frame times, so these count listeners, observers, elements, style
 // sheets, renders, and layout reads. The times are printed and not asserted.
 
 const COUNT = 200;
 // The most elements that one instance holds in its shadow root, in any state. These are the
-// numbers measured in work package 6, and they are held.
+// measured numbers, and they are held (specs/performance.md §3).
 const STAT_ELEMENTS = 16;
 const ROW_ELEMENTS = 18;
 

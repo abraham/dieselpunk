@@ -2,8 +2,8 @@ import { html } from 'lit';
 import type { TemplateResult } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
-// Original demo item art for the workbench only; applications supply their own (SPEC-PHASE-2.md
-// §9). 24x24 grid, geometric, drawn in `currentColor` so it follows the theme.
+// Original demo item art for the workbench only; applications supply their own
+// (specs/visual-system.md §10). 24x24 grid, geometric, drawn in `currentColor` so it follows the theme.
 const svg = (shapes: string): string =>
   `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">${shapes}</svg>`;
 

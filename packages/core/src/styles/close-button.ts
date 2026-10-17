@@ -6,7 +6,7 @@ import { forcedColorsSurface } from './forced-colors.ts';
 import { raisedHoverShadow, raisedSurface } from './surfaces.ts';
 
 // Native `<button>` with a drawn X, for a window or a toast. The shared styles keep both entries
-// independent of `punk-icon-button` (SPEC-PHASE-3 §2 decision 3).
+// independent of `punk-icon-button` (specs/component-model.md §9).
 export const closeButtonStyles = css`
   .close-button {
     ${raisedSurface}

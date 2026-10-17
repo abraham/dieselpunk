@@ -4,7 +4,7 @@ import type { ApiSnapshot, Manifest } from './api-snapshot.ts';
 
 /**
  * Compares the public API, as the Custom Elements Manifest and the package's `exports` describe it,
- * with `api.snapshot.json`. Removing or renaming a documented name is a breaking change (SPEC §16),
+ * with `api.snapshot.json`. Removing or renaming a documented name is a breaking change (specs/package-contract.md §10),
  * so any difference fails and shows up as a reviewed edit of the snapshot: `--update` writes it.
  */
 const root = new URL('../', import.meta.url);
@@ -20,7 +20,7 @@ const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Manifest;
 const pkg = JSON.parse(readFileSync(new URL('package.json', root), 'utf8')) as {
   exports: Record<string, unknown>;
 };
-// A name the manifest lists with no description is public and undocumented (SPEC §5.3).
+// A name the manifest lists with no description is public and undocumented (specs/package-contract.md §7).
 const undocumented = undocumentedApi(manifest);
 if (undocumented.length > 0) {
   console.error(
@@ -49,7 +49,7 @@ if (!isSame(difference)) {
   const section = (title: string, lines: string[]) =>
     lines.length > 0 ? `${title}:\n${lines.map((line) => `  ${line}`).join('\n')}\n` : '';
   console.error(
-    `The public API changed.\n${section('Removed (a breaking change under SPEC §16)', difference.removed)}` +
+    `The public API changed.\n${section('Removed (a breaking change under specs/package-contract.md §10)', difference.removed)}` +
       `${section('Changed', difference.changed)}${section('Added', difference.added)}` +
       'If it is intended, run `npm run check:api -- --update` and commit api.snapshot.json.',
   );

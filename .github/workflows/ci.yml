@@ -33,7 +33,7 @@ jobs:
       - run: npm run check:frameworks
       - run: npm run test:smoke
 
-  # Runs in the image the baselines were rendered on, so pixels match (SPEC-PHASE-1.md section 10.3).
+  # Runs in the image the baselines were rendered on, so pixels match (specs/testing.md §6).
   visual:
     runs-on: ubuntu-latest
     container:

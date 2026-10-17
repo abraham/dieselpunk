@@ -9,7 +9,7 @@ import type { PunkSlider } from '../../src/components/slider/index.ts';
 import type { PunkToast, PunkToastStack } from '../../src/components/toast/index.ts';
 import type { PunkWindow } from '../../src/components/window/index.ts';
 
-// What keeps the shell cheap, counted and not timed (SPEC-PHASE-3 §10.7): listeners on the page,
+// What keeps the shell cheap, counted and not timed (specs/performance.md §3): listeners on the page,
 // observers, layout reads, and timers. The grid of item stacks has its own file, perf.test.ts.
 
 beforeEach(() => {
@@ -33,7 +33,7 @@ function watchListeners() {
   const hook = (name: 'document' | 'window', target: Document | Window) => {
     const add = target.addEventListener.bind(target) as (...args: unknown[]) => void;
     const remove = target.removeEventListener.bind(target) as (...args: unknown[]) => void;
-    // The one listener that all components share for locale changes (SPEC-PHASE-4.md §7.1) is
+    // The one listener that all components share for locale changes (specs/localization.md §3) is
     // ignored by name. locale-watch.test.ts holds it to one, and to none once components have gone.
     vi.spyOn(target, 'addEventListener').mockImplementation((type, fn, options) => {
       if (type !== 'lit-localize-status') added.push({ target: name, type, fn });

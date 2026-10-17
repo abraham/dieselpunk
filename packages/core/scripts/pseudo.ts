@@ -1,7 +1,7 @@
 import { textOf } from '../../locales/scripts/xliff.ts';
 import type { XliffUnit } from '../../locales/scripts/xliff.ts';
 
-// The test-only pseudo-locale of SPEC-PHASE-4 §13.5: each source wrapped in markers and made about
+// The test-only pseudo-locale of specs/localization.md, Verification: each source wrapped in markers and made about
 // 40% longer, with its placeholders as they were, so a test can tell translated text from a literal.
 
 export const OPEN = '⟦';

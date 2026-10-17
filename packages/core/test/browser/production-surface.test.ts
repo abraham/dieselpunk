@@ -4,7 +4,7 @@ import { addStylesheets, cleanup, track } from './helpers.ts';
 import { buildGallery, galleryCss } from './fixtures/gallery.ts';
 import { ratio, toHex } from './receptacle-helpers.ts';
 
-// SPEC-PHASE-4 §6: the token gate cannot see which surface a text node lands on, so this resolves
+// specs/visual-system.md §4.2: the token gate cannot see which surface a text node lands on, so this resolves
 // the background behind every text node and glyph of the stat and the row, as a person sees it,
 // and requires the inset plate or the status lens, which are the same `panel-inset`.
 

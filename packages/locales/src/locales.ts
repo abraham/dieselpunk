@@ -6,7 +6,7 @@ export interface LocaleInfo {
   /** The language's name in that language. */
   readonly name: string;
   readonly dir: 'ltr' | 'rtl';
-  /** `draft` until a native reader has reviewed the translations (SPEC-PHASE-4 §9.4). */
+  /** `draft` until a native reader has reviewed the translations (specs/localization.md §5). */
   readonly status: LocaleStatus;
 }
 

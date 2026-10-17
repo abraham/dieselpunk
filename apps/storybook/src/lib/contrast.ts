@@ -34,7 +34,7 @@ export interface ContrastCheck {
   required: number;
 }
 
-/** The pairs the contrast gate enforces (SPEC-PHASE-1 §6.8, SPEC-PHASE-2 §6.3), as tokens without the `color-` prefix. */
+/** The pairs the contrast gate enforces (specs/visual-system.md §4.1), as tokens without the `color-` prefix. */
 export function checksFor(theme: string): ContrastCheck[] {
   const text = theme === 'high-contrast' ? 7 : 4.5;
   const checks: ContrastCheck[] = [];
