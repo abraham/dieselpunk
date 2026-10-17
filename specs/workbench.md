@@ -90,7 +90,7 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 ## 8. Publishing
 
 - **Host:** GitHub Pages for `abraham/dieselpunk`, deployed by GitHub Actions. The custom domain is set in the repository's Pages settings; deployments from Actions need no `CNAME` file. **Why:** it is part of the repository's existing CI, needs no other account or secret, and serves static files, which is all a Storybook build is.
-- **Workflow** (`.github/workflows/docs.yml`): on a published release it builds the release into `/`; on a push to `main` that passes CI it builds `main` into `/next/` (or `/` before 1.0). Each run: `npm ci`, build core, locales, and the workbench, run `test:smoke` and the published-ids check against the built output, add the manifest, sitemap, robots file, and earlier major versions, and deploy the assembled folder. A failing check deploys nothing, so the live site is never older than its last good build and never broken by a bad one.
+- **Workflow** (`.github/workflows/docs.yml`): on a published release it builds the release into `/`; when CI succeeds for a push to `main` it builds `main` into `/next/` (or `/` before 1.0). It also runs on demand (`workflow_dispatch`). Each run: `npm ci`, build core, locales, and the workbench, run `test:smoke` and the published-ids check against the built output, add the manifest, sitemap, and robots file (`npm run build:site -w @dieselpunk/storybook`, from `scripts/site.ts`) and earlier major versions, and deploy the assembled folder with `actions/upload-pages-artifact` and `actions/deploy-pages`. A failing check deploys nothing, so the live site is never older than its last good build and never broken by a bad one.
 - **Pull requests** build the site and upload it as an artifact for review; they never deploy.
 - **Concurrency:** one deployment at a time; a newer run cancels a queued older one.
 - **Rollback** is re-running the docs workflow for the previous release.
@@ -106,9 +106,10 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 ## Gaps
 
 - **The screen reader results table is empty** ([accessibility.md](accessibility.md) Gaps).
-- **The site is not published.** There is no `docs.yml` workflow, no custom domain in the Pages settings, and no DNS record for dieselpunk.dev.
-- **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, 404 page, sitemap, or robots file, and telemetry is not disabled.
-- **No published-ids file or check.**
+- **The site is not published.** The repository's Pages source is not yet set to GitHub Actions, the custom domain is not set in the Pages settings, and dieselpunk.dev has no DNS records.
+- **Only the pre-1.0 path is built.** `docs.yml` deploys `main` to `/`. The release build into `/`, `main` into `/next/`, and the kept `/v<major>/` folders are added with the first release.
+- **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, or 404 page.
+- **No published-ids file or check,** so `docs.yml` deploys after `test:smoke` alone.
 - **The guides and overviews are not scanned by axe.** Closing it: run axe over every docs page and example in the smoke test, outside the Storybook chrome.
 - **The packages have no `homepage` or `repository` field,** and manifest descriptions do not link their docs pages.
 - **The Integration guide has no `npm install` step or plain HTML import-map page,** since the packages are not on npm yet.
