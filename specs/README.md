@@ -21,7 +21,7 @@ Living specifications for `@dieselpunk/core` and `@dieselpunk/locales`. Each one
 | [localization.md](localization.md)                     | Messages, locale changes, the locales package, translation gates, number formatting, direction                         |
 | [performance.md](performance.md)                       | Size budgets, runtime cost rules, and the deterministic gates that hold them                                           |
 | [testing.md](testing.md)                               | Test layers, the gallery, engines, visual regression, mutation checking, the gate list                                 |
-| [workbench.md](workbench.md)                           | The Storybook workbench, its examples, guides, and smoke test                                                          |
+| [workbench.md](workbench.md)                           | The Storybook workbench, its examples, guides, and smoke test, and its publication at dieselpunk.dev                   |
 
 Read [product.md](product.md) first. The architecture specs can then be read in any order; each names the specs it depends on.
 

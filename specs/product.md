@@ -50,7 +50,7 @@ Every spec applies these. Where a spec makes a trade-off, it says which principl
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
 | `@dieselpunk/core`    | The components, their class and registration entries, `tokens.css`, `themes.css`, and `custom-elements.json`. English is its source locale. | [package-contract.md](package-contract.md) |
 | `@dieselpunk/locales` | Translations of core's messages as Lit Localize runtime modules, a loader, a merger, and `bindDocumentLocale`.                              | [localization.md §5](localization.md)      |
-| `apps/storybook`      | The documentation workbench. Private; consumes the built packages through their public exports.                                             | [workbench.md](workbench.md)               |
+| `apps/storybook`      | The documentation workbench, published at https://dieselpunk.dev. Private; consumes the built packages through their public exports.        | [workbench.md](workbench.md)               |
 
 ## 6. Component inventory
 

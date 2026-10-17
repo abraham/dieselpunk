@@ -1,11 +1,11 @@
-# Documentation Workbench
+# Documentation Site
 
-**Scope:** the Storybook workbench in `apps/storybook`: what it is for, how it consumes the library, what it contains, and how it is tested.
-**Code:** `apps/storybook/.storybook/`, `src/stories/`, `src/lib/`, `src/icons/`, `src/styles/workbench.css`, `scripts/smoke.ts`.
+**Scope:** the Storybook workbench in `apps/storybook` and its publication as the public documentation at **https://dieselpunk.dev**: what it is for, how it consumes the library, what it contains, how it is tested, and how it is built, hosted, and deployed.
+**Code:** `apps/storybook/.storybook/`, `src/stories/`, `src/lib/`, `src/icons/`, `src/styles/workbench.css`, `public/`, `scripts/smoke.ts`, `.github/workflows/docs.yml`.
 
 ## 1. Purpose
 
-The workbench is where people build with and review the library, not a marketing site. Its first screen is the **Inventory overview**: an assembler built from a panel, a slot grid of item stacks, a recipe, a progress bar, meters, status lights, and buttons. Every component, state, theme, and density is reachable from the sidebar, and every claim in a guide is backed by something that runs.
+The workbench is where people build with and review the library, not a marketing site, and it is the same build that is published at dieselpunk.dev: there is no second documentation site to keep in step. Its first screen is the **Inventory overview**: an assembler built from a panel, a slot grid of item stacks, a recipe, a progress bar, meters, status lights, and buttons. Every component, state, theme, and density is reachable from the sidebar, and every claim in a guide is backed by something that runs.
 
 ## 2. Build and consumption
 
@@ -56,12 +56,57 @@ The workbench is where people build with and review the library, not a marketing
 - A story with a timer stops it when the story is not shown.
 - A slotted control in a shadow-rendered footer (a dialog's buttons) is found from the page with an exact accessible name, not from the overlay's locator.
 
+## 7. The public site
+
+**Domain.** `https://dieselpunk.dev` is the canonical address. HTTPS is enforced, `www.dieselpunk.dev` redirects to the apex, and every page declares the apex as canonical.
+
+**What is served.**
+
+| Path                          | Content                                                                          |
+| ----------------------------- | -------------------------------------------------------------------------------- |
+| `/`                           | The workbench, built from the latest release, opening on the Inventory overview  |
+| `/next/`                      | The workbench built from `main`, marked as unreleased in its sidebar header      |
+| `/v<major>/`                  | The last build of each earlier major version, kept after a new major is released |
+| `/custom-elements.json`       | The manifest of the release that `/` documents, for editors and tooling          |
+| `/sitemap.xml`, `/robots.txt` | Generated from Storybook's `index.json`: one entry per docs page                 |
+| `/404.html`                   | A static page in the industrial look that links to the overview and the guides   |
+
+Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does not exist.
+
+**Stable addresses.** A published page's address is its Storybook id (`?path=/docs/<id>` and `?path=/story/<id>`), derived from its title and export name. Once published, an id is public surface like the API: renaming a title or export changes the address, so a page that moves keeps its old id with an explicit `id` or is listed as removed in the published-ids file (`apps/storybook/published-ids.json`), which a check compares with the build ([§8](#8-publishing)).
+
+**Identity.** The Storybook manager uses a theme built from the industrial tokens (canvas, panel, text, accent, and fonts), with the site title "Dieselpunk" and an original logo and favicon in `public/`, so the chrome matches the components. Every page has a title, a description, and social-card metadata with an original image. Nothing in them is derived from game assets ([product.md §4](product.md)).
+
+**Privacy and third parties.** The site makes no request to any other origin: fonts are bundled from `@fontsource`, there is no analytics, tracking, cookie, or embedded third-party content, and Storybook's telemetry is disabled in the build. A Content Security Policy that allows only the site's own origin (with the inline styles and scripts Storybook needs) is set by a `<meta>` tag, since the host does not set headers.
+
+**Accessibility.** The site's own pages (overviews, guides, and examples) meet the same WCAG 2.2 AA target as the components. The Storybook manager chrome is a third-party application and is tested only for what this site configures in it (theme contrast, the logo's name).
+
+**Getting started.** The Integration guide is the entry for newcomers and is linked from the sidebar header: it shows `npm install`, the class and register imports, the stylesheets, and a plain HTML page that loads the packages through an import map, so a reader can copy a working page.
+
+**Package links.** The `homepage` field of `@dieselpunk/core` and `@dieselpunk/locales` is `https://dieselpunk.dev`, and each component's manifest description links its docs page.
+
+## 8. Publishing
+
+- **Host:** GitHub Pages for `abraham/dieselpunk`, deployed by GitHub Actions. The custom domain is set in the repository's Pages settings; deployments from Actions need no `CNAME` file. **Why:** it is part of the repository's existing CI, needs no other account or secret, and serves static files, which is all a Storybook build is.
+- **Workflow** (`.github/workflows/docs.yml`): on a published release it builds the release into `/`; on a push to `main` that passes CI it builds `main` into `/next/` (or `/` before 1.0). Each run: `npm ci`, build core, locales, and the workbench, run `test:smoke` and the published-ids check against the built output, add the manifest, sitemap, robots file, and earlier major versions, and deploy the assembled folder. A failing check deploys nothing, so the live site is never older than its last good build and never broken by a bad one.
+- **Pull requests** build the site and upload it as an artifact for review; they never deploy.
+- **Concurrency:** one deployment at a time; a newer run cancels a queued older one.
+- **Rollback** is re-running the docs workflow for the previous release.
+- **DNS** (apex `A`/`AAAA` records and the `www` `CNAME` at the registrar) is the owner's and outside the repository.
+
 ## Verification
 
 - `npm run build` builds the workbench; `test:smoke` runs §5.
 - Every guide's framework code is the code `check:frameworks` builds.
 - Foundations data is measured from the built CSS, so it cannot drift from what consumers get.
+- The docs workflow deploys only after `test:smoke` and the published-ids check pass on the exact output it deploys.
 
 ## Gaps
 
 - **The screen reader results table is empty** ([accessibility.md](accessibility.md) Gaps).
+- **The site is not published.** There is no `docs.yml` workflow, no custom domain in the Pages settings, and no DNS record for dieselpunk.dev.
+- **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, 404 page, sitemap, or robots file, and telemetry is not disabled.
+- **No published-ids file or check.**
+- **The guides and overviews are not scanned by axe.** Closing it: run axe over every docs page and example in the smoke test, outside the Storybook chrome.
+- **The packages have no `homepage` or `repository` field,** and manifest descriptions do not link their docs pages.
+- **The Integration guide has no `npm install` step or plain HTML import-map page,** since the packages are not on npm yet.
