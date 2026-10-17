@@ -55,14 +55,14 @@ Every spec applies these. Where a spec makes a trade-off, it says which principl
 
 ## 6. Component inventory
 
-[components.md](components.md) is the catalog: every implemented and planned component, its purpose, and its status. 53 tags in 46 registration entries are implemented. One entry registers a family; [package-contract.md §2](package-contract.md) has the rules.
+[components.md](components.md) is the catalog: every implemented and planned component, its purpose, and its status. 55 tags in 47 registration entries are implemented. One entry registers a family; [package-contract.md §2](package-contract.md) has the rules.
 
 | Family                 | Tags                                                                                                                                                                                       | Behavior spec                                          |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
 | Layout and surfaces    | `punk-panel`, `punk-divider`, `punk-stack`, `punk-cluster`                                                                                                                                 | [layout-and-actions.md](layout-and-actions.md)         |
 | Actions                | `punk-button`, `punk-icon-button`                                                                                                                                                          | [layout-and-actions.md](layout-and-actions.md)         |
 | Navigation, disclosure | `punk-tabs` + `punk-tab`, `punk-toolbar`, `punk-accordion` + `punk-accordion-item`, `punk-menu` + `punk-menu-item`, `punk-toggle-group`, `punk-list` + `punk-list-item`                    | [keyboard-and-selection.md](keyboard-and-selection.md) |
-| Page navigation        | `punk-breadcrumb` + `punk-breadcrumb-item`, `punk-pagination`                                                                                                                              | [layout-and-actions.md](layout-and-actions.md)         |
+| Page navigation        | `punk-breadcrumb` + `punk-breadcrumb-item`, `punk-pagination`, `punk-steps` + `punk-step`                                                                                                  | [layout-and-actions.md](layout-and-actions.md)         |
 | Inventory              | `punk-slot`, `punk-item-stack`, `punk-slot-grid`, `punk-recipe`                                                                                                                            | [inventory-and-readouts.md](inventory-and-readouts.md) |
 | Readouts               | `punk-progress-bar`, `punk-meter`, `punk-status-light`, `punk-production-stat`, `punk-connection-row`                                                                                      | [inventory-and-readouts.md](inventory-and-readouts.md) |
 | Data display           | `punk-table`, `punk-alert`, `punk-badge`, `punk-spinner`, `punk-kbd`, `punk-description-list`, `punk-tag`                                                                                  | [data-display.md](data-display.md)                     |

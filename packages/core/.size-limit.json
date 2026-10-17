@@ -385,5 +385,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "3.75 kB"
+  },
+  {
+    "name": "punk-steps (both tags)",
+    "path": "dist/components/steps/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "3.75 kB"
   }
 ]

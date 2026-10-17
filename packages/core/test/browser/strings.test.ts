@@ -180,7 +180,20 @@ const cases: Record<string, Case> = {
   nextPage: { show: () => mount('<punk-pagination page="2" pages="3"></punk-pagination>') },
   pageNumber: { show: () => mount('<punk-pagination page="2" pages="3"></punk-pagination>') },
   removeTag: { show: () => mount('<punk-tag removable>Copper</punk-tag>') },
+  steps: { show: () => mount('<punk-steps><punk-step>A</punk-step></punk-steps>') },
+  stepComplete: {
+    show: () => step('<punk-steps current="2"><punk-step>A</punk-step></punk-steps>'),
+  },
+  stepUpcoming: {
+    show: () => step('<punk-steps current="0"><punk-step>A</punk-step></punk-steps>'),
+  },
 };
+
+/** The first step of the steps in `markup`, which says the word for its state. */
+async function step(markup: string): Promise<Updating> {
+  const steps = await mount(markup);
+  return steps.querySelector('punk-step') as Updating;
+}
 
 /** The pieces of a template that are fixed text: the whole string, or what lies between values. */
 function fragments(id: string): string[] {

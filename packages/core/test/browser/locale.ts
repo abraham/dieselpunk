@@ -31,6 +31,9 @@ const german = {
     nextPage: 'Nächste Seite',
     pageNumber: str`Seite ${0}`,
     removeTag: str`${0} entfernen`,
+    steps: 'Schritte',
+    stepComplete: 'abgeschlossen',
+    stepUpcoming: 'nicht begonnen',
   },
 };
 

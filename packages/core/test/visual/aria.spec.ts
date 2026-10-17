@@ -505,6 +505,24 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
+  test('steps', { tag: at('navigation') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-steps current="2" label="Setup">
+         <punk-step>Drivers</punk-step>
+         <punk-step>Network</punk-step>
+         <punk-step>Account</punk-step>
+       </punk-steps>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - list "Setup":
+        - listitem: Drivers completed
+        - listitem: Network
+        - listitem: Account not started
+    `);
+    await expect(page.getByRole('listitem').nth(1)).toHaveAttribute('aria-current', 'step');
+  });
+
   test(
     'menu, open, with checkable items and a submenu',
     { tag: at('overlays') },

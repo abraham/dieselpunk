@@ -49,6 +49,7 @@ import '../../../src/components/pagination/register.ts';
 import '../../../src/components/kbd/register.ts';
 import '../../../src/components/description-list/register.ts';
 import '../../../src/components/tag/register.ts';
+import '../../../src/components/steps/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -919,6 +920,30 @@ const builders: Record<ComponentName, Builder> = {
       <punk-pagination page="10" pages="20"></punk-pagination>
       <punk-pagination page="20" pages="20" siblings="2"></punk-pagination>
       <punk-pagination page="1" pages="1"></punk-pagination>
+    </div>
+  `,
+
+  steps: (c) => {
+    const items = [c.start, c.settings, c.recipe || c.makes, c.stop]
+      .map((text) => `<punk-step>${text}</punk-step>`)
+      .join('');
+    return `
+      <div class="stack">
+        <punk-steps current="2">${items}</punk-steps>
+        <punk-steps current="0" label="${c.title || c.settings}">${items}</punk-steps>
+        <punk-steps current="5">${items}</punk-steps>
+      </div>
+    `;
+  },
+
+  // A step outside its steps has no number, no connector, and no state but upcoming.
+  step: (c) => `
+    <div class="stack">
+      <div role="list" class="row">
+        <punk-step>${c.start}</punk-step>
+        <punk-step>${c.stop}</punk-step>
+      </div>
+      <punk-steps current="2"><punk-step>${c.start}</punk-step><punk-step>${c.stop}</punk-step></punk-steps>
     </div>
   `,
 

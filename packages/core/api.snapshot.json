@@ -1332,6 +1332,40 @@
       },
       "cssProperties": {}
     },
+    "punk-step": {
+      "attributes": {},
+      "properties": {},
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "connector": "",
+        "label": "",
+        "marker": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-steps": {
+      "attributes": {
+        "current": "number = 1",
+        "label": "string = ''"
+      },
+      "properties": {
+        "current": "number = 1",
+        "label": "string = ''"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "list": ""
+      },
+      "cssProperties": {}
+    },
     "punk-switch": {
       "attributes": {
         "aria-label": "string | null = null",

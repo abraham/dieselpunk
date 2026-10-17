@@ -17,7 +17,7 @@ A planned component is built only after its section exists in its family spec, w
 
 ## 2. Implemented
 
-53 tags in 46 registration entries.
+55 tags in 47 registration entries.
 
 ### 2.1 Layout and surfaces
 
@@ -47,6 +47,7 @@ A planned component is built only after its section exists in its family spec, w
 | `punk-list`, `punk-list-item`             | A one-column list of rich rows, optionally selectable: file lists, queues, search results               | Implemented | [keyboard-and-selection.md §12](keyboard-and-selection.md) |
 | `punk-breadcrumb`, `punk-breadcrumb-item` | The path to the current page or folder, collapsing its middle on request                                | Implemented | [layout-and-actions.md §7](layout-and-actions.md)          |
 | `punk-pagination`                         | Moving through pages of a long result set                                                               | Implemented | [layout-and-actions.md §8](layout-and-actions.md)          |
+| `punk-steps`, `punk-step`                 | Progress through a multi-step task, such as a setup wizard                                              | Implemented | [layout-and-actions.md §9](layout-and-actions.md)          |
 
 ### 2.4 Inventory
 
@@ -116,7 +117,6 @@ None: every component that general-purpose use needs is implemented. The part of
 | `punk-tree`, `punk-tree-item`                      | Hierarchical navigation and selection: file trees, tech trees, category browsers | APG tree view; `SelectionModel`; roving focus with expand and collapse keys                                                                                                             | [keyboard-and-selection.md](keyboard-and-selection.md) |
 | `punk-menubar`                                     | A persistent row of menus at the top of an application window                    | APG menubar, built from `punk-menu`                                                                                                                                                     | [keyboard-and-selection.md](keyboard-and-selection.md) |
 | `punk-splitter`                                    | Two panes with a draggable, keyboard-operable divider                            | APG window splitter (`separator` with a value); pointer capture with a keyboard alternative                                                                                             | [layout-and-actions.md](layout-and-actions.md)         |
-| `punk-steps`                                       | Progress through a multi-step task, such as a setup wizard                       | An ordered list with `aria-current="step"` and a word for each state                                                                                                                    | [layout-and-actions.md](layout-and-actions.md)         |
 | `punk-date-field`, `punk-time-field`               | Date and time entry                                                              | Native `<input type="date">` and `"time"` on `PunkFieldBase`; the picker is the platform's                                                                                              | [forms.md](forms.md)                                   |
 | `punk-file-field`                                  | Choosing files, with an optional drop zone and a list of the chosen files        | Native `<input type="file">`; drop is an enhancement, never the only way                                                                                                                | [forms.md](forms.md)                                   |
 | `punk-range-slider`                                | A low and high value chosen on one track                                         | Two `slider` thumbs on the slider's math and pointer model; submits two values                                                                                                          | [forms.md](forms.md)                                   |

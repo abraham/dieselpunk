@@ -38,7 +38,7 @@
 | `shell`      | stack, cluster, accordion and its items, tabs and tab, toolbar, non-modal windows                         |
 | `forms`      | checkbox, switch, slider, text field, number field, select                                                |
 | `inputs`     | radio group and radio, textarea, combobox, fieldset                                                       |
-| `navigation` | toggle group, list and list item, breadcrumb and item, pagination, menu items                             |
+| `navigation` | toggle group, list and list item, breadcrumb and item, pagination, steps and step, menu items             |
 | `data`       | table, alert, badge, spinner, keyboard key, description list, tag                                         |
 | `overlays`   | each overlay open on its own page: modal window, dialog, popover in both modes, toast stack, drawer, menu |
 

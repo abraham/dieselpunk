@@ -1,7 +1,7 @@
 # Layout and Actions
 
-**Scope:** the structural surfaces and layout primitives (panel, divider, stack, cluster), the buttons (the shared button base, button, icon button), and the page navigation (breadcrumb, pagination).
-**Code:** `src/components/panel/`, `divider/`, `stack/`, `cluster/`, `button/`, `icon-button/`, `breadcrumb/`, `pagination/`; `src/internal/button-base.ts`, `button-base.styles.ts`, `slot-presence.ts`; `src/styles/density.ts`, `gap.ts`, `surfaces.ts`, `texture.ts`.
+**Scope:** the structural surfaces and layout primitives (panel, divider, stack, cluster), the buttons (the shared button base, button, icon button), and the page navigation (breadcrumb, pagination, steps).
+**Code:** `src/components/panel/`, `divider/`, `stack/`, `cluster/`, `button/`, `icon-button/`, `breadcrumb/`, `pagination/`, `steps/`; `src/internal/button-base.ts`, `button-base.styles.ts`, `slot-presence.ts`; `src/styles/density.ts`, `gap.ts`, `surfaces.ts`, `texture.ts`.
 
 ## 1. Panel
 
@@ -81,6 +81,17 @@ A square, icon-only button: one icon in the default slot (inline SVG in `current
 - **Repairs.** `pages` below 1 or not a number is 1, and a `page` outside 1 to `pages` is clamped; each warns once per occurrence.
 - **Look.** Raised buttons; the current page is set in with the inset bevel and an `accent` bar along its foot, and under forced colors a double border.
 
+## 9. Steps
+
+`punk-steps` with `punk-step` children: progress through a task of several steps, such as a setup wizard. `current` (1-based, default 1), `label`.
+
+- **Semantics.** An `<ol>` named by `label`, else the localized "Steps". Each step host is `role="listitem"`. The steps before `current` are completed: a check, and the localized "completed" after the text, visually hidden. The current one has its number in an `accent` ring, bold text, and `aria-current="step"`. The ones after it are not started: the number, muted text, and the localized "not started". The marker and the connector before each step but the first are hidden from assistive technology, since the list gives the position. Numbers are formatted for the nearest `lang`.
+- **Bounds.** `0` is before the first step, and a `current` past the last step means every step is completed, so neither needs a repair. A fraction is rounded down.
+- **A record, not navigation.** The steps are not links or buttons, and the application moves `current`. **Why:** a wizard decides which steps may be revisited, and its own Back and Next buttons already say so.
+- **Ownership.** The steps give each step its index and state through a symbol-keyed property ([component-model.md §8](component-model.md)), and clear it when the step leaves or the steps disconnect. A step writes `role` and `aria-current` only to its own host. A step outside a `punk-steps` has no number and no connector, and reads as not started.
+- Steps wrap onto more lines and never scroll sideways. Under forced colors the completed marker is filled with `CanvasText`, and the current one has a `Highlight` ring.
+- **Warning:** a child that is not a step.
+
 ## Verification
 
 - Each component's tests, including its unstyled appearance, both directions of every property, and its warnings.
@@ -90,7 +101,7 @@ A square, icon-only button: one icon in the default slot (inline SVG in `current
 - Stack and cluster tests: gap mapping and density, overrides, alignment in both directions, reflow at 187px.
 - `reflow.test.ts` and the `foundation` and `shell` visual groups.
 - Node: `page-window.test.ts`, every page and sibling count up to 30 pages.
-- `breadcrumb.test.ts`: the landmark and its name in each locale, links and the current page, separators, wrapping, collapsing and focus on expand, and ownership restoration. `pagination.test.ts`: the landmark, names and formatting by language, the ends, focus after a change, no event for script changes, and the repairs. Both are in the `navigation` gallery group.
+- `breadcrumb.test.ts`: the landmark and its name in each locale, links and the current page, separators, wrapping, collapsing and focus on expand, and ownership restoration. `pagination.test.ts`: the landmark, names and formatting by language, the ends, focus after a change, no event for script changes, and the repairs. `steps.test.ts`: the list and its name in each locale, the state words and `aria-current`, `current` both ways and its bounds, numbers by language, steps added and removed, the states under forced colors, connectors, wrapping at 187px in every theme, and the warning. All three are in the `navigation` gallery group.
 
 ## Gaps
 

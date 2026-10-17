@@ -76,6 +76,7 @@ const sentinels: Record<string, string> = {
   kbd: '"punk-kbd"',
   'description-list': '"punk-description-list"',
   tag: '"punk-tag"',
+  steps: 'stepUpcoming',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };

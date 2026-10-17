@@ -21,6 +21,8 @@ export const galleryGroups = {
     'breadcrumb',
     'breadcrumb-item',
     'pagination',
+    'steps',
+    'step',
     'menu-item',
   ],
   // Readouts of data and status that sit in the page.

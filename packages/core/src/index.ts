@@ -91,3 +91,5 @@ export type { PunkPageChangeDetail } from './components/pagination/index.ts';
 export { PunkKbd } from './components/kbd/index.ts';
 export { PunkDescriptionList } from './components/description-list/index.ts';
 export { PunkTag } from './components/tag/index.ts';
+export { PunkSteps, PunkStep } from './components/steps/index.ts';
+export type { StepState } from './components/steps/index.ts';
