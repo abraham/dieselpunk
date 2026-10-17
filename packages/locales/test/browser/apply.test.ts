@@ -5,11 +5,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { addStylesheets, cleanup, track } from '../../../core/test/browser/helpers.ts';
 import {
   buildGallery,
-  componentNames,
   galleryCss,
   openTooltips,
 } from '../../../core/test/browser/fixtures/gallery.ts';
 import type { ContentVariant } from '../../../core/test/browser/fixtures/gallery.ts';
+import { galleryNames, rendersTheme } from '../../../core/test/browser/fixtures/selection.ts';
+import { defaultThemeName } from '../../../core/src/tokens/themes.ts';
 import { bindDocumentLocale } from '../../src/document.ts';
 import { loadLocale, locales, sourceLocale, targetLocales } from '../../src/index.ts';
 import type { LocaleModule } from '../../src/index.ts';
@@ -200,10 +201,10 @@ describe.each(targetLocales)('the components in %s', (code) => {
   /** The gallery as an application in this locale would hold it. */
   function mountGallery(variant: ContentVariant, width?: number) {
     const frame = document.createElement('div');
-    frame.setAttribute('data-punk-theme', 'industrial');
+    frame.setAttribute('data-punk-theme', defaultThemeName);
     frame.setAttribute('data-punk-density', 'compact');
     frame.style.cssText = `background: var(--punk-color-canvas); color: var(--punk-color-text);${width ? ` width: ${width}px;` : ''}`;
-    const gallery = buildGallery(variant);
+    const gallery = buildGallery(variant, galleryNames);
     gallery.lang = code;
     gallery.dir = dirOf(code);
     frame.append(gallery);
@@ -211,7 +212,11 @@ describe.each(targetLocales)('the components in %s', (code) => {
     return { frame, gallery };
   }
 
-  it.each(['short', 'long'] as const)(
+  // The gallery is in the default theme, so a part that renders other themes leaves it out.
+  const gallerySelected = rendersTheme(defaultThemeName);
+  const galleryIt = gallerySelected ? it : it.skip;
+
+  galleryIt.each(['short', 'long'] as const)(
     'pass axe with the document language set (%s content)',
     async (variant) => {
       unbind = bindDocumentLocale();
@@ -238,35 +243,41 @@ describe.each(targetLocales)('the components in %s', (code) => {
     },
   );
 
-  it('keeps every component inside a container from 187 to 512px', async () => {
-    // The page stays left to right, as in core's reflow test: the toast stack and the popover are
-    // placed against the viewport, so they are measured against the frame only that way.
-    await setLocale(code);
-    const problems: string[] = [];
-    for (const width of [187, 256, 375, 512]) {
-      for (const variant of ['short', 'long'] as const) {
-        const { frame, gallery } = mountGallery(variant, width);
-        await settle(frame);
-        const rtl = gallery.dir === 'rtl';
-        const edge = frame.getBoundingClientRect();
-        for (const name of componentNames) {
-          // An open tooltip is placed against the viewport, so core's own test checks it.
-          if (name === 'tooltip') continue;
-          for (const element of gallery.querySelectorAll(
-            `[data-component="${name}"] punk-${name}`,
-          )) {
-            const box = element.getBoundingClientRect();
-            const over = rtl ? edge.left - box.left : box.right - edge.right;
-            if (over > 0.5)
-              problems.push(`${variant}@${width}: <punk-${name}> is ${over.toFixed(1)}px too wide`);
+  galleryIt(
+    'keeps every component inside a container from 187 to 512px',
+    async () => {
+      // The page stays left to right, as in core's reflow test: the toast stack and the popover are
+      // placed against the viewport, so they are measured against the frame only that way.
+      await setLocale(code);
+      const problems: string[] = [];
+      for (const width of [187, 256, 375, 512]) {
+        for (const variant of ['short', 'long'] as const) {
+          const { frame, gallery } = mountGallery(variant, width);
+          await settle(frame);
+          const rtl = gallery.dir === 'rtl';
+          const edge = frame.getBoundingClientRect();
+          for (const name of galleryNames) {
+            // An open tooltip is placed against the viewport, so core's own test checks it.
+            if (name === 'tooltip') continue;
+            for (const element of gallery.querySelectorAll(
+              `[data-component="${name}"] punk-${name}`,
+            )) {
+              const box = element.getBoundingClientRect();
+              const over = rtl ? edge.left - box.left : box.right - edge.right;
+              if (over > 0.5)
+                problems.push(
+                  `${variant}@${width}: <punk-${name}> is ${over.toFixed(1)}px too wide`,
+                );
+            }
           }
+          if (frame.scrollWidth > frame.clientWidth + 1) {
+            problems.push(`${variant}@${width}: the container scrolls (${frame.scrollWidth}px)`);
+          }
+          frame.remove();
         }
-        if (frame.scrollWidth > frame.clientWidth + 1) {
-          problems.push(`${variant}@${width}: the container scrolls (${frame.scrollWidth}px)`);
-        }
-        frame.remove();
       }
-    }
-    expect(problems).toEqual([]);
-  }, 120_000);
+      expect(problems).toEqual([]);
+    },
+    120_000,
+  );
 });

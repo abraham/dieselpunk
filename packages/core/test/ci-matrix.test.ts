@@ -6,12 +6,60 @@ import {
   grepFor,
   onlyProse,
   parseSelection,
+  planBrowser,
   planSmoke,
   planVisual,
 } from '../../../scripts/ci-matrix.ts';
-import type { Budget, Count } from '../../../scripts/ci-matrix.ts';
+import type { Budget, BrowserBudget, Count } from '../../../scripts/ci-matrix.ts';
 import { themeNames } from '../src/tokens/themes.ts';
 import { groupNames } from './browser/fixtures/groups.ts';
+
+const browserBudget: BrowserBudget = {
+  cap: 10,
+  secondsPerCombination: 1,
+  combinations: { chromium: 4, firefox: 2 },
+  componentParts: { chromium: 1, firefox: 2 },
+};
+const parts = (jobs: ReturnType<typeof planBrowser>) =>
+  jobs.map(({ name, part, groups, themes }) => [name, part, groups, themes]);
+
+test('browser parts pack whole groups, and an engine has at least its component parts', () => {
+  const jobs = planBrowser(
+    { a: ['x', 'y'], b: ['z'], c: ['w'] },
+    ['steel', 'brass'],
+    browserBudget,
+  );
+  assert.deepEqual(parts(jobs), [
+    // Chromium renders 4 combinations: a costs 8, b and c 4 each, so a fits with neither.
+    ['chromium 1/2 · a', '1/2', 'a', ''],
+    ['chromium 2/2 · b, c', '2/2', 'b,c', ''],
+    // Firefox renders 2: everything fits one part, and the second has component tests only.
+    ['firefox 1/2 · all groups', '1/2', 'a,b,c', ''],
+    ['firefox 2/2', '2/2', '', ''],
+  ]);
+});
+
+test('a browser group over the cap is split by theme in the engine that renders every theme', () => {
+  const jobs = planBrowser({ big: ['1', '2', '3'] }, ['steel', 'brass'], {
+    ...browserBudget,
+    combinations: { chromium: 4 },
+  });
+  assert.deepEqual(parts(jobs), [
+    ['chromium 1/2 · big · steel', '1/2', 'big', 'steel'],
+    ['chromium 2/2 · big · brass', '2/2', 'big', 'brass'],
+  ]);
+});
+
+test('a browser group over the cap even by theme fails the plan', () => {
+  assert.throws(
+    () =>
+      planBrowser({ huge: ['1', '2', '3', '4', '5', '6'] }, ['steel', 'brass'], {
+        ...browserBudget,
+        combinations: { chromium: 4 },
+      }),
+    /browser · chromium · huge costs 24s, over the cap of 10s even by theme/,
+  );
+});
 
 test('a change of specs, Markdown, or the Dependabot settings is prose only', () => {
   assert.ok(onlyProse(['specs/ci.md', 'README.md', 'packages/core/README.md']));

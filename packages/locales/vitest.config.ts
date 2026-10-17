@@ -1,11 +1,19 @@
 import { fileURLToPath } from 'node:url';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
+import { browserRun } from '../core/scripts/browser-part.ts';
+
+// The locales test renders core's gallery, so a CI part runs it for the part's groups.
+const run = browserRun(
+  fileURLToPath(new URL('.', import.meta.url)),
+  ['test/browser/**/*.test.ts'],
+  ['test/browser/apply.test.ts'],
+);
 
 const engines = ['chromium', 'firefox', 'webkit'] as const;
 type Engine = (typeof engines)[number];
 
-// Local runs use Chromium only. CI runs one job per engine, each setting PUNK_BROWSERS.
+// Local runs use Chromium only. CI runs one job per engine and part, each setting PUNK_BROWSERS.
 function selectedEngines(): Engine[] {
   const requested = process.env['PUNK_BROWSERS'];
   if (!requested) return ['chromium'];
@@ -38,7 +46,9 @@ export default defineConfig({
     ],
   },
   test: {
-    include: ['test/browser/**/*.test.ts'],
+    include: run.include,
+    provide: run.provide,
+    passWithNoTests: run.passWithNoTests,
     browser: {
       enabled: true,
       headless: true,

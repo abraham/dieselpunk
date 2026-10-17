@@ -50,7 +50,7 @@ Suites over the gallery:
 
 ## 4. Engines
 
-- Local runs default to Chromium. CI runs the browser suites in one job per engine, each setting `PUNK_BROWSERS` to its engine; the config rejects unknown names.
+- Local runs default to Chromium. CI runs the browser suites in jobs by engine and part, each setting `PUNK_BROWSERS` to its engine; the config rejects unknown names. Firefox and WebKit render the gallery suites in two theme and density pairs only ([ci.md §5.3](ci.md)).
 - Before trusting a new test, run the suite on Linux in the pinned Playwright image from a Linux `npm ci`.
 - The Vitest config lists Lit's entry points in `optimizeDeps.include`, so a cold cache never reloads mid-run and loads Lit twice.
 - Engine behaviors the helpers account for:

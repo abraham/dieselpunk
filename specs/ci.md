@@ -1,7 +1,7 @@
 # Continuous Integration
 
 **Scope:** the GitHub Actions workflows that check, render, and publish the repository: their jobs, how work is split and parallelized, how setup is shared, what decides which jobs run, and the time budgets that keep it fast as the library grows.
-**Code:** `.github/workflows/ci.yml`, `.github/workflows/visual.yml`, `.github/workflows/update-visual-baselines.yml`, `.github/workflows/docs.yml`, `.github/actions/setup/`, `scripts/ci-matrix.ts`, `scripts/merge-baselines.ts`, `packages/core/test/browser/fixtures/groups.ts`, `packages/core/test/visual/tags.ts`.
+**Code:** `.github/workflows/ci.yml`, `.github/workflows/visual.yml`, `.github/workflows/update-visual-baselines.yml`, `.github/workflows/docs.yml`, `.github/actions/setup/`, `scripts/ci-matrix.ts`, `scripts/merge-baselines.ts`, `packages/core/scripts/browser-part.ts`, `packages/core/test/browser/fixtures/groups.ts`, `packages/core/test/visual/tags.ts`.
 
 ## 1. Goals
 
@@ -77,8 +77,8 @@ Theme names are read from the token source (`packages/core/src/tokens/themes.ts`
 
 ### 5.3 Browser suites
 
-- **Component tests** (`src/**/*.test.ts`) are split by component family across a fixed number of parts per engine.
-- **Gallery suites** (`a11y`, `reflow`, `strings`, `overlays-a11y`, and the locales `apply` test) read `PUNK_GALLERY_GROUPS` and `PUNK_GALLERY_THEMES` and render only those groups and themes, so each part takes whole groups, or a group's themes when it has been split by theme (§6).
+- **Component tests** (`src/**/*.test.ts`, and the files of `test/browser` that are not gallery suites) are split by family across the parts of an engine: a component's folder is one family, and any other file is a family of its own. `PUNK_BROWSER_PART=<n>/<total>` runs every total-th family, from the n-th, so a family's files stay together.
+- **Gallery suites** (`a11y`, `reflow`, `overlays-a11y`, and the locales `apply` test) read `PUNK_GALLERY_GROUPS` and `PUNK_GALLERY_THEMES` and render only those groups and themes, so each part takes whole groups, or a group's themes when it has been split by theme (§6). In a part, a suite runs only when the part names groups. The locales test renders the default theme, so a part whose themes leave it out skips its gallery checks. `strings` runs whole with the component tests: it takes a second, and its check that every exemption is used needs every component.
 - **Combinations by engine.** Chromium runs every theme, density, and content variant in the gallery suites. Firefox and WebKit run the default theme with compact density and `industrial-light` with low density, as the visual matrix does. **Why:** the gallery suites grow with components times 32 combinations in every engine; engine differences show in layout and behavior, which the component tests cover in all three, not in the palette.
 - **Files run one after another inside a part.** Vitest's file parallelism shares one browser's focus between files, and many tests depend on focus; parallelism comes from parts, not from files.
 
@@ -97,7 +97,7 @@ Theme names are read from the token source (`packages/core/src/tokens/themes.ts`
 - units are packed greedily, largest first, and a unit is never split across jobs;
 - a group-and-theme unit that alone exceeds the cap is reported as a failure of `plan`, since it means the group should be split into two groups, not into shards.
 
-A Node test covers the packing. **Why:** when components double, new groups and longer lists produce more jobs automatically. Theme is the second axis, not the first: the number of themes does not grow with components, each visual job costs a container start, and most projects render only one or two themes, so a theme dimension on every job would add mostly setup. As a fallback it keeps a large group in one place in the gallery while still naming what failed, and only a group too large even per theme is caught as a design problem.
+A Node test covers the packing. The browser parts are packed the same way, from the size of each group rather than a listing: a group costs its components times the theme and density pairs the engine renders, times a measured cost per pair, and an engine has at least a fixed number of parts for its component tests. **Why:** when components double, new groups and longer lists produce more jobs automatically. Theme is the second axis, not the first: the number of themes does not grow with components, each visual job costs a container start, and most projects render only one or two themes, so a theme dimension on every job would add mostly setup. As a fallback it keeps a large group in one place in the gallery while still naming what failed, and only a group too large even per theme is caught as a design problem.
 
 ## 7. What runs
 
@@ -132,6 +132,4 @@ The packing cap of §6 is set so a packed job meets its target. The `plan` job w
 
 ## Gaps
 
-The workflows are the first step toward this design: `plan`, `static`, `integration`, `smoke`, `browser` (one job per engine), `visual` (through `visual.yml`, shared with the baseline workflow), and `ci-success`. Every job sets up through `.github/actions/setup`. `plan` generates the visual and smoke matrices and decides whether a change needs more than `static`, and the visual tests carry their group, theme, `@cross-engine`, and `@forced` tags. Missing:
-
-- **`plan` computes no `browser` matrix.** The gallery suites cannot select groups or themes (`PUNK_GALLERY_GROUPS`, `PUNK_GALLERY_THEMES`), the component tests have no parts, and `browser` runs one job per engine with everything.
+None in the design. The packing caps and costs in `scripts/ci-matrix.ts` are estimates from a few CI runs, and are corrected as the `plan` summary shows real job times.

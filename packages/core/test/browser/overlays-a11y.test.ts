@@ -1,14 +1,14 @@
 import axe from 'axe-core';
 import type { Result } from 'axe-core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { themeNames } from '../../src/tokens/themes.ts';
 import { addStylesheets, cleanup, track } from './helpers.ts';
 import { buildGallery, galleryCss, overlayNames } from './fixtures/gallery.ts';
 import type { ContentVariant } from './fixtures/gallery.ts';
+import { galleryCombinations, galleryNames } from './fixtures/selection.ts';
 
 // An open modal covers the page and makes it inert, so each overlay is scanned on its own page.
-const densities = ['compact', 'low'] as const;
 const contents: ContentVariant[] = ['short', 'long', 'unlabeled', 'rtl'];
+const overlays = overlayNames.filter((name) => galleryNames.includes(name));
 
 beforeEach(() => {
   addStylesheets();
@@ -30,10 +30,13 @@ const describeViolations = (violations: Result[]) =>
     })
     .join('\n');
 
-describe.each(overlayNames)('axe: an open %s', (name) => {
+// A part whose groups hold no overlay still has a test, since Vitest fails a file without one.
+if (overlays.length === 0) it('has no overlay in the selected groups', () => {});
+
+describe.each(overlays)('axe: an open %s', (name) => {
   it.each(
-    themeNames.flatMap((theme) =>
-      densities.flatMap((density) => contents.map((content) => ({ theme, density, content }))),
+    galleryCombinations.flatMap((combination) =>
+      contents.map((content) => ({ ...combination, content })),
     ),
   )(
     'has no serious or critical violations ($theme, $density, $content)',

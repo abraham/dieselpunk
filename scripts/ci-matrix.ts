@@ -4,8 +4,16 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { themeNames } from '../packages/core/src/tokens/themes.ts';
-import { groupNames } from '../packages/core/test/browser/fixtures/groups.ts';
+import {
+  galleryGroups,
+  groupNames,
+  parseSelection,
+} from '../packages/core/test/browser/fixtures/groups.ts';
+import type { Selection } from '../packages/core/test/browser/fixtures/groups.ts';
 import { groupTag, themeTag } from '../packages/core/test/visual/tags.ts';
+
+export { parseSelection };
+export type { Selection };
 
 // Writes the CI matrices as outputs of the `plan` job (specs/ci.md §6).
 
@@ -49,12 +57,6 @@ interface Unit {
   cost: number;
 }
 
-/** The groups and themes to render; all of either when absent. */
-export interface Selection {
-  groups?: readonly string[];
-  themes?: readonly string[];
-}
-
 interface ReportSuite {
   title: string;
   specs?: Array<{ title: string; tags: string[]; tests: Array<{ projectName: string }> }>;
@@ -82,24 +84,6 @@ export function grepFor(
       (themes ? `(?=.*${oneOf(themeTag(''), themes)})` : ''),
   );
   return `^(?:${alternatives.join('|')})`;
-}
-
-/** Reads comma- or space-separated group and theme names, and rejects unknown ones. */
-export function parseSelection(groups = '', themes = ''): Selection {
-  const list = (text: string, known: readonly string[], kind: string) => {
-    const names = text.split(/[\s,]+/).filter(Boolean);
-    const unknown = names.filter((name) => !known.includes(name));
-    if (unknown.length > 0) {
-      throw new Error(`Unknown ${kind}: ${unknown.join(', ')}. Known: ${known.join(', ')}.`);
-    }
-    return names.length > 0 ? names : undefined;
-  };
-  const selection: Selection = {};
-  const g = list(groups, groupNames, 'group');
-  const t = list(themes, themeNames, 'theme');
-  if (g) selection.groups = g;
-  if (t) selection.themes = t;
-  return selection;
 }
 
 /** Counts the tests of a `playwright test --list --reporter=json` report by project, group, and theme. */
@@ -237,6 +221,106 @@ export function planSmoke(entries: number, perPart = smokeEntriesPerPart): Smoke
   return Array.from({ length: parts }, (_, index) => ({ part: `${index + 1}/${parts}` }));
 }
 
+/** One browser job: an engine, its part of the component tests, and what its gallery suites render. */
+export interface BrowserJob {
+  name: string;
+  engine: string;
+  part: string;
+  /** Comma-separated; empty when the part runs no gallery suite. */
+  groups: string;
+  themes: string;
+}
+
+export interface BrowserBudget {
+  /** The most gallery rendering a part may hold, in seconds. */
+  cap: number;
+  /** What the gallery suites spend on one component in one theme and density. */
+  secondsPerCombination: number;
+  /** The theme and density pairs each engine renders (specs/ci.md §5.3). */
+  combinations: Record<string, number>;
+  /** The parts the component tests of each engine are spread across, at least. */
+  componentParts: Record<string, number>;
+}
+
+// In CI the gallery suites took about 0.35s per component, theme, and density in each engine. Beside
+// setup and about a minute of component tests, a part has about 100s for them in its 4-minute target.
+export const browserBudget: BrowserBudget = {
+  cap: 100,
+  secondsPerCombination: 0.35,
+  combinations: { chromium: themeNames.length * 2, firefox: 2, webkit: 2 },
+  componentParts: { chromium: 1, firefox: 1, webkit: 1 },
+};
+
+interface GalleryUnit {
+  groups: string[];
+  themes?: string[];
+  cost: number;
+}
+
+/**
+ * Splits each engine's browser tests into parts: gallery groups packed under the cap, a group split by
+ * theme when it alone is over it, and the component tests spread across as many parts.
+ */
+export function planBrowser(
+  groups: Readonly<Record<string, readonly string[]>> = galleryGroups,
+  themes: readonly string[] = themeNames,
+  budget: BrowserBudget = browserBudget,
+): BrowserJob[] {
+  const jobs: BrowserJob[] = [];
+  const names = Object.keys(groups);
+  for (const [engine, combinations] of Object.entries(budget.combinations)) {
+    const whole: GalleryUnit[] = [];
+    const bins: GalleryUnit[] = [];
+    for (const [group, members] of Object.entries(groups)) {
+      const cost = members.length * combinations * budget.secondsPerCombination;
+      if (cost <= budget.cap) {
+        whole.push({ groups: [group], cost });
+        continue;
+      }
+      const perTheme = cost / themes.length;
+      if (combinations < themes.length * 2 || perTheme > budget.cap) {
+        throw new Error(
+          `browser · ${engine} · ${group} costs ${Math.round(cost)}s, over the cap of ${budget.cap}s` +
+            ` even by theme. Split the group into two groups (specs/ci.md §6).`,
+        );
+      }
+      // A part names one set of groups and themes, so a group's theme runs in a part of its own.
+      for (const theme of themes) bins.push({ groups: [group], themes: [theme], cost: perTheme });
+    }
+    const packed: GalleryUnit[] = [];
+    for (const unit of [...whole].sort((a, b) => b.cost - a.cost)) {
+      const fits = packed.find((bin) => bin.cost + unit.cost <= budget.cap);
+      if (fits) {
+        fits.groups.push(...unit.groups);
+        fits.cost += unit.cost;
+      } else {
+        packed.push({ groups: [...unit.groups], cost: unit.cost });
+      }
+    }
+    for (const bin of packed) bin.groups.sort((a, b) => names.indexOf(a) - names.indexOf(b));
+    bins.unshift(...packed);
+
+    const parts = Math.max(budget.componentParts[engine] ?? 1, bins.length);
+    for (let index = 0; index < parts; index++) {
+      const bin = bins[index];
+      const all = bin && !bin.themes && bin.groups.length === names.length;
+      const label = !bin
+        ? ''
+        : all
+          ? ' · all groups'
+          : ` · ${bin.groups.join(', ')}${bin.themes ? ` · ${bin.themes.join(', ')}` : ''}`;
+      jobs.push({
+        name: `${engine} ${index + 1}/${parts}${label}`,
+        engine,
+        part: `${index + 1}/${parts}`,
+        groups: bin?.groups.join(',') ?? '',
+        themes: bin?.themes?.join(',') ?? '',
+      });
+    }
+  }
+  return jobs;
+}
+
 /** The number of workbench entries, from Storybook's index, which needs no build. */
 function countWorkbenchEntries(): number {
   const workbench = fileURLToPath(new URL('../apps/storybook/', import.meta.url));
@@ -352,23 +436,27 @@ if (import.meta.main) {
   const visual = planVisual(listVisualTests(), visualBudget, selection);
   const entries = countWorkbenchEntries();
   const smoke = planSmoke(entries);
+  const browser = planBrowser();
   // A push to `main` always runs everything; a pull request of prose runs `static` alone.
   const prose = process.env['GITHUB_EVENT_NAME'] === 'pull_request' && onlyProse(changedFiles());
   const output = process.env['GITHUB_OUTPUT'];
   if (output) {
     appendFileSync(
       output,
-      `visual=${JSON.stringify(visual)}\nsmoke=${JSON.stringify(smoke)}\nfull=${!prose}\n`,
+      `visual=${JSON.stringify(visual)}\nsmoke=${JSON.stringify(smoke)}\n` +
+        `browser=${JSON.stringify(browser)}\nfull=${!prose}\n`,
     );
   } else {
-    console.log(JSON.stringify({ visual, smoke, full: !prose }, null, 2));
+    console.log(JSON.stringify({ visual, smoke, browser, full: !prose }, null, 2));
   }
   const summary = process.env['GITHUB_STEP_SUMMARY'];
   if (summary) {
     const rows = visual.map((job) => `| ${job.name} |`).join('\n');
+    const browserRows = browser.map((job) => `| ${job.name} |`).join('\n');
     appendFileSync(
       summary,
       (prose ? 'This change is prose only, so only `static` runs.\n\n' : '') +
+        `### Browser jobs\n\n| Job |\n| --- |\n${browserRows}\n\n` +
         `### Visual jobs\n\n| Job |\n| --- |\n${rows}\n\n` +
         `### Smoke\n\n${entries} workbench entries in ${smoke.length} part(s).\n`,
     );

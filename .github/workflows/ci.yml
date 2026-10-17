@@ -24,6 +24,7 @@ jobs:
     outputs:
       visual: ${{ steps.matrix.outputs.visual }}
       smoke: ${{ steps.matrix.outputs.smoke }}
+      browser: ${{ steps.matrix.outputs.browser }}
       full: ${{ steps.matrix.outputs.full }}
     steps:
       - uses: actions/checkout@v7
@@ -90,7 +91,7 @@ jobs:
       - run: npm run test:smoke
 
   browser:
-    name: browser (${{ matrix.browser }})
+    name: browser (${{ matrix.name }})
     needs: plan
     if: needs.plan.outputs.full == 'true'
     runs-on: ubuntu-latest
@@ -98,14 +99,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium, firefox, webkit]
+        include: ${{ fromJSON(needs.plan.outputs.browser) }}
     env:
-      PUNK_BROWSERS: ${{ matrix.browser }}
+      PUNK_BROWSERS: ${{ matrix.engine }}
+      PUNK_BROWSER_PART: ${{ matrix.part }}
+      PUNK_GALLERY_GROUPS: ${{ matrix.groups }}
+      PUNK_GALLERY_THEMES: ${{ matrix.themes }}
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with:
-          browsers: ${{ matrix.browser }}
+          browsers: ${{ matrix.engine }}
       - run: npm run test:browser --workspaces --if-present
 
   visual:
