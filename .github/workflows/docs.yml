@@ -1,0 +1,44 @@
+name: Docs
+
+# Publishes the workbench to GitHub Pages at https://dieselpunk.dev (specs/workbench.md §8).
+# It builds and deploys only; tests run in CI and do not gate it.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run build:site -w @dieselpunk/storybook
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: apps/storybook/dist/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    # One deployment at a time; a newer run replaces a queued one and never cancels a running one.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -73,7 +73,7 @@ The workbench is where people build with and review the library, not a marketing
 
 Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does not exist.
 
-**Stable addresses.** A published page's address is its Storybook id (`?path=/docs/<id>` and `?path=/story/<id>`), derived from its title and export name. Once published, an id is public surface like the API: renaming a title or export changes the address, so a page that moves keeps its old id with an explicit `id` or is listed as removed in the published-ids file (`apps/storybook/published-ids.json`), which a check compares with the build ([§8](#8-publishing)).
+**Stable addresses.** A published page's address is its Storybook id (`?path=/docs/<id>` and `?path=/story/<id>`), derived from its title and export name. Once published, an id is public surface like the API: renaming a title or export changes the address, so a page that moves keeps its old id with an explicit `id` or is listed as removed in the published-ids file (`apps/storybook/published-ids.json`), which a CI check compares with the build.
 
 **Identity.** The Storybook manager uses a theme built from the industrial tokens (canvas, panel, text, accent, and fonts), with the site title "Dieselpunk" and an original logo and favicon in `public/`, so the chrome matches the components. Every page has a title, a description, and social-card metadata with an original image. Nothing in them is derived from game assets ([product.md §4](product.md)).
 
@@ -90,25 +90,26 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 ## 8. Publishing
 
 - **Host:** GitHub Pages for `abraham/dieselpunk`, deployed by GitHub Actions. The custom domain is set in the repository's Pages settings; deployments from Actions need no `CNAME` file. **Why:** it is part of the repository's existing CI, needs no other account or secret, and serves static files, which is all a Storybook build is.
-- **Workflow** (`.github/workflows/docs.yml`): on a published release it builds the release into `/`; on a push to `main` that passes CI it builds `main` into `/next/` (or `/` before 1.0). Each run: `npm ci`, build core, locales, and the workbench, run `test:smoke` and the published-ids check against the built output, add the manifest, sitemap, robots file, and earlier major versions, and deploy the assembled folder. A failing check deploys nothing, so the live site is never older than its last good build and never broken by a bad one.
-- **Pull requests** build the site and upload it as an artifact for review; they never deploy.
+- **Workflow** (`.github/workflows/docs.yml`) builds and deploys, and nothing else: it runs no tests and does not wait for CI, which tests the same commit on its own. On a published release it builds the release into `/`; on a push to `main` it builds `main` into `/next/` (or `/` before 1.0). It also runs on demand (`workflow_dispatch`). Each run: `npm ci`, build core, locales, and the workbench, add the manifest, sitemap, and robots file (`npm run build:site -w @dieselpunk/storybook`, from `scripts/site.ts`) and earlier major versions, and deploy the assembled folder with `actions/upload-pages-artifact` and `actions/deploy-pages`. A failed build deploys nothing. **Why:** documentation should follow `main` promptly, and a failing or slow test elsewhere in CI should not hold back a docs fix.
+- **Pull requests** do not run the docs workflow; CI builds the workbench and runs the smoke test on them.
 - **Concurrency:** one deployment at a time; a newer run cancels a queued older one.
 - **Rollback** is re-running the docs workflow for the previous release.
 - **DNS** (apex `A`/`AAAA` records and the `www` `CNAME` at the registrar) is the owner's and outside the repository.
 
 ## Verification
 
-- `npm run build` builds the workbench; `test:smoke` runs §5.
+- `npm run build` builds the workbench; `test:smoke` runs §5 in CI.
 - Every guide's framework code is the code `check:frameworks` builds.
 - Foundations data is measured from the built CSS, so it cannot drift from what consumers get.
-- The docs workflow deploys only after `test:smoke` and the published-ids check pass on the exact output it deploys.
+- Nothing gates a deploy but a successful build: a commit that fails CI on `main` is still published, and the CI failure is fixed on `main`.
 
 ## Gaps
 
 - **The screen reader results table is empty** ([accessibility.md](accessibility.md) Gaps).
-- **The site is not published.** There is no `docs.yml` workflow, no custom domain in the Pages settings, and no DNS record for dieselpunk.dev.
-- **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, 404 page, sitemap, or robots file, and telemetry is not disabled.
-- **No published-ids file or check.**
+- **The site is not published.** The repository's Pages source is not yet set to GitHub Actions, the custom domain is not set in the Pages settings, and dieselpunk.dev has no DNS records.
+- **Only the pre-1.0 path is built.** `docs.yml` deploys `main` to `/`. The release build into `/`, `main` into `/next/`, and the kept `/v<major>/` folders are added with the first release.
+- **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, or 404 page.
+- **No published-ids file or check** in CI.
 - **The guides and overviews are not scanned by axe.** Closing it: run axe over every docs page and example in the smoke test, outside the Storybook chrome.
 - **The packages have no `homepage` or `repository` field,** and manifest descriptions do not link their docs pages.
 - **The Integration guide has no `npm install` step or plain HTML import-map page,** since the packages are not on npm yet.
