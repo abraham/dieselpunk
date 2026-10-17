@@ -68,7 +68,7 @@ function rgb(hex: string): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-const dark = themes.industrial.tokens;
+const dark = themes.dark.tokens;
 
 describe('variants', () => {
   it('raised has a vertical gradient fill', async () => {

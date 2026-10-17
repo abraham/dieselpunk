@@ -8,7 +8,7 @@ import { at } from './tags.ts';
 
 // The matrix from specs/testing.md §6, run once for each gallery group (specs/testing.md §3).
 // Chromium runs all of it. Firefox and WebKit run the default theme at compact density and
-// `industrial-light` at low density, at 100% only. The forced-colors project ignores themes, so
+// `light` at low density, at 100% only. The forced-colors project ignores themes, so
 // it runs one theme at 100% zoom. The baselines of a group are in a folder of that name.
 // Projects select their tests by tag (playwright.config.ts), and CI jobs by group and theme, so a
 // test never skips itself after its page is open (specs/ci.md §5.2).

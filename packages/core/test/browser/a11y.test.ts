@@ -84,7 +84,7 @@ describe.each(galleryCombinations)('axe: $theme, $density', ({ theme, density })
 
 describe('axe: every component is scanned', () => {
   it('finds each component in the gallery', async () => {
-    const stage = mountGallery('short', 'industrial', 'compact');
+    const stage = mountGallery('short', 'dark', 'compact');
     await settle(stage);
     for (const name of galleryNames) {
       expect(stage.querySelector(`[data-component="${name}"] punk-${name}`), name).not.toBeNull();
@@ -92,7 +92,7 @@ describe('axe: every component is scanned', () => {
   });
 
   it('would report a real violation, so a clean result means something', async () => {
-    const stage = mountGallery('short', 'industrial', 'compact');
+    const stage = mountGallery('short', 'dark', 'compact');
     stage.insertAdjacentHTML('beforeend', '<img src="data:," />');
     await settle(stage);
     const results = await scan(stage);
@@ -100,7 +100,7 @@ describe('axe: every component is scanned', () => {
   });
 
   it('looks inside shadow roots, so unreadable text in a component is reported', async () => {
-    const stage = mountGallery('short', 'industrial', 'compact', ['progress-bar']);
+    const stage = mountGallery('short', 'dark', 'compact', ['progress-bar']);
     // Text almost the color of the canvas behind the progress bar's label.
     stage.style.setProperty('--punk-color-text', '#1f201d');
     await settle(stage);
@@ -123,7 +123,7 @@ describe.skipIf(server.browser !== 'chromium')('forced colors', () => {
   ];
 
   it.each(surfaces)('keeps a visible border on the %s', async (_label, tag, part) => {
-    const stage = mountGallery('short', 'industrial', 'compact', [
+    const stage = mountGallery('short', 'dark', 'compact', [
       tag.slice('punk-'.length) as ComponentName,
     ]);
     await settle(stage);
@@ -140,7 +140,7 @@ describe.skipIf(server.browser !== 'chromium')('forced colors', () => {
     ['button', 'punk-button'],
     ['icon-button', 'punk-icon-button'],
   ] as const)('shows a focus indicator on %s', async (name, tag) => {
-    const stage = mountGallery('short', 'industrial', 'compact', [name]);
+    const stage = mountGallery('short', 'dark', 'compact', [name]);
     await settle(stage);
     await commands.setForcedColors('active');
     const element = stage.querySelector<HTMLElement>(`${tag}:not([disabled]):not([loading])`);

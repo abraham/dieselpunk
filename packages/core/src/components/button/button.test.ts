@@ -26,7 +26,7 @@ interface ButtonOptions {
   parent?: Element;
 }
 
-const dark = themes.industrial.tokens;
+const dark = themes.dark.tokens;
 let pointerHeld = false;
 
 afterEach(async () => {

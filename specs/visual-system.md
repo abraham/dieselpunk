@@ -12,7 +12,7 @@ Tokens are authored once, in TypeScript data modules that import neither Lit nor
 | Module                    | Holds                                                            |
 | ------------------------- | ---------------------------------------------------------------- |
 | `tokens/base.ts`          | Non-color tokens at compact density                              |
-| `tokens/default-theme.ts` | The `industrial` palette, which component fallbacks inline       |
+| `tokens/default-theme.ts` | The `dark` palette, which component fallbacks inline             |
 | `tokens/themes.ts`        | Every theme's palette, reusing the default one                   |
 | `tokens/density.ts`       | Low-density overrides; compact values are derived from `base.ts` |
 | `tokens/token.ts`         | `token(name)`, the only way component styles read a token        |
@@ -21,7 +21,7 @@ A token name is `--punk-<name>`. Categories: `color-*` (semantic colors), `space
 
 ### 1.2 No global stylesheet
 
-`token(name)` returns `var(--punk-<name>, <compact, industrial default>)`, with the default inlined from the source. An unthemed page therefore renders every component correctly, and any ancestor can override any token. Components never declare token values in `:host`, which would shadow values inherited from ancestors.
+`token(name)` returns `var(--punk-<name>, <compact, dark default>)`, with the default inlined from the source. An unthemed page therefore renders every component correctly, and any ancestor can override any token. Components never declare token values in `:host`, which would shadow values inherited from ancestors.
 
 ### 1.3 Emitted CSS
 
@@ -33,8 +33,8 @@ A token name is `--punk-<name>`. Categories: `color-*` (semantic colors), `space
   /* base tokens */
 }
 :where(:root),
-[data-punk-theme='industrial'] {
-  /* industrial colors */
+[data-punk-theme='dark'] {
+  /* dark colors */
 }
 [data-punk-density='compact'] {
   /* compact density */
@@ -44,21 +44,21 @@ A token name is `--punk-<name>`. Categories: `color-*` (semantic colors), `space
 }
 
 /* themes.css */
-[data-punk-theme='industrial-light'] {
+[data-punk-theme='light'] {
   /* light colors */
 }
 [data-punk-theme='high-contrast'] {
   /* high-contrast colors */
 }
 [data-punk-theme='reduced-texture'] {
-  /* industrial colors, no texture or gradient */
+  /* dark colors, no texture or gradient */
 }
 [data-punk-theme='auto'] {
-  /* industrial */
+  /* dark */
 }
 @media (prefers-color-scheme: light) {
   [data-punk-theme='auto'] {
-    /* industrial-light */
+    /* light */
   }
 }
 ```
@@ -71,13 +71,13 @@ A token's value is a literal. A custom property whose value uses `var()` is reso
 
 ## 2. Themes
 
-| Theme              | Intent                                                                                         |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| `industrial`       | The default. Charcoal metal, brass, safety orange                                              |
-| `industrial-light` | The same material language on pale steel, with dark text and a darker accent so fills meet 3:1 |
-| `high-contrast`    | Black and white with a yellow accent; no gradient, no texture; text at least 7:1               |
-| `reduced-texture`  | The `industrial` palette with flat fills and no noise                                          |
-| `auto`             | `industrial`, or `industrial-light` under `prefers-color-scheme: light`                        |
+| Theme             | Intent                                                                                         |
+| ----------------- | ---------------------------------------------------------------------------------------------- |
+| `dark`            | The default. Charcoal metal, brass, safety orange                                              |
+| `light`           | The same material language on pale steel, with dark text and a darker accent so fills meet 3:1 |
+| `high-contrast`   | Black and white with a yellow accent; no gradient, no texture; text at least 7:1               |
+| `reduced-texture` | The `dark` palette with flat fills and no noise                                                |
+| `auto`            | `dark`, or `light` under `prefers-color-scheme: light`                                         |
 
 Themes override semantic color tokens, never component internals. `tokens/themes.ts` holds the values; the workbench's Colors page shows them with measured ratios. Every theme defines exactly the same token names.
 

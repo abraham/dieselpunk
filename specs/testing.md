@@ -81,15 +81,15 @@ Suites over the gallery:
 
 **Matrix.**
 
-| Dimension | Values                                                               |
-| --------- | -------------------------------------------------------------------- |
-| Theme     | `industrial`, `industrial-light`, `high-contrast`, `reduced-texture` |
-| Density   | `compact`, `low`                                                     |
-| Container | 1024px and 375px                                                     |
-| Zoom      | 100% and 200% (half the viewport width with `deviceScaleFactor: 2`)  |
-| Content   | The gallery's variants, cut per group where noted                    |
+| Dimension | Values                                                              |
+| --------- | ------------------------------------------------------------------- |
+| Theme     | `dark`, `light`, `high-contrast`, `reduced-texture`                 |
+| Density   | `compact`, `low`                                                    |
+| Container | 1024px and 375px                                                    |
+| Zoom      | 100% and 200% (half the viewport width with `deviceScaleFactor: 2`) |
+| Content   | The gallery's variants, cut per group where noted                   |
 
-**Projects.** `chromium` runs the full matrix for every group. `firefox` and `webkit` run the default and `industrial-light` with `low` at 100%. `chromium-forced` runs every group with forced colors active at one theme (themes have no effect there), 100%, both densities, both widths, and every variant. Interaction captures (hover, keyboard focus, and pressed, driven by real input, never by class hooks) run in each project, and clip to the target with a margin and a tight tolerance (`threshold: 0.02`, `maxDiffPixelRatio: 0.0005`), since a hover changes only an edge. In CI the visual tests are split by project and gallery group ([ci.md §5.2](ci.md)). The visual tests always run 4 workers, one per vCPU of a GitHub runner, locally as well as in CI.
+**Projects.** `chromium` runs the full matrix for every group. `firefox` and `webkit` run the default and `light` with `low` at 100%. `chromium-forced` runs every group with forced colors active at one theme (themes have no effect there), 100%, both densities, both widths, and every variant. Interaction captures (hover, keyboard focus, and pressed, driven by real input, never by class hooks) run in each project, and clip to the target with a margin and a tight tolerance (`threshold: 0.02`, `maxDiffPixelRatio: 0.0005`), since a hover changes only an edge. In CI the visual tests are split by project and gallery group ([ci.md §5.2](ci.md)). The visual tests always run 4 workers, one per vCPU of a GitHub runner, locally as well as in CI.
 
 **Baselines.**
 

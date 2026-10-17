@@ -21,7 +21,7 @@ import type { ComponentName, ContentVariant, GalleryGroup } from '../browser/fix
 
 const params = new URLSearchParams(location.search);
 const group = (params.get('group') ?? 'foundation') as GalleryGroup;
-const theme = params.get('theme') ?? 'industrial';
+const theme = params.get('theme') ?? 'dark';
 const density = params.get('density') ?? 'compact';
 const content = (params.get('content') ?? 'short') as ContentVariant;
 const only = params.get('component') as ComponentName | null;

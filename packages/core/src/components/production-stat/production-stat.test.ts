@@ -93,7 +93,7 @@ describe('structure', () => {
     const element = await mount({ value: '5' });
     expect(getComputedStyle(element).display).toBe('block');
     expect(getComputedStyle(part(element, 'stat')).backgroundColor).toBe(
-      rgb(themes['industrial'].tokens['color-panel-inset'] as string),
+      rgb(themes.dark.tokens['color-panel-inset'] as string),
     );
   });
 });
@@ -243,7 +243,7 @@ describe('the trend and the change', () => {
   it('says each trend in the colors of the text, on the plate', async () => {
     const element = await mount({ value: '1', trend: 'up' });
     expect(getComputedStyle(part(element, 'trend')).color).toBe(
-      rgb(themes['industrial'].tokens['color-text'] as string),
+      rgb(themes.dark.tokens['color-text'] as string),
     );
   });
 });

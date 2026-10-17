@@ -33,7 +33,7 @@ export const InterfaceSettings: Story = {
     const host = document.createElement('div');
     host.className = 'wb-stack';
     host.style.maxInlineSize = '760px';
-    let theme = 'industrial';
+    let theme = 'dark';
     let density = 'compact';
     // The workbench page is one page: start each showing in English, so a language chosen earlier
     // does not carry over.

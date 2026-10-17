@@ -197,18 +197,18 @@ describe('contrast gate', () => {
   it('fails a theme whose text is too dim', () => {
     const dim = {
       colorScheme: 'dark',
-      tokens: { ...themes.industrial.tokens, 'color-text': '#444444' },
+      tokens: { ...themes.dark.tokens, 'color-text': '#444444' },
     } as const;
     const failures = evaluateContrast({ dim });
     assert.ok(failures.some((f) => f.rule === 'text' && f.theme === 'dim'));
   });
 
   it('fails a theme whose control edge is too dim on any surface', () => {
-    const industrial: Record<string, string> = themes.industrial.tokens;
+    const base: Record<string, string> = themes.dark.tokens;
     for (const surface of ['canvas', 'panel', 'panel-raised', 'panel-inset']) {
       const dim = {
         colorScheme: 'dark',
-        tokens: { ...industrial, 'color-control-edge': industrial[`color-${surface}`] ?? '' },
+        tokens: { ...base, 'color-control-edge': base[`color-${surface}`] ?? '' },
       } as const;
       const failures = evaluateContrast({ dim });
       assert.ok(
@@ -223,8 +223,8 @@ describe('contrast gate', () => {
       const lost = {
         colorScheme: 'dark',
         tokens: {
-          ...themes.industrial.tokens,
-          [`color-${outline}`]: themes.industrial.tokens['color-panel-raised'],
+          ...themes.dark.tokens,
+          [`color-${outline}`]: themes.dark.tokens['color-panel-raised'],
         },
       } as const;
       const failures = evaluateContrast({ lost });
@@ -242,8 +242,8 @@ describe('contrast gate', () => {
     const lost = {
       colorScheme: 'dark',
       tokens: {
-        ...themes.industrial.tokens,
-        'color-text-muted': themes.industrial.tokens['color-panel-inset'],
+        ...themes.dark.tokens,
+        'color-text-muted': themes.dark.tokens['color-panel-inset'],
       },
     } as const;
     const failures = evaluateContrast({ lost });
