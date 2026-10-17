@@ -10,7 +10,16 @@ export const galleryGroups = {
   production: ['production-stat', 'connection-row'],
   shell: ['stack', 'cluster', 'accordion', 'accordion-item', 'tabs', 'tab', 'toolbar', 'window'],
   // Every form control in every state, in flow: no top layer, so one page holds them all.
-  forms: ['checkbox', 'switch', 'slider', 'text-field', 'number-field', 'select'],
+  forms: [
+    'checkbox',
+    'switch',
+    'slider',
+    'text-field',
+    'number-field',
+    'select',
+    'date-field',
+    'time-field',
+  ],
   // The form controls that group or choose, in flow like the first six.
   inputs: ['radio-group', 'radio', 'textarea', 'combobox', 'fieldset'],
   // Navigation and selection in flow; a menu is in the top layer, so it is open only in `overlays`.

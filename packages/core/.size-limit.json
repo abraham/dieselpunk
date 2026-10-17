@@ -392,5 +392,19 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "3.75 kB"
+  },
+  {
+    "name": "punk-date-field",
+    "path": "dist/components/date-field/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6.1 kB"
+  },
+  {
+    "name": "punk-time-field",
+    "path": "dist/components/time-field/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6.1 kB"
   }
 ]

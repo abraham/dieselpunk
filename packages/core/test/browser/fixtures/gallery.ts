@@ -50,6 +50,8 @@ import '../../../src/components/kbd/register.ts';
 import '../../../src/components/description-list/register.ts';
 import '../../../src/components/tag/register.ts';
 import '../../../src/components/steps/register.ts';
+import '../../../src/components/date-field/register.ts';
+import '../../../src/components/time-field/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -709,6 +711,26 @@ const builders: Record<ComponentName, Builder> = {
       <punk-select label="${c.settings}" disabled><option value="a">${c.start}</option></punk-select>
       <punk-select label="${c.settings}" required data-touched><option value="">${c.divider}</option><option value="a">${c.start}</option><span slot="hint">${c.footer}</span></punk-select>
       <punk-select aria-label="${c.settings}"><option value="a">${c.start}</option><option value="b">${c.pause}</option></punk-select>
+    </div>
+  `,
+
+  'date-field': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-date-field label="${c.settings}"></punk-date-field>
+      <punk-date-field label="${c.settings}" value="2025-03-14"><span slot="hint">${c.footer}</span></punk-date-field>
+      <punk-date-field label="${c.settings}" value="2025-03-14" readonly></punk-date-field>
+      <punk-date-field label="${c.settings}" value="2025-03-14" disabled></punk-date-field>
+      <punk-date-field label="${c.settings}" required data-touched><span slot="hint">${c.footer}</span></punk-date-field>
+      <punk-date-field aria-label="${c.settings}" value="2025-03-14" min="2025-04-01" data-touched><span slot="prefix">${plus}</span></punk-date-field>
+    </div>
+  `,
+
+  'time-field': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-time-field label="${c.settings}"></punk-time-field>
+      <punk-time-field label="${c.settings}" value="06:30"><span slot="suffix">UTC</span></punk-time-field>
+      <punk-time-field label="${c.settings}" value="06:30:15" step="1" disabled></punk-time-field>
+      <punk-time-field label="${c.settings}" required data-touched><span slot="hint">${c.footer}</span></punk-time-field>
     </div>
   `,
 

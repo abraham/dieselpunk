@@ -9,6 +9,7 @@ export default {
     'src/internal/form-control.ts',
     'src/internal/toggle-base.ts',
     'src/internal/field-base.ts',
+    'src/internal/date-time-field.ts',
   ],
   exclude: [
     '**/*.test.ts',

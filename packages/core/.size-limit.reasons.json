@@ -52,5 +52,7 @@
   "punk-kbd": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-description-list": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-tag": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
-  "punk-steps (both tags)": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB."
+  "punk-steps (both tags)": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
+  "punk-date-field": "Over 5 kB: the form base and field styles are about 4.4 kB of it, as of the text field, and the date and time base adds the picker glyphs and the value check that the time field shares.",
+  "punk-time-field": "Over 5 kB: the form base and field styles are about 4.4 kB of it, as of the text field, and the date and time base adds the picker glyphs and the value check that the date field shares."
 }

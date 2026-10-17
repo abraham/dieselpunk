@@ -357,6 +357,69 @@
       },
       "cssProperties": {}
     },
+    "punk-date-field": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "autocomplete": "string | null = null",
+        "disabled": "boolean = false",
+        "label": "string = ''",
+        "max": "string | null = null",
+        "min": "string | null = null",
+        "name": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "step": "string | null = null",
+        "value": "string = ''"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "autocomplete": "string | null = null",
+        "disabled": "boolean = false",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "max": "string | null = null",
+        "min": "string | null = null",
+        "name": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "step": "string | null = null",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "value": "string = ''",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "select": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "",
+        "input": ""
+      },
+      "slots": {
+        "hint": "",
+        "prefix": "",
+        "suffix": ""
+      },
+      "parts": {
+        "control": "",
+        "field": "",
+        "hint": "",
+        "label": "",
+        "message": "",
+        "prefix": "",
+        "suffix": ""
+      },
+      "cssProperties": {}
+    },
     "punk-description-list": {
       "attributes": {},
       "properties": {},
@@ -1653,6 +1716,69 @@
       "cssProperties": {
         "--punk-textarea-max-height": "= 20lh"
       }
+    },
+    "punk-time-field": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "autocomplete": "string | null = null",
+        "disabled": "boolean = false",
+        "label": "string = ''",
+        "max": "string | null = null",
+        "min": "string | null = null",
+        "name": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "step": "string | null = null",
+        "value": "string = ''"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "autocomplete": "string | null = null",
+        "disabled": "boolean = false",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "max": "string | null = null",
+        "min": "string | null = null",
+        "name": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "step": "string | null = null",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "value": "string = ''",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "select": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "",
+        "input": ""
+      },
+      "slots": {
+        "hint": "",
+        "prefix": "",
+        "suffix": ""
+      },
+      "parts": {
+        "control": "",
+        "field": "",
+        "hint": "",
+        "label": "",
+        "message": "",
+        "prefix": "",
+        "suffix": ""
+      },
+      "cssProperties": {}
     },
     "punk-toast": {
       "attributes": {

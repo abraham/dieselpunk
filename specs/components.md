@@ -17,7 +17,7 @@ A planned component is built only after its section exists in its family spec, w
 
 ## 2. Implemented
 
-55 tags in 47 registration entries.
+57 tags in 49 registration entries.
 
 ### 2.1 Layout and surfaces
 
@@ -105,6 +105,8 @@ A planned component is built only after its section exists in its family spec, w
 | `punk-textarea`                  | Multiline text, with an optional count and growth                                            | Implemented | [forms.md §13](forms.md) |
 | `punk-combobox`                  | A searchable choice from a long list, optionally free text                                   | Implemented | [forms.md §14](forms.md) |
 | `punk-fieldset`                  | A titled group of controls with a shared description, error summary, and group-level disable | Implemented | [forms.md §15](forms.md) |
+| `punk-date-field`                | A date, with the platform's picker                                                           | Implemented | [forms.md §16](forms.md) |
+| `punk-time-field`                | A time of day, with the platform's picker                                                    | Implemented | [forms.md §16](forms.md) |
 
 ## 3. Planned (P1)
 
@@ -117,7 +119,6 @@ None: every component that general-purpose use needs is implemented. The part of
 | `punk-tree`, `punk-tree-item`                      | Hierarchical navigation and selection: file trees, tech trees, category browsers | APG tree view; `SelectionModel`; roving focus with expand and collapse keys                                                                                                             | [keyboard-and-selection.md](keyboard-and-selection.md) |
 | `punk-menubar`                                     | A persistent row of menus at the top of an application window                    | APG menubar, built from `punk-menu`                                                                                                                                                     | [keyboard-and-selection.md](keyboard-and-selection.md) |
 | `punk-splitter`                                    | Two panes with a draggable, keyboard-operable divider                            | APG window splitter (`separator` with a value); pointer capture with a keyboard alternative                                                                                             | [layout-and-actions.md](layout-and-actions.md)         |
-| `punk-date-field`, `punk-time-field`               | Date and time entry                                                              | Native `<input type="date">` and `"time"` on `PunkFieldBase`; the picker is the platform's                                                                                              | [forms.md](forms.md)                                   |
 | `punk-file-field`                                  | Choosing files, with an optional drop zone and a list of the chosen files        | Native `<input type="file">`; drop is an enhancement, never the only way                                                                                                                | [forms.md](forms.md)                                   |
 | `punk-range-slider`                                | A low and high value chosen on one track                                         | Two `slider` thumbs on the slider's math and pointer model; submits two values                                                                                                          | [forms.md](forms.md)                                   |
 | Data modes of the slot grid, list, table, and tree | Collections of thousands of items with only the visible ones in the DOM          | `@lit-labs/virtualizer`, as a peer dependency of an optional package, not core; `items` and `renderItem`, `aria-setsize` and `aria-posinset`, selection by value, roving focus by index | [performance.md §4.1](performance.md)                  |

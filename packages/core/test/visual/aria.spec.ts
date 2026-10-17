@@ -300,6 +300,24 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     await expect(page.getByRole('textbox', { name: 'Callsign' })).toHaveValue('Echo');
   });
 
+  // The engines expose a date or time input differently, so the names and values are asked of
+  // the inputs found by label rather than written out as one tree.
+  test('date and time fields', { tag: at('forms') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-date-field label="Delivery" value="2025-03-14"><span slot="hint">Weekdays only</span></punk-date-field>
+       <punk-time-field label="Shift start" value="06:30" disabled></punk-time-field>`,
+    );
+    const date = page.getByLabel('Delivery', { exact: true });
+    await expect(date).toHaveAttribute('type', 'date');
+    await expect(date).toHaveValue('2025-03-14');
+    await expect(date).toHaveAccessibleDescription('Weekdays only');
+    const time = page.getByLabel('Shift start', { exact: true });
+    await expect(time).toHaveAttribute('type', 'time');
+    await expect(time).toHaveValue('06:30');
+    await expect(time).toBeDisabled();
+  });
+
   test(
     'a field names its message once the user has left it',
     { tag: at('forms') },

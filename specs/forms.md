@@ -1,7 +1,7 @@
 # Forms
 
-**Scope:** how controls take part in native forms: association, values and defaults, validation and messages, names and labels, and events; and the ten form controls and the fieldset.
-**Code:** `src/internal/form-control.ts`, `toggle-base.ts`, `field-base.ts`, `fieldset.ts`, `slider-math.ts`; `src/styles/field.ts`; `src/components/checkbox/`, `switch/`, `slider/`, `text-field/`, `number-field/`, `select/`, `radio-group/`, `textarea/`, `combobox/`, `fieldset/`.
+**Scope:** how controls take part in native forms: association, values and defaults, validation and messages, names and labels, and events; and the twelve form controls and the fieldset.
+**Code:** `src/internal/form-control.ts`, `toggle-base.ts`, `field-base.ts`, `date-time-field.ts`, `fieldset.ts`, `slider-math.ts`; `src/styles/field.ts`, `date-time-field.ts`; `src/components/checkbox/`, `switch/`, `slider/`, `text-field/`, `number-field/`, `select/`, `radio-group/`, `textarea/`, `combobox/`, `fieldset/`, `date-field/`, `time-field/`.
 
 ## 1. Form association
 
@@ -21,7 +21,7 @@ Subclasses implement `formValue()`, `validate()`, `resetToDefault()`, and `resto
 
 As in native controls, **the attribute is the default and the property is the live value.**
 
-- `checked` (checkbox, switch) and `value` (slider, text field, number field, select) do not reflect. The attribute holds what the author wrote, and `form.reset()` restores it.
+- `checked` (checkbox, switch) and `value` (slider, text field, number field, select, date and time fields) do not reflect. The attribute holds what the author wrote, and `form.reset()` restores it.
 - A select's default is its options' `selected` attributes, not the host's `value` attribute, which only sets the first choice.
 - A control styles itself from state classes in its shadow tree, not from `:host([checked])`, since the attribute is not the state.
 
@@ -152,20 +152,29 @@ A native `<select>` filled with copies of the host's light-DOM `<option>` and `<
 - **Look.** An etched frame with the legend set into its top edge.
 - **Warning:** no legend.
 
+## 16. Date and time fields
+
+`punk-date-field` and `punk-time-field` are fields ([§8](#8-field-base)) around a native `<input type="date">` and `<input type="time">`, on one base, `PunkDateTimeFieldBase` (`internal/date-time-field.ts`): `value`, `min`, `max`, `step`, `readonly`, and `autocomplete`, with the `prefix`, `suffix`, and `hint` slots.
+
+- **The picker is the platform's.** How the value is shown and typed, the calendar or clock that opens, and a 12- or 24-hour display are the engine's, in the browser's language. **Why:** they are accessible in every engine, and a calendar grid of the library's own is a large accessibility surface ([components.md §5](components.md)).
+- **Values** are the input's formats, whatever the display: `YYYY-MM-DD` for a date, `HH:MM` or `HH:MM:SS` for a time. Before each render a detached input of the same type parses an assigned value: one it cannot parse is cleared and warns once, and one it normalizes is taken as normalized, so the field never disagrees with its input. `step` is in days for a date and seconds for a time; below 60 a time takes seconds.
+- **Form and validity** as the text field: `value` under `name`, the `value` attribute as the reset default, and `valueMissing`, `rangeUnderflow`, `rangeOverflow`, `stepMismatch`, and `badInput` (a value the user left incomplete) from the input.
+- **Look.** The field's frame. Chromium's picker button is an image in a fixed color, so it is redrawn as a mask filled with the text color (a calendar or a clock), and with `ButtonText` under forced colors. The other engines draw their own, which follows the theme's `color-scheme`.
+
 ## Verification
 
 - Node: `slider-math.test.ts`.
 - `test/browser/forms.test.ts`, for every control in all three engines (the radio group, textarea, and combobox included): `FormData` under the name when enabled and named and nothing otherwise, the `form` attribute, a disabled fieldset, reset to the authored default in both directions, state restore, `labels` and label clicks, the name fallback, `required` and each native constraint, `setCustomValidity`, `reportValidity()` focusing the control, and a blocked `requestSubmit`. **Slider parity:** every arrow, Home, and End against a native range with the same range, step, and direction.
 - `toggle-base.test.ts`, `field-base.test.ts`, `form-control.test.ts`, and each control's tests: roles and states, keys, events once per user change, steppers and their repeat, the select's observer, messages and their timing, `aria-invalid` and descriptions, contrast of boundaries and placeholders read from the render.
-- `radio-group.test.ts`: the tab stop, arrows in both directions skipping disabled radios without wrapping, Space and click, values from code before their radio, group disabling, release of a radio that leaves. `textarea.test.ts`: rows and their repair, the count and its description, `autogrow`. `combobox.test.ts`: filtering, keys, choosing by click without losing focus, Escape absorbed, settling on leave, `allow-custom`, `filter="none"` with changing options, listeners only while open. `fieldset.test.ts`: the named and described group, disabling native and form-associated controls and giving back exactly those, the legend exception, added and removed children.
+- `radio-group.test.ts`: the tab stop, arrows in both directions skipping disabled radios without wrapping, Space and click, values from code before their radio, group disabling, release of a radio that leaves. `textarea.test.ts`: rows and their repair, the count and its description, `autogrow`. `combobox.test.ts`: filtering, keys, choosing by click without losing focus, Escape absorbed, settling on leave, `allow-custom`, `filter="none"` with changing options, listeners only while open. `fieldset.test.ts`: the named and described group, disabling native and form-associated controls and giving back exactly those, the legend exception, added and removed children. `date-field.test.ts` and `time-field.test.ts`: the native type and name, the value both ways, attributes passed through, events, values cleared with a warning, range validity and its message, seconds, the picker rules, and 187px.
 - `check:frameworks`: each fixture binds a text field, switch, and slider and submits the form ([workbench.md §4](workbench.md)).
 
 ## Gaps
 
-- **The combobox chooses one value.** The catalog's multiple-value combobox (chips for the chosen values) is not built. Closing it: a `multiple` mode that submits each value under `name`, with `punk-tag` for the chosen values once it exists ([components.md §4](components.md)).
+- **The combobox chooses one value.** The catalog's multiple-value combobox (chips for the chosen values) is not built. Closing it: a `multiple` mode that submits each value under `name`, with `punk-tag` for the chosen values ([data-display.md §7](data-display.md)).
 - **The textarea does not grow in engines without `field-sizing`.** Closing it waits for the engines, or a measurement on `input` that the performance rules would have to allow.
 
 Platform limits, documented in the Forms guide and not closable inside the library:
 
-- autofill and password managers in shadow roots, the unthemed select list, number parsing by engine and locale, `SubmitEvent.submitter` for `punk-button`, and native validation messages in the browser's language;
+- autofill and password managers in shadow roots, the unthemed select list, number parsing by engine and locale, date and time display in the browser's language, `SubmitEvent.submitter` for `punk-button`, and native validation messages in the browser's language;
 - WebKit's native range does not swap Left and Right in right-to-left text, though it draws the range reversed. The slider swaps them, as Chromium and Firefox do, so the parity test omits those two keys in WebKit and says why.
