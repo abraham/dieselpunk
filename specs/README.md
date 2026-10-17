@@ -13,11 +13,12 @@ Living specifications for `@dieselpunk/core` and `@dieselpunk/locales`. Each one
 | [visual-system.md](visual-system.md)                   | Tokens, themes, density, contrast, surfaces, focus, forced colors, motion, typography, responsive layout               |
 | [component-model.md](component-model.md)               | `PunkElement`, base classes, controllers, pure logic modules, properties, ownership, composition                       |
 | [accessibility.md](accessibility.md)                   | Names, roles, cross-shadow ARIA, non-color cues, targets, reflow, live regions, manual testing                         |
-| [keyboard-and-selection.md](keyboard-and-selection.md) | Roving focus, grid navigation, selection, activation; slot grid, tabs, toolbar, accordion                              |
-| [overlays.md](overlays.md)                             | Top layer, the Escape stack, modality, anchoring; tooltip, popover, window, dialog, toast                              |
-| [forms.md](forms.md)                                   | Form association, values and defaults, validation, labels; the six form controls                                       |
+| [keyboard-and-selection.md](keyboard-and-selection.md) | Roving focus, grid navigation, selection, activation; slot grid, tabs, toolbar, accordion, menu, toggle group, list    |
+| [overlays.md](overlays.md)                             | Top layer, the Escape stack, modality, anchoring; tooltip, popover, window, dialog, toast, drawer                      |
+| [forms.md](forms.md)                                   | Form association, values and defaults, validation, labels; the ten form controls and the fieldset                      |
 | [inventory-and-readouts.md](inventory-and-readouts.md) | Receptacles and readouts; slot, item stack, recipe, progress bar, meter, status light, production stat, connection row |
-| [layout-and-actions.md](layout-and-actions.md)         | Panel, divider, stack, cluster, button, icon button                                                                    |
+| [data-display.md](data-display.md)                     | Data and status in the page; table, alert, badge, spinner                                                              |
+| [layout-and-actions.md](layout-and-actions.md)         | Panel, divider, stack, cluster, button, icon button, breadcrumb, pagination                                            |
 | [localization.md](localization.md)                     | Messages, locale changes, the locales package, translation gates, number formatting, direction                         |
 | [performance.md](performance.md)                       | Size budgets, runtime cost rules, and the deterministic gates that hold them                                           |
 | [testing.md](testing.md)                               | Test layers, the gallery, engines, visual regression, mutation checking, the gate list                                 |

@@ -156,12 +156,14 @@ describe('the idle library', () => {
     expect([...pending.intervals]).toEqual([]);
     expect(document.getAnimations()).toEqual([]);
 
-    // By design, and nothing else: a toolbar that does not wrap watches its own size, a select
-    // copies its options when they change, and an open tooltip keeps its position and the
-    // description of its anchor current. A closed tooltip and every other component hold none.
+    // By design, and nothing else: a toolbar that does not wrap watches its own size, a table
+    // watches whether it overflows, a select copies its options when they change, and an open
+    // tooltip keeps its position and the description of its anchor current. A closed tooltip and
+    // every other component hold none.
     const count = (selector: string) => gallery.querySelectorAll(selector).length;
     const expected = {
-      ResizeObserver: count('punk-toolbar:not([wrap])') + count('punk-tooltip[data-open]'),
+      ResizeObserver:
+        count('punk-toolbar:not([wrap])') + count('punk-table') + count('punk-tooltip[data-open]'),
       MutationObserver: count('punk-select') + count('punk-tooltip[data-open]'),
     };
     const made = (kind: string) => observers.filter((name) => name === kind).length;

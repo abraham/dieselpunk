@@ -163,6 +163,22 @@ const cases: Record<string, Case> = {
         '<punk-connection-row removable><span slot="source">A</span><span slot="destination">B</span></punk-connection-row>',
       ),
   },
+  breadcrumb: {
+    show: () =>
+      mount(
+        '<punk-breadcrumb><punk-breadcrumb-item current>Here</punk-breadcrumb-item></punk-breadcrumb>',
+      ),
+  },
+  showPath: {
+    show: () =>
+      mount(
+        '<punk-breadcrumb max-items="2"><punk-breadcrumb-item href="#a">A</punk-breadcrumb-item><punk-breadcrumb-item href="#b">B</punk-breadcrumb-item><punk-breadcrumb-item current>C</punk-breadcrumb-item></punk-breadcrumb>',
+      ),
+  },
+  pagination: { show: () => mount('<punk-pagination page="2" pages="3"></punk-pagination>') },
+  previousPage: { show: () => mount('<punk-pagination page="2" pages="3"></punk-pagination>') },
+  nextPage: { show: () => mount('<punk-pagination page="2" pages="3"></punk-pagination>') },
+  pageNumber: { show: () => mount('<punk-pagination page="2" pages="3"></punk-pagination>') },
 };
 
 /** The pieces of a template that are fixed text: the whole string, or what lies between values. */
@@ -261,6 +277,13 @@ const exempt: Array<{
     applies: (_host, word) => word.where === '<option>',
   },
   {
+    reason: "the name of a table's scroll area, which is the application's caption",
+    applies: (host, word) =>
+      host.localName === 'punk-table' &&
+      word.where === '[aria-label]' &&
+      host.querySelector('caption')?.textContent?.trim() === word.text,
+  },
+  {
     reason: "the text of a tooltip that describes a control, which is the application's",
     applies: (_host, word, gallery) =>
       [...gallery.querySelectorAll('punk-tooltip')].some(
@@ -299,7 +322,7 @@ describe('no hardcoded words', () => {
     expect(await scan(componentNames, false)).toEqual([]);
   });
 
-  it.each(['dialog', 'window', 'popover', 'toast-stack'] as const)(
+  it.each(['dialog', 'window', 'popover', 'toast-stack', 'drawer', 'menu'] as const)(
     'finds every word of an open %s in markers',
     async (name) => {
       await setLocale(PSEUDO);

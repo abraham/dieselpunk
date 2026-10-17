@@ -17,7 +17,7 @@ A planned component is built only after its section exists in its family spec, w
 
 ## 2. Implemented
 
-32 tags in 29 registration entries.
+50 tags in 43 registration entries.
 
 ### 2.1 Layout and surfaces
 
@@ -37,11 +37,16 @@ A planned component is built only after its section exists in its family spec, w
 
 ### 2.3 Navigation and disclosure
 
-| Tag                                     | Purpose                                                                        | Status      | Spec                                                      |
-| --------------------------------------- | ------------------------------------------------------------------------------ | ----------- | --------------------------------------------------------- |
-| `punk-tabs`, `punk-tab`                 | Switch between panels of one view, with automatic or manual activation         | Implemented | [keyboard-and-selection.md §7](keyboard-and-selection.md) |
-| `punk-toolbar`                          | A strip of actions with one tab stop and an application-supplied overflow menu | Implemented | [keyboard-and-selection.md §8](keyboard-and-selection.md) |
-| `punk-accordion`, `punk-accordion-item` | Collapsible sections for settings and categories, single or multiple open      | Implemented | [keyboard-and-selection.md §9](keyboard-and-selection.md) |
+| Tag                                       | Purpose                                                                                                 | Status      | Spec                                                       |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------- |
+| `punk-tabs`, `punk-tab`                   | Switch between panels of one view, with automatic or manual activation                                  | Implemented | [keyboard-and-selection.md §7](keyboard-and-selection.md)  |
+| `punk-toolbar`                            | A strip of actions with one tab stop and an application-supplied overflow menu                          | Implemented | [keyboard-and-selection.md §8](keyboard-and-selection.md)  |
+| `punk-accordion`, `punk-accordion-item`   | Collapsible sections for settings and categories, single or multiple open                               | Implemented | [keyboard-and-selection.md §9](keyboard-and-selection.md)  |
+| `punk-menu`, `punk-menu-item`             | A menu of commands, checkable items, and radio items, with separators and submenus; also a context menu | Implemented | [keyboard-and-selection.md §10](keyboard-and-selection.md) |
+| `punk-toggle-group`                       | A set of pressed-state buttons, single or multiple: view modes, alignment, filters                      | Implemented | [keyboard-and-selection.md §11](keyboard-and-selection.md) |
+| `punk-list`, `punk-list-item`             | A one-column list of rich rows, optionally selectable: file lists, queues, search results               | Implemented | [keyboard-and-selection.md §12](keyboard-and-selection.md) |
+| `punk-breadcrumb`, `punk-breadcrumb-item` | The path to the current page or folder, collapsing its middle on request                                | Implemented | [layout-and-actions.md §7](layout-and-actions.md)          |
+| `punk-pagination`                         | Moving through pages of a long result set                                                               | Implemented | [layout-and-actions.md §8](layout-and-actions.md)          |
 
 ### 2.4 Inventory
 
@@ -62,45 +67,44 @@ A planned component is built only after its section exists in its family spec, w
 | `punk-production-stat` | A metric with label, value, unit, trend, change, and an optional sparkline slot | Implemented | [inventory-and-readouts.md §9](inventory-and-readouts.md)  |
 | `punk-connection-row`  | A source-to-destination connection with direction, status, and a remove action  | Implemented | [inventory-and-readouts.md §10](inventory-and-readouts.md) |
 
-### 2.6 Overlays and feedback
+### 2.6 Data display
 
-| Tag                              | Purpose                                                                  | Status      | Spec                           |
-| -------------------------------- | ------------------------------------------------------------------------ | ----------- | ------------------------------ |
-| `punk-tooltip`                   | Supplemental text for an anchor on hover and keyboard focus              | Implemented | [overlays.md §5](overlays.md)  |
-| `punk-popover`                   | An anchored interactive surface, in content or menu mode                 | Implemented | [overlays.md §9](overlays.md)  |
-| `punk-window`                    | A titled application window, optionally modal, movable, and dismissible  | Implemented | [overlays.md §7](overlays.md)  |
-| `punk-dialog`                    | A modal confirmation or task surface                                     | Implemented | [overlays.md §8](overlays.md)  |
-| `punk-toast-stack`, `punk-toast` | Transient notifications in persistent live regions, with pausable timers | Implemented | [overlays.md §10](overlays.md) |
+| Tag            | Purpose                                                                                                      | Status      | Spec                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------ | ----------- | ------------------------------------- |
+| `punk-table`   | Tabular data in a native table, with sortable headers, row selection, a sticky header, and its own scrolling | Implemented | [data-display.md §1](data-display.md) |
+| `punk-alert`   | A persistent inline message (info, success, warning, danger) with optional heading, actions, and dismissal   | Implemented | [data-display.md §2](data-display.md) |
+| `punk-badge`   | A small count or status label attached to a tab, button, or row                                              | Implemented | [data-display.md §3](data-display.md) |
+| `punk-spinner` | A standalone loading indicator for regions, not buttons                                                      | Implemented | [data-display.md §4](data-display.md) |
 
-### 2.7 Form controls
+### 2.7 Overlays and feedback
 
-| Tag                 | Purpose                                                             | Status      | Spec                     |
-| ------------------- | ------------------------------------------------------------------- | ----------- | ------------------------ |
-| `punk-checkbox`     | A boolean or mixed choice that submits with a form                  | Implemented | [forms.md §6](forms.md)  |
-| `punk-switch`       | An on/off setting that takes effect at once and submits with a form | Implemented | [forms.md §6](forms.md)  |
-| `punk-slider`       | A value chosen from a continuous or stepped range                   | Implemented | [forms.md §7](forms.md)  |
-| `punk-text-field`   | Single-line text input with label, hint, affixes, and validation    | Implemented | [forms.md §9](forms.md)  |
-| `punk-number-field` | Numeric input with bounds, step, and pointer steppers               | Implemented | [forms.md §10](forms.md) |
-| `punk-select`       | A single choice from a short native list                            | Implemented | [forms.md §11](forms.md) |
+| Tag                              | Purpose                                                                      | Status      | Spec                           |
+| -------------------------------- | ---------------------------------------------------------------------------- | ----------- | ------------------------------ |
+| `punk-tooltip`                   | Supplemental text for an anchor on hover and keyboard focus                  | Implemented | [overlays.md §5](overlays.md)  |
+| `punk-popover`                   | An anchored interactive surface, in content or menu mode                     | Implemented | [overlays.md §9](overlays.md)  |
+| `punk-window`                    | A titled application window, optionally modal, movable, and dismissible      | Implemented | [overlays.md §7](overlays.md)  |
+| `punk-dialog`                    | A modal confirmation or task surface                                         | Implemented | [overlays.md §8](overlays.md)  |
+| `punk-toast-stack`, `punk-toast` | Transient notifications in persistent live regions, with pausable timers     | Implemented | [overlays.md §10](overlays.md) |
+| `punk-drawer`                    | A panel that slides from an edge, modal or not: navigation, filters, details | Implemented | [overlays.md §11](overlays.md) |
+
+### 2.8 Form controls
+
+| Tag                              | Purpose                                                                                      | Status      | Spec                     |
+| -------------------------------- | -------------------------------------------------------------------------------------------- | ----------- | ------------------------ |
+| `punk-checkbox`                  | A boolean or mixed choice that submits with a form                                           | Implemented | [forms.md §6](forms.md)  |
+| `punk-switch`                    | An on/off setting that takes effect at once and submits with a form                          | Implemented | [forms.md §6](forms.md)  |
+| `punk-slider`                    | A value chosen from a continuous or stepped range                                            | Implemented | [forms.md §7](forms.md)  |
+| `punk-text-field`                | Single-line text input with label, hint, affixes, and validation                             | Implemented | [forms.md §9](forms.md)  |
+| `punk-number-field`              | Numeric input with bounds, step, and pointer steppers                                        | Implemented | [forms.md §10](forms.md) |
+| `punk-select`                    | A single choice from a short native list                                                     | Implemented | [forms.md §11](forms.md) |
+| `punk-radio-group`, `punk-radio` | One choice from a small visible set                                                          | Implemented | [forms.md §12](forms.md) |
+| `punk-textarea`                  | Multiline text, with an optional count and growth                                            | Implemented | [forms.md §13](forms.md) |
+| `punk-combobox`                  | A searchable choice from a long list, optionally free text                                   | Implemented | [forms.md §14](forms.md) |
+| `punk-fieldset`                  | A titled group of controls with a shared description, error summary, and group-level disable | Implemented | [forms.md §15](forms.md) |
 
 ## 3. Planned (P1)
 
-| Tag(s)                                    | Purpose                                                                                                                   | Basis                                                                                                                        | Spec                                                                               |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `punk-radio-group`, `punk-radio`          | One choice from a small visible set; the standard alternative to a select when every option should be seen                | APG radio group; `PunkFormControl` on the group; `RovingController`; a ring-and-dot mark                                     | [forms.md](forms.md)                                                               |
-| `punk-textarea`                           | Multiline text: notes, descriptions, messages                                                                             | Native `<textarea>` on `PunkFieldBase`; optional auto-grow and a character count                                             | [forms.md](forms.md)                                                               |
-| `punk-combobox`                           | A searchable choice from a long list, optionally free text or multiple                                                    | APG combobox with a listbox popup; anchored like the popover; filtering is the application's                                 | [forms.md](forms.md), its own accessibility section first                          |
-| `punk-fieldset`                           | A titled group of controls with a shared description and error summary, and group-level disable                           | Native `<fieldset>` and `<legend>` semantics, so disabling the group uses the platform's rule                                | [forms.md](forms.md)                                                               |
-| `punk-menu`, `punk-menu-item`             | A menu of commands, checkable items, and radio items, with separators and submenus; also a context menu                   | APG menu on the popover's top layer and Escape stack; items as a family, so applications stop hand-rolling `menuitem` markup | [keyboard-and-selection.md](keyboard-and-selection.md), [overlays.md](overlays.md) |
-| `punk-toggle-group`                       | A set of pressed-state buttons, single or multiple: view modes, alignment, filters                                        | `button` items with `aria-pressed` in a `group` (or `radiogroup` when single); `RovingController`                            | [keyboard-and-selection.md](keyboard-and-selection.md)                             |
-| `punk-list`, `punk-list-item`             | A one-column list of rich rows, optionally selectable: file lists, queues, search results, settings lists                 | `listbox` of `option` when selecting, `list` otherwise; reuses `SelectionModel` and the selectable base                      | [keyboard-and-selection.md](keyboard-and-selection.md)                             |
-| `punk-table`                              | Tabular data with sortable column headers, optional row selection, sticky headers, and horizontal scrolling inside itself | Native `<table>` semantics in the light DOM; sorting and paging are the application's, reported by events                    | data-display.md (new)                                                              |
-| `punk-alert`                              | A persistent inline message (info, success, warning, danger) with optional heading, actions, and dismissal                | Status shape and text as the toast; `role="alert"` or `status` only when announced on change                                 | data-display.md (new)                                                              |
-| `punk-badge`                              | A small count or status label attached to a tab, button, or row                                                           | Text, never color alone; status shapes for state                                                                             | data-display.md (new)                                                              |
-| `punk-spinner`                            | A standalone loading indicator for regions, not buttons                                                                   | The button's gear spinner as its own element, with a hidden status text; static under reduced motion                         | data-display.md (new)                                                              |
-| `punk-drawer`                             | A panel that slides from an edge, modal or not: navigation, filters, details                                              | `PunkModalSurface` and `ModalController`, as the window and dialog                                                           | [overlays.md](overlays.md)                                                         |
-| `punk-breadcrumb`, `punk-breadcrumb-item` | The path to the current page or folder                                                                                    | `nav` landmark, a list of links, `aria-current="page"`; collapses the middle into a menu when narrow                         | [layout-and-actions.md](layout-and-actions.md)                                     |
-| `punk-pagination`                         | Moving through pages of a long result set                                                                                 | `nav` landmark with native buttons or links, `aria-current`; the application owns the data                                   | [layout-and-actions.md](layout-and-actions.md)                                     |
+None: every component that general-purpose use needs is implemented. The parts of the P1 rows that were not built are gaps of their family specs: a combobox with several values ([forms.md](forms.md) Gaps) and menus that open on hover ([keyboard-and-selection.md](keyboard-and-selection.md) Gaps). The breadcrumb reveals its middle in place rather than in a menu ([layout-and-actions.md §7](layout-and-actions.md)).
 
 ## 4. Planned (P2)
 
@@ -113,9 +117,9 @@ A planned component is built only after its section exists in its family spec, w
 | `punk-date-field`, `punk-time-field` | Date and time entry                                                              | Native `<input type="date">` and `"time"` on `PunkFieldBase`; the picker is the platform's  | [forms.md](forms.md)                                   |
 | `punk-file-field`                    | Choosing files, with an optional drop zone and a list of the chosen files        | Native `<input type="file">`; drop is an enhancement, never the only way                    | [forms.md](forms.md)                                   |
 | `punk-range-slider`                  | A low and high value chosen on one track                                         | Two `slider` thumbs on the slider's math and pointer model; submits two values              | [forms.md](forms.md)                                   |
-| `punk-tag`                           | A removable chip for a filter, a selected value, or a label                      | Text and a native remove button named with the tag's text, as the connection row's          | data-display.md (new)                                  |
-| `punk-description-list`              | Label and value pairs for details and specification sheets                       | Native `<dl>` semantics; values in tabular figures; label above value when narrow           | data-display.md (new)                                  |
-| `punk-kbd`                           | A keyboard key or shortcut, shown as a keycap                                    | Native `<kbd>`; the key names are the application's text                                    | data-display.md (new)                                  |     | Data modes of the slot grid, list, table, and tree | Collections of thousands of items with only the visible ones in the DOM | `@lit-labs/virtualizer`, as a peer dependency of an optional package, not core; `items` and `renderItem`, `aria-setsize` and `aria-posinset`, selection by value, roving focus by index | [performance.md §4.1](performance.md) |
+| `punk-tag`                           | A removable chip for a filter, a selected value, or a label                      | Text and a native remove button named with the tag's text, as the connection row's          | [data-display.md](data-display.md)                     |
+| `punk-description-list`              | Label and value pairs for details and specification sheets                       | Native `<dl>` semantics; values in tabular figures; label above value when narrow           | [data-display.md](data-display.md)                     |
+| `punk-kbd`                           | A keyboard key or shortcut, shown as a keycap                                    | Native `<kbd>`; the key names are the application's text                                    | [data-display.md](data-display.md)                     |     | Data modes of the slot grid, list, table, and tree | Collections of thousands of items with only the visible ones in the DOM | `@lit-labs/virtualizer`, as a peer dependency of an optional package, not core; `items` and `renderItem`, `aria-setsize` and `aria-posinset`, selection by value, roving focus by index | [performance.md §4.1](performance.md) |
 
 ## 5. Not planned
 
@@ -133,5 +137,4 @@ Capabilities of existing components that are deferred, not new components: a ver
 
 ## Gaps
 
-- **`data-display.md` does not exist.** It is written with the first P1 component that needs it (table, alert, badge, or spinner).
-- **No planned component has its spec section yet.**
+- **No P2 component has its spec section yet.**

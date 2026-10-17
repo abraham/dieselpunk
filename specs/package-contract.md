@@ -42,7 +42,7 @@ import '@dieselpunk/core/slot-grid/register.js'; // defines punk-slot-grid
 
 - A component module never calls `customElements.define` and never uses `@customElement`. Each class carries a `@tagname` JSDoc tag instead, so the manifest knows its tag.
 - `register.ts` calls `registerElement(tag, ctor)`, which defines the tag only if `customElements.get(tag)` is undefined. Importing a register entry twice is harmless.
-- **One entry per family.** An entry registers its own family's tags and no other: `tabs` registers `punk-tabs` and `punk-tab`, `accordion` both of its tags, `toast` `punk-toast-stack` and `punk-toast`, and every other entry one tag. Registering a slot grid does not register `punk-slot`; an application imports both.
+- **One entry per family.** An entry registers its own family's tags and no other: `tabs` registers `punk-tabs` and `punk-tab`, `accordion` both of its tags, `toast` `punk-toast-stack` and `punk-toast`, `radio-group`, `menu`, `list`, and `breadcrumb` their container and item tags, and every other entry one tag. Registering a slot grid does not register `punk-slot`; an application imports both.
 - **The one cross-family registration:** `icon-button/register.js` imports `tooltip/register.js`, because the icon button renders a `punk-tooltip` as its visible label ([layout-and-actions.md §6](layout-and-actions.md)). No other entry may add one.
 - `sideEffects` lists exactly the register entries and the stylesheets, so a bundler drops everything else that is unused.
 
@@ -79,20 +79,22 @@ import '@dieselpunk/core/slot-grid/register.js'; // defines punk-slot-grid
 - Native `input` and `change` are real `Event`s, with `input` composed. A control that wraps a native input dispatches `change` again on its host, since the native one does not cross the shadow boundary.
 - Every custom event is declared on `HTMLElementEventMap`, and its detail type is exported from the root, so `addEventListener` is typed with no cast.
 
-| Event                              | Detail                     | Sent by                  | Cancelable |
-| ---------------------------------- | -------------------------- | ------------------------ | ---------- |
-| `punk-activate`                    | `{ value, item }`          | slot, item stack, recipe | no         |
-| `punk-selection-change`            | `{ values, items }`        | slot grid                | no         |
-| `punk-tab-change`                  | `{ value, tab, panel }`    | tabs                     | no         |
-| `punk-toggle`                      | `{ expanded }`             | accordion item           | no         |
-| `punk-overflow-change`             | `{ hidden }`               | toolbar                  | no         |
-| `punk-open`                        | none                       | window, dialog, popover  | no         |
-| `punk-close`                       | `{ reason, returnValue? }` | window, dialog, popover  | no         |
-| `punk-move-start`, `punk-move-end` | `{ x, y }`                 | window                   | no         |
-| `punk-dismiss`                     | `{ reason }`               | toast                    | yes        |
-| `punk-remove`                      | `{ value, item }`          | connection row           | no         |
+| Event                              | Detail                     | Sent by                                        | Cancelable |
+| ---------------------------------- | -------------------------- | ---------------------------------------------- | ---------- |
+| `punk-activate`                    | `{ value, item }`          | slot, item stack, recipe, list item, menu item | no         |
+| `punk-selection-change`            | `{ values, items }`        | slot grid, toggle group, list, table           | no         |
+| `punk-tab-change`                  | `{ value, tab, panel }`    | tabs                                           | no         |
+| `punk-toggle`                      | `{ expanded }`             | accordion item                                 | no         |
+| `punk-overflow-change`             | `{ hidden }`               | toolbar                                        | no         |
+| `punk-open`                        | none                       | window, dialog, popover, drawer, menu          | no         |
+| `punk-close`                       | `{ reason, returnValue? }` | window, dialog, popover, drawer, menu          | no         |
+| `punk-move-start`, `punk-move-end` | `{ x, y }`                 | window                                         | no         |
+| `punk-dismiss`                     | `{ reason }`               | toast, alert                                   | yes        |
+| `punk-remove`                      | `{ value, item }`          | connection row                                 | no         |
+| `punk-sort-change`                 | `{ key, direction }`       | table                                          | no         |
+| `punk-page-change`                 | `{ page }`                 | pagination                                     | no         |
 
-Open and close events report every change of `open`, whoever made it, because an overlay's visibility is state the application must track; the `reason` says who. A cancelable event exists only where an application may need to take over the action (a framework that owns the toast removes it itself).
+Open and close events report every change of `open`, whoever made it, because an overlay's visibility is state the application must track; the `reason` says who. A cancelable event exists only where an application may need to take over the action (a framework that owns the toast removes it itself; an application that keeps an alert in its own state).
 
 ## 6. Development warnings
 
@@ -122,11 +124,11 @@ Open and close events report every change of `open`, whoever made it, because an
 
 Components cooperate across shadow roots and registration entries through small duck-typed protocols:
 
-| Protocol      | Methods                                                | Implemented by                                  | Used by                                 |
-| ------------- | ------------------------------------------------------ | ----------------------------------------------- | --------------------------------------- |
-| External ARIA | `setExternalAria({ description, expanded, haspopup })` | button base                                     | tooltip, popover                        |
-| Roving item   | `isDisabled`, `focusItem()`, `setTabStop(on \| null)`  | button base, toggles, tab                       | `RovingController`, tabs                |
-| Owned child   | `owner` and a notification method                      | selectable items, accordion items, tabs, toasts | slot grid, accordion, tabs, toast stack |
+| Protocol      | Methods                                                | Implemented by                                                           | Used by                                                    |
+| ------------- | ------------------------------------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| External ARIA | `setExternalAria({ description, expanded, haspopup })` | button base                                                              | tooltip, popover, menu                                     |
+| Roving item   | `isDisabled`, `focusItem()`, `setTabStop(on \| null)`  | button base, toggles, tab, radio                                         | `RovingController`, tabs, radio group                      |
+| Owned child   | `owner` and a notification method                      | selectable items (and list items), accordion items, tabs, toasts, radios | slot grid, list, accordion, tabs, toast stack, radio group |
 
 These are implementation contracts between the library's own classes, not application API. They are not described in the manifest, not in the API snapshot, and not covered by Semantic Versioning. They are keyed so that an application cannot call them by accident ([component-model.md §8](component-model.md)).
 

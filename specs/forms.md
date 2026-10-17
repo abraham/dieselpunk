@@ -1,7 +1,7 @@
 # Forms
 
-**Scope:** how controls take part in native forms: association, values and defaults, validation and messages, names and labels, and events; and the six form controls.
-**Code:** `src/internal/form-control.ts`, `toggle-base.ts`, `field-base.ts`, `fieldset.ts`, `slider-math.ts`; `src/styles/field.ts`; `src/components/checkbox/`, `switch/`, `slider/`, `text-field/`, `number-field/`, `select/`.
+**Scope:** how controls take part in native forms: association, values and defaults, validation and messages, names and labels, and events; and the ten form controls and the fieldset.
+**Code:** `src/internal/form-control.ts`, `toggle-base.ts`, `field-base.ts`, `fieldset.ts`, `slider-math.ts`; `src/styles/field.ts`; `src/components/checkbox/`, `switch/`, `slider/`, `text-field/`, `number-field/`, `select/`, `radio-group/`, `textarea/`, `combobox/`, `fieldset/`.
 
 ## 1. Form association
 
@@ -109,16 +109,63 @@ A native `<select>` filled with copies of the host's light-DOM `<option>` and `<
 - The closed control is themed; the arrow is CSS over `appearance: none`. The open list is the platform's.
 - **Warning:** no options.
 
+## 12. Radio group
+
+`punk-radio-group` is the form control; its `punk-radio` children are its choices. It extends `PunkFormControl`, and the radios are owned children ([component-model.md §8](component-model.md)).
+
+- **Semantics.** The radios sit in a `role="radiogroup"` element in the shadow tree, named by `label` (rendered above it and referenced by id) or by the host's `aria-label` copied to it, and described by the hint and the message. Each radio host is `role="radio"` with `aria-checked` and `aria-disabled`, named by its text.
+- **Value.** The chosen radio's `value`, or an empty string. A `value` assigned before a matching radio exists is kept until one arrives. The host's `value` attribute sets the first choice; the default a form reset restores is the radios marked `checked` (the last one, as a native group does). It submits the chosen value under `name`, and nothing when none is chosen.
+- **Keyboard.** One tab stop: the chosen radio, else the first enabled one. The arrow keys move to the next or previous enabled radio and choose it, without wrapping (the library's rule, [keyboard-and-selection.md §1](keyboard-and-selection.md), not the APG's wrap); Left and Right swap in `rtl`. Space on key up and a click choose. A click on a `<label for>` focuses the tab stop, as does `focus()`.
+- **Validation.** `required` with nothing chosen is `valueMissing`, with the message the engine gives its own radio, anchored on the tab stop. `reportValidity()` focuses it.
+- **Disabled.** A disabled group (or a disabled fieldset around it) disables every radio for the user and removes the tab stop, without touching the radios' own `disabled`.
+- **Events.** `input` and `change` from the group, once per choice the user makes.
+- **Look.** A ring with the `control-edge` boundary and a dot while checked. `orientation="horizontal"` lays the radios in a wrapping row; the arrow keys work in both directions either way.
+- **Warnings:** no name; two radios with the same `value`.
+
+## 13. Textarea
+
+`punk-textarea` is a field ([§8](#8-field-base)) with a native `<textarea>`: `value`, `placeholder`, `readonly`, `minlength`, `maxlength`, `rows` (below 1 is 1), and `autocomplete`, with the `hint` slot and no affixes.
+
+- The value binding writes only when it differs from what the textarea holds, as the text field's does.
+- The user can drag it taller. **`autogrow`** grows it with its text up to `--punk-textarea-max-height`, through `field-sizing: content`, where the engine supports it; elsewhere it keeps `rows` lines and scrolls. **Why** no script measurement: a keypress reads no layout ([performance.md §3](performance.md)).
+- **`show-count`** shows the number of characters, out of `maxlength` when it is set, inside the box at its end. The count joins the textarea's description.
+
+## 14. Combobox
+
+`punk-combobox` is a field with a native `<input role="combobox" aria-autocomplete="list" aria-controls="listbox">` and a `role="listbox"` popup in its shadow tree, so `aria-activedescendant` refers inside one tree ([accessibility.md §4](accessibility.md)). The options are copies of the host's light-DOM `<option>` children, as in a select.
+
+- **Filtering.** Typing opens the list of options whose label contains the text, case-insensitively. With `filter="none"` every option shows, and the application filters by replacing the options on `input`.
+- **The list** is a `popover="manual"` surface below the field, as wide as it, positioned with `computePosition`. While it shows, and only then, it holds an Escape-stack entry, a frame-throttled `scroll` and a `resize` listener, and one `MutationObserver` on the host's options ([performance.md §3](performance.md)). Escape closes the list and leaves the text, and does not reach an overlay beneath.
+- **Keys.** Down opens the list on the chosen option (or the first) and moves down; Alt+Down opens it without moving; Up opens it on the last option and moves up; Alt+Up closes it. Moves skip disabled options and do not wrap. Enter chooses the active option, or with none settles the text. Home and End are the text field's.
+- **Pointer.** A press on the list keeps focus in the field; a click chooses. The arrow button at the end opens and closes the list and is not a tab stop (`tabindex="-1"`, `aria-hidden`), since the keys serve everyone else.
+- **Value.** The chosen option's `value`. Leaving the field (or Enter with nothing active) settles the text: an option whose label matches it exactly is chosen, empty text clears the value, and other text goes back to the chosen option's label. With **`allow-custom`** the text is the value, as it is typed. It submits `value` under `name`, and the `value` attribute is the default a form reset restores.
+- **Events.** Native `input` while typing; `change` from the host once for each value the user commits.
+- The active option is inset with an `accent` bar and the chosen one is bold with a check, so neither rests on color.
+- **Warning:** no options.
+
+## 15. Fieldset
+
+`punk-fieldset` groups controls under a title. It is not a form control: it renders a native `<fieldset>` and `<legend>` in its shadow tree around a default slot, so in the flat tree it is a `group` named by its legend (`label`, then the `legend` slot).
+
+- **Description.** The `hint` slot and the `error` slot (an error summary the application writes, shown with the warning triangle) describe the group while they have content.
+- **Disabled.** A shadow fieldset does not disable light-DOM controls, so `disabled` does what a native fieldset would by writing: it sets `disabled` on every native control (`button`, `input`, `select`, `textarea`, `fieldset`) and form-associated custom element inside it, except inside the `legend` slot, remembers which it changed, and enables exactly those again when it is enabled, when they leave, or when it disconnects ([component-model.md §8](component-model.md)). Unlike a native fieldset, the controls' own `disabled` reads `true` meanwhile. Controls added deeper inside while it is disabled are found when its own children change.
+- **Look.** An etched frame with the legend set into its top edge.
+- **Warning:** no legend.
+
 ## Verification
 
 - Node: `slider-math.test.ts`.
-- `test/browser/forms.test.ts`, for every control in all three engines: `FormData` under the name when enabled and named and nothing otherwise, the `form` attribute, a disabled fieldset, reset to the authored default in both directions, state restore, `labels` and label clicks, the name fallback, `required` and each native constraint, `setCustomValidity`, `reportValidity()` focusing the control, and a blocked `requestSubmit`. **Slider parity:** every arrow, Home, and End against a native range with the same range, step, and direction.
+- `test/browser/forms.test.ts`, for every control in all three engines (the radio group, textarea, and combobox included): `FormData` under the name when enabled and named and nothing otherwise, the `form` attribute, a disabled fieldset, reset to the authored default in both directions, state restore, `labels` and label clicks, the name fallback, `required` and each native constraint, `setCustomValidity`, `reportValidity()` focusing the control, and a blocked `requestSubmit`. **Slider parity:** every arrow, Home, and End against a native range with the same range, step, and direction.
 - `toggle-base.test.ts`, `field-base.test.ts`, `form-control.test.ts`, and each control's tests: roles and states, keys, events once per user change, steppers and their repeat, the select's observer, messages and their timing, `aria-invalid` and descriptions, contrast of boundaries and placeholders read from the render.
+- `radio-group.test.ts`: the tab stop, arrows in both directions skipping disabled radios without wrapping, Space and click, values from code before their radio, group disabling, release of a radio that leaves. `textarea.test.ts`: rows and their repair, the count and its description, `autogrow`. `combobox.test.ts`: filtering, keys, choosing by click without losing focus, Escape absorbed, settling on leave, `allow-custom`, `filter="none"` with changing options, listeners only while open. `fieldset.test.ts`: the named and described group, disabling native and form-associated controls and giving back exactly those, the legend exception, added and removed children.
 - `check:frameworks`: each fixture binds a text field, switch, and slider and submits the form ([workbench.md §4](workbench.md)).
 
 ## Gaps
 
-None in the design. Platform limits, documented in the Forms guide and not closable inside the library:
+- **The combobox chooses one value.** The catalog's multiple-value combobox (chips for the chosen values) is not built. Closing it: a `multiple` mode that submits each value under `name`, with `punk-tag` for the chosen values once it exists ([components.md §4](components.md)).
+- **The textarea does not grow in engines without `field-sizing`.** Closing it waits for the engines, or a measurement on `input` that the performance rules would have to allow.
+
+Platform limits, documented in the Forms guide and not closable inside the library:
 
 - autofill and password managers in shadow roots, the unthemed select list, number parsing by engine and locale, `SubmitEvent.submitter` for `punk-button`, and native validation messages in the browser's language;
 - WebKit's native range does not swap Left and Right in right-to-left text, though it draws the range reversed. The slider swaps them, as Chromium and Firefox do, so the parity test omits those two keys in WebKit and says why.

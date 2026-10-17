@@ -43,18 +43,23 @@ classDiagram
   PunkReceptacleBase <|-- PunkSlot
   PunkReceptacleBase <|-- PunkItemStack
   PunkSelectableBase <|-- PunkRecipe
+  PunkSelectableBase <|-- PunkListItem
   PunkElement <|-- PunkFormControl
   PunkFormControl <|-- PunkToggleBase
   PunkToggleBase <|-- PunkCheckbox
   PunkToggleBase <|-- PunkSwitch
   PunkFormControl <|-- PunkSlider
+  PunkFormControl <|-- PunkRadioGroup
   PunkFormControl <|-- PunkFieldBase
   PunkFieldBase <|-- PunkTextField
   PunkFieldBase <|-- PunkNumberField
   PunkFieldBase <|-- PunkSelect
+  PunkFieldBase <|-- PunkTextarea
+  PunkFieldBase <|-- PunkCombobox
   PunkElement <|-- PunkModalSurface
   PunkModalSurface <|-- PunkWindow
   PunkModalSurface <|-- PunkDialog
+  PunkModalSurface <|-- PunkDrawer
 ```
 
 | Base                 | Owns                                                                                                                      | Spec                                                      |
@@ -86,20 +91,21 @@ A controller adds and removes its listeners in `hostConnected` and `hostDisconne
 
 Logic that can be stated without the DOM is a pure module with no DOM types, tested under Node with no browser ([testing.md §2](testing.md)). It follows the Node-run syntax rules ([toolchain.md §3](toolchain.md)). The component holds the DOM half and calls it.
 
-| Module                            | Decides                                                                     |
-| --------------------------------- | --------------------------------------------------------------------------- |
-| `internal/selection-model.ts`     | Single and multiple selection, anchors, ranges                              |
-| `internal/grid-navigation.ts`     | The next slot for a key, from item rectangles                               |
-| `internal/roving-keys.ts`         | The next enabled index for a key in a one-dimensional group                 |
-| `internal/tab-navigation.ts`      | Tab focus and selection for a key, in automatic and manual activation       |
-| `internal/overlay-stack.ts`       | The Escape stack, bound to a target by `overlays.ts`                        |
-| `internal/window-position.ts`     | Clamping a window to the viewport, centering on a point, keyboard steps     |
-| `internal/slider-math.ts`         | Ranges, snapping without drift, keys and pointer positions to values, ticks |
-| `internal/toast-timer.ts`         | A pausable countdown with an injected clock                                 |
-| `internal/stat-format.ts`         | A stat's shown and full value, change, and trend                            |
-| `components/meter/meter-state.ts` | The HTML meter algorithm, clamping, and segments                            |
-| `utilities/position.ts`           | Anchored placement: flip, shift, and fallback                               |
-| `utilities/number-format.ts`      | Number and percent formatting for a language                                |
+| Module                                 | Decides                                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------- |
+| `internal/selection-model.ts`          | Single and multiple selection, anchors, ranges                              |
+| `internal/grid-navigation.ts`          | The next slot for a key, from item rectangles                               |
+| `internal/roving-keys.ts`              | The next enabled index for a key in a one-dimensional group                 |
+| `internal/tab-navigation.ts`           | Tab focus and selection for a key, in automatic and manual activation       |
+| `internal/overlay-stack.ts`            | The Escape stack, bound to a target by `overlays.ts`                        |
+| `internal/window-position.ts`          | Clamping a window to the viewport, centering on a point, keyboard steps     |
+| `internal/slider-math.ts`              | Ranges, snapping without drift, keys and pointer positions to values, ticks |
+| `internal/toast-timer.ts`              | A pausable countdown with an injected clock                                 |
+| `internal/stat-format.ts`              | A stat's shown and full value, change, and trend                            |
+| `components/meter/meter-state.ts`      | The HTML meter algorithm, clamping, and segments                            |
+| `utilities/position.ts`                | Anchored placement: flip, shift, and fallback                               |
+| `utilities/number-format.ts`           | Number and percent formatting for a language                                |
+| `components/pagination/page-window.ts` | Which pages a pagination shows, and where the gaps are                      |
 
 **Why:** these are where off-by-one, rounding, and direction bugs live, and a Node test can enumerate every case in milliseconds.
 
@@ -116,11 +122,11 @@ Logic that can be stated without the DOM is a pure module with no DOM types, tes
 - **Roles, `tabindex`, and ARIA states of a host-level widget are host attributes**, not `ElementInternals` properties. **Why:** they then reach every assistive technology the same way, and DOM-reading tools (axe, Playwright's role engine, application tests) see what users get.
 - **The author's values win.** A component adds `tabindex` only when the author set none, and removes only what it added. A role set by the author before a component took it over (the status light's and stat's `announce`) is remembered and given back.
 - **`aria-label` is not written onto a host as a name**: names come from rendered text ([accessibility.md §3](accessibility.md)). The exceptions are listed there.
-- A component writes nothing to `document.documentElement` except the modal scroll lock ([overlays.md §3](overlays.md)), and nothing to `document.body`.
+- A component writes nothing to `document.documentElement` except the modal scroll lock ([overlays.md §3](overlays.md)), and nothing to `document.body`. The one stylesheet it adds outside its own shadow roots is the table's, adopted once into the root that holds a table, scoped to tables inside `punk-table`, and at zero specificity ([data-display.md §1](data-display.md)).
 
 ## 8. Owners and children
 
-Several containers manage light-DOM children they do not render: the slot grid its items, tabs their tabs and panels, the accordion its items, the toolbar its items, and the toast stack its toasts.
+Several containers manage light-DOM children they do not render: the slot grid its items, tabs their tabs and panels, the accordion its items, the toolbar its items, the toast stack its toasts, the radio group its radios, the toggle group its buttons, the list its items, the breadcrumb its items, the table its sortable header cells, and the fieldset the controls it disables.
 
 - **The owner owns the shared state.** The child never changes it alone. A grid sets its items' `selected`, role, `tabindex`, and `aria-selected`; tabs set their tabs' selection and their panels' role, `aria-labelledby`, `hidden`, and `tabindex`; the stack sets its toasts' `slot`.
 - **Children are found on `slotchange`**, never by observing the DOM. A child that is not yet defined is waited for with `customElements.whenDefined`. A child that upgrades after the owner rendered gets no `slotchange`, so it announces itself to its owner when it connects.
@@ -162,6 +168,6 @@ Several containers manage light-DOM children they do not render: the slot grid i
 
 ## Gaps
 
-- **Four owner protocols, not one.** The slot grid (`ItemOwner.itemChanged`), accordion (`AccordionOwner.itemExpanded`), tabs (`TabOwner.tabChanged`), and toast stack (`ToastOwner.toastChanged`, `toastLeft`) each define their own interface and restore bookkeeping. Closing it: extract the generic protocol of §8 into `internal/owner.ts`, port the four owners, and keep their behavior tests unchanged.
+- **Four owner protocols, not one.** The slot grid (`ItemOwner.itemChanged`, which the list reuses), accordion (`AccordionOwner.itemExpanded`), tabs (`TabOwner.tabChanged`), toast stack (`ToastOwner.toastChanged`, `toastLeft`), and radio group (`RadioOwner.radioChanged`) each define their own interface, and the toggle group, breadcrumb, table, and fieldset keep their own restore bookkeeping. Closing it: extract the generic protocol of §8 into `internal/owner.ts`, port the owners, and keep their behavior tests unchanged.
 - **`position.ts` is tested in the browser.** It is pure, but its tests are a Vitest file beside it. Closing it: move them to `test/position.test.ts` under `node --test`.
 - **Protocol members are public** ([package-contract.md](package-contract.md) Gaps).

@@ -34,18 +34,20 @@ Sizes are minified and gzip-compressed, with Lit (and, for the locales package, 
 
 **Listeners.**
 
-- No component adds a listener to `document` or `window` while idle. An overlay adds its listeners when it opens and removes them when it closes; a drag adds them for the gesture; a countdown for its life.
+- No component adds a listener to `document` or `window` while idle. An overlay adds its listeners when it opens and removes them when it closes (a menu and a combobox list count as overlays); a drag adds them for the gesture; a countdown for its life.
 - The one permanent listener is the locale watcher's `lit-localize-status` on `window`, one per page ([localization.md §3](localization.md)).
 - Containers listen once on themselves, not once per child.
 
 **Observers.** An observer exists only where it carries state that cannot be derived another way:
 
-| Observer           | Who                          | When                                             |
-| ------------------ | ---------------------------- | ------------------------------------------------ |
-| `ResizeObserver`   | Toolbar without `wrap`       | While connected, one per toolbar                 |
-| `ResizeObserver`   | Tooltip, popover             | While open, on the anchor                        |
-| `MutationObserver` | Select                       | While connected, to mirror its options           |
-| `MutationObserver` | Tooltip anchored to a button | While connected, to keep the description current |
+| Observer           | Who                          | When                                                     |
+| ------------------ | ---------------------------- | -------------------------------------------------------- |
+| `ResizeObserver`   | Toolbar without `wrap`       | While connected, one per toolbar                         |
+| `ResizeObserver`   | Table                        | While connected, one per table, for whether it overflows |
+| `ResizeObserver`   | Tooltip, popover             | While open, on the anchor                                |
+| `MutationObserver` | Select                       | While connected, to mirror its options                   |
+| `MutationObserver` | Combobox                     | While its list is open, to follow its options            |
+| `MutationObserver` | Tooltip anchored to a button | While connected, to keep the description current         |
 
 No `IntersectionObserver`, and no observer on `document`.
 
@@ -85,6 +87,6 @@ With every component mounted at once (the gallery) and no input for a second aft
 
 ## Gaps
 
-- **Twelve entries exceed the 5 kB component budget,** each with a stated reason: item stack, recipe, connection row, tabs, window, popover, the toast pair, slider, text field, number field, select, and icon button. Most of the excess is a shared base counted in each entry (the form base and field styles are about 4.4 kB of each field). Closing it means shrinking the shared bases (the form base, the receptacle, the modal surface) rather than raising limits.
+- **Eighteen entries exceed the 5 kB component budget,** each with a stated reason: item stack, recipe, connection row, tabs, window, popover, the toast pair, slider, text field, number field, select, icon button, radio group, textarea, combobox, menu, list, and drawer. Most of the excess is a shared base counted in each entry (the form base and field styles are about 4.4 kB of each field, and the modal surface most of the drawer). Closing it means shrinking the shared bases (the form base, the receptacle, the modal surface) rather than raising limits.
 - **Many entries have under 100 bytes of headroom.** Any feature added to them must first take something out.
 - **Virtualizer safety is untested.** No test renders components inside `<lit-virtualizer>`. Closing it: a browser test, with `@lit-labs/virtualizer` as a development dependency, that scrolls 1,000 connection rows and stats through a virtualizer and requires correct names and states on reused elements, no development warnings, and no listener, timer, or observer left by removed ones.

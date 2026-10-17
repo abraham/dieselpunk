@@ -29,16 +29,19 @@
 
 `test/browser/fixtures/gallery.ts` renders every component in its states, grouped:
 
-| Group        | Components                                                                                  |
-| ------------ | ------------------------------------------------------------------------------------------- |
-| `foundation` | panel, divider, button, icon button, progress bar, tooltip                                  |
-| `inventory`  | slot, item stack, slot grid, recipe, meter, status light                                    |
-| `production` | production stat, connection row                                                             |
-| `shell`      | stack, cluster, accordion and its items, tabs and tab, toolbar, non-modal windows           |
-| `forms`      | checkbox, switch, slider, text field, number field, select                                  |
-| `overlays`   | each overlay open on its own page: modal window, dialog, popover in both modes, toast stack |
+| Group        | Components                                                                                                |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
+| `foundation` | panel, divider, button, icon button, progress bar, tooltip                                                |
+| `inventory`  | slot, item stack, slot grid, recipe, meter, status light                                                  |
+| `production` | production stat, connection row                                                                           |
+| `shell`      | stack, cluster, accordion and its items, tabs and tab, toolbar, non-modal windows                         |
+| `forms`      | checkbox, switch, slider, text field, number field, select                                                |
+| `inputs`     | radio group and radio, textarea, combobox, fieldset                                                       |
+| `navigation` | toggle group, list and list item, breadcrumb and item, pagination, menu items                             |
+| `data`       | table, alert, badge, spinner                                                                              |
+| `overlays`   | each overlay open on its own page: modal window, dialog, popover in both modes, toast stack, drawer, menu |
 
-Each renders in four content variants: `short`, `long` (German), `unlabeled` (optional labels missing), and `rtl`. Fields marked as touched show their messages. The full gallery (`componentNames`, used by the axe, reflow, and manifest suites) also holds the dialog and popover closed, an empty toast stack, and inline toasts of each variant; an open modal would make the rest of the page inert, so overlays are open only in `overlays`.
+Each renders in four content variants: `short`, `long` (German), `unlabeled` (optional labels missing), and `rtl`. Fields marked as touched show their messages. The full gallery (`componentNames`, used by the axe, reflow, and manifest suites) also holds the dialog, popover, drawer, and menu closed, an empty toast stack, and inline toasts of each variant; an open modal would make the rest of the page inert, so overlays are open only in `overlays`.
 
 Suites over the gallery:
 

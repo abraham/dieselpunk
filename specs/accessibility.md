@@ -71,8 +71,8 @@ At 200% zoom and 375px (187 CSS pixels), with long German labels, right-to-left 
 
 ## 11. Announcements
 
-- Nothing announces by default. A component that reports a change while the user is elsewhere does so only when the application opts in: `announce` on the status light and production stat makes the host a polite `status` region.
-- A loading button announces "Loading" through a visually hidden `status` element beside its inner button, without changing the button's name.
+- Nothing announces by default. A component that reports a change while the user is elsewhere does so only when the application opts in: `announce` on the status light and production stat makes the host a polite `status` region, and on the alert a `status` or `alert` region by its variant.
+- A loading button announces "Loading" through a visually hidden `status` element beside its inner button, without changing the button's name. A spinner does the same beside its ring, or with its slotted text.
 - The toast stack keeps two live regions in the page from the moment it connects, before any toast exists, because a region added together with its content is not reliably announced: `role="status"` for `info` and `success`, `role="alert"` for `warning` and `danger`. Both are `aria-atomic="false"`, so a new toast does not re-read the others.
 - Updating dashboards never announce and never move focus.
 
