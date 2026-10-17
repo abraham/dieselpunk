@@ -1,8 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
-import { dirname, extname, join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compileScript, parse } from '@vue/compiler-sfc';
 import { build } from 'esbuild';
@@ -10,6 +9,8 @@ import type { Plugin } from 'esbuild';
 import svelteModule from 'esbuild-svelte';
 import { chromium } from 'playwright';
 import type { Page } from 'playwright';
+import { watchPage } from '@dieselpunk/testing/consumer';
+import { serveStatic } from '@dieselpunk/testing/server';
 
 // specs/testing.md §8: a React, a Vue, and a Svelte app, each built against the package as a
 // consumer would use it and driven in Chromium with real input. The apps report what they
@@ -85,12 +86,6 @@ const expected = {
   tab: 'modules',
   dialog: 'action:discard',
   window: 'escape',
-};
-
-const types: Record<string, string> = {
-  '.html': 'text/html',
-  '.js': 'text/javascript',
-  '.css': 'text/css',
 };
 
 const problems: string[] = [];
@@ -175,25 +170,11 @@ try {
     });
     cpSync(join(fixtures, 'index.html'), join(outdir, 'index.html'));
 
-    const server = createServer((request, response) => {
-      const url = new URL(request.url ?? '/', 'http://localhost').pathname;
-      const file = join(outdir, url === '/' ? 'index.html' : url);
-      if (!file.startsWith(outdir) || !existsSync(file)) {
-        response.writeHead(404).end();
-        return;
-      }
-      response.writeHead(200, { 'content-type': types[extname(file)] ?? 'text/plain' });
-      response.end(readFileSync(file));
-    }).listen(0);
-    const port = (server.address() as { port: number }).port;
+    const { server, port } = await serveStatic(outdir);
     const browser = await chromium.launch();
     try {
       const page = await browser.newPage({ viewport: { width: 1000, height: 900 } });
-      const messages: string[] = [];
-      page.on('console', (message) => {
-        if (['error', 'warning'].includes(message.type())) messages.push(message.text());
-      });
-      page.on('pageerror', (error) => messages.push(error.message));
+      const messages = watchPage(page);
       await page.goto(`http://localhost:${port}/`);
       await drive(page, framework.name);
       if (messages.length > 0) problems.push(`${framework.name} logged: ${messages.join(' | ')}`);

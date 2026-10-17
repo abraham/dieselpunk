@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { checkReasons } from '../scripts/size-reasons.ts';
+import { checkReasons } from '../src/size.ts';
 
 describe('checkReasons', () => {
   it('passes when every entry has a reason and nothing is left over', () => {

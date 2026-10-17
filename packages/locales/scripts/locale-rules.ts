@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { locales as shipped } from '../src/locales.ts';
 import type { LocaleInfo } from '../src/locales.ts';
-import { parseXliff, placeholdersOf, textOf } from './xliff.ts';
-import type { XliffFile } from './xliff.ts';
+import { parseXliff, placeholdersOf, textOf } from '@dieselpunk/testing/xliff';
+import type { XliffFile } from '@dieselpunk/testing/xliff';
 
 // specs/localization.md §6: the rules a translation must meet, as pure functions so each can be tested on
 // a fixture that breaks it.

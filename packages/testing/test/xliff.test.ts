@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { messageProblems, parseXliff, placeholdersOf, textOf } from '../scripts/xliff.ts';
+import { parseXliff, placeholdersOf, textOf } from '../src/xliff.ts';
 
 const xlf = `<?xml version="1.0" encoding="UTF-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
@@ -60,22 +60,5 @@ describe('placeholders', () => {
   it('writes a fragment as text', () => {
     assert.equal(textOf(unit.source), '${count} of ${capacity}');
     assert.equal(textOf('Tom &amp; Jerry'), 'Tom & Jerry');
-  });
-});
-
-describe('messageProblems', () => {
-  it('accepts an explicit id with a description', () => {
-    assert.deepEqual(messageProblems(parseXliff(xlf).units), []);
-  });
-
-  it('flags an id made from a hash', () => {
-    const units = [{ id: 's3d58dee72d4e0c27', source: 'Hello', target: undefined, note: 'Hi.' }];
-    assert.equal(messageProblems(units).length, 1);
-    assert.match(messageProblems(units)[0] as string, /explicit id/);
-  });
-
-  it('flags a message with no description', () => {
-    const units = [{ id: 'close', source: 'Close', target: undefined, note: undefined }];
-    assert.match(messageProblems(units)[0] as string, /no description/);
   });
 });

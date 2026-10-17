@@ -21,7 +21,7 @@ Living specifications for `@dieselpunk/core` and `@dieselpunk/locales`. Each one
 | [layout-and-actions.md](layout-and-actions.md)         | Panel, divider, stack, cluster, button, icon button, breadcrumb, pagination                                            |
 | [localization.md](localization.md)                     | Messages, locale changes, the locales package, translation gates, number formatting, direction                         |
 | [performance.md](performance.md)                       | Size budgets, runtime cost rules, and the deterministic gates that hold them                                           |
-| [testing.md](testing.md)                               | Test layers, the gallery, engines, visual regression, mutation checking, the gate list                                 |
+| [testing.md](testing.md)                               | Test layers, the gallery, engines, visual regression, mutation checking, the gate list, the testing package            |
 | [ci.md](ci.md)                                         | The CI workflows: jobs, shared setup, splitting by gallery group, generated matrices, change detection, budgets        |
 | [workbench.md](workbench.md)                           | The Storybook workbench, its examples, guides, and smoke test, and its publication at dieselpunk.dev                   |
 

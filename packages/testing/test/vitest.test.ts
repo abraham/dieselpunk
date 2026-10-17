@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { after, test } from 'node:test';
-import { browserRun, familyOf } from '../scripts/browser-part.ts';
+import { browserRun, familyOf, listSelection } from '../src/vitest.ts';
 
 // Which files a CI part of the browser tests runs (specs/ci.md §5.3).
 
@@ -61,5 +61,21 @@ test('a malformed part fails', () => {
   assert.throws(
     () => browserRun(root, include, gallery, { PUNK_BROWSER_PART: '3/2' }),
     /<n>\/<total>/,
+  );
+});
+
+test('a selection is read from a list, and the caller may check its names', () => {
+  assert.deepEqual(listSelection('', ''), {});
+  assert.deepEqual(listSelection('shell, forms', ' steel '), {
+    groups: ['shell', 'forms'],
+    themes: ['steel'],
+  });
+  const strict = (groups = '') => {
+    if (groups.includes('attic')) throw new Error('Unknown group: attic');
+    return listSelection(groups);
+  };
+  assert.throws(
+    () => browserRun(root, include, gallery, { PUNK_GALLERY_GROUPS: 'attic' }, strict),
+    /Unknown group: attic/,
   );
 });

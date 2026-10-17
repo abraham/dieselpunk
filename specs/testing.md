@@ -1,7 +1,7 @@
 # Testing and Quality Gates
 
-**Scope:** how the system is tested: the test layers, the shared gallery, the engines, what every component test covers, visual regression, mutation checking, the package and consumer checks, and the list of CI gates.
-**Code:** `packages/*/test/`, `packages/*/scripts/check-*.ts`, `packages/core/vitest.config.ts`, `playwright.config.ts`, `scripts/visual.ts`, `build-visual.ts`, `serve-visual.ts`, `apps/storybook/scripts/smoke.ts`, `.github/workflows/`.
+**Scope:** how the system is tested: the test layers, the shared gallery, the engines, what every component test covers, visual regression, mutation checking, the package and consumer checks, the list of CI gates, and the testing package that holds the shared tooling.
+**Code:** `packages/testing/`, `packages/*/test/`, `packages/*/scripts/check-*.ts`, `packages/core/vitest.config.ts`, `playwright.config.ts`, `scripts/visual.ts`, `build-visual.ts`, `serve-visual.ts`, `apps/storybook/scripts/smoke.ts`, `.github/workflows/`.
 
 ## 1. Principles
 
@@ -10,6 +10,7 @@
 3. **Every gate is made to fail once** before it is trusted ([§7](#7-mutation-checking)).
 4. **One source of states.** The axe, reflow, manifest, strings, and visual suites all render the same gallery, so a state added once is covered everywhere.
 5. **Real engines, real platforms.** Component tests run in Chromium, Firefox, and WebKit, and are run on Linux before they are trusted, since macOS does not reproduce every Firefox and WebKit behavior.
+6. **Tooling is shared, tests are owned.** The machinery tests run on lives in `@dieselpunk/testing` ([§10](#10-the-testing-package)); the tests, fixtures, and baselines that state what a package does live in that package.
 
 ## 2. Layers
 
@@ -97,7 +98,7 @@ Suites over the gallery:
 - Each group has its own folder under each project. A group's folder stays under about 20 MB; when it would not, its content variants are cut and the cut is recorded in the gallery.
 - The page-level tolerance is `maxDiffPixelRatio: 0.002`, with animations disabled and reduced motion on.
 - `node scripts/visual.ts selftest` renders everything twice into a scratch folder and requires identical output, which proves the harness deterministic in every engine without a baseline.
-- `test/visual-ci.test.ts` fails if a workflow's image tag differs from the installed Playwright.
+- `packages/testing/test/visual-ci.test.ts` fails if a workflow's image tag differs from the installed Playwright.
 
 ## 7. Mutation checking
 
@@ -141,7 +142,48 @@ A test or gate is trusted only after it has failed against a deliberately broken
 | `test:smoke`       | storybook | A story or page that errors, warns, overflows, or fails its flow                         |
 | `test:visual`      | core      | A screenshot that differs from its baseline (CI visual job)                              |
 
+## 10. The testing package
+
+`packages/testing` is `@dieselpunk/testing`: the tooling that the other workspaces' tests and gates run on. It holds machinery, not claims. No test of a component, a translation, or a page lives in it; a package's tests, fixtures, gallery, baselines, and gate rules stay in that package.
+
+**Why:** tooling that two workspaces share otherwise gets reached by relative paths across them (the locales size check once ran a core script, and core read the XLIFF reader out of the locales scripts). A move in one workspace then breaks another's tests with no error pointing at it, and every new package copies the reach-arounds.
+
+**Rules.**
+
+- **Private and unbuilt.** `private: true`, never published, and without `build`, `check:package`, `check:size`, or `check:api`. Its exports point at TypeScript sources: Node runs the Node modules by type stripping, and Vite or Playwright compiles the others with the file that imports them. Node strips types only outside `node_modules`, which holds because the workspace link resolves to `packages/testing/`, also inside the Playwright container; nothing runs Node with `--preserve-symlinks`.
+- **One direction.** It imports no workspace package. Core, locales, and the workbench list it in `devDependencies` and pass it what is theirs: paths, group and theme lists, a selection parser that checks names, a page to build. **Why:** a cycle would break the root build order and let the tooling depend on the code it checks.
+- **Thin entries.** Each workspace keeps its scripts (`scripts/visual.ts`, `build-visual.ts`, `serve-visual.ts`, `check-size-reasons.ts`, and the root `scripts/ci-matrix.ts` and `merge-baselines.ts`) as entries that pass their own data to the tool, so commands, CI steps, and the other specs' names for them do not change. The root `scripts/` are the repository's glue and may read any workspace's files.
+- **No reaching across workspaces.** A file in a workspace imports another workspace only by package name, and what two workspaces' tests share goes here. The ESLint rule `local/workspace-imports` rejects a relative import that leaves its workspace, and any import of `@dieselpunk/testing` from a published package's `src/` outside its `*.test.ts` files. The exceptions are marked with a comment that names their gap.
+- **One context per export.** Node exports follow the Node-run rules of [toolchain.md §3](toolchain.md) and are checked by `tsconfig.scripts.json`; `./browser` is checked by the package's own `tsconfig.json`. No export mixes the two.
+- **Dependencies.** It declares what its modules import: `@vitest/browser-playwright`, esbuild, and Playwright, with `vitest` as a peer. Test runners (`vitest`, `@playwright/test`) stay `devDependencies` of each workspace that runs them, since their binaries run from there, at the one version the root resolves.
+- **Its own tests are the exception.** The tooling's logic tests run in its `test:node` with made-up groups, themes, and messages: part selection, matrix packing, change detection, the budget report, baseline merging, size reasons, the XLIFF reader, the pseudo-locale, and the image pin of the workflows. Each tool is made to fail once like any gate (§7).
+
+**Exports.**
+
+| Export         | Context | Contents                                                                                                                                                                             | Used by                                                            |
+| -------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `./browser`    | Browser | `track`, `cleanup`, `addStyles`, `rgb`, `focusWithKeyboard`, and the typings of the shared browser commands                                                                          | Core and locales browser tests                                     |
+| `./vitest`     | Node    | The shared browser commands (media emulation that waits for the frame, a held pointer), the engines chosen by `PUNK_BROWSERS`, the pre-bundled dependencies, and part selection (§4) | Core and locales Vitest configs                                    |
+| `./playwright` | Node    | `groupTag`, `themeTag`, and the page and interaction tolerances of §6                                                                                                                | Core's Playwright config and specs, `./ci`                         |
+| `./visual`     | Node    | The visual runner (`check`, `update`, `selftest`) in the pinned image or directly on Linux, and the esbuild page bundler                                                             | Core's `test:visual`                                               |
+| `./server`     | Node    | A static file server confined to its root                                                                                                                                            | The visual page, the consumer and framework checks, the smoke test |
+| `./consumer`   | Node    | Packing a workspace, installing tarballs into a throwaway project, running a command, and collecting a page's errors and warnings                                                    | `check:consumer`, `check:frameworks`                               |
+| `./xliff`      | Node    | The XLIFF reader                                                                                                                                                                     | Locales' checks, the pseudo-locale, the workbench's message table  |
+| `./pseudo`     | Node    | The pseudo-locale transform ([localization.md](localization.md) Verification)                                                                                                        | Core's `build-pseudo.ts`                                           |
+| `./size`       | Node    | The size-reason check ([performance.md §2](performance.md))                                                                                                                          | `check:size` in each package                                       |
+| `./ci`         | Node    | Visual, browser, and smoke job planning, change detection, the budget report, and baseline merging ([ci.md](ci.md))                                                                  | The `plan` job, the baseline workflow                              |
+
+**Stays in its workspace:**
+
+- Tests and what they render: component tests, the `test/browser/` suites, the gallery, `groups.ts` and its checked `parseSelection`, the test locale, the consumer and framework fixture apps and the consumer probe, `aria.spec.ts`, `matrix.spec.ts` and its `at` tags, `playwright.config.ts`, and the baselines.
+- Gate rules that state a package's contract: the contrast rules, the API snapshot, the `check-package` sentinels, the locale and message rules, and string extraction.
+- Helpers that know one package: core's `addStylesheets` (its token CSS), its `readManifest` command, and `receptacle-helpers.ts`.
+- The smoke test's flows.
+
 ## Gaps
+
+- **The locales browser test renders core's gallery** through relative imports, the one exception to §10 in a test, and the gallery is core's and stays there. Closing it: either move that suite to a private workspace that depends on both packages, or give it its own sample of each family.
+- **The workbench's message table imports the committed German XLIFF** by a relative path, since the locales package does not publish its XLIFF. Closing it: export the XLIFF from the locales package for the workbench, or generate the table's data at build time.
 
 - **Committed baselines were rendered on arm64,** in the pinned image, not by the CI workflow on amd64. They matched CI renders when that was last compared, but the current set has not been. Closing it: run the "Update visual baselines" workflow and commit its output if it differs.
 - **Older interaction captures use the page-level tolerance.** The button, slot, connection row, and form-control captures predate the clipped, tight-tolerance captures, and a subtle hover change on them can pass. Closing it: clip them the same way.

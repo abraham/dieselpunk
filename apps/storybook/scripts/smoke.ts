@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { createServer } from 'node:http';
-import { extname, join } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import type { Page } from 'playwright';
+import { serveStatic } from '@dieselpunk/testing/server';
 
 // Loads every story and docs page in the built workbench and fails on a render error or on any
 // console warning or error. Run after `npm run build`. See specs/workbench.md §5.
@@ -33,25 +33,7 @@ const { entries } = JSON.parse(readFileSync(join(root, 'index.json'), 'utf8')) a
   entries: Record<string, Entry>;
 };
 
-const types: Record<string, string> = {
-  '.html': 'text/html',
-  '.js': 'text/javascript',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.svg': 'image/svg+xml',
-  '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
-};
-const server = createServer((request, response) => {
-  const file = join(root, new URL(request.url ?? '/', 'http://localhost').pathname);
-  if (!file.startsWith(root) || !existsSync(file)) {
-    response.writeHead(404).end();
-    return;
-  }
-  response.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream' });
-  response.end(readFileSync(file));
-}).listen(0);
-const port = (server.address() as { port: number }).port;
+const { server, port } = await serveStatic(root);
 
 // Lit announces dev mode once per page. The workbench builds with the development condition on
 // purpose (so misuse warnings show), which makes this one expected.

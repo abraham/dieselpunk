@@ -1,13 +1,25 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
-import { fileURLToPath } from 'node:url';
-import { parseXliff, placeholdersOf, textOf } from '../../locales/scripts/xliff.ts';
-import { CLOSE, LOCALE, OPEN, pseudoFragment, pseudoXliff } from '../scripts/pseudo.ts';
+import { CLOSE, LOCALE, OPEN, pseudoFragment, pseudoXliff } from '../src/pseudo.ts';
+import { parseXliff, placeholdersOf, textOf } from '../src/xliff.ts';
 
-const shipped = parseXliff(
-  readFileSync(fileURLToPath(new URL('../../locales/xliff/de.xlf', import.meta.url)), 'utf8'),
-);
+const shipped = parseXliff(`<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="de" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="close">
+  <source>Close</source>
+  <target>Schließen</target>
+  <note from="lit-localize">The name of the button that closes a window.</note>
+</trans-unit>
+<trans-unit id="removeConnection">
+  <source>Remove connection: <x id="0" equiv-text="\${source}"/>, <x id="1" equiv-text="\${destination}"/></source>
+  <target>Verbindung entfernen: <x id="0" equiv-text="\${source}"/>, <x id="1" equiv-text="\${destination}"/></target>
+  <note from="lit-localize">A remove button &amp; the connection it removes.</note>
+</trans-unit>
+</body>
+</file>
+</xliff>`);
 
 describe('pseudoFragment', () => {
   it('wraps the source in the markers', () => {

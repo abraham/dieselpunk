@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { pageTolerance } from '@dieselpunk/testing/playwright';
 
 // Visual baselines are only valid when rendered on the Linux CI image. `scripts/visual.ts` runs this
 // config inside that image locally, and CI runs it directly on ubuntu. See specs/testing.md §6.
@@ -17,7 +18,7 @@ export default defineConfig({
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'test-results/visual-report' }]],
   outputDir: 'test-results/visual',
   expect: {
-    toHaveScreenshot: { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.002 },
+    toHaveScreenshot: { animations: 'disabled', caret: 'hide', ...pageTolerance },
   },
   use: {
     baseURL: `http://localhost:${port}`,

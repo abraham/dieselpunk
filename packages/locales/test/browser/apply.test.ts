@@ -2,7 +2,10 @@ import axe from 'axe-core';
 import type { Result } from 'axe-core';
 import { configureLocalization } from '@lit/localize';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { addStylesheets, cleanup, track } from '../../../core/test/browser/helpers.ts';
+import { cleanup, track } from '@dieselpunk/testing/browser';
+// This suite renders core's gallery, which is core's own (specs/testing.md Gaps).
+/* eslint-disable local/workspace-imports */
+import { addStylesheets } from '../../../core/test/browser/helpers.ts';
 import {
   buildGallery,
   galleryCss,
@@ -11,6 +14,7 @@ import {
 import type { ContentVariant } from '../../../core/test/browser/fixtures/gallery.ts';
 import { galleryNames, rendersTheme } from '../../../core/test/browser/fixtures/selection.ts';
 import { defaultThemeName } from '../../../core/src/tokens/themes.ts';
+/* eslint-enable local/workspace-imports */
 import { bindDocumentLocale } from '../../src/document.ts';
 import { loadLocale, locales, sourceLocale, targetLocales } from '../../src/index.ts';
 import type { LocaleModule } from '../../src/index.ts';
