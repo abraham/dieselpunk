@@ -106,15 +106,15 @@ describe('fieldStyles', () => {
   });
 
   it('is as tall as a medium control, and taller at low density', async () => {
-    const compact = await box({}, themed('industrial', 'compact'));
-    const low = await box({}, themed('industrial', 'low'));
+    const compact = await box({}, themed('dark', 'compact'));
+    const low = await box({}, themed('dark', 'low'));
     expect(compact.inner('.box').getBoundingClientRect().height).toBeCloseTo(36, 0);
     expect(low.inner('.box').getBoundingClientRect().height).toBeGreaterThan(36);
   });
 
   it('shows the placeholder in text-muted, and the message and hint in text colors', async () => {
-    const { inner } = await box({}, themed('industrial'));
-    const tokens = themes['industrial'].tokens;
+    const { inner } = await box({}, themed('dark'));
+    const tokens = themes.dark.tokens;
     expect(getComputedStyle(inner('.control'), '::placeholder').color).toBe(
       rgb(tokens['color-text-muted'] as string),
     );
@@ -123,13 +123,13 @@ describe('fieldStyles', () => {
   });
 
   it('brightens the boundary on hover, and not while disabled', async () => {
-    const tokens = themes['industrial'].tokens;
-    const idle = await box({}, themed('industrial'));
+    const tokens = themes.dark.tokens;
+    const idle = await box({}, themed('dark'));
     await userEvent.hover(idle.inner('.box'));
     expect(getComputedStyle(idle.inner('.box')).borderTopColor).toBe(
       rgb(tokens['color-text'] as string),
     );
-    const off = await box({ disabled: '' }, themed('industrial'));
+    const off = await box({ disabled: '' }, themed('dark'));
     await userEvent.hover(off.inner('.box'));
     expect(getComputedStyle(off.inner('.box')).borderTopColor).toBe(
       rgb(tokens['color-disabled-text'] as string),
@@ -137,18 +137,18 @@ describe('fieldStyles', () => {
   });
 
   it('frames an invalid field in danger, and a read-only one with a dashed boundary', async () => {
-    const tokens = themes['industrial'].tokens;
-    const invalid = await box({ invalid: '' }, themed('industrial'));
+    const tokens = themes.dark.tokens;
+    const invalid = await box({ invalid: '' }, themed('dark'));
     expect(getComputedStyle(invalid.inner('.box')).boxShadow).toContain(
       rgb(tokens['color-danger'] as string),
     );
-    const readonly = await box({ readonly: '' }, themed('industrial'));
+    const readonly = await box({ readonly: '' }, themed('dark'));
     expect(getComputedStyle(readonly.inner('.box')).borderTopStyle).toBe('dashed');
   });
 
   it('shows a two-tone ring on the box when the control has keyboard focus', async () => {
-    const tokens = themes['industrial'].tokens;
-    const { inner } = await box({}, themed('industrial'));
+    const tokens = themes.dark.tokens;
+    const { inner } = await box({}, themed('dark'));
     expect(getComputedStyle(inner('.box'), '::after').boxShadow).toBe('none');
     await focusWithKeyboard(inner('.control'));
     inner('.control').focus();
@@ -167,7 +167,7 @@ describe('fieldStyles', () => {
       { disabled: '' },
     ];
     for (const attributes of states) {
-      const { inner } = await box(attributes, themed('industrial'));
+      const { inner } = await box(attributes, themed('dark'));
       const { borderTopStyle, borderTopColor } = getComputedStyle(inner('.box'));
       styles.push(`${borderTopStyle} ${borderTopColor}`);
     }
@@ -176,21 +176,21 @@ describe('fieldStyles', () => {
 
   it('uses a Highlight outline for focus under forced colors', async () => {
     await commands.setForcedColors('active');
-    const { inner } = await box({}, themed('industrial'));
+    const { inner } = await box({}, themed('dark'));
     await focusWithKeyboard(inner('.control'));
     inner('.control').focus();
     expect(getComputedStyle(inner('.box')).outlineStyle).toBe('solid');
   });
 
   it('draws the message shape with the status shapes', async () => {
-    const { inner } = await box({}, themed('industrial'));
+    const { inner } = await box({}, themed('dark'));
     expect(getComputedStyle(inner('.shape')).clipPath).toContain('polygon');
   });
 });
 
 describe('closeButtonStyles', () => {
   async function mountClose() {
-    const host = track(themed('industrial'));
+    const host = track(themed('dark'));
     const element = document.createElement('punk-test-close-host') as TestCloseHost;
     host.append(element);
     await element.updateComplete;
@@ -258,17 +258,17 @@ describe('readoutStyles', () => {
   });
 
   it('keeps the plate whatever surface it is put on', async () => {
-    const panel = themed('industrial');
+    const panel = themed('dark');
     panel.style.background = 'rgb(255, 0, 255)';
     const inner = await readout(panel);
     expect(getComputedStyle(inner('.readout')).backgroundColor).toBe(
-      rgb(themes['industrial'].tokens['color-panel-inset'] as string),
+      rgb(themes.dark.tokens['color-panel-inset'] as string),
     );
   });
 
   it('draws a 2px system-color border instead of the bevel under forced colors', async () => {
     await commands.setForcedColors('active');
-    const inner = await readout(themed('industrial'));
+    const inner = await readout(themed('dark'));
     const style = getComputedStyle(inner('.readout'));
     expect(style.borderTopWidth).toBe('2px');
     expect(style.borderTopStyle).toBe('solid');

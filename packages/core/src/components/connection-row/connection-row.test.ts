@@ -138,7 +138,7 @@ describe('structure', () => {
     const element = await mount();
     expect(getComputedStyle(element).display).toBe('block');
     expect(getComputedStyle(part(element, 'row')).backgroundColor).toBe(
-      rgb(themes['industrial'].tokens['color-panel-inset'] as string),
+      rgb(themes.dark.tokens['color-panel-inset'] as string),
     );
   });
 });
@@ -253,7 +253,7 @@ describe('status', () => {
     for (const status of statuses) {
       const lens = getComputedStyle(part(await mount({ status }), 'indicator'));
       colors.add(lens.color);
-      expect(toHex(lens.backgroundColor)).toBe(themes['industrial'].tokens['color-panel-inset']);
+      expect(toHex(lens.backgroundColor)).toBe(themes.dark.tokens['color-panel-inset']);
     }
     expect(colors.size).toBe(5);
   });
@@ -498,7 +498,7 @@ describe('disabled', () => {
     expect(getComputedStyle(part(element, 'source')).color).toBe(
       getComputedStyle(part(live, 'source')).color,
     );
-    const tokens = themes['industrial'].tokens;
+    const tokens = themes.dark.tokens;
     expect(toHex(getComputedStyle(button(element)).color)).toBe(tokens['color-disabled-text']);
     expect(toHex(getComputedStyle(button(element)).backgroundColor)).toBe(
       tokens['color-disabled-fill'],

@@ -223,7 +223,7 @@ describe('review of the production group in the narrowest renders', () => {
       const problems: string[] = [];
       for (const density of densities) {
         for (const variant of contentVariants) {
-          const frame = mount(variant, 'industrial', density, width);
+          const frame = mount(variant, 'dark', density, width);
           await settle(frame);
           await commands.setForcedColors('active');
           const rtl = frame.querySelector<HTMLElement>('[dir]')?.dir === 'rtl';

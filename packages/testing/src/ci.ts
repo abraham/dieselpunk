@@ -58,7 +58,7 @@ export interface ReportSuite {
 }
 
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-// A tag ends at a space or the end, so `@theme:industrial` does not match `@theme:industrial-light`.
+// A tag ends at a space or the end, so `@theme:dark` does not match `@theme:dark-blue`.
 const oneOf = (prefix: string, names: readonly string[]) =>
   `${escape(prefix)}(?:${names.map(escape).join('|')})(?=\\s|$)`;
 

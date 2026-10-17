@@ -111,7 +111,7 @@ These hold for every release from 1.0 on, not once:
 8. The repository contains no game file, extracted asset, or trademark used as branding.
 9. The workbench's examples are usable at desktop width, 375px, and 187px without overlap, clipping, or sideways scrolling.
 10. Every size entry is within its limit and has a stated reason, and the performance gates pass.
-11. Every component supports every theme and both densities, including `industrial-light` with `low`, without loss of function or accessibility.
+11. Every component supports every theme and both densities, including `light` with `low`, without loss of function or accessibility.
 12. The manual screen reader checklist has been run for the release, or the owner has named what was not run ([accessibility.md §13](accessibility.md)).
 13. Each shipped locale is `reviewed` by a native reader, or is shipped as `draft` by the owner's decision ([localization.md §5](localization.md)).
 

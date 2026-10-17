@@ -204,10 +204,10 @@ test('a selection that matches no test fails the plan', () => {
 
 test('a grep selects its groups and no others', () => {
   const grep = new RegExp(grepFor([{ group: 'shell' }, { group: 'forms' }]));
-  assert.ok(grep.test(line('shell', 'industrial')));
+  assert.ok(grep.test(line('shell', 'dark')));
   assert.ok(grep.test(line('forms', 'high-contrast')));
-  assert.ok(!grep.test(line('foundation', 'industrial')));
-  assert.ok(!grep.test(line('shells', 'industrial')));
+  assert.ok(!grep.test(line('foundation', 'dark')));
+  assert.ok(!grep.test(line('shells', 'dark')));
 });
 
 test('a grep by theme does not match a theme whose name starts with it', () => {

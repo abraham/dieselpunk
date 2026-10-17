@@ -1,12 +1,7 @@
 import type { TokenMap } from './base.ts';
 import { darkTokens as dark } from './default-theme.ts';
 
-export const themeNames = [
-  'industrial',
-  'industrial-light',
-  'high-contrast',
-  'reduced-texture',
-] as const;
+export const themeNames = ['dark', 'light', 'high-contrast', 'reduced-texture'] as const;
 export type ThemeName = (typeof themeNames)[number];
 
 export interface Theme {
@@ -15,10 +10,10 @@ export interface Theme {
 }
 
 /** Theme used on `:root` when no `data-punk-theme` is set. */
-export const defaultThemeName = 'industrial' satisfies ThemeName;
+export const defaultThemeName = 'dark' satisfies ThemeName;
 
 /** Theme that `data-punk-theme="auto"` selects under `prefers-color-scheme: light`. */
-export const autoLightThemeName = 'industrial-light' satisfies ThemeName;
+export const autoLightThemeName = 'light' satisfies ThemeName;
 
 const light = {
   'color-canvas': '#d8d5ca',
@@ -73,8 +68,8 @@ const highContrast = {
 } as const satisfies Record<keyof typeof dark, string>;
 
 export const themes = {
-  industrial: { colorScheme: 'dark', tokens: dark },
-  'industrial-light': { colorScheme: 'light', tokens: light },
+  dark: { colorScheme: 'dark', tokens: dark },
+  light: { colorScheme: 'light', tokens: light },
   'high-contrast': { colorScheme: 'dark', tokens: highContrast },
   'reduced-texture': {
     colorScheme: 'dark',

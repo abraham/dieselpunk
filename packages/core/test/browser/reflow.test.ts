@@ -86,7 +86,7 @@ describe('reflow without horizontal scrolling', () => {
   it.skipIf(!galleryNames.includes('tooltip'))(
     'keeps an open tooltip narrower than the viewport',
     async () => {
-      const { frame } = mountAt('long', 'industrial', 'compact', 256);
+      const { frame } = mountAt('long', 'dark', 'compact', 256);
       try {
         await settle(frame);
         const surface = frame

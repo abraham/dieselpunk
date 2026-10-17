@@ -147,11 +147,11 @@ describe('the surface behind the stat and the row', () => {
   }
 
   it('walks the slotted text of a row and the status shape on its lens', async () => {
-    const { hosts } = await mountGroup('industrial', 'compact');
+    const { hosts } = await mountGroup('dark', 'compact');
     const row = hosts.find(
       (host) => host.localName === 'punk-connection-row' && host.querySelector('[slot="status"]'),
     );
-    const found = surfaces(row as Element, themes['industrial'].tokens['color-canvas'] as string);
+    const found = surfaces(row as Element, themes.dark.tokens['color-canvas'] as string);
     expect(found.map((item) => item.what)).toEqual(
       expect.arrayContaining(['"Speed module"', '"Precision gear"']),
     );
@@ -159,12 +159,12 @@ describe('the surface behind the stat and the row', () => {
   });
 
   it('reports text that is not on the plate, so a clean result means something', async () => {
-    const { hosts } = await mountGroup('industrial', 'compact');
+    const { hosts } = await mountGroup('dark', 'compact');
     const stat = hosts.find((host) => host.localName === 'punk-production-stat') as Element;
-    const canvas = themes['industrial'].tokens['color-canvas'] as string;
+    const canvas = themes.dark.tokens['color-canvas'] as string;
     expect(
       surfaces(stat, canvas).every(
-        (item) => item.backdrop === themes['industrial'].tokens['color-panel-inset'],
+        (item) => item.backdrop === themes.dark.tokens['color-panel-inset'],
       ),
     ).toBe(true);
     // The rule that draws the plate, taken away.
@@ -172,7 +172,7 @@ describe('the surface behind the stat and the row', () => {
     sheet.replaceSync('.readout { background: none !important; }');
     stat.shadowRoot?.adoptedStyleSheets.push(sheet);
     const moved = surfaces(stat, canvas).filter(
-      (item) => item.backdrop !== themes['industrial'].tokens['color-panel-inset'],
+      (item) => item.backdrop !== themes.dark.tokens['color-panel-inset'],
     );
     expect(moved.length).toBeGreaterThan(0);
   });

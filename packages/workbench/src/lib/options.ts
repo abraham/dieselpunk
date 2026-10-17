@@ -1,6 +1,6 @@
 export const themes = [
-  { value: 'industrial', title: 'Industrial (dark)' },
-  { value: 'industrial-light', title: 'Industrial light' },
+  { value: 'dark', title: 'Dark' },
+  { value: 'light', title: 'Light' },
   { value: 'high-contrast', title: 'High contrast' },
   { value: 'reduced-texture', title: 'Reduced texture' },
   { value: 'auto', title: 'Auto (system)' },

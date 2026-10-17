@@ -29,7 +29,7 @@ interface IconButtonOptions {
   withIcon?: boolean;
 }
 
-const dark = themes.industrial.tokens;
+const dark = themes.dark.tokens;
 let warn: MockInstance<typeof console.warn>;
 
 beforeEach(() => {

@@ -387,7 +387,7 @@ describe('as a slot', () => {
   });
 
   it('is identified by its boundary only while nothing visible is in it', async () => {
-    const control = themes.industrial.tokens['color-control-edge'];
+    const control = themes.dark.tokens['color-control-edge'];
     const bare = await mount({ count: '1' }, { content: '' });
     expect(ringColor(slotOf(bare))).toBe(control);
     expect(ringColor(slotOf(await mount({ count: '1' })))).not.toBe(control);

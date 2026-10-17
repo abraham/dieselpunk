@@ -19,7 +19,7 @@ setStorybookHelpersConfig({ hideArgRef: true });
 
 const preview: Preview = {
   tags: ['autodocs'],
-  initialGlobals: { theme: 'industrial', density: 'compact' },
+  initialGlobals: { theme: 'dark', density: 'compact' },
   globalTypes: {
     theme: {
       description: 'Theme (data-punk-theme)',

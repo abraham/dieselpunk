@@ -324,7 +324,7 @@ describe('receptacle styles', () => {
 
   it('draws an empty slot with the control-edge boundary in every theme, and a filled one without', async () => {
     addStylesheets();
-    for (const theme of ['industrial', 'industrial-light', 'high-contrast'] as const) {
+    for (const theme of ['dark', 'light', 'high-contrast'] as const) {
       const wrapper = container({ 'data-punk-theme': theme });
       const tokens = themes[theme].tokens;
       const empty = slotOf(await mount({}, { parent: wrapper }));
@@ -339,7 +339,7 @@ describe('receptacle styles', () => {
   });
 
   it('draws selected, highlighted, and invalid with different cues that combine', async () => {
-    const tokens = themes.industrial.tokens;
+    const tokens = themes.dark.tokens;
     const idle = slotOf(await mount({}, { content: 'x' }));
     const selected = slotOf(await mount({ selected: '' }, { content: 'x' }));
     const highlighted = slotOf(await mount({ highlighted: '' }, { content: 'x' }));
@@ -367,7 +367,7 @@ describe('receptacle styles', () => {
   });
 
   it('draws a selected empty slot with the selection ring, not the boundary', async () => {
-    const tokens = themes.industrial.tokens;
+    const tokens = themes.dark.tokens;
     const slot = slotOf(await mount({ selected: '' }));
     expect(getComputedStyle(slot).boxShadow).toContain(
       `${rgb(tokens['color-accent'])} 0px 0px 0px 3px`,
@@ -437,7 +437,7 @@ describe('receptacle styles', () => {
 
 describe('focus', () => {
   it('draws the two-tone ring on the slot when the host has keyboard focus', async () => {
-    const tokens = themes.industrial.tokens;
+    const tokens = themes.dark.tokens;
     const element = await mount({}, { content: 'x' });
     await focusWithKeyboard(element);
     expect(document.activeElement).toBe(element);

@@ -83,12 +83,12 @@ describe('12.1.3 unstyled page', () => {
 
   it('resolves every token to its default dark, compact value', async () => {
     const probe = await mount();
-    expect(resolvedTokens(probe)).toEqual(expectedTokens('industrial', 'compact'));
+    expect(resolvedTokens(probe)).toEqual(expectedTokens('dark', 'compact'));
   });
 
   it('renders the default dark, compact appearance', async () => {
     const probe = await mount();
-    expectAppearance(probe, 'industrial', 'compact', 'unstyled');
+    expectAppearance(probe, 'dark', 'compact', 'unstyled');
     expect(getComputedStyle(probe).fontFamily).toContain('Chakra Petch');
     expect(getComputedStyle(probe).boxSizing).toBe('border-box');
   });
@@ -132,8 +132,8 @@ describe('12.1.4 theme and density attributes', () => {
 
   it('uses the compact defaults when density is unset, even with stylesheets loaded', async () => {
     addStylesheets();
-    const probe = await mount(container({ 'data-punk-theme': 'industrial-light' }));
-    expect(resolvedTokens(probe)).toEqual(expectedTokens('industrial-light', 'compact'));
+    const probe = await mount(container({ 'data-punk-theme': 'light' }));
+    expect(resolvedTokens(probe)).toEqual(expectedTokens('light', 'compact'));
   });
 
   it('applies to an ancestor that is <html>, in either stylesheet order', async () => {
@@ -165,21 +165,21 @@ describe('12.1.4 theme and density attributes', () => {
 
   it('lets a nested theme override an outer one', async () => {
     addStylesheets();
-    const outer = container({ 'data-punk-theme': 'industrial-light' });
+    const outer = container({ 'data-punk-theme': 'light' });
     const inner = track(document.createElement('div'), outer);
-    inner.setAttribute('data-punk-theme', 'industrial');
+    inner.setAttribute('data-punk-theme', 'dark');
 
     expect(resolvedTokens(await mount(outer))['color-panel']).toBe(
-      themes['industrial-light'].tokens['color-panel'],
+      themes.light.tokens['color-panel'],
     );
     expect(resolvedTokens(await mount(inner))['color-panel']).toBe(
-      themes.industrial.tokens['color-panel'],
+      themes.dark.tokens['color-panel'],
     );
   });
 
   it('honors a plain custom-property override on a subtree', async () => {
     addStylesheets();
-    const host = container({ 'data-punk-theme': 'industrial-light' });
+    const host = container({ 'data-punk-theme': 'light' });
     host.style.setProperty('--punk-color-panel', '#123456');
     host.style.setProperty('--punk-space-3', '30px');
     const probe = await mount(host);
@@ -199,16 +199,16 @@ describe('12.1.5 auto theme', () => {
     addStylesheets();
     await expectEmulated('light');
     const probe = await mount(container({ 'data-punk-theme': 'auto' }));
-    expect(resolvedTokens(probe)).toEqual(expectedTokens('industrial-light'));
-    expectAppearance(probe, 'industrial-light', 'compact', 'auto/light');
+    expect(resolvedTokens(probe)).toEqual(expectedTokens('light'));
+    expectAppearance(probe, 'light', 'compact', 'auto/light');
   });
 
   it('follows a dark preference', async () => {
     addStylesheets();
     await expectEmulated('dark');
     const probe = await mount(container({ 'data-punk-theme': 'auto' }));
-    expect(resolvedTokens(probe)).toEqual(expectedTokens('industrial'));
-    expectAppearance(probe, 'industrial', 'compact', 'auto/dark');
+    expect(resolvedTokens(probe)).toEqual(expectedTokens('dark'));
+    expectAppearance(probe, 'dark', 'compact', 'auto/dark');
   });
 
   it('updates a mounted element when the preference changes', async () => {
@@ -217,9 +217,9 @@ describe('12.1.5 auto theme', () => {
     const probe = await mount(host);
 
     await expectEmulated('light');
-    expect(resolvedTokens(probe)).toEqual(expectedTokens('industrial-light'));
+    expect(resolvedTokens(probe)).toEqual(expectedTokens('light'));
     await expectEmulated('dark');
-    expect(resolvedTokens(probe)).toEqual(expectedTokens('industrial'));
+    expect(resolvedTokens(probe)).toEqual(expectedTokens('dark'));
 
     expect(host.firstElementChild).toBe(probe);
     expect(probe.connections).toBe(1);
@@ -228,16 +228,16 @@ describe('12.1.5 auto theme', () => {
   it('stays dark when nested in an explicit light theme under a dark preference', async () => {
     addStylesheets();
     await expectEmulated('dark');
-    const outer = container({ 'data-punk-theme': 'industrial-light' });
+    const outer = container({ 'data-punk-theme': 'light' });
     const inner = track(document.createElement('div'), outer);
     inner.setAttribute('data-punk-theme', 'auto');
-    expect(resolvedTokens(await mount(inner))).toEqual(expectedTokens('industrial'));
+    expect(resolvedTokens(await mount(inner))).toEqual(expectedTokens('dark'));
   });
 
   it('does not follow the preference for explicit themes', async () => {
     addStylesheets();
     await expectEmulated('light');
-    const probe = await mount(container({ 'data-punk-theme': 'industrial' }));
-    expect(resolvedTokens(probe)).toEqual(expectedTokens('industrial'));
+    const probe = await mount(container({ 'data-punk-theme': 'dark' }));
+    expect(resolvedTokens(probe)).toEqual(expectedTokens('dark'));
   });
 });
