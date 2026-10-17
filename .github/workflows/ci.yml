@@ -53,12 +53,18 @@ jobs:
 
   # Runs in the image the baselines were rendered on, so pixels match (specs/testing.md §6).
   visual:
-    name: visual (${{ matrix.project }})
+    name: visual (${{ matrix.project }} ${{ matrix.shard }}/${{ matrix.shards }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        project: [chromium, chromium-forced, firefox, webkit]
+        # Chromium renders the full matrix, about nine times the other projects, so it is split.
+        include:
+          - { project: chromium, shard: 1, shards: 2 }
+          - { project: chromium, shard: 2, shards: 2 }
+          - { project: chromium-forced, shard: 1, shards: 1 }
+          - { project: firefox, shard: 1, shards: 1 }
+          - { project: webkit, shard: 1, shards: 1 }
     container:
       image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --ipc=host
@@ -72,11 +78,11 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run test:visual -w @dieselpunk/core -- --project=${{ matrix.project }}
+      - run: npm run test:visual -w @dieselpunk/core -- --project=${{ matrix.project }} --shard=${{ matrix.shard }}/${{ matrix.shards }}
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: visual-report-${{ matrix.project }}
+          name: visual-report-${{ matrix.project }}-${{ matrix.shard }}
           path: packages/core/test-results/
           retention-days: 7
 
