@@ -471,6 +471,7 @@ Example:
 - Labels support arbitrary text direction and use logical CSS properties.
 - Counts and percentages use `Intl.NumberFormat` when formatted by the component.
 - Components write the words they render with Lit Localize's `msg()`, in English, each with an id and a description. The English text is the source locale and ships with the components; translations are XLIFF files, built into locale modules in `@dieselpunk/locales`, and an application switches locale with `setLocale()`. Mounted components re-render when the locale is ready.
+- `@dieselpunk/locales` ships drafts in German, French, Spanish, Japanese, and Arabic (right to left), a loader for Lit Localize (`loadLocale`), `mergeLocaleModules` for an application's own messages, and `bindDocumentLocale()`, which sets the page's `lang` and `dir` when a locale is ready. A locale is marked `draft` until a native reader has reviewed it.
 - Layout is tested with long German labels, Arabic RTL content, and large compact-number values.
 
 ## 14. Quality and Testing

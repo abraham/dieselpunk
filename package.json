@@ -18,14 +18,15 @@
     "format:check": "prettier --check .",
     "check:api": "npm run check:api --workspace @dieselpunk/core",
     "check:contrast": "npm run check:contrast --workspace @dieselpunk/core",
-    "check:package": "npm run check:package --workspace @dieselpunk/core",
-    "check:size": "npm run check:size --workspace @dieselpunk/core",
+    "check:package": "npm run check:package --workspaces --if-present",
+    "check:size": "npm run check:size --workspaces --if-present",
     "check:consumer": "npm run check:consumer --workspace @dieselpunk/core",
     "test:visual": "npm run test:visual --workspace @dieselpunk/core",
     "test:smoke": "npm run test:smoke --workspace @dieselpunk/storybook",
     "check:toolchain": "node scripts/check-toolchain.ts",
     "check:frameworks": "npm run check:frameworks --workspace @dieselpunk/core",
-    "check:strings": "npm run check:strings --workspace @dieselpunk/locales"
+    "check:strings": "npm run check:strings --workspace @dieselpunk/locales",
+    "check:locales": "npm run check:locales --workspace @dieselpunk/locales"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
