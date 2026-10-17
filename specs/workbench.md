@@ -110,7 +110,6 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 ## Gaps
 
 - **The screen reader results table is empty** ([accessibility.md](accessibility.md) Gaps).
-- **The site is not published.** The repository's Pages source is not yet set to GitHub Actions, the custom domain is not set in the Pages settings, and dieselpunk.dev has no DNS records.
 - **Only the pre-1.0 path is built.** `docs.yml` deploys `main` to `/`. The release build into `/`, `main` into `/next/`, and the kept `/v<major>/` folders are added with the first release.
 - **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, or 404 page.
 - **No published-ids file or check** in CI.
