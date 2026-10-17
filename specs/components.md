@@ -104,7 +104,7 @@ A planned component is built only after its section exists in its family spec, w
 
 ## 3. Planned (P1)
 
-None: every component that general-purpose use needs is implemented. The parts of the P1 rows that were not built are gaps of their family specs: a combobox with several values ([forms.md](forms.md) Gaps) and menus that open on hover ([keyboard-and-selection.md](keyboard-and-selection.md) Gaps). The breadcrumb reveals its middle in place rather than in a menu ([layout-and-actions.md §7](layout-and-actions.md)).
+None: every component that general-purpose use needs is implemented. The part of the P1 rows that was not built is a gap of its family spec: a combobox with several values ([forms.md](forms.md) Gaps). Menus deliberately do not open on hover ([keyboard-and-selection.md](keyboard-and-selection.md)), and the breadcrumb reveals its middle in place rather than in a menu ([layout-and-actions.md §7](layout-and-actions.md)).
 
 ## 4. Planned (P2)
 
