@@ -11,6 +11,7 @@ const distDir = `${packageDir}dist`;
 const name = '@dieselpunk/core';
 
 interface PackageJson {
+  license: unknown;
   sideEffects: string[];
   exports: Record<string, unknown>;
 }
@@ -22,6 +23,16 @@ const fail = (message: string) => problems.push(message);
 if (!existsSync(distDir)) {
   console.error('dist/ is missing. Run `npm run build` first.');
   process.exit(1);
+}
+
+// npm packs only this folder, so it carries a copy of the repository's license (specs/package-contract.md §10).
+if (pkg.license !== 'MIT') fail('"license" must be "MIT"');
+const license = `${packageDir}LICENSE`;
+if (
+  !existsSync(license) ||
+  readFileSync(license, 'utf8') !== readFileSync(`${repoDir}LICENSE`, 'utf8')
+) {
+  fail('LICENSE must be a copy of the repository LICENSE');
 }
 
 const components = readdirSync(`${distDir}/components`, { withFileTypes: true })

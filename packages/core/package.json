@@ -2,6 +2,7 @@
   "name": "@dieselpunk/core",
   "version": "0.0.0",
   "description": "Industrial game-style UI Web Components built with Lit.",
+  "license": "MIT",
   "homepage": "https://dieselpunk.dev",
   "repository": {
     "type": "git",
