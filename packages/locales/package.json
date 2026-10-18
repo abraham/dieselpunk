@@ -1,6 +1,6 @@
 {
   "name": "@dieselpunk/locales",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Translations of the messages in @dieselpunk/core, for use with Lit Localize.",
   "license": "MIT",
   "publishConfig": {
