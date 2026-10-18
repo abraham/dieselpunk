@@ -487,6 +487,118 @@ describe('variants, sizes, and states', () => {
   }
 });
 
+describe('arrow', () => {
+  function tip(button: PunkButton): HTMLElement | null {
+    return button.shadowRoot?.querySelector<HTMLElement>('.tip') ?? null;
+  }
+
+  async function arrowed(arrow: string, options: ButtonOptions = {}): Promise<PunkButton> {
+    const button = await mount(options);
+    button.setAttribute('arrow', arrow);
+    await button.updateComplete;
+    return button;
+  }
+
+  /** The element under a point given as fractions of the host's box. */
+  function hit(button: PunkButton, x: number, y: number): Element | null {
+    const box = button.getBoundingClientRect();
+    return (
+      button.shadowRoot?.elementFromPoint(box.left + box.width * x, box.top + box.height * y) ??
+      null
+    );
+  }
+
+  it('renders no tip by default or for an unknown value', async () => {
+    expect(tip(await mount())).toBeNull();
+    expect(tip(await arrowed('up'))).toBeNull();
+  });
+
+  it('reflects, and adds a tip half the height long to the inline end', async () => {
+    const plain = (await mount()).getBoundingClientRect().width;
+    const button = await arrowed('end');
+    expect(button.arrow).toBe('end');
+    expect(button.getBoundingClientRect().width).toBe(plain + 18);
+
+    const body = inner(button).getBoundingClientRect();
+    const point = (tip(button) as HTMLElement).getBoundingClientRect();
+    expect(point.left).toBeGreaterThan(body.right - 4);
+    expect(button.getBoundingClientRect().right).toBe(body.right + 18);
+  });
+
+  it('hides the tip from assistive technology and keeps the name', async () => {
+    const button = await arrowed('end', { label: 'Next' });
+    expect(tip(button)?.getAttribute('aria-hidden')).toBe('true');
+    expect(page.getByRole('button', { name: 'Next', exact: true }).query()).not.toBeNull();
+  });
+
+  it('points from the inline start, and mirrors in right-to-left text', async () => {
+    const cases = [
+      ['end', 'ltr', 'right'],
+      ['start', 'ltr', 'left'],
+      ['end', 'rtl', 'left'],
+      ['start', 'rtl', 'right'],
+    ] as const;
+    for (const [arrow, dir, side] of cases) {
+      const button = await arrowed(arrow, { parent: container({ dir }) });
+      const body = inner(button).getBoundingClientRect();
+      const point = (tip(button) as HTMLElement).getBoundingClientRect();
+      const label = `${arrow}/${dir}`;
+      if (side === 'right') expect(point.left, label).toBeGreaterThan(body.right - 4);
+      else expect(point.right, label).toBeLessThan(body.left + 4);
+      // The nose is part of the button; the corner beside it is not.
+      const nose = side === 'right' ? 0.97 : 0.03;
+      expect(inner(button).contains(hit(button, nose, 0.5)), label).toBe(true);
+      expect(inner(button).contains(hit(button, nose, 0.05)), label).toBe(false);
+    }
+  });
+
+  it('activates from a click on the tip', async () => {
+    const button = await arrowed('end');
+    const clicks = vi.fn();
+    inner(button).addEventListener('click', clicks);
+    const box = button.getBoundingClientRect();
+    await userEvent.click(button, { position: { x: box.width - 6, y: box.height / 2 } });
+    expect(clicks).toHaveBeenCalledTimes(1);
+  });
+
+  it('fills the tip as the button is filled, in every state', async () => {
+    const button = await arrowed('end', { variant: 'confirm', id: 'subject' });
+    const fill = () => getComputedStyle(tip(button) as HTMLElement, '::after').backgroundColor;
+    expect(fill()).toBe(rgb(dark['color-success']));
+    await userEvent.hover(button);
+    expect(fill()).toBe(towardText(dark['color-success'], 25));
+    pointerHeld = true;
+    await commands.holdPointer('#subject');
+    expect(fill()).toBe(towardText(dark['color-success'], 45));
+  });
+
+  it('carries the focus ring around the tip', async () => {
+    const button = await arrowed('end');
+    const outer = () => getComputedStyle(tip(button) as HTMLElement, '::before').backgroundColor;
+    expect(outer()).toBe('rgba(0, 0, 0, 0)');
+    await focusWithKeyboard(button);
+    expect(outer()).toBe(rgb(dark['color-focus']));
+  });
+
+  it.skipIf(server.browser !== 'chromium')(
+    'outlines the tip like the body under forced colors',
+    async () => {
+      const buttons = await Promise.all([arrowed('end'), arrowed('end', { disabled: true })]);
+      await commands.setForcedColors('active');
+      try {
+        for (const button of buttons) {
+          const edge = button.shadowRoot?.querySelector('.tip-edge') as HTMLElement;
+          const style = getComputedStyle(inner(button));
+          expect(getComputedStyle(edge).backgroundColor).toBe(style.borderTopColor);
+          expect(style.borderRightWidth).toBe('0px');
+        }
+      } finally {
+        await commands.setForcedColors(null);
+      }
+    },
+  );
+});
+
 describe('focus ring (12.4.7)', () => {
   const ring = (button: PunkButton) => getComputedStyle(inner(button), '::after');
 

@@ -59,6 +59,12 @@ Layout primitives with no decoration, no role, and no parts.
 
 A labeled button with the default slot, `icon-start`, and `icon-end`. Its only event is the native `click`. The label wraps with `overflow-wrap: break-word`.
 
+- **Arrow.** `arrow` (`end` or `start`, reflected) points the button with a tip on that inline side, for an action that moves on or back: "Next", "Back", a step in a sequence. Unknown values render no tip. The tip mirrors in `rtl`.
+- **Shape.** The tip is half the button's minimum height long, with 45-degree sides; a label that wraps gives it a flat nose. The host grows by the tip's length, and the body's corners on that side are square. It is drawn inside the inner button, so it hovers, presses, and clicks with it, and only the point itself is hit: the corners beside it are the host's.
+- **Drawing.** Four layers, each clipped to the tip grown by the offset of a part of the body: the fill (the body's current fill, so every state follows), the outline, and the focus ring's two tones (shown only with `:focus-visible`). Square shoulders join each to the body's. The tip is `aria-hidden`; the name is the label.
+- **Forced colors.** The body drops its border on the tip side, the tip draws its edge in `ButtonText` (`GrayText` when disabled), and focus draws a `Canvas` gap and a `Highlight` ring around both, in place of the body's outline, which would cross the tip. The tip's edge is solid even where the body's border is double or dashed.
+- **Why** not the icon button: a square icon-only control has no label to point.
+
 ## 6. Icon button
 
 A square, icon-only button: one icon in the default slot (inline SVG in `currentColor` is typical), a required `label`, and `tooltip-placement`.

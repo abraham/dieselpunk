@@ -1,8 +1,11 @@
-import { html } from 'lit';
+import { html, nothing } from 'lit';
+import { property } from 'lit/decorators.js';
 import { PunkButtonBase } from '../../internal/button-base.ts';
 import { buttonBaseStyles } from '../../internal/button-base.styles.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { buttonStyles } from './button.styles.ts';
+
+export type ButtonArrow = 'start' | 'end';
 
 /**
  * A raised industrial push button. Clicks surface as the native `click` event.
@@ -24,7 +27,22 @@ import { buttonStyles } from './button.styles.ts';
 export class PunkButton extends PunkButtonBase {
   static override styles = [buttonBaseStyles, buttonStyles];
 
+  /**
+   * Points the button with an arrow tip on its inline `end` or `start`, for an action that moves
+   * on or back. The tip is part of the button and mirrors in right-to-left text. Unknown values
+   * render no tip.
+   */
+  @property({ reflect: true }) arrow: ButtonArrow | null = null;
+
   readonly #slots = new SlotPresence(this, ['icon-start', 'icon-end']);
+
+  protected override renderInButton() {
+    return this.arrow === 'start' || this.arrow === 'end'
+      ? html`<span class="tip" aria-hidden="true"
+          ><span class="tip-ring"></span><span class="tip-edge"></span
+        ></span>`
+      : nothing;
+  }
 
   protected override renderContent() {
     return html`

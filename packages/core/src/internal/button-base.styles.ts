@@ -4,14 +4,14 @@ import { forcedColorsSurface } from '../styles/forced-colors.ts';
 import {
   insetShadow,
   outlineShadow,
+  raisedFill,
   raisedHoverShadow,
   raisedShadow,
-  raisedSurface,
 } from '../styles/surfaces.ts';
 import { token } from '../tokens/token.ts';
 
-// `--_h` and `--_icon` are private aliases set per size, and `--_fill` per filled variant; they are
-// not part of the public API.
+// `--_h` and `--_icon` are private aliases set per size, `--_fill` per filled variant, and `--_bg`
+// is the current fill, which a shape drawn outside the button can reuse; they are not public API.
 export const buttonBaseStyles = css`
   :host {
     display: inline-flex;
@@ -53,6 +53,7 @@ export const buttonBaseStyles = css`
     padding-inline: var(--punk-button-padding-inline, ${token('space-3')});
     border: 0;
     border-radius: ${token('radius')};
+    background: var(--_bg);
     appearance: none;
     font: inherit;
     font-weight: 600;
@@ -92,13 +93,14 @@ export const buttonBaseStyles = css`
   }
 
   .variant-default {
-    ${raisedSurface}
+    --_bg: ${raisedFill};
+    box-shadow: ${raisedShadow};
     color: ${token('color-text')};
   }
 
   .variant-primary {
     --_fill: ${token('color-accent')};
-    background: linear-gradient(
+    --_bg: linear-gradient(
       to bottom,
       color-mix(
         in srgb,
@@ -112,13 +114,13 @@ export const buttonBaseStyles = css`
 
   .variant-danger {
     --_fill: ${token('color-danger')};
-    background: var(--_fill);
+    --_bg: var(--_fill);
     color: ${token('color-danger-text')};
   }
 
   .variant-confirm {
     --_fill: ${token('color-success')};
-    background: var(--_fill);
+    --_bg: var(--_fill);
     color: ${token('color-success-text')};
   }
 
@@ -137,22 +139,22 @@ export const buttonBaseStyles = css`
 
   /* Hover lights the default button with the accent; press mixes the fill toward the text. */
   .variant-default.interactive:hover {
-    background: ${token('color-accent')};
+    --_bg: ${token('color-accent')};
     color: ${token('color-accent-text')};
   }
 
   .variant-default.interactive:active {
-    background: color-mix(in srgb, ${token('color-accent')}, ${token('color-text')} 45%);
+    --_bg: color-mix(in srgb, ${token('color-accent')}, ${token('color-text')} 45%);
     color: ${token('color-accent-text')};
   }
 
   /* The contrast gate checks each fill's text on these two mixes (visual-system.md §4.1). */
   .filled.interactive:hover {
-    background: color-mix(in srgb, var(--_fill), ${token('color-text')} 25%);
+    --_bg: color-mix(in srgb, var(--_fill), ${token('color-text')} 25%);
   }
 
   .filled.interactive:active {
-    background: color-mix(in srgb, var(--_fill), ${token('color-text')} 45%);
+    --_bg: color-mix(in srgb, var(--_fill), ${token('color-text')} 45%);
   }
 
   /* Pressed: content moves 1px down and toward the inline end. */
@@ -162,7 +164,7 @@ export const buttonBaseStyles = css`
   }
 
   .disabled {
-    background: ${token('color-disabled-fill')};
+    --_bg: ${token('color-disabled-fill')};
     box-shadow: ${outlineShadow};
     color: ${token('color-disabled-text')};
     cursor: not-allowed;
@@ -170,7 +172,7 @@ export const buttonBaseStyles = css`
 
   /* A disabled filled button keeps a trace of its fill, so its kind still shows. */
   .disabled.filled {
-    background: color-mix(in srgb, var(--_fill) 30%, ${token('color-disabled-fill')});
+    --_bg: color-mix(in srgb, var(--_fill) 30%, ${token('color-disabled-fill')});
     color: color-mix(in srgb, var(--_fill) 45%, ${token('color-disabled-text')});
   }
 

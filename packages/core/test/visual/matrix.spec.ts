@@ -101,30 +101,40 @@ test.describe('interaction states', { tag: everyProject }, () => {
       await open(page, { theme: defaultThemeName, density: 'compact', component: 'button' });
     });
 
-    const target = (page: Page) =>
-      page.locator('punk-button[variant="primary"]:not([disabled]):not([loading])').first();
+    // Primary keeps the unsuffixed baselines. Default hover takes the accent fill, and an arrow
+    // button's tip follows its fill and its focus ring.
+    const targets = [
+      ['', 'punk-button[variant="primary"]:not([disabled]):not([loading])'],
+      ['-default', 'punk-button[variant="default"]:not([disabled]):not([loading])'],
+      ['-arrow', 'punk-button[arrow="end"]:not([disabled])'],
+    ] as const;
 
-    test('button hover', async ({ page }) => {
-      await target(page).hover();
-      await expect(gallery(page)).toHaveScreenshot(['foundation', 'interaction-button-hover.png']);
-    });
+    for (const [suffix, selector] of targets) {
+      const target = (page: Page) => page.locator(selector).first();
+      const shot = (state: string) => ['foundation', `interaction-button${suffix}-${state}.png`];
 
-    test('button focus-visible', async ({ page }) => {
-      // A keypress marks keyboard modality, so focusing the target afterwards matches
-      // :focus-visible.
-      await page.keyboard.press('Tab');
-      await target(page).focus();
-      // A baseline of an unfocused button would pass silently, so focus is asserted first.
-      await expect(target(page)).toBeFocused();
-      await expect(gallery(page)).toHaveScreenshot(['foundation', 'interaction-button-focus.png']);
-    });
+      test(`button${suffix} hover`, async ({ page }) => {
+        await target(page).hover();
+        await expect(gallery(page)).toHaveScreenshot(shot('hover'));
+      });
 
-    test('button active', async ({ page }) => {
-      await target(page).hover();
-      await page.mouse.down();
-      await expect(gallery(page)).toHaveScreenshot(['foundation', 'interaction-button-active.png']);
-      await page.mouse.up();
-    });
+      test(`button${suffix} focus-visible`, async ({ page }) => {
+        // A keypress marks keyboard modality, so focusing the target afterwards matches
+        // :focus-visible.
+        await page.keyboard.press('Tab');
+        await target(page).focus();
+        // A baseline of an unfocused button would pass silently, so focus is asserted first.
+        await expect(target(page)).toBeFocused();
+        await expect(gallery(page)).toHaveScreenshot(shot('focus'));
+      });
+
+      test(`button${suffix} active`, async ({ page }) => {
+        await target(page).hover();
+        await page.mouse.down();
+        await expect(gallery(page)).toHaveScreenshot(shot('active'));
+        await page.mouse.up();
+      });
+    }
   });
 
   test.describe('slot', { tag: at('inventory') }, () => {

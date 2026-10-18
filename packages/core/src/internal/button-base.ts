@@ -142,6 +142,11 @@ export abstract class PunkButtonBase extends PunkElement {
     return nothing;
   }
 
+  /** Rendered last inside the inner button, so it hovers, presses, and clicks with it. */
+  protected renderInButton(): unknown {
+    return nothing;
+  }
+
   readonly #handleClick = (): void => {
     const form = this.#internals.form;
     if (this.type === 'submit') form?.requestSubmit();
@@ -185,6 +190,7 @@ export abstract class PunkButtonBase extends PunkElement {
             ? html`<span part="spinner" class="spinner" aria-hidden="true"></span>`
             : nothing
         }
+        ${this.renderInButton()}
       </button>
       ${this.renderAfterButton()}
       ${

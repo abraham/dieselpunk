@@ -90,7 +90,7 @@
     "path": "dist/components/button/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.5 kB"
+    "limit": "6.3 kB"
   },
   {
     "name": "punk-progress-bar",
