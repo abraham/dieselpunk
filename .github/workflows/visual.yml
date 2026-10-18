@@ -43,8 +43,8 @@ jobs:
       run:
         working-directory: packages/core
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
+      - uses: actions/checkout@v7.0.1
+      - uses: $/.github/actions/setup
       - if: inputs.mode == 'check'
         run: node scripts/visual.ts check --project="$PROJECT" --grep="$GREP"
       # An empty folder, so the artifact holds only what this job rendered.
@@ -53,14 +53,14 @@ jobs:
           PUNK_VISUAL_SNAPSHOTS: test-results/visual-render
         run: node scripts/visual.ts update --project="$PROJECT" --grep="$GREP"
       - if: inputs.mode == 'update'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: visual-render-${{ matrix.id }}
           path: packages/core/test-results/visual-render/
           if-no-files-found: error
           retention-days: 1
       - if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: visual-report-${{ matrix.id }}
           path: packages/core/test-results/
@@ -72,9 +72,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
-      - uses: actions/download-artifact@v8
+      - uses: actions/checkout@v7.0.1
+      - uses: $/.github/actions/setup
+      - uses: actions/download-artifact@v8.0.2
         with:
           pattern: visual-render-*
           merge-multiple: true
@@ -83,7 +83,7 @@ jobs:
           PUNK_GALLERY_GROUPS: ${{ inputs.groups }}
           PUNK_GALLERY_THEMES: ${{ inputs.themes }}
         run: node scripts/merge-baselines.ts rendered
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7.0.2
         with:
           name: visual-baselines
           path: packages/core/test/visual/__screenshots__/

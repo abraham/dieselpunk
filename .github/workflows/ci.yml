@@ -27,11 +27,11 @@ jobs:
       browser: ${{ steps.matrix.outputs.browser }}
       full: ${{ steps.matrix.outputs.full }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           # The merge commit and its base, to list what the pull request changes.
           fetch-depth: 2
-      - uses: ./.github/actions/setup
+      - uses: $/.github/actions/setup
       - id: matrix
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -41,8 +41,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
+      - uses: actions/checkout@v7.0.1
+      - uses: $/.github/actions/setup
       - run: npm run check:toolchain
       - run: npm run format:check
       - run: npm run lint
@@ -62,8 +62,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
+      - uses: actions/checkout@v7.0.1
+      - uses: $/.github/actions/setup
         with:
           browsers: chromium
           build: true
@@ -83,8 +83,8 @@ jobs:
     env:
       PUNK_SMOKE_PART: ${{ matrix.part }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
+      - uses: actions/checkout@v7.0.1
+      - uses: $/.github/actions/setup
         with:
           browsers: chromium
           build: true
@@ -107,8 +107,8 @@ jobs:
       PUNK_GALLERY_GROUPS: ${{ matrix.groups }}
       PUNK_GALLERY_THEMES: ${{ matrix.themes }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
+      - uses: actions/checkout@v7.0.1
+      - uses: $/.github/actions/setup
         with:
           browsers: ${{ matrix.engine }}
       - run: npm run test:browser --workspaces --if-present
