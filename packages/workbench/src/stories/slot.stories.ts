@@ -13,6 +13,7 @@ const sizes = ['sm', 'md', 'lg'] as const;
 
 const meta = preview.type<{ args: StoryArgs<PunkSlot> }>().meta({
   title: 'Components/Slot',
+  tags: ['inventory'],
   component: 'punk-slot',
   args: { ...args, label: 'Engine slot', value: 'engine', 'default-slot': itemMarkup('gear') },
   argTypes,

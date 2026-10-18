@@ -10,6 +10,7 @@ const { argTypes } = getStorybookHelpers<PunkDescriptionList>('punk-description-
 
 const meta = preview.type<{ args: StoryArgs<PunkDescriptionList> }>().meta({
   title: 'Components/Description list',
+  tags: ['data'],
   component: 'punk-description-list',
   argTypes,
   render: () => html`

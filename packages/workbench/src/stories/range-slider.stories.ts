@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkRangeSlider>('punk-
 
 const meta = preview.type<{ args: StoryArgs<PunkRangeSlider> }>().meta({
   title: 'Components/Range slider',
+  tags: ['forms'],
   component: 'punk-range-slider',
   args: { ...args, label: 'Output', low: 20, high: 70, 'show-value': true },
   argTypes,

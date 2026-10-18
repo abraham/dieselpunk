@@ -13,6 +13,7 @@ const variants = ['neutral', 'info', 'success', 'warning', 'danger'] as const;
 
 const meta = preview.type<{ args: StoryArgs<PunkStatusLight> }>().meta({
   title: 'Components/Status Light',
+  tags: ['readouts'],
   component: 'punk-status-light',
   args: { ...args, variant: 'success', 'default-slot': 'Running' },
   argTypes,

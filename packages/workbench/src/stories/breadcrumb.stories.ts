@@ -19,6 +19,7 @@ const trail = `
 
 const meta = preview.type<{ args: StoryArgs<PunkBreadcrumb> }>().meta({
   title: 'Components/Breadcrumb',
+  tags: ['navigation'],
   component: 'punk-breadcrumb',
   subcomponents: { 'punk-breadcrumb-item': 'punk-breadcrumb-item' },
   args: { ...args, 'default-slot': trail },

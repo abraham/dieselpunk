@@ -11,6 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkTooltip>('punk-tool
 
 const meta = preview.type<{ args: StoryArgs<PunkTooltip> }>().meta({
   title: 'Components/Tooltip',
+  tags: ['overlays'],
   component: 'punk-tooltip',
   args: { ...args, 'default-slot': 'Starts the assembler' },
   argTypes,

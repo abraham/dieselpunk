@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkTextField>('punk-te
 
 const meta = preview.type<{ args: StoryArgs<PunkTextField> }>().meta({
   title: 'Components/Text field',
+  tags: ['forms'],
   component: 'punk-text-field',
   args: { ...args, label: 'Callsign', placeholder: 'Three letters' },
   // An empty number control passes NaN to the field; a text one leaves the length unset.

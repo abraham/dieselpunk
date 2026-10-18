@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkMeter>('punk-meter'
 
 const meta = preview.type<{ args: StoryArgs<PunkMeter> }>().meta({
   title: 'Components/Meter',
+  tags: ['readouts'],
   component: 'punk-meter',
   args: {
     ...args,

@@ -14,6 +14,7 @@ const sizes = ['sm', 'md', 'lg'] as const;
 
 const meta = preview.type<{ args: StoryArgs<PunkButton> }>().meta({
   title: 'Components/Button',
+  tags: ['actions'],
   component: 'punk-button',
   args: { ...args, 'default-slot': 'Start production' },
   argTypes,

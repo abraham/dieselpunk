@@ -155,6 +155,19 @@ describe('opening and closing', () => {
     expect(closed).toHaveBeenCalledOnce();
   });
 
+  it('stays open when it is opened again before the platform reports the last close', async () => {
+    const element = await open();
+    const { closed } = events(element);
+    element.close();
+    element.show();
+    await element.updateComplete;
+    // The <dialog>'s close event for the first closing arrives a task later.
+    await flush();
+    await flush();
+    expect([element.open, dialogOf(element).open]).toEqual([true, true]);
+    expect(closed).toHaveBeenCalledOnce();
+  });
+
   it('closes with the value of a data-punk-close element, reason action', async () => {
     const element = await open(
       'heading="Confirm"',

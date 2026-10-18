@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import type { Page } from 'playwright';
 import { serveStatic } from '@dieselpunk/testing/server';
+import { categoryTags } from '../src/lib/categories.ts';
+import { reflowWidths } from '../src/lib/viewports.ts';
 
 // Loads every story and docs page in the built workbench and fails on a render error or on any
 // console warning or error. Run after `npm run build`. See specs/workbench.md §5.
@@ -159,7 +161,7 @@ async function checkResponsiveExamples(): Promise<void> {
     .map((entry) => entry.id);
   if (ids.length === 0) failures.push('the Responsive layouts examples are missing');
   for (const id of ids) {
-    for (const width of [375, 187]) {
+    for (const width of reflowWidths) {
       const page = await openStory(id, width);
       const extra = Number(
         await page.evaluate(
@@ -213,7 +215,7 @@ async function checkExamples(): Promise<void> {
   if (examples.length !== 3) failures.push(`expected 3 examples, found ${examples.length}`);
   // The two overview stories are the first screen, and are held to the same widths.
   for (const id of [...examples, ...stories('overview--')]) {
-    for (const width of [375, 187]) {
+    for (const width of reflowWidths) {
       const page = await openStory(id, width, 900);
       const extra = Number(
         await page.evaluate(
@@ -250,6 +252,30 @@ async function checkLogistics(): Promise<void> {
     problems.push(`after Escape focus is on ${await page.evaluate(focused)}, not the row`);
   }
   if (problems.length > 0) failures.push(`examples-logistics-network: ${problems.join(' | ')}`);
+  await page.close();
+}
+
+// The Language toolbar's locale is in place before a story renders: lang, dir, and the words.
+async function checkLanguageToolbar(): Promise<void> {
+  const id = 'examples-interface-settings--interface-settings';
+  const page = await openStory(`${id}&globals=locale:ar`, 1100, 1000);
+  const shown = await page.evaluate(`(() => {
+    const row = document.querySelector('punk-connection-row');
+    return {
+      lang: document.documentElement.lang,
+      dir: document.documentElement.dir,
+      readout: document.querySelector('[data-readout]')?.textContent,
+      chosen: document.querySelector('punk-select')?.value,
+      name: row?.shadowRoot?.querySelector('[part="remove-button"]')?.getAttribute('aria-label'),
+    };
+  })()`);
+  const { lang, dir, readout, chosen, name } = shown as Record<string, string | undefined>;
+  const problems: string[] = [];
+  if (lang !== 'ar' || dir !== 'rtl') problems.push(`the page is lang=${lang} dir=${dir}`);
+  if (!readout?.includes('lang="ar"')) problems.push(`the readout shows ${readout}`);
+  if (chosen !== 'ar') problems.push(`the language select shows ${chosen}`);
+  if (!name || name.startsWith('Remove connection')) problems.push(`the button is named "${name}"`);
+  if (problems.length > 0) failures.push(`${id} in Arabic: ${problems.join(' | ')}`);
   await page.close();
 }
 
@@ -295,6 +321,16 @@ async function checkMarkdownTables(): Promise<void> {
   }
 }
 
+// Each component page is in exactly one sidebar category (specs/workbench.md §3).
+function checkCategoryTags(): void {
+  const known = new Set<string>(categoryTags);
+  for (const entry of Object.values(entries)) {
+    if (!entry.id.startsWith('components-')) continue;
+    const tags = (entry.tags ?? []).filter((tag) => known.has(tag));
+    if (tags.length !== 1) failures.push(`${entry.id} has category tags [${tags.join(', ')}]`);
+  }
+}
+
 // Sorted, so that a part is the same set of entries on every run.
 const mine = Object.values(entries)
   .sort((a, b) => a.id.localeCompare(b.id))
@@ -314,6 +350,8 @@ try {
     await checkApplicationShell();
     await checkExamples();
     await checkLogistics();
+    await checkLanguageToolbar();
+    checkCategoryTags();
     await checkLocalizationGuide();
     await checkScreenReaderChecklist();
     await checkFrameworkGuides();

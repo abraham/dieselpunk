@@ -251,7 +251,6 @@ export const LogisticsNetworkFlow = LogisticsNetwork.extend({
       await userEvent.click(removeButton(row));
       await waitFor(() => expect(dialog()).toHaveAttribute('open'));
       await userEvent.click(button(answer));
-      // The host as well as its <dialog>, since a host still open ignores the next show().
       await waitFor(() => expect(dialog()).not.toHaveAttribute('open'));
     };
     await expect(rows()).toHaveLength(12);

@@ -13,6 +13,7 @@ const radios =
 
 const meta = preview.type<{ args: StoryArgs<PunkRadioGroup> }>().meta({
   title: 'Components/Radio Group',
+  tags: ['forms'],
   component: 'punk-radio-group',
   subcomponents: { 'punk-radio': 'punk-radio' },
   args: { ...args, label: 'Power source', 'default-slot': radios },

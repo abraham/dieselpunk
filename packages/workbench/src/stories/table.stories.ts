@@ -51,6 +51,7 @@ const sort = (event: CustomEvent<{ key: string; direction: string }>) => {
 
 const meta = preview.type<{ args: StoryArgs<PunkTable> }>().meta({
   title: 'Components/Table',
+  tags: ['data'],
   component: 'punk-table',
   args: { ...args, 'default-slot': tableHtml },
   argTypes,

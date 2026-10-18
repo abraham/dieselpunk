@@ -12,6 +12,7 @@ const pane = (text: string) => html`<div style="padding: 12px">${text}</div>`;
 
 const meta = preview.type<{ args: StoryArgs<PunkSplitter> }>().meta({
   title: 'Components/Splitter',
+  tags: ['layout'],
   component: 'punk-splitter',
   args: { ...args, value: 40, label: 'Map width' },
   argTypes,

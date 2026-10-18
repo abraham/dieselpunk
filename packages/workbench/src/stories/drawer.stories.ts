@@ -14,6 +14,7 @@ const open = (event: Event) =>
 
 const meta = preview.type<{ args: StoryArgs<PunkDrawer> }>().meta({
   title: 'Components/Drawer',
+  tags: ['overlays'],
   component: 'punk-drawer',
   args: {
     ...args,

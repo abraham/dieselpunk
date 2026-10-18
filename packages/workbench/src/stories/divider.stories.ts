@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkDivider>('punk-divi
 
 const meta = preview.type<{ args: StoryArgs<PunkDivider> }>().meta({
   title: 'Components/Divider',
+  tags: ['layout'],
   component: 'punk-divider',
   args: { ...args, 'default-slot': 'Inputs' },
   argTypes,

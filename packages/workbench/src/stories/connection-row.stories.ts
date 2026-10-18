@@ -15,6 +15,7 @@ const node = (slot: 'source' | 'destination', text: string) =>
 
 const meta = preview.type<{ args: StoryArgs<PunkConnectionRow> }>().meta({
   title: 'Components/Connection Row',
+  tags: ['readouts'],
   component: 'punk-connection-row',
   args: {
     ...args,

@@ -14,6 +14,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkToolbar>('punk-tool
 
 const meta = preview.type<{ args: StoryArgs<PunkToolbar> }>().meta({
   title: 'Components/Toolbar',
+  tags: ['navigation'],
   component: 'punk-toolbar',
   args: {
     ...args,

@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkSpinner>('punk-spin
 
 const meta = preview.type<{ args: StoryArgs<PunkSpinner> }>().meta({
   title: 'Components/Spinner',
+  tags: ['data'],
   component: 'punk-spinner',
   args: { ...args },
   argTypes,

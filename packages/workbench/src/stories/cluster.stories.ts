@@ -11,6 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkCluster>('punk-clus
 
 const meta = preview.type<{ args: StoryArgs<PunkCluster> }>().meta({
   title: 'Components/Cluster',
+  tags: ['layout'],
   component: 'punk-cluster',
   args: {
     ...args,

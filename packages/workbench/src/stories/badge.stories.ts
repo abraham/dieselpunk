@@ -12,6 +12,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkBadge>('punk-badge'
 
 const meta = preview.type<{ args: StoryArgs<PunkBadge> }>().meta({
   title: 'Components/Badge',
+  tags: ['data'],
   component: 'punk-badge',
   args: { ...args, 'default-slot': '12' },
   argTypes,

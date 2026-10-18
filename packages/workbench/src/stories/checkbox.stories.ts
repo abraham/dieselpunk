@@ -11,6 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkCheckbox>('punk-che
 
 const meta = preview.type<{ args: StoryArgs<PunkCheckbox> }>().meta({
   title: 'Components/Checkbox',
+  tags: ['forms'],
   component: 'punk-checkbox',
   args: { ...args, 'default-slot': 'Feed the furnace automatically' },
   argTypes,

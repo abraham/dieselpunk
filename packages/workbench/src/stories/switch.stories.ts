@@ -11,6 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkSwitch>('punk-switc
 
 const meta = preview.type<{ args: StoryArgs<PunkSwitch> }>().meta({
   title: 'Components/Switch',
+  tags: ['forms'],
   component: 'punk-switch',
   args: { ...args, 'default-slot': 'Power' },
   argTypes,

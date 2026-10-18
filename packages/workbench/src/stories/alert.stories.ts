@@ -11,6 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkAlert>('punk-alert'
 
 const meta = preview.type<{ args: StoryArgs<PunkAlert> }>().meta({
   title: 'Components/Alert',
+  tags: ['data'],
   component: 'punk-alert',
   args: {
     ...args,

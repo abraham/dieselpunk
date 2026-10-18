@@ -185,6 +185,8 @@ export class ModalController {
   };
 
   readonly #onNativeClose = (): void => {
+    // The close event of an earlier closing arrives a task late, and may find it open again.
+    if (this.#options.dialog()?.open) return;
     this.close('method');
   };
 }

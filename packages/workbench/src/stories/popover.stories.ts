@@ -20,6 +20,7 @@ const item = (text: string, disabled = false) =>
 
 const meta = preview.type<{ args: StoryArgs<PunkPopover> }>().meta({
   title: 'Components/Popover',
+  tags: ['overlays'],
   component: 'punk-popover',
   args: {
     ...args,

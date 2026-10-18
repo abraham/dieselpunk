@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkSelect>('punk-selec
 
 const meta = preview.type<{ args: StoryArgs<PunkSelect> }>().meta({
   title: 'Components/Select',
+  tags: ['forms'],
   component: 'punk-select',
   args: { ...args, label: 'Squadron' },
   argTypes,

@@ -11,6 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkRecipe>('punk-recip
 
 const meta = preview.type<{ args: StoryArgs<PunkRecipe> }>().meta({
   title: 'Components/Recipe',
+  tags: ['inventory'],
   component: 'punk-recipe',
   args: {
     ...args,
