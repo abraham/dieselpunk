@@ -517,12 +517,13 @@ describe('arrow', () => {
     const plain = (await mount()).getBoundingClientRect().width;
     const button = await arrowed('end');
     expect(button.arrow).toBe('end');
-    expect(button.getBoundingClientRect().width).toBe(plain + 18);
+    // Firefox lays text out in fractions of a pixel, so the sums differ in the last float bits.
+    expect(button.getBoundingClientRect().width).toBeCloseTo(plain + 18);
 
     const body = inner(button).getBoundingClientRect();
     const point = (tip(button) as HTMLElement).getBoundingClientRect();
     expect(point.left).toBeGreaterThan(body.right - 4);
-    expect(button.getBoundingClientRect().right).toBe(body.right + 18);
+    expect(button.getBoundingClientRect().right).toBeCloseTo(body.right + 18);
   });
 
   it('hides the tip from assistive technology and keeps the name', async () => {
