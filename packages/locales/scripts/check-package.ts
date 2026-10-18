@@ -10,6 +10,7 @@ const repoDir = fileURLToPath(new URL('../../..', import.meta.url));
 const name = '@dieselpunk/locales';
 
 interface PackageJson {
+  license: unknown;
   sideEffects: unknown;
   exports: Record<string, { types: string; default: string }>;
 }
@@ -24,6 +25,16 @@ const fail = (message: string) => problems.push(message);
 if (!existsSync(`${packageDir}dist`)) {
   console.error('dist/ is missing. Run `npm run build` first.');
   process.exit(1);
+}
+
+// npm packs only this folder, so it carries a copy of the repository's license (specs/package-contract.md §10).
+if (pkg.license !== 'MIT') fail('"license" must be "MIT"');
+const license = `${packageDir}LICENSE`;
+if (
+  !existsSync(license) ||
+  readFileSync(license, 'utf8') !== readFileSync(`${repoDir}LICENSE`, 'utf8')
+) {
+  fail('LICENSE must be a copy of the repository LICENSE');
 }
 
 // 1. Nothing here has an effect when it is imported.
