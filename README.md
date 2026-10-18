@@ -1,5 +1,7 @@
 # Dieselpunk
 
+![An assembling machine panel built from Dieselpunk components: slots, item stacks, a recipe, a progress bar, meters, buttons, and status lights](screenshot.png)
+
 Industrial game-style Web Components, built with [Lit](https://lit.dev). Dense, tactile controls for inventory, crafting, logistics, and production screens, and for the rest of an application: forms, navigation, data, and overlays. Every component works from plain HTML, is accessible to WCAG 2.2 AA, and comes in several themes and two densities.
 
 Documentation and live examples: **[dieselpunk.dev](https://dieselpunk.dev)**
