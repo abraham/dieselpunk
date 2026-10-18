@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Adds the files the public site serves beside the Storybook build (specs/workbench.md §7):
-// the manifest of the documented release, a sitemap of the docs pages, and robots.txt.
+// the manifest of the documented release, the social image, a sitemap of the docs pages, and robots.txt.
 // Run after `npm run build`.
 
 const origin = 'https://dieselpunk.dev';
@@ -17,6 +17,10 @@ if (!existsSync(index)) {
 copyFileSync(
   fileURLToPath(import.meta.resolve('@dieselpunk/core/custom-elements.json')),
   join(root, 'custom-elements.json'),
+);
+copyFileSync(
+  fileURLToPath(new URL('../../../screenshot.png', import.meta.url)),
+  join(root, 'screenshot.png'),
 );
 
 const { entries } = JSON.parse(readFileSync(index, 'utf8')) as {
@@ -37,5 +41,5 @@ writeFileSync(
 );
 
 console.log(
-  `Site files written: custom-elements.json, sitemap.xml (${urls.length} pages), robots.txt.`,
+  `Site files written: custom-elements.json, screenshot.png, sitemap.xml (${urls.length} pages), robots.txt.`,
 );

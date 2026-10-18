@@ -90,6 +90,7 @@ An entry counts as loaded when Storybook's preview reports it rendered (or faile
 | `/next/`                      | The workbench built from `main`, marked as unreleased in its sidebar header      |
 | `/v<major>/`                  | The last build of each earlier major version, kept after a new major is released |
 | `/custom-elements.json`       | The manifest of the release that `/` documents, for editors and tooling          |
+| `/screenshot.png`             | The social-card image: the repository's `screenshot.png`, 1200 × 630             |
 | `/sitemap.xml`, `/robots.txt` | Generated from Storybook's `index.json`: one entry per docs page                 |
 | `/404.html`                   | A static page in the industrial look that links to the overview and the guides   |
 
@@ -112,7 +113,7 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 ## 8. Publishing
 
 - **Host:** GitHub Pages for `abraham/dieselpunk`, deployed by GitHub Actions. The custom domain is set in the repository's Pages settings; deployments from Actions need no `CNAME` file. **Why:** it is part of the repository's existing CI, needs no other account or secret, and serves static files, which is all a Storybook build is.
-- **Workflow** (`.github/workflows/docs.yml`) builds and deploys, and nothing else: it runs no tests and does not wait for CI, which tests the same commit on its own. On a published release it builds the release into `/`; on a push to `main` it builds `main` into `/next/` (or `/` before 1.0). It also runs on demand (`workflow_dispatch`). Each run: `npm ci`, build core, locales, and the workbench, add the manifest, sitemap, and robots file (`npm run build:site -w @dieselpunk/workbench`, from `scripts/site.ts`) and earlier major versions, and deploy the assembled folder with `actions/upload-pages-artifact` and `actions/deploy-pages`. A failed build deploys nothing. **Why:** documentation should follow `main` promptly, and a failing or slow test elsewhere in CI should not hold back a docs fix.
+- **Workflow** (`.github/workflows/docs.yml`) builds and deploys, and nothing else: it runs no tests and does not wait for CI, which tests the same commit on its own. On a published release it builds the release into `/`; on a push to `main` it builds `main` into `/next/` (or `/` before 1.0). It also runs on demand (`workflow_dispatch`). Each run: `npm ci`, build core, locales, and the workbench, add the manifest, social image, sitemap, and robots file (`npm run build:site -w @dieselpunk/workbench`, from `scripts/site.ts`) and earlier major versions, and deploy the assembled folder with `actions/upload-pages-artifact` and `actions/deploy-pages`. A failed build deploys nothing. **Why:** documentation should follow `main` promptly, and a failing or slow test elsewhere in CI should not hold back a docs fix.
 - **Pull requests** do not run the docs workflow; CI builds the workbench and runs the smoke test on them.
 - **Concurrency:** one deployment at a time; a newer run cancels a queued older one.
 - **Rollback** is re-running the docs workflow for the previous release.
@@ -129,7 +130,7 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 
 - **The screen reader results table is empty** ([accessibility.md](accessibility.md) Gaps).
 - **Only the pre-1.0 path is built.** `docs.yml` deploys `main` to `/`. The release build into `/`, `main` into `/next/`, and the kept `/v<major>/` folders are added with the first release.
-- **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, or 404 page.
+- **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, page titles, per-page descriptions, or 404 page. The site has one description and a social card with `screenshot.png`, set in `managerHead`.
 - **No published-ids file or check** in CI.
 - **The guides are not scanned by axe.** The accessibility addon checks stories, which include the overviews and examples, but not MDX docs pages ([accessibility.md §13](accessibility.md)). Closing it: run axe over every docs page in the smoke test, outside the Storybook chrome.
 - **Manifest descriptions do not link their docs pages.**
