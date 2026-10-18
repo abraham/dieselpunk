@@ -12,6 +12,7 @@ const { args, argTypes } = getStorybookHelpers<PunkSteps>('punk-steps');
 const meta = preview.type<{ args: StoryArgs<PunkSteps> }>().meta({
   title: 'Components/Steps',
   component: 'punk-steps',
+  subcomponents: { 'punk-step': 'punk-step' },
   args: { ...args, current: 2 },
   argTypes,
   render: (storyArgs) =>

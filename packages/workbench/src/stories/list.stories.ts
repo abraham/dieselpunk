@@ -19,6 +19,7 @@ const rows = `
 const meta = preview.type<{ args: StoryArgs<PunkList> }>().meta({
   title: 'Components/List',
   component: 'punk-list',
+  subcomponents: { 'punk-list-item': 'punk-list-item' },
   args: { ...args, 'aria-label': 'Machines', selection: 'single', 'default-slot': rows },
   argTypes,
   render: (storyArgs) => html`<div style="max-inline-size: 420px">${template(storyArgs)}</div>`,

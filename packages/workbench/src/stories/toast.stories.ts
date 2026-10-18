@@ -12,6 +12,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkToast>('punk-toast'
 const meta = preview.type<{ args: StoryArgs<PunkToast> }>().meta({
   title: 'Components/Toast',
   component: 'punk-toast',
+  subcomponents: { 'punk-toast-stack': 'punk-toast-stack' },
   args: {
     ...args,
     variant: 'success',

@@ -14,6 +14,7 @@ const radios =
 const meta = preview.type<{ args: StoryArgs<PunkRadioGroup> }>().meta({
   title: 'Components/Radio Group',
   component: 'punk-radio-group',
+  subcomponents: { 'punk-radio': 'punk-radio' },
   args: { ...args, label: 'Power source', 'default-slot': radios },
   argTypes,
   render: (storyArgs) => template(storyArgs),

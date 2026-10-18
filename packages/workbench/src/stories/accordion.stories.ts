@@ -13,6 +13,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkAccordion>('punk-ac
 const meta = preview.type<{ args: StoryArgs<PunkAccordion> }>().meta({
   title: 'Components/Accordion',
   component: 'punk-accordion',
+  subcomponents: { 'punk-accordion-item': 'punk-accordion-item' },
   args: {
     ...args,
     'default-slot':

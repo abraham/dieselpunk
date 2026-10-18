@@ -27,6 +27,7 @@ const items = `
 const meta = preview.type<{ args: StoryArgs<PunkMenu> }>().meta({
   title: 'Components/Menu',
   component: 'punk-menu',
+  subcomponents: { 'punk-menu-item': 'punk-menu-item' },
   args: { ...args, 'default-slot': items },
   argTypes,
   render: (storyArgs) =>

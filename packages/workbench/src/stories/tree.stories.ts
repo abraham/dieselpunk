@@ -27,6 +27,7 @@ const nodes = html`
 const meta = preview.type<{ args: StoryArgs<PunkTree> }>().meta({
   title: 'Components/Tree',
   component: 'punk-tree',
+  subcomponents: { 'punk-tree-item': 'punk-tree-item' },
   args: { ...args, selection: 'single' },
   argTypes,
   render: (storyArgs) =>
