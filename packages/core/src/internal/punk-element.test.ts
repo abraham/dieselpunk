@@ -37,11 +37,12 @@ describe('upgrading over a server-rendered shadow root (ssr.md §4)', () => {
     expect(root.querySelector('style')).toBeNull();
     expect(root.querySelector('[part="server"]')).toBeNull();
     expect(root.querySelector('[part="client"]')?.textContent).toBe('Client');
-    expect(root.adoptedStyleSheets).toEqual(
-      TestReplaced.elementStyles.map(
-        (style) => (style as { styleSheet: CSSStyleSheet }).styleSheet,
-      ),
-    );
+    const fresh = track(document.createElement('test-replaced')) as TestReplaced;
+    await fresh.updateComplete;
+    const shared = [...fresh.shadowRoot!.adoptedStyleSheets];
+    expect(shared.length).toBeGreaterThan(0);
+    expect(root.adoptedStyleSheets.length).toBe(shared.length);
+    shared.forEach((sheet, index) => expect(root.adoptedStyleSheets[index]).toBe(sheet));
   });
 
   it('moves focus from the server tree to the component', async () => {
