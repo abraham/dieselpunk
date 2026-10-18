@@ -9,7 +9,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkButton>('punk-button');
 
-const variants = ['default', 'primary', 'danger'] as const;
+const variants = ['default', 'primary', 'danger', 'confirm'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
 
 const meta = preview.type<{ args: StoryArgs<PunkButton> }>().meta({
@@ -34,7 +34,7 @@ A raised push button. Clicks surface as the native \`click\` event. \`type\` def
 
 A \`disabled\` button cannot be focused. A \`loading\` button stays focusable and announces the loading state, but ignores activation.
 
-Hover and pressed states are interactive, so try them in the stories. The loading and disabled states are shown in the matrix.
+Hover and pressed states are interactive, so try them in the stories. Hover lights a \`default\` button with the accent and shifts a filled one toward the text color; pressing shifts it further. \`arrow\` (\`end\` or \`start\`) points a button for an action that moves on or back; the tip mirrors in right-to-left text. The loading and disabled states are shown in the matrix.
 `,
       },
     },
@@ -49,6 +49,23 @@ const row = (label: string, button: (variant: (typeof variants)[number]) => unkn
     ${variants.map((variant) => button(variant))}
   </div>
 `;
+
+const arrows = html`<div class="wb-stack">
+  <div class="wb-row">
+    <punk-button arrow="start">Back</punk-button>
+    <punk-button variant="confirm" arrow="end">Next</punk-button>
+    <punk-button variant="confirm" arrow="end" disabled>Next</punk-button>
+  </div>
+  <div class="wb-row">
+    ${sizes.map(
+      (size) => html`<punk-button variant="confirm" arrow="end" size=${size}>${size}</punk-button>`,
+    )}
+  </div>
+  <div class="wb-row" dir="rtl">
+    <punk-button arrow="start">Back (rtl)</punk-button>
+    <punk-button variant="confirm" arrow="end">Next (rtl)</punk-button>
+  </div>
+</div>`;
 
 export const States = meta.story({
   render: () => html`
@@ -67,6 +84,7 @@ export const States = meta.story({
           ${sizes.map((size) => html`<punk-button size=${size}>${size}</punk-button>`)}
         </div>`,
       )}
+      ${group('Arrow', arrows)}
       ${group(
         'With icons',
         html`<div class="wb-row">
@@ -94,6 +112,10 @@ export const WithIcons = meta.story({
   },
 });
 
+export const Arrow = meta.story({
+  args: { 'default-slot': 'Next', variant: 'confirm', arrow: 'end' },
+});
+
 export const ThemeAndDensityMatrix = meta.story({
   render: () =>
     themeDensityMatrix(
@@ -102,6 +124,7 @@ export const ThemeAndDensityMatrix = meta.story({
           ${row('idle', (v) => html`<punk-button variant=${v}>${v}</punk-button>`)}
           ${row('disabled', (v) => html`<punk-button variant=${v} disabled>${v}</punk-button>`)}
           ${row('loading', (v) => html`<punk-button variant=${v} loading>${v}</punk-button>`)}
+          ${arrows}
         </div>
       `,
     ),

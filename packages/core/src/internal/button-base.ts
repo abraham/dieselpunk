@@ -12,11 +12,11 @@ import { PunkElement } from './punk-element.ts';
 import { focusItem, itemDisabled, setTabStop } from './roving.ts';
 import { serverValues } from './server-values.ts';
 
-export type ButtonVariant = 'default' | 'primary' | 'danger';
+export type ButtonVariant = 'default' | 'primary' | 'danger' | 'confirm';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 export type ButtonType = 'button' | 'submit' | 'reset';
 
-const variants: readonly string[] = ['default', 'primary', 'danger'];
+const variants: readonly string[] = ['default', 'primary', 'danger', 'confirm'];
 const sizes: readonly string[] = ['sm', 'md', 'lg'];
 
 /**
@@ -142,6 +142,11 @@ export abstract class PunkButtonBase extends PunkElement {
     return nothing;
   }
 
+  /** Rendered last inside the inner button, so it hovers, presses, and clicks with it. */
+  protected renderInButton(): unknown {
+    return nothing;
+  }
+
   readonly #handleClick = (): void => {
     const form = this.#internals.form;
     if (this.type === 'submit') form?.requestSubmit();
@@ -155,6 +160,7 @@ export abstract class PunkButtonBase extends PunkElement {
     const classes = {
       button: true,
       [`variant-${variant}`]: true,
+      filled: variant !== 'default',
       [`size-${size}`]: true,
       disabled,
       loading: this.loading,
@@ -184,6 +190,7 @@ export abstract class PunkButtonBase extends PunkElement {
             ? html`<span part="spinner" class="spinner" aria-hidden="true"></span>`
             : nothing
         }
+        ${this.renderInButton()}
       </button>
       ${this.renderAfterButton()}
       ${

@@ -155,6 +155,7 @@
     "punk-button": {
       "attributes": {
         "aria-label": "string | null = null",
+        "arrow": "ButtonArrow | null = null",
         "disabled": "boolean = false",
         "loading": "boolean = false",
         "size": "ButtonSize = 'md'",
@@ -163,6 +164,7 @@
       },
       "properties": {
         "accessibleLabel": "string | null = null",
+        "arrow": "ButtonArrow | null = null",
         "disabled": "boolean = false",
         "loading": "boolean = false",
         "size": "ButtonSize = 'md'",

@@ -201,7 +201,7 @@ const copy: Record<ContentVariant, Copy> = {
 const gear = `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 6.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM12 9.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg>`;
 const plus = `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M11 4h2v16h-2zM4 11h16v2H4z"/></svg>`;
 
-const variants = ['default', 'primary', 'danger'] as const;
+const variants = ['default', 'primary', 'danger', 'confirm'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
 const row = (content: string) => `<div class="row">${content}</div>`;
 
@@ -256,6 +256,11 @@ const builders: Record<ComponentName, Builder> = {
       )
       .join('')}
     ${row(sizes.map((size) => `<punk-button size="${size}">${c.start}</punk-button>`).join(''))}
+    ${row(`
+      <punk-button variant="confirm" arrow="end">${c.start}</punk-button>
+      <punk-button arrow="start">${c.pause}</punk-button>
+      <punk-button variant="confirm" arrow="end" disabled>${c.stop}</punk-button>
+    `)}
     ${row(`
       <punk-button variant="primary"><span slot="icon-start">${plus}</span>${c.start}</punk-button>
       <punk-button>${c.pause}<span slot="icon-end">${gear}</span></punk-button>

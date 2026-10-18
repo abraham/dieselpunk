@@ -19,6 +19,7 @@ export const darkTokens = {
   'color-danger': '#d9573f',
   'color-danger-text': '#0e0d0b',
   'color-success': '#7fa84f',
+  'color-success-text': '#0e0d0b',
   'color-info': '#65a9c2',
   'color-focus': '#f2cf44',
   'color-focus-inner': '#1d1e1c',

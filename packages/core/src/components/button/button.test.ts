@@ -79,6 +79,22 @@ function shadowCount(boxShadow: string): number {
   return (boxShadow.match(/inset/g) ?? []).length;
 }
 
+/** How the browser serializes a CSS color, such as a `color-mix()`, as a computed background. */
+function computedColor(color: string): string {
+  const probe = track(document.createElement('div'));
+  probe.style.background = color;
+  return getComputedStyle(probe).backgroundColor;
+}
+
+const fills = [
+  ['primary', 'color-accent', 'color-accent-text'],
+  ['danger', 'color-danger', 'color-danger-text'],
+  ['confirm', 'color-success', 'color-success-text'],
+] as const;
+
+const towardText = (fill: string, share: number) =>
+  computedColor(`color-mix(in srgb, ${fill}, ${dark['color-text']} ${share}%)`);
+
 function container(attributes: Record<string, string> = {}): HTMLElement {
   const element = track(document.createElement('div'));
   for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, value);
@@ -363,6 +379,10 @@ describe('variants, sizes, and states', () => {
     const danger = getComputedStyle(inner(await mount({ variant: 'danger' })));
     expect(danger.color).toBe(rgb(dark['color-danger-text']));
     expect(danger.backgroundColor).toBe(rgb(dark['color-danger']));
+
+    const confirm = getComputedStyle(inner(await mount({ variant: 'confirm' })));
+    expect(confirm.color).toBe(rgb(dark['color-success-text']));
+    expect(confirm.backgroundColor).toBe(rgb(dark['color-success']));
   });
 
   it('renders an unknown variant or size as the default', async () => {
@@ -389,6 +409,35 @@ describe('variants, sizes, and states', () => {
     expect(style.backgroundColor).toBe(rgb(dark['color-disabled-fill']));
     expect(style.color).toBe(rgb(dark['color-disabled-text']));
     expect(style.backgroundImage).toBe('none');
+  });
+
+  it('keeps a trace of its fill when a filled variant is disabled', async () => {
+    for (const [variant, fill] of fills) {
+      const style = getComputedStyle(inner(await mount({ variant, disabled: true })));
+      const expected = `color-mix(in srgb, ${dark[fill]} 30%, ${dark['color-disabled-fill']})`;
+      expect(style.backgroundColor, variant).toBe(computedColor(expected));
+      expect(style.backgroundImage, variant).toBe('none');
+    }
+  });
+
+  it('lights the default button with the accent on hover', async () => {
+    const button = await mount();
+    await userEvent.hover(button);
+    const hovered = getComputedStyle(inner(button));
+    expect(hovered.backgroundColor).toBe(rgb(dark['color-accent']));
+    expect(hovered.backgroundImage).toBe('none');
+    expect(hovered.color).toBe(rgb(dark['color-accent-text']));
+  });
+
+  it('mixes a filled fill a quarter toward the text on hover', async () => {
+    for (const [variant, fill, text] of fills) {
+      const button = await mount({ variant });
+      await userEvent.hover(button);
+      const hovered = getComputedStyle(inner(button));
+      expect(hovered.backgroundColor, variant).toBe(towardText(dark[fill], 25));
+      expect(hovered.backgroundImage, variant).toBe('none');
+      expect(hovered.color, variant).toBe(rgb(dark[text]));
+    }
   });
 
   it('strengthens its edges on hover', async () => {
@@ -419,19 +468,136 @@ describe('variants, sizes, and states', () => {
     const pressed = getComputedStyle(inner(button));
     const content = getComputedStyle(part(button, 'label').parentElement as HTMLElement);
     expect(pressed.boxShadow.startsWith(rgb(dark['color-edge-dark']))).toBe(true);
-    expect(pressed.backgroundColor).toBe(rgb(dark['color-panel-inset']));
+    expect(pressed.backgroundColor).toBe(towardText(dark['color-accent'], 45));
+    expect(pressed.color).toBe(rgb(dark['color-accent-text']));
     expect(content.top).toBe('1px');
     expect(content.left).toBe('1px');
   });
 
-  it('keeps the filled fill when a primary button is pressed', async () => {
-    const button = await mount({ variant: 'primary', id: 'subject' });
+  for (const [variant, fill, text] of fills) {
+    it(`mixes the ${variant} fill further toward the text when pressed`, async () => {
+      const button = await mount({ variant, id: 'subject' });
+      pointerHeld = true;
+      await commands.holdPointer('#subject');
+      const pressed = getComputedStyle(inner(button));
+      expect(pressed.boxShadow.startsWith(rgb(dark['color-edge-dark']))).toBe(true);
+      expect(pressed.backgroundColor).toBe(towardText(dark[fill], 45));
+      expect(pressed.color).toBe(rgb(dark[text]));
+    });
+  }
+});
+
+describe('arrow', () => {
+  function tip(button: PunkButton): HTMLElement | null {
+    return button.shadowRoot?.querySelector<HTMLElement>('.tip') ?? null;
+  }
+
+  async function arrowed(arrow: string, options: ButtonOptions = {}): Promise<PunkButton> {
+    const button = await mount(options);
+    button.setAttribute('arrow', arrow);
+    await button.updateComplete;
+    return button;
+  }
+
+  /** The element under a point given as fractions of the host's box. */
+  function hit(button: PunkButton, x: number, y: number): Element | null {
+    const box = button.getBoundingClientRect();
+    return (
+      button.shadowRoot?.elementFromPoint(box.left + box.width * x, box.top + box.height * y) ??
+      null
+    );
+  }
+
+  it('renders no tip by default or for an unknown value', async () => {
+    expect(tip(await mount())).toBeNull();
+    expect(tip(await arrowed('up'))).toBeNull();
+  });
+
+  it('reflects, and adds a tip half the height long to the inline end', async () => {
+    const plain = (await mount()).getBoundingClientRect().width;
+    const button = await arrowed('end');
+    expect(button.arrow).toBe('end');
+    // Firefox lays text out in fractions of a pixel, so the sums differ in the last float bits.
+    expect(button.getBoundingClientRect().width).toBeCloseTo(plain + 18);
+
+    const body = inner(button).getBoundingClientRect();
+    const point = (tip(button) as HTMLElement).getBoundingClientRect();
+    expect(point.left).toBeGreaterThan(body.right - 4);
+    expect(button.getBoundingClientRect().right).toBeCloseTo(body.right + 18);
+  });
+
+  it('hides the tip from assistive technology and keeps the name', async () => {
+    const button = await arrowed('end', { label: 'Next' });
+    expect(tip(button)?.getAttribute('aria-hidden')).toBe('true');
+    expect(page.getByRole('button', { name: 'Next', exact: true }).query()).not.toBeNull();
+  });
+
+  it('points from the inline start, and mirrors in right-to-left text', async () => {
+    const cases = [
+      ['end', 'ltr', 'right'],
+      ['start', 'ltr', 'left'],
+      ['end', 'rtl', 'left'],
+      ['start', 'rtl', 'right'],
+    ] as const;
+    for (const [arrow, dir, side] of cases) {
+      const button = await arrowed(arrow, { parent: container({ dir }) });
+      const body = inner(button).getBoundingClientRect();
+      const point = (tip(button) as HTMLElement).getBoundingClientRect();
+      const label = `${arrow}/${dir}`;
+      if (side === 'right') expect(point.left, label).toBeGreaterThan(body.right - 4);
+      else expect(point.right, label).toBeLessThan(body.left + 4);
+      // The nose is part of the button; the corner beside it is not.
+      const nose = side === 'right' ? 0.97 : 0.03;
+      expect(inner(button).contains(hit(button, nose, 0.5)), label).toBe(true);
+      expect(inner(button).contains(hit(button, nose, 0.05)), label).toBe(false);
+    }
+  });
+
+  it('activates from a click on the tip', async () => {
+    const button = await arrowed('end');
+    const clicks = vi.fn();
+    inner(button).addEventListener('click', clicks);
+    const box = button.getBoundingClientRect();
+    await userEvent.click(button, { position: { x: box.width - 6, y: box.height / 2 } });
+    expect(clicks).toHaveBeenCalledTimes(1);
+  });
+
+  it('fills the tip as the button is filled, in every state', async () => {
+    const button = await arrowed('end', { variant: 'confirm', id: 'subject' });
+    const fill = () => getComputedStyle(tip(button) as HTMLElement, '::after').backgroundColor;
+    expect(fill()).toBe(rgb(dark['color-success']));
+    await userEvent.hover(button);
+    expect(fill()).toBe(towardText(dark['color-success'], 25));
     pointerHeld = true;
     await commands.holdPointer('#subject');
-    const pressed = getComputedStyle(inner(button));
-    expect(pressed.boxShadow.startsWith(rgb(dark['color-edge-dark']))).toBe(true);
-    expect(pressed.backgroundImage).toContain('linear-gradient');
+    expect(fill()).toBe(towardText(dark['color-success'], 45));
   });
+
+  it('carries the focus ring around the tip', async () => {
+    const button = await arrowed('end');
+    const outer = () => getComputedStyle(tip(button) as HTMLElement, '::before').backgroundColor;
+    expect(outer()).toBe('rgba(0, 0, 0, 0)');
+    await focusWithKeyboard(button);
+    expect(outer()).toBe(rgb(dark['color-focus']));
+  });
+
+  it.skipIf(server.browser !== 'chromium')(
+    'outlines the tip like the body under forced colors',
+    async () => {
+      const buttons = await Promise.all([arrowed('end'), arrowed('end', { disabled: true })]);
+      await commands.setForcedColors('active');
+      try {
+        for (const button of buttons) {
+          const edge = button.shadowRoot?.querySelector('.tip-edge') as HTMLElement;
+          const style = getComputedStyle(inner(button));
+          expect(getComputedStyle(edge).backgroundColor).toBe(style.borderTopColor);
+          expect(style.borderRightWidth).toBe('0px');
+        }
+      } finally {
+        await commands.setForcedColors(null);
+      }
+    },
+  );
 });
 
 describe('focus ring (12.4.7)', () => {
@@ -440,7 +606,7 @@ describe('focus ring (12.4.7)', () => {
   it('is drawn for keyboard focus on every variant in every theme', async () => {
     addStylesheets();
     for (const theme of themeNames) {
-      for (const variant of ['default', 'primary', 'danger'] as const) {
+      for (const variant of ['default', 'primary', 'danger', 'confirm'] as const) {
         const wrapper = container({ 'data-punk-theme': theme });
         const button = await mount({ variant, parent: wrapper });
         await focusWithKeyboard(button);
@@ -584,7 +750,7 @@ describe('forced colors', () => {
     'tells the variants apart by border, since colors are unavailable',
     async () => {
       const buttons = await Promise.all(
-        (['default', 'primary', 'danger'] as const).map((variant) => mount({ variant })),
+        (['default', 'primary', 'danger', 'confirm'] as const).map((variant) => mount({ variant })),
       );
       await commands.setForcedColors('active');
       try {
@@ -592,7 +758,23 @@ describe('forced colors', () => {
           const style = getComputedStyle(inner(button));
           return `${style.borderTopWidth} ${style.borderTopStyle}`;
         });
-        expect(new Set(borders).size).toBe(3);
+        expect(new Set(borders).size).toBe(4);
+      } finally {
+        await commands.setForcedColors(null);
+      }
+    },
+  );
+
+  it.skipIf(server.browser !== 'chromium')(
+    'draws every disabled variant in the same system color',
+    async () => {
+      const buttons = await Promise.all(
+        (['default', 'confirm'] as const).map((variant) => mount({ variant, disabled: true })),
+      );
+      await commands.setForcedColors('active');
+      try {
+        const [plain, filled] = buttons.map((button) => getComputedStyle(inner(button)).color);
+        expect(filled).toBe(plain);
       } finally {
         await commands.setForcedColors(null);
       }

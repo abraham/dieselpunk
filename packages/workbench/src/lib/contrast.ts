@@ -48,6 +48,7 @@ export function checksFor(theme: string): ContrastCheck[] {
   add('text-muted', ['canvas', 'panel', 'panel-inset'], text);
   add('accent-text', ['accent'], text);
   add('danger-text', ['danger'], text);
+  add('success-text', ['success'], text);
   add('accent', ['panel-inset'], 3);
   add('accent-strong', ['panel-inset'], 3);
   add('warning', ['panel-inset'], 3);

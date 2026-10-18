@@ -98,16 +98,17 @@ Font sizes do not change with density. Density applies to a document or subtree 
 
 `check-contrast.ts` computes WCAG ratios from the token sources and fails, for any theme, when:
 
-| Pair                                                                     | Against                                  | Minimum                        |
-| ------------------------------------------------------------------------ | ---------------------------------------- | ------------------------------ |
-| `text`                                                                   | canvas, panel, panel-raised, panel-inset | 4.5:1 (7:1 in `high-contrast`) |
-| `text-muted`                                                             | canvas, panel, panel-inset               | 4.5:1 (7:1 in `high-contrast`) |
-| `accent-text` on `accent`, `danger-text` on `danger`                     |                                          | 4.5:1 (7:1 in `high-contrast`) |
-| Fills: `accent`, `accent-strong`, `warning`, `danger`, `success`, `info` | panel-inset                              | 3:1                            |
-| Outlines: `accent` (selection), `warning` (highlight)                    | canvas, panel, panel-raised              | 3:1                            |
-| `control-edge`                                                           | all four surfaces                        | 3:1                            |
-| `focus` (outer ring)                                                     | all four surfaces                        | 3:1                            |
-| `focus-inner` against `focus`                                            |                                          | 3:1                            |
+| Pair                                                                                   | Against                                  | Minimum                        |
+| -------------------------------------------------------------------------------------- | ---------------------------------------- | ------------------------------ |
+| `text`                                                                                 | canvas, panel, panel-raised, panel-inset | 4.5:1 (7:1 in `high-contrast`) |
+| `text-muted`                                                                           | canvas, panel, panel-inset               | 4.5:1 (7:1 in `high-contrast`) |
+| `accent-text` on `accent`, `danger-text` on `danger`, `success-text` on `success`      |                                          | 4.5:1 (7:1 in `high-contrast`) |
+| The same text on its fill mixed 25% and 45% toward `text` (a button's hover and press) |                                          | 4.5:1 (7:1 in `high-contrast`) |
+| Fills: `accent`, `accent-strong`, `warning`, `danger`, `success`, `info`               | panel-inset                              | 3:1                            |
+| Outlines: `accent` (selection), `warning` (highlight)                                  | canvas, panel, panel-raised              | 3:1                            |
+| `control-edge`                                                                         | all four surfaces                        | 3:1                            |
+| `focus` (outer ring)                                                                   | all four surfaces                        | 3:1                            |
+| `focus-inner` against `focus`                                                          |                                          | 3:1                            |
 
 ### 4.2 Placement rules that make the gate sufficient
 
@@ -115,6 +116,7 @@ The gate checks token pairs. These rules make sure components only draw pairs th
 
 - **Muted text never sits on `panel-raised`.** Raised surfaces carry controls, which use `text`.
 - **Status fills sit on `panel-inset`.** `danger`, `success`, and `info` fall below 3:1 on `panel` and `panel-raised` in the dark palette, so every status fill is drawn in an inset trough or lens: meter and durability fills, progress fills, status shapes, and invalid frames.
+- **Button fills are identified by their label.** A `primary`, `danger`, or `confirm` button fills with `accent`, `danger`, or `success` on any surface, outlined in `edge-dark`. Its text is gated on the fill and on the fill's hover and press mixes (§4.1).
 - **Error and status text is `text`, never `danger`.** The state is carried by a shape, a frame, and a word ([accessibility.md §6](accessibility.md)).
 - **Readouts carry their own surface.** The production stat and connection row draw on an inset readout plate (`styles/readout.ts`), so their contrast does not depend on where the application puts them.
 - **Control boundaries.** A control with no visible text or icon of its own (an empty slot, an empty field, a checkbox box, a switch or slider track) draws its boundary in `control-edge`. A control identified by its label or icon needs no gated boundary, and disabled controls are exempt (WCAG 2.2 SC 1.4.11). The decorative bevel edges (`edge-light`, `edge-dark`) are not gated.
@@ -144,7 +146,7 @@ If a theme fails a rule, the theme's token changes. The rule does not.
 
 - `forcedColorsSurface(selector, colors?)` returns the `@media (forced-colors: active)` block for one surface: gradients, texture, and bevels become a 2px solid border in system colors (`Canvas`/`CanvasText`, or `ButtonFace`/`ButtonText` for controls).
 - Selected and active emphasis uses `Highlight`, disabled uses `GrayText`, and focus a `Highlight` outline.
-- States stay apart by outline style, not color: selected is a heavy `Highlight` outline, highlighted dotted, invalid dashed. Variants that differ only by fill gain a border difference (a primary button's 4px border, a danger button's dashed border).
+- States stay apart by outline style, not color: selected is a heavy `Highlight` outline, highlighted dotted, invalid dashed. Variants that differ only by fill gain a border difference (a primary button's 4px border, a danger button's dashed border, a confirm button's double border).
 - Glyphs drawn as background images are erased by forced colors, so every glyph is drawn with a system color (`ButtonText`, `CanvasText`, `HighlightText`) in a forced-colors rule. Patterns use `Highlight` with `Canvas` gaps, so they survive.
 
 ## 8. The non-color vocabulary
