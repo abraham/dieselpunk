@@ -118,6 +118,13 @@ async function checkEntry(entry: Entry): Promise<void> {
   try {
     const error = await load(page, entry.id, entry.type === 'docs' ? 'docs' : 'story');
     if (error) messages.unshift(`render error: ${error.slice(0, 200)}`);
+    // A pipe table whose rows do not match its header renders as a paragraph of pipes.
+    const brokenTable =
+      entry.type === 'docs' &&
+      (await page.evaluate(
+        "[...document.querySelectorAll('.sbdocs p')].some((p) => /\\|\\s*:?-{3,}:?\\s*\\|/.test(p.textContent ?? ''))",
+      ));
+    if (brokenTable) messages.push('a Markdown table renders as text');
   } catch (error) {
     messages.unshift(`did not render: ${String(error).split('\n')[0]}`);
   }

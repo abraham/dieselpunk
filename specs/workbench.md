@@ -66,7 +66,7 @@ The rules for them:
 - any story or docs page that throws, or logs a warning or error other than Lit's one-time development notice (so a story that misuses a component fails);
 - sideways scrolling of more than 1px at 375px and 187px for the overviews, the examples, and the responsive-layout stories;
 - the steps that need real input: Escape on the Stop dialog, the Actions menu, and the removal dialog, and where focus returns after each;
-- guide content: each framework guide contains its app's code, the Integration guide contains its import-map page, the Localization table lists every message id, the checklist has its rows and combinations, and the guides with Markdown tables render them as tables.
+- guide content: each framework guide contains its app's code, the Integration guide contains its import-map page, the Localization table lists every message id, the checklist has its rows and combinations, the guides with Markdown tables render them as tables, and no docs page shows a table's separator row as text (a row with more or fewer cells than its header turns the whole table into a paragraph).
 
 An entry counts as loaded when Storybook's preview reports it rendered (or failed), and two frames later; entries load 4 at a time, and the flows run after them, one at a time. `PUNK_SMOKE_PART=<n>/<total>` checks one slice of the entries, with the flows in the first part ([ci.md §5.4](ci.md)).
 
