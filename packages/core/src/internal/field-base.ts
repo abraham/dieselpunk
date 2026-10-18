@@ -55,6 +55,15 @@ export abstract class PunkFieldBase extends PunkFormControl {
     this.control?.focus(options);
   }
 
+  // Text typed into the server's control before the upgrade becomes the value, with no event.
+  protected override keepServerInput(root: ShadowRoot): void {
+    const control = root.querySelector<HTMLInputElement>('input.control,textarea.control');
+    const self = this as { value?: unknown };
+    if (control && typeof self.value == 'string' && control.value !== control.defaultValue) {
+      self.value = control.value;
+    }
+  }
+
   protected override validate(): Validation | null {
     const control = this.control;
     if (!control || control.validity.valid || !control.willValidate) return null;

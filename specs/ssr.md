@@ -96,9 +96,9 @@ import '@dieselpunk/core/button/register.js';
   - In Chromium, it serves a server-rendered page with `lang="de"` and `dir="rtl"` and lets it upgrade, once with Lit's hydration support loaded and once without. Every element's shadow tree and host attributes must equal a client render of the same markup; every shadow root must adopt its shared sheets and hold no `<style>`; numbers are German, strips with content are shown, an overlay with `open` is open; a value typed before the upgrade is the control's value; and nothing is logged.
   - With hydration support loaded and §5 built, the same page must also keep each element's server nodes: a node marked before the upgrade is the same node after it, unless an input of §3 changed it.
 - §2's rule that server code reads no tree is enforced by the Node render, which throws on any such read.
+- `src/internal/punk-element.test.ts`: an element defined over a filled shadow root replaces it and adopts the shared sheets, moves focus from the old tree to itself, and a text field keeps text typed before the upgrade with no event.
 
 ## Gaps
 
-- **The upgrade does not replace.** `PunkElement` has no handling for an existing shadow root. With Lit's hydration support loaded, components hydrate, with the results of §1; without it, Lit renders a second shadow tree after the server's. Focus and values from before the upgrade are not carried over. Closing it: §4 in `PunkElement`.
 - **No fixture and no guide.** `check:consumer` has no SSR fixture, and the Integration guide does not describe server rendering.
 - **No hydration.** §5 is the follow-up to §4 and is built after it: it needs the replacement path for pages without the support.
