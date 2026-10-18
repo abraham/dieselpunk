@@ -1,4 +1,5 @@
-import { html, isServer } from 'lit';
+import { html } from 'lit';
+import { serverValues } from './server-values.ts';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -57,7 +58,7 @@ export abstract class PunkDateTimeFieldBase extends PunkFieldBase {
   // The server has no input to ask, so the client checks the value when it upgrades.
   protected override willUpdate(changed: PropertyValues): void {
     super.willUpdate(changed);
-    if (isServer || !changed.has('value') || !this.value) return;
+    if (serverValues() || !changed.has('value') || !this.value) return;
     this.#probe ??= Object.assign(document.createElement('input'), { type: this.inputType });
     this.#probe.value = this.value;
     const parsed = this.#probe.value;

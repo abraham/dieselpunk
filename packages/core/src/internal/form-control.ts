@@ -3,6 +3,7 @@ import { property, state } from 'lit/decorators.js';
 import { devWarn } from '../utilities/warn.ts';
 import { isFieldsetDisabled } from './fieldset.ts';
 import { PunkElement } from './punk-element.ts';
+import { serverValues } from './server-values.ts';
 
 export type FormValue = File | string | FormData | null;
 
@@ -144,7 +145,9 @@ export abstract class PunkFormControl extends PunkElement {
    * `<label>` elements pointing at it, which is read when it renders and on focus and is not live.
    */
   protected resolveName(own: string | null | undefined): string | null {
-    return own?.trim() || this.accessibleLabel?.trim() || this.labelsText || null;
+    return (
+      own?.trim() || this.accessibleLabel?.trim() || (serverValues() ? '' : this.labelsText) || null
+    );
   }
 
   /** Warns once when a control has no name, since a screen reader user would meet it unlabeled. */

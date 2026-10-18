@@ -1,4 +1,5 @@
-import { html, isServer } from 'lit';
+import { html } from 'lit';
+import { serverValues } from '../../internal/server-values.ts';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -409,7 +410,7 @@ export class PunkPopover extends PunkElement {
     return html`
       <div
         part="surface"
-        class=${classMap({ surface: true, open: this.open && !isServer })}
+        class=${classMap({ surface: true, open: this.open && !serverValues() })}
         popover="manual"
         tabindex=${ifDefined(this.#menu ? undefined : '-1')}
       >

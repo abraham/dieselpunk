@@ -1,4 +1,4 @@
-import { isServer } from 'lit';
+import { serverValues } from '../internal/server-values.ts';
 
 /**
  * The language in effect for `element`: the nearest `lang` attribute on it or an ancestor,
@@ -7,7 +7,7 @@ import { isServer } from 'lit';
  * element's own `lang` is known, and anything else is `en` (specs/ssr.md §3).
  */
 export function resolveLang(element: Element): string | undefined {
-  if (isServer) return element.getAttribute('lang') || 'en';
+  if (serverValues()) return element.getAttribute('lang') || 'en';
   let node: Element | null = element;
   while (node) {
     const lang = node.getAttribute('lang');

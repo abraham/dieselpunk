@@ -1,4 +1,5 @@
-import { html, isServer } from 'lit';
+import { html } from 'lit';
+import { serverValues } from '../../internal/server-values.ts';
 import type { PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -87,7 +88,7 @@ export class PunkCombobox extends PunkFieldBase {
 
   // The server has no children (specs/ssr.md §3).
   get #choices(): Choice[] {
-    if (isServer) return [];
+    if (serverValues()) return [];
     return [...this.querySelectorAll('option')].map((option) => ({
       value: option.value,
       label: option.label,

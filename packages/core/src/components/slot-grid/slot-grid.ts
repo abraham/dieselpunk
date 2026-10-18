@@ -1,4 +1,5 @@
-import { html, isServer } from 'lit';
+import { html } from 'lit';
+import { serverValues } from '../../internal/server-values.ts';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -170,7 +171,7 @@ export class PunkSlotGrid extends PunkElement implements Owner<Item> {
   /** Adopts the items, rebuilds the selection model from them, and writes the result back. */
   #sync(): void {
     // The server has no children (specs/ssr.md §3).
-    if (isServer) return;
+    if (serverValues()) return;
     this.#built = true;
     const mode = this.#mode;
     const found: Item[] = [];

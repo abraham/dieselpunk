@@ -1,4 +1,5 @@
-import { html, isServer } from 'lit';
+import { html } from 'lit';
+import { serverValues } from '../../internal/server-values.ts';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
@@ -54,7 +55,7 @@ export class PunkSteps extends PunkElement {
 
   #sync(): void {
     // The server has no children (specs/ssr.md §3).
-    if (isServer) return;
+    if (serverValues()) return;
     const children = [...this.children];
     const found = children.filter((child): child is PunkStep => child instanceof PunkStep);
     const stray = found.length !== children.length;

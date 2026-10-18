@@ -1,4 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import { serverValues } from './server-values.ts';
 
 /**
  * Tracks which slots have light-DOM content, so empty regions can be hidden.
@@ -20,7 +21,7 @@ export class SlotPresence implements ReactiveController {
   }
 
   has(name: string): boolean {
-    return this.#present.has(name);
+    return !serverValues() && this.#present.has(name);
   }
 
   /** Bind to `@slotchange` on each tracked slot. */
