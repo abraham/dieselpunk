@@ -114,6 +114,7 @@ Open and close events report every change of `open`, whoever made it, because an
 ## 7. The Custom Elements Manifest
 
 - Generated from JSDoc by the analyzer: `@tagname`, `@attr`, `@fires`, `@slot`, `@csspart`, `@cssprop`, and member descriptions. Base classes are in the analyzer's globs, so inherited members are documented on each element.
+- Written without indentation (`scripts/compact-manifest.ts` after the analyzer), since tools read it and the indentation is half its size in the package.
 - Every element, attribute, property, method, event, slot, part, and CSS property that is public has a non-empty description.
 - The manifest is checked against what the components do, not against itself: parts and slots are read from the rendered shadow DOM of every gallery state, attributes from `observedAttributes`, and CSS properties from what each component's styles and class actually read ([testing.md §3](testing.md)).
 
