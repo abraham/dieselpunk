@@ -119,6 +119,8 @@ None: every component that general-purpose use needs is implemented. The part of
 
 ## 4. Planned (P2)
 
+Every P2 component is implemented (§2). What remains is not a component of core: data modes for the containers, in an optional package.
+
 | Tag(s)                                             | Purpose                                                                 | Basis                                                                                                                                                                                   | Spec                                  |
 | -------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | Data modes of the slot grid, list, table, and tree | Collections of thousands of items with only the visible ones in the DOM | `@lit-labs/virtualizer`, as a peer dependency of an optional package, not core; `items` and `renderItem`, `aria-setsize` and `aria-posinset`, selection by value, roving focus by index | [performance.md §4.1](performance.md) |
@@ -139,4 +141,4 @@ Capabilities of existing components that are deferred, not new components: a ver
 
 ## Gaps
 
-- **No P2 component has its spec section yet.**
+- **The data modes of §4 have no spec section yet.** They are an optional package around `@lit-labs/virtualizer`, so they need its own spec, package, and gates before any code ([performance.md §4.1](performance.md)).
