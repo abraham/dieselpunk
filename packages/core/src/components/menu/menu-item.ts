@@ -50,6 +50,8 @@ export class PunkMenuItem extends PunkElement {
   @property({ reflect: true }) value = '';
 
   readonly #slots = new SlotPresence(this, ['icon', 'shortcut']);
+  // A menubar's items open their menus below them, so they draw no arrow.
+  #inBar = false;
 
   constructor() {
     super();
@@ -59,6 +61,15 @@ export class PunkMenuItem extends PunkElement {
       event.stopImmediatePropagation();
       event.preventDefault();
     });
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    const inBar = this.parentElement?.localName === 'punk-menubar';
+    if (inBar !== this.#inBar) {
+      this.#inBar = inBar;
+      this.requestUpdate();
+    }
   }
 
   get #type(): MenuItemType {
@@ -77,7 +88,7 @@ export class PunkMenuItem extends PunkElement {
 
   protected override render() {
     const change = this.#slots.handleSlotChange;
-    return html`<span part="item" class="item type-${this.#type}">
+    return html`<span part="item" class="item type-${this.#type}${this.#inBar ? ' bar' : ''}">
       <span part="check" class="check" aria-hidden="true"></span>
       <span part="icon" class="icon" ?hidden=${!this.#slots.has('icon')}
         ><slot name="icon" @slotchange=${change}></slot

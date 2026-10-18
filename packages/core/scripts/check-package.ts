@@ -82,9 +82,13 @@ const sentinels: Record<string, string> = {
   'file-field': 'dropFiles',
   splitter: 'punk-split-change',
   'range-slider': 'rangeMinimum',
+  menubar: 'role="menubar"',
 };
 // Components whose register entry must also bring these, and no others.
-const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };
+const dependencies: Record<string, string[]> = {
+  'icon-button': ['tooltip'],
+  menubar: ['menu'],
+};
 
 for (const component of components) {
   if (!sentinels[component]) fail(`No tree-shaking sentinel is defined for "${component}"`);

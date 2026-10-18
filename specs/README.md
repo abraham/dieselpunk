@@ -4,26 +4,26 @@ Living specifications for `@dieselpunk/core` and `@dieselpunk/locales`. Each one
 
 ## Index
 
-| Spec                                                   | Owns                                                                                                                   |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| [product.md](product.md)                               | Purpose, goals, non-goals, design principles, release criteria                                                         |
-| [components.md](components.md)                         | The component catalog: every implemented and planned component, its purpose, and its status                            |
-| [toolchain.md](toolchain.md)                           | Repository layout, TypeScript and Node, builds, scripts, dependencies                                                  |
-| [package-contract.md](package-contract.md)             | Exports, registration, naming, events, development warnings, the manifest, the API snapshot, versioning                |
-| [visual-system.md](visual-system.md)                   | Tokens, themes, density, contrast, surfaces, focus, forced colors, motion, typography, responsive layout               |
-| [component-model.md](component-model.md)               | `PunkElement`, base classes, controllers, pure logic modules, properties, ownership, composition                       |
-| [accessibility.md](accessibility.md)                   | Names, roles, cross-shadow ARIA, non-color cues, targets, reflow, live regions, manual testing                         |
-| [keyboard-and-selection.md](keyboard-and-selection.md) | Roving focus, grid navigation, selection, activation; slot grid, tabs, toolbar, accordion, menu, toggle group, list    |
-| [overlays.md](overlays.md)                             | Top layer, the Escape stack, modality, anchoring; tooltip, popover, window, dialog, toast, drawer                      |
-| [forms.md](forms.md)                                   | Form association, values and defaults, validation, labels; the fourteen form controls and the fieldset                 |
-| [inventory-and-readouts.md](inventory-and-readouts.md) | Receptacles and readouts; slot, item stack, recipe, progress bar, meter, status light, production stat, connection row |
-| [data-display.md](data-display.md)                     | Data and status in the page; table, alert, badge, spinner, keyboard key, description list, tag                         |
-| [layout-and-actions.md](layout-and-actions.md)         | Panel, divider, stack, cluster, splitter, button, icon button, breadcrumb, pagination, steps                           |
-| [localization.md](localization.md)                     | Messages, locale changes, the locales package, translation gates, number formatting, direction                         |
-| [performance.md](performance.md)                       | Size budgets, runtime cost rules, and the deterministic gates that hold them                                           |
-| [testing.md](testing.md)                               | Test layers, the gallery, engines, visual regression, mutation checking, the gate list, the testing package            |
-| [ci.md](ci.md)                                         | The CI workflows: jobs, shared setup, splitting by gallery group, generated matrices, change detection, budgets        |
-| [workbench.md](workbench.md)                           | The Storybook workbench, its examples, guides, and smoke test, and its publication at dieselpunk.dev                   |
+| Spec                                                   | Owns                                                                                                                         |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| [product.md](product.md)                               | Purpose, goals, non-goals, design principles, release criteria                                                               |
+| [components.md](components.md)                         | The component catalog: every implemented and planned component, its purpose, and its status                                  |
+| [toolchain.md](toolchain.md)                           | Repository layout, TypeScript and Node, builds, scripts, dependencies                                                        |
+| [package-contract.md](package-contract.md)             | Exports, registration, naming, events, development warnings, the manifest, the API snapshot, versioning                      |
+| [visual-system.md](visual-system.md)                   | Tokens, themes, density, contrast, surfaces, focus, forced colors, motion, typography, responsive layout                     |
+| [component-model.md](component-model.md)               | `PunkElement`, base classes, controllers, pure logic modules, properties, ownership, composition                             |
+| [accessibility.md](accessibility.md)                   | Names, roles, cross-shadow ARIA, non-color cues, targets, reflow, live regions, manual testing                               |
+| [keyboard-and-selection.md](keyboard-and-selection.md) | Roving focus, grid navigation, selection, activation; slot grid, tabs, toolbar, accordion, menu, toggle group, list, menubar |
+| [overlays.md](overlays.md)                             | Top layer, the Escape stack, modality, anchoring; tooltip, popover, window, dialog, toast, drawer                            |
+| [forms.md](forms.md)                                   | Form association, values and defaults, validation, labels; the fourteen form controls and the fieldset                       |
+| [inventory-and-readouts.md](inventory-and-readouts.md) | Receptacles and readouts; slot, item stack, recipe, progress bar, meter, status light, production stat, connection row       |
+| [data-display.md](data-display.md)                     | Data and status in the page; table, alert, badge, spinner, keyboard key, description list, tag                               |
+| [layout-and-actions.md](layout-and-actions.md)         | Panel, divider, stack, cluster, splitter, button, icon button, breadcrumb, pagination, steps                                 |
+| [localization.md](localization.md)                     | Messages, locale changes, the locales package, translation gates, number formatting, direction                               |
+| [performance.md](performance.md)                       | Size budgets, runtime cost rules, and the deterministic gates that hold them                                                 |
+| [testing.md](testing.md)                               | Test layers, the gallery, engines, visual regression, mutation checking, the gate list, the testing package                  |
+| [ci.md](ci.md)                                         | The CI workflows: jobs, shared setup, splitting by gallery group, generated matrices, change detection, budgets              |
+| [workbench.md](workbench.md)                           | The Storybook workbench, its examples, guides, and smoke test, and its publication at dieselpunk.dev                         |
 
 Read [product.md](product.md) first. The architecture specs can then be read in any order; each names the specs it depends on.
 

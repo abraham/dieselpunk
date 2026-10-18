@@ -99,3 +99,4 @@ export { PunkFileField } from './components/file-field/index.ts';
 export { PunkSplitter } from './components/splitter/index.ts';
 export type { PunkSplitChangeDetail, SplitterOrientation } from './components/splitter/index.ts';
 export { PunkRangeSlider } from './components/range-slider/index.ts';
+export { PunkMenubar } from './components/menubar/index.ts';

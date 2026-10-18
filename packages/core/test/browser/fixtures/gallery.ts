@@ -55,6 +55,7 @@ import '../../../src/components/time-field/register.ts';
 import '../../../src/components/file-field/register.ts';
 import '../../../src/components/splitter/register.ts';
 import '../../../src/components/range-slider/register.ts';
+import '../../../src/components/menubar/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -1000,6 +1001,18 @@ const builders: Record<ComponentName, Builder> = {
       </div>
       <punk-steps current="2"><punk-step>${c.start}</punk-step><punk-step>${c.stop}</punk-step></punk-steps>
     </div>
+  `,
+
+  // Closed: a menu is in the top layer, so menus are open only in `overlays`.
+  menubar: (c) => `
+    <punk-menubar aria-label="${c.settings}">
+      <punk-menu-item>${c.start}</punk-menu-item>
+      <punk-menu><punk-menu-item value="a">${c.pause}</punk-menu-item></punk-menu>
+      <punk-menu-item>${c.settings}</punk-menu-item>
+      <punk-menu><punk-menu-item value="b">${c.stop}</punk-menu-item></punk-menu>
+      <punk-menu-item disabled>${c.stop}</punk-menu-item>
+      <punk-menu><punk-menu-item value="c">${c.stop}</punk-menu-item></punk-menu>
+    </punk-menubar>
   `,
 
   'menu-item': (c) => `

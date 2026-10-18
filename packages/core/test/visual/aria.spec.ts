@@ -626,6 +626,33 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     },
   );
 
+  test('menubar, with one menu open', { tag: at('overlays') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-menubar aria-label="Application">
+         <punk-menu-item>File</punk-menu-item>
+         <punk-menu><punk-menu-item value="new">New</punk-menu-item></punk-menu>
+         <punk-menu-item>Edit</punk-menu-item>
+         <punk-menu><punk-menu-item value="undo">Undo</punk-menu-item></punk-menu>
+       </punk-menubar>`,
+    );
+    await page.getByRole('menuitem', { name: 'Edit' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - menubar "Application":
+        - menuitem "File"
+        - menuitem "Edit" [expanded]
+        - menu:
+          - menuitem "Undo"
+    `);
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.getByRole('menuitem', { name: 'New' })).toBeFocused();
+    await expect(page.getByRole('menuitem', { name: 'File' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+  });
+
   test('drawer, open', { tag: at('overlays') }, async ({ page }) => {
     await render(
       page,

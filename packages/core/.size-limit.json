@@ -427,5 +427,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "6 kB"
+  },
+  {
+    "name": "punk-menubar (includes the menu)",
+    "path": "dist/components/menubar/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "8.5 kB"
   }
 ]

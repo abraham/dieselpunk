@@ -1,7 +1,7 @@
 # Keyboard, Focus, and Selection
 
-**Scope:** the shared keyboard model, roving focus, activation, the selection model, and grid navigation; and the composite widgets built on them: slot grid, tabs, toolbar, accordion, menu, toggle group, and list.
-**Code:** `src/internal/roving.ts`, `roving-keys.ts`, `selection-model.ts`, `grid-navigation.ts`, `tab-navigation.ts`, `selectable-base.ts`; `src/components/slot-grid/`, `tabs/`, `toolbar/`, `accordion/`, `menu/`, `toggle-group/`, `list/`.
+**Scope:** the shared keyboard model, roving focus, activation, the selection model, and grid navigation; and the composite widgets built on them: slot grid, tabs, toolbar, accordion, menu, toggle group, list, and menubar.
+**Code:** `src/internal/roving.ts`, `roving-keys.ts`, `selection-model.ts`, `grid-navigation.ts`, `tab-navigation.ts`, `selectable-base.ts`; `src/components/slot-grid/`, `tabs/`, `toolbar/`, `accordion/`, `menu/`, `toggle-group/`, `list/`, `menubar/`.
 
 ## 1. Keyboard model
 
@@ -202,14 +202,25 @@ The application names the grid with `aria-label`; a missing name warns.
 - **Rows.** A start slot, the text, a description below it, and an end slot. All of the row's text is its name. A selected row shows a check and an `accent` bar on its start edge.
 - **Warnings:** no name; a child that is not an item; items without distinct, non-empty values in a selecting list.
 
+## 13. Menubar
+
+`punk-menubar`: a persistent row of menus at the top of an application window, the APG menubar built from the menu family ([§10](#10-menu)). Each `punk-menu-item` child is a menubar item, and the `punk-menu` right after it is its menu, since a menu's trigger is its previous sibling. Its register entry registers the menu family too, as the icon button's registers the tooltip.
+
+- **Semantics.** A `role="menubar"` row with `aria-orientation="horizontal"` in the shadow tree, named by the host's `aria-label`. The items are `menuitem`s that their menus wire with `aria-haspopup="menu"` and `aria-expanded`. A menu item in a menubar draws no submenu arrow, since its menu opens below it.
+- **The row** is one tab stop through `RovingController`: `Left` and `Right` (swapped in `rtl`) move among the items, skipping disabled ones, without wrapping ([§1](#1-keyboard-model)), and `Home` and `End` go to the ends. `Enter`, `Space`, `Down`, or a click opens an item's menu on its first item, and `Up` on its last; a click on an open item's trigger closes it.
+- **An open menu.** `Left` and `Right` close it and open the previous or next enabled item's menu on its first item, stopping at the ends. A submenu's own keys come first: `Right` on an item with a submenu opens it, and `Left` in a submenu closes it. `Escape` closes the menu and returns to its item, an action closes it and returns to its item, and `Tab` closes it and leaves the row. These are the menu's own behaviors.
+- **No opening on hover**, as for menus.
+- **Look.** The toolbar's flat strip, wrapping rather than scrolling, with the menu items' own hover and focus.
+- **Warnings:** no name; no items.
+
 ## Verification
 
 - Node: `selection-model.test.ts`, `grid-navigation.test.ts`, `roving.test.ts`, `tab-navigation.test.ts`, covering every table row, disabled items, removed keys, empty lists, unequal rows, and `rtl`.
 - Browser: each component's tests cover every key table in `ltr` and `rtl`, both orientations and activation modes, tab-stop survival, events once per user change and never for script changes, ownership restoration, and the warnings.
 - `test/browser/perf.test.ts`: a 100-item grid listens once on itself, reads no layout on a horizontal key and one rectangle per item on a vertical key, changes two `tabindex` values per move, and re-renders only the items whose selection changed.
 - `perf-shell.test.ts`: one `ResizeObserver` per non-wrapping toolbar, none with `wrap`, no layout read on an arrow key.
-- `aria.spec.ts`: slot grid in each mode, tabs with panels inside and beside, toolbar, accordion, an open menu with checkable items and a submenu, the toggle group in each mode, and the list with and without selection.
-- `menu.test.ts`: the trigger's ARIA, opening by click and by Down and Up, every key of the table in both directions, typeahead, checkbox and radio items, disabled items, submenus, Escape order, Tab, presses outside, context menus, listeners only while open, and the warnings. `toggle-group.test.ts` and `list.test.ts`: roles in each mode, keys in both directions, events once per user change and never for script changes, initial state from markup, ownership restoration, and the warnings.
+- `aria.spec.ts`: slot grid in each mode, tabs with panels inside and beside, toolbar, accordion, an open menu with checkable items and a submenu, the toggle group in each mode, the list with and without selection, and a menubar with a menu open and moving to the next one.
+- `menu.test.ts`: the trigger's ARIA, opening by click and by Down and Up, every key of the table in both directions, typeahead, checkbox and radio items, disabled items, submenus, Escape order, Tab, presses outside, context menus, listeners only while open, and the warnings. `toggle-group.test.ts` and `list.test.ts`: roles in each mode, keys in both directions, events once per user change and never for script changes, initial state from markup, ownership restoration, and the warnings. `menubar.test.ts`: the menubar and its name, the items' ARIA, one tab stop, no arrows, the row's keys in both directions past a disabled item, opening by Enter, Space, Down, Up, and click, moving between open menus and stopping at the ends, a submenu's keys first, Escape, an action, Tab, and the warnings.
 
 ## Gaps
 

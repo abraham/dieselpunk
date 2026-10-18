@@ -43,6 +43,7 @@ export const galleryGroups = {
     'pagination',
     'steps',
     'step',
+    'menubar',
     'menu-item',
   ],
   // Readouts of data and status that sit in the page.
