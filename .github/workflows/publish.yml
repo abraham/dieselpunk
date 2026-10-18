@@ -1,0 +1,51 @@
+name: Publish
+
+# Publishes @dieselpunk/core and @dieselpunk/locales to npm when a GitHub release is published
+# (specs/package-contract.md §10). npm trusted publishing authenticates with this workflow's OIDC
+# token, so there is no npm token, and npm attaches provenance on its own.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+
+      # Not the shared setup action: a release installs from the lockfile with no cache.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - run: npm ci
+
+      - name: Check that the release tag is the packages' version
+        run: |
+          for package in core locales; do
+            version=$(node -p "require('./packages/$package/package.json').version")
+            if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+              echo "::error::packages/$package is $version, but the release is $GITHUB_REF_NAME"
+              exit 1
+            fi
+          done
+
+      - run: npm run build
+      - run: npm run check:package
+
+      # Core first, since locales names it as a peer.
+      - run: npm publish -w @dieselpunk/core
+      - run: npm publish -w @dieselpunk/locales
