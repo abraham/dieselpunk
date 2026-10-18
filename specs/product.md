@@ -29,7 +29,7 @@ The library feels:
 - Game logic: simulation, inventory rules, recipe calculation, drag-and-drop business rules, persistence. Components report what the user did and show what the application tells them.
 - A second visual language. The library covers general-purpose interfaces, always in the industrial look; themes recolor it, they do not restyle it into another system.
 - Game-world graphics: maps, sprites, charts. Applications slot their own.
-- Framework wrapper packages, server-side rendering, and hydration.
+- Framework wrapper packages.
 
 ## 4. Design principles
 
@@ -75,7 +75,7 @@ The slot grid's keyboard and selection model is in [keyboard-and-selection.md §
 
 - **Browsers:** the latest two major versions of Chrome, Firefox, and Safari (§7.1).
 - **Input:** mouse, pen, touch, keyboard, and assistive technology. Hover reveals supplemental information only, never a required action.
-- **Integration:** plain HTML and TypeScript with no global setup. React, Vue, and Svelte through integration guides backed by tested fixture apps ([workbench.md §4](workbench.md)), not wrappers.
+- **Integration:** plain HTML and TypeScript with no global setup. React, Vue, and Svelte through integration guides backed by tested fixture apps ([workbench.md §4](workbench.md)), not wrappers. Server rendering with Lit SSR, as a first paint that the client replaces and later hydrates ([ssr.md](ssr.md)).
 - **Locales:** English, German, French, Spanish, Japanese, and Arabic (right to left), with one active message locale per page ([localization.md](localization.md)).
 
 ### 7.1 Browser support
@@ -121,6 +121,7 @@ Planned and rejected components are in [components.md](components.md) §3 to §5
 
 - An interaction-sound adapter: an optional package that maps existing component events to audio the application supplies, off until enabled from a user gesture, never the only carrier of information, with no audio bundled. Core needs no change for it.
 - A vertical slider, drag-to-resize windows, and per-subtree message locales.
+- Hydration of server-rendered components, after the replacement that comes first ([ssr.md §5](ssr.md)).
 
 ## Gaps
 
