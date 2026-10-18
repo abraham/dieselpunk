@@ -43,6 +43,8 @@ export default defineConfig({
     include: run.include,
     provide: run.provide,
     passWithNoTests: run.passWithNoTests,
+    // Parallel files share the browser's focus and input, which loses clicks and keys (specs/ci.md §5.3).
+    fileParallelism: false,
     browser: {
       enabled: true,
       headless: true,

@@ -239,13 +239,14 @@ export interface BrowserBudget {
 }
 
 // In CI the gallery suites took about 0.35s per component, theme, and density in each engine. Beside
-// setup and about a minute of component tests, a part has about 100s for them in its 4-minute target.
+// setup and a part's share of the component tests, a part has about 100s for them in its 4-minute
+// target. Run one file at a time, the component tests take two to five times as long as in parallel.
 /** The budget of the browser jobs when Chromium renders `themes` themes in two densities. */
 export const browserBudgetFor = (themes: number): BrowserBudget => ({
   cap: 100,
   secondsPerCombination: 0.35,
   combinations: { chromium: themes * 2, firefox: 2, webkit: 2 },
-  componentParts: { chromium: 1, firefox: 1, webkit: 1 },
+  componentParts: { chromium: 2, firefox: 3, webkit: 3 },
 });
 
 interface GalleryUnit {
