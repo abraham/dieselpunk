@@ -55,6 +55,114 @@ const workspaceImports = {
   },
 };
 
+// specs/security.md §4.2: a URL attribute bound in a template goes through `safeUrl()`.
+const urlAttribute =
+  /(?:^|\s)\.?(?:href|src|srcset|action|formaction|xlink:href|poster|ping)=["']?$/i;
+
+const urlBindings = {
+  meta: {
+    type: 'problem',
+    schema: [],
+    messages: {
+      unguarded: 'Bind a URL attribute through safeUrl() (specs/security.md §4.2).',
+    },
+  },
+  create(context) {
+    return {
+      TaggedTemplateExpression(node) {
+        if (node.tag.type !== 'Identifier' || !['html', 'svg'].includes(node.tag.name)) return;
+        node.quasi.expressions.forEach((expression, index) => {
+          if (!urlAttribute.test(node.quasi.quasis[index].value.raw)) return;
+          const guarded =
+            expression.type === 'CallExpression' &&
+            expression.callee.type === 'Identifier' &&
+            expression.callee.name === 'safeUrl';
+          if (!guarded) context.report({ node: expression, messageId: 'unguarded' });
+        });
+      },
+    };
+  },
+};
+
+// specs/security.md §4.1 and §4.4: shipped source has no markup or script sinks, and makes no
+// requests, reads no storage, and posts no messages.
+const shippedSource = ['packages/core/src/**/*.ts', 'packages/locales/src/**/*.ts'];
+const sink = 'is a markup or script sink (specs/security.md §4.1).';
+const outward = 'reaches outside the page (specs/security.md §4.4).';
+
+const sinkImports = [
+  { name: 'lit/directives/unsafe-html.js', message: `unsafeHTML ${sink}` },
+  { name: 'lit/directives/unsafe-svg.js', message: `unsafeSVG ${sink}` },
+  { name: 'lit/directives/unsafe-mathml.js', message: `unsafeMathML ${sink}` },
+  { name: 'lit/static-html.js', importNames: ['unsafeStatic'], message: `unsafeStatic ${sink}` },
+];
+
+const unsafeCssMessage =
+  'unsafeCSS takes only constants, in src/styles/ or src/tokens/ (specs/security.md §4.1).';
+const unsafeCssImports = ['lit', 'lit-element', '@lit/reactive-element'].map((name) => ({
+  name,
+  importNames: ['unsafeCSS'],
+  message: unsafeCssMessage,
+}));
+
+const shippedRules = {
+  'no-eval': 'error',
+  'no-new-func': 'error',
+  'no-restricted-imports': ['error', { paths: [...sinkImports, ...unsafeCssImports] }],
+  'no-restricted-properties': [
+    'error',
+    ...[
+      'innerHTML',
+      'outerHTML',
+      'insertAdjacentHTML',
+      'setHTMLUnsafe',
+      'createContextualFragment',
+    ].map((property) => ({ property, message: `${property} ${sink}` })),
+    ...['write', 'writeln'].map((property) => ({
+      object: 'document',
+      property,
+      message: `document.${property} ${sink}`,
+    })),
+    { object: 'document', property: 'cookie', message: `document.cookie ${outward}` },
+    { object: 'navigator', property: 'sendBeacon', message: `navigator.sendBeacon ${outward}` },
+    { property: 'postMessage', message: `postMessage ${outward}` },
+    ...['window', 'globalThis', 'self'].flatMap((object) =>
+      ['fetch', 'localStorage', 'sessionStorage', 'indexedDB'].map((property) => ({
+        object,
+        property,
+        message: `${property} ${outward}`,
+      })),
+    ),
+  ],
+  'no-restricted-globals': [
+    'error',
+    ...[
+      'fetch',
+      'XMLHttpRequest',
+      'WebSocket',
+      'EventSource',
+      'localStorage',
+      'sessionStorage',
+      'indexedDB',
+    ].map((name) => ({ name, message: `${name} ${outward}` })),
+  ],
+  'no-restricted-syntax': [
+    'error',
+    {
+      selector: "ImportExpression[source.type!='Literal'], ImportExpression[source.value=/^[^.]/]",
+      message:
+        "A dynamic import loads only the package's own modules, by a literal relative path (specs/security.md §4.4).",
+    },
+    {
+      // `no-implied-eval` needs browser globals or type information to see these.
+      selector:
+        'CallExpression[callee.name=/^set(Timeout|Interval)$/] > :matches(Literal, TemplateLiteral).arguments:first-child, CallExpression[callee.property.name=/^set(Timeout|Interval)$/] > :matches(Literal, TemplateLiteral).arguments:first-child',
+      message: `A string passed to setTimeout or setInterval ${sink}`,
+    },
+  ],
+  'local/url-bindings': 'error',
+};
+
 export default defineConfig(
   globalIgnores([
     '**/dist/',
@@ -66,7 +174,9 @@ export default defineConfig(
   js.configs.recommended,
   tseslint.configs.recommended,
   {
-    plugins: { local: { rules: { 'workspace-imports': workspaceImports } } },
+    plugins: {
+      local: { rules: { 'workspace-imports': workspaceImports, 'url-bindings': urlBindings } },
+    },
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
       // A controller adds itself to its host in its constructor, so a field that only creates it
@@ -74,5 +184,16 @@ export default defineConfig(
       'no-unused-private-class-members': 'off',
       'local/workspace-imports': 'error',
     },
+  },
+  {
+    files: shippedSource,
+    ignores: ['**/*.test.ts'],
+    rules: shippedRules,
+  },
+  {
+    // The styles and tokens build CSS from the library's own constants.
+    files: ['packages/core/src/styles/**/*.ts', 'packages/core/src/tokens/**/*.ts'],
+    ignores: ['**/*.test.ts'],
+    rules: { 'no-restricted-imports': ['error', { paths: sinkImports }] },
   },
 );

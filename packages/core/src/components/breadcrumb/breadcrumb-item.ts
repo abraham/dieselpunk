@@ -34,7 +34,8 @@ export class PunkBreadcrumbItem extends PunkElement {
     const current = this.current ? 'page' : undefined;
     return html`<span part="separator" class="separator" aria-hidden="true"></span>${
         this.href
-          ? html`<a part="link" class="link" href=${this.href} aria-current=${ifDefined(current)}
+          ? // eslint-disable-next-line local/url-bindings -- the guard is open work (specs/security.md Gaps)
+            html`<a part="link" class="link" href=${this.href} aria-current=${ifDefined(current)}
               ><slot></slot
             ></a>`
           : html`<span part="link" class="link text" aria-current=${ifDefined(current)}

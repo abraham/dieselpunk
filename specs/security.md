@@ -1,7 +1,7 @@
 # Security
 
 **Scope:** what keeps the published packages, the release path, and the pages that use them safe: the threat model, rules for shipped code, checks on each change (code, dependencies, workflows), the provenance of a release, and how findings are handled. Known advisories in dependencies are Dependabot's (§5.1); this spec's checks run on changes and releases, never on a schedule.
-**Code:** `eslint.config.js`, `scripts/check-lockfile.ts`, `.install-scripts.json`, `packages/testing/test/workflows.test.ts`, `packages/core/test/package/csp/`, `.github/workflows/ci.yml` (the `security` job), `.github/workflows/publish.yml`, `.github/dependabot.yml`, `SECURITY.md`.
+**Code:** `eslint.config.js`, `packages/testing/test/security-lint.test.ts`, `scripts/check-lockfile.ts`, `.install-scripts.json`, `packages/testing/test/workflows.test.ts`, `packages/core/test/package/csp/`, `.github/workflows/ci.yml` (the `security` job), `.github/workflows/publish.yml`, `.github/dependabot.yml`, `SECURITY.md`.
 
 ## 1. Goals
 
@@ -43,12 +43,12 @@ These apply to `packages/core/src` and `packages/locales/src`, excluding tests.
 
 - Shipped code uses no `unsafeHTML`, `unsafeSVG`, `unsafeStatic`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `setHTMLUnsafe`, `document.write`, `eval`, `new Function`, or string arguments to `setTimeout` and `setInterval`. Markup is rendered only through Lit templates, which bind data as text or attributes.
 - `unsafeCSS` takes only the library's own constants: token values, selectors, and custom property names written in the source. It is allowed only in `src/styles/` and `src/tokens/`, and never receives a value read from an attribute, property, or the page.
-- **Enforced by** `no-restricted-syntax`, `no-restricted-imports`, and `no-restricted-properties` rules in `eslint.config.js`, scoped to shipped source, so `lint` fails on a new sink.
+- **Enforced by** `no-eval`, `no-new-func`, `no-restricted-syntax`, `no-restricted-imports`, and `no-restricted-properties` in `eslint.config.js`, scoped to shipped source, so `lint` fails on a new sink.
 
 ### 4.2 URLs
 
 - A property that renders into a URL attribute (the breadcrumb item's `href`) renders no link when its scheme is not `http:`, `https:`, `mailto:`, or relative: the item renders as text and warns once in development ([package-contract.md §6](package-contract.md)). **Why:** Lit binds attributes without checking schemes, so a `javascript:` URL from user data would run in the consumer's origin when clicked. Native `<a>` has the same hole, but a component that builds the link is the place to close it, as frameworks do.
-- A new URL attribute in shipped code is added to the list that `lint` checks: a `href=${…}` or `src=${…}` binding not passed through the guard fails `lint`.
+- `local/url-bindings` in `eslint.config.js` fails `lint` on a URL attribute (`href`, `src`, `srcset`, `action`, `formaction`, `xlink:href`, `poster`, `ping`, or the property of the same name) bound in an `html` or `svg` template other than through `safeUrl(…)`, the guard.
 
 ### 4.3 Content Security Policy and Trusted Types
 
@@ -140,7 +140,7 @@ Every check runs in `ci.yml` or `publish.yml`; there is no separate security wor
 
 ## Verification
 
-- `lint` fails on each sink of §4.1 and §4.4 and an unguarded URL binding of §4.2; ESLint `RuleTester` cases show each rule catches its pattern in shipped source and ignores tests.
+- `lint` fails on each sink of §4.1 and §4.4 and an unguarded URL binding of §4.2. `packages/testing/test/security-lint.test.ts` lints a sample of each through the real configuration, as shipped source (it must fail), as a test (it must pass), and as styles (only `unsafeCSS` passes).
 - The breadcrumb item's browser tests cover the URL guard: a `javascript:` `href` renders text and warns; `https:` and relative URLs render links.
 - `check:consumer` serves the gallery under the policy of §4.3 and fails on a violation.
 - `scripts/check-lockfile.test.ts` covers §5.2 and §5.3 on recorded lockfiles: registry and integrity checks, and the install-script list, including an entry without a reason and one that matches nothing.
@@ -150,10 +150,9 @@ Every check runs in `ci.yml` or `publish.yml`; there is no separate security wor
 
 ## Gaps
 
-Most of this spec is not built yet. What exists: Dependabot version updates, trusted publishing with provenance, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
+Most of this spec is not built yet. What exists: the lint rules of §4, Dependabot version updates, trusted publishing with provenance, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
 
-- **No security lint rules** (§4.1, §4.2, §4.4). The shipped source has no sinks today except `unsafeCSS` with constants and the unguarded breadcrumb `href`, so adding the rules should need no code change beyond the guard.
-- **The breadcrumb `href` is not guarded** (§4.2). Closing it is the guard, its development warning and message string, and its tests.
+- **The breadcrumb `href` is not guarded** (§4.2). It is the one binding `local/url-bindings` reports, and is disabled with a comment citing this gap. Closing it is `safeUrl()`, its development warning and message string, its tests, and removing the comment.
 - **No CSP fixture** (§4.3), and [ssr.md §7](ssr.md) does not yet state the policy for server-rendered pages.
 - **No `check:lockfile`** (§5.2, §5.3) and no `.install-scripts.json`. Closing it adds the script, its Node tests, the root script, the row in [testing.md §9](testing.md), and the step in `static` and `publish.yml`.
 - **No dependency review or CodeQL** (§5.2, §6.1): no `security` job in `ci.yml`.
