@@ -28,6 +28,20 @@ export function contrastRatio(foreground: string, background: string): number {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
+/** CSS `color-mix(in srgb, base, toward share)`, on hex colors. */
+export function mix(base: string, toward: string, share: number): string {
+  const parts = (hex: string) => [1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16));
+  const [a, b] = [parts(base), parts(toward)];
+  return `#${a
+    .map((value, index) => Math.round(value * (1 - share) + (b[index] ?? 0) * share))
+    .map((value) => value.toString(16).padStart(2, '0'))
+    .join('')}`;
+}
+
+// A filled button's text on its fill, and on the fill mixed toward `text` for hover and press.
+const BUTTON_FILLS = ['accent', 'danger', 'success'];
+const BUTTON_STATES = [0.25, 0.45];
+
 const TEXT_SURFACES = ['canvas', 'panel', 'panel-raised', 'panel-inset'];
 const MUTED_TEXT_SURFACES = ['canvas', 'panel', 'panel-inset'];
 const FILLS = ['accent', 'accent-strong', 'warning', 'danger', 'success', 'info'];
@@ -76,6 +90,23 @@ export function evaluateContrast(
     for (const surface of TEXT_SURFACES) check('control-edge', 'control-edge', surface, 3);
     check('accent-text', 'accent-text', 'accent', textRequired);
     check('danger-text', 'danger-text', 'danger', textRequired);
+    check('success-text', 'success-text', 'success', textRequired);
+    for (const fill of BUTTON_FILLS) {
+      for (const share of BUTTON_STATES) {
+        const background = mix(color(fill), color('text'), share);
+        const ratio = contrastRatio(color(`${fill}-text`), background);
+        if (ratio < textRequired) {
+          failures.push({
+            theme: themeName,
+            rule: 'button-state',
+            foreground: `${fill}-text`,
+            background: `${fill} ${share * 100}% toward text`,
+            ratio,
+            required: textRequired,
+          });
+        }
+      }
+    }
     for (const surface of FOCUS_SURFACES) check('focus-outer', 'focus', surface, 3);
     check('focus-pair', 'focus-inner', 'focus', 3);
   }

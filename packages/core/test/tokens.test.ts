@@ -203,6 +203,21 @@ describe('contrast gate', () => {
     assert.ok(failures.some((f) => f.rule === 'text' && f.theme === 'dim'));
   });
 
+  it("fails a theme whose button text is lost on its fill's hover and press", () => {
+    // A fill text that passes on the fill but nears `text` loses contrast as the fill mixes toward it.
+    const drifting = {
+      colorScheme: 'dark',
+      tokens: {
+        ...themes.dark.tokens,
+        'color-success-text': '#ffffff',
+        'color-success': '#2e5a12',
+      },
+    } as const;
+    const failures = evaluateContrast({ drifting });
+    assert.ok(!failures.some((f) => f.rule === 'success-text'), formatFailures(failures));
+    assert.ok(failures.some((f) => f.rule === 'button-state' && f.foreground === 'success-text'));
+  });
+
   it('fails a theme whose control edge is too dim on any surface', () => {
     const base: Record<string, string> = themes.dark.tokens;
     for (const surface of ['canvas', 'panel', 'panel-raised', 'panel-inset']) {
