@@ -139,6 +139,7 @@ A test or gate is trusted only after it has failed against a deliberately broken
 | `test`             | all       | Node and browser suites; split across CI jobs as [ci.md](ci.md) describes                |
 | `check:package`    | all       | Export, side-effect, registration, chunk, `publint`, or `attw` errors                    |
 | `check:size`       | all       | An entry over its limit, or without a reason                                             |
+| `check:audit`      | root      | An advisory, lockfile, or install-script finding ([security.md §5](security.md))         |
 | `check:consumer`   | core      | The consumer fixtures                                                                    |
 | `check:frameworks` | core      | The framework fixtures                                                                   |
 | `test:smoke`       | storybook | A story or page that errors, warns, overflows, or fails a real-input step                |
