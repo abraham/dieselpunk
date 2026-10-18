@@ -14,17 +14,17 @@
 
 ## 2. Layers
 
-| Layer              | Runs under                               | Covers                                                                                                                                                                            |
-| ------------------ | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Logic              | `node --test`, no browser                | Pure modules ([component-model.md §5](component-model.md)), token sources and emitted CSS, the contrast gate, the XLIFF reader and locale rules, the API snapshot, script helpers |
-| Component          | Vitest browser mode, Playwright provider | Each component's behavior, beside its source (`*.test.ts`, `*.registration.test.ts`, `*.reduced-motion.test.ts`)                                                                  |
-| Cross-component    | Vitest browser mode                      | `test/browser/`: gallery suites (§3), forms, focus and modality, performance gates, foundations, strings, readout surface and review                                              |
-| Accessibility tree | Playwright                               | `test/visual/aria.spec.ts`: ARIA snapshots of every family                                                                                                                        |
-| Visual             | Playwright in the pinned image           | `test/visual/matrix.spec.ts` (§6)                                                                                                                                                 |
-| Package            | Node scripts                             | Exports, side effects, tree shaking, `publint`, `attw`, sizes, the API snapshot, strings and locales (§8)                                                                         |
-| Consumer           | Node scripts and Chromium                | Packed tarballs installed into throwaway projects, type-checked and driven (§8)                                                                                                   |
-| Frameworks         | Node scripts and Chromium                | React, Vue, and Svelte fixture apps built and driven (§8)                                                                                                                         |
-| Workbench          | Node script, Vitest, and Chromium        | Every story and docs page, widths, and keyboard flows ([workbench.md §5](workbench.md)); axe over every story ([accessibility.md §13](accessibility.md))                          |
+| Layer              | Runs under                               | Covers                                                                                                                                                                                                                            |
+| ------------------ | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Logic              | `node --test`, no browser                | Pure modules ([component-model.md §5](component-model.md)), token sources and emitted CSS, the contrast gate, the XLIFF reader and locale rules, the API snapshot, script helpers                                                 |
+| Component          | Vitest browser mode, Playwright provider | Each component's behavior, beside its source (`*.test.ts`, `*.registration.test.ts`, `*.reduced-motion.test.ts`)                                                                                                                  |
+| Cross-component    | Vitest browser mode                      | `test/browser/`: gallery suites (§3), forms, focus and modality, performance gates, foundations, strings, readout surface and review                                                                                              |
+| Accessibility tree | Playwright                               | `test/visual/aria.spec.ts`: ARIA snapshots of every family                                                                                                                                                                        |
+| Visual             | Playwright in the pinned image           | `test/visual/matrix.spec.ts` (§6)                                                                                                                                                                                                 |
+| Package            | Node scripts                             | Exports, side effects, tree shaking, `publint`, `attw`, sizes, the API snapshot, strings and locales (§8)                                                                                                                         |
+| Consumer           | Node scripts and Chromium                | Packed tarballs installed into throwaway projects, type-checked and driven (§8)                                                                                                                                                   |
+| Frameworks         | Node scripts and Chromium                | React, Vue, and Svelte fixture apps built and driven (§8)                                                                                                                                                                         |
+| Workbench          | Node script, Vitest, and Chromium        | Every story and docs page, widths, guide content, and the real-input steps of the flows; interaction tests on the compositions ([workbench.md §5](workbench.md)); axe over every story ([accessibility.md §13](accessibility.md)) |
 
 ## 3. The gallery
 
@@ -140,7 +140,8 @@ A test or gate is trusted only after it has failed against a deliberately broken
 | `check:size`       | all       | An entry over its limit, or without a reason                                             |
 | `check:consumer`   | core      | The consumer fixtures                                                                    |
 | `check:frameworks` | core      | The framework fixtures                                                                   |
-| `test:smoke`       | storybook | A story or page that errors, warns, overflows, or fails its flow                         |
+| `test:smoke`       | storybook | A story or page that errors, warns, overflows, or fails a real-input step                |
+| `test:stories`     | storybook | A story that throws, fails its `play` function, or has an accessibility violation        |
 | `test:visual`      | core      | A screenshot that differs from its baseline (CI visual job)                              |
 
 ## 10. The testing package
@@ -179,7 +180,7 @@ A test or gate is trusted only after it has failed against a deliberately broken
 - Tests and what they render: component tests, the `test/browser/` suites, the gallery, `groups.ts` and its checked `parseSelection`, the test locale, the consumer and framework fixture apps and the consumer probe, `aria.spec.ts`, `matrix.spec.ts` and its `at` tags, `playwright.config.ts`, and the baselines.
 - Gate rules that state a package's contract: the contrast rules, the API snapshot, the `check-package` sentinels, the locale and message rules, and string extraction.
 - Helpers that know one package: core's `addStylesheets` (its token CSS), its `readManifest` command, and `receptacle-helpers.ts`.
-- The smoke test's flows.
+- The smoke test's real-input steps and the workbench's interaction stories.
 
 ## Gaps
 

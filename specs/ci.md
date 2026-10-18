@@ -85,9 +85,9 @@ Theme names are read from the token source (`packages/core/src/tokens/themes.ts`
 ### 5.4 Smoke
 
 - Entries are checked through a pool of 4 pages, and a page is ready when Storybook reports it rendered, not after a fixed wait.
-- The scripted flows (the application shell, the examples, the guides) run after the pool, one at a time.
+- The real-input steps and the guide checks run after the pool, one at a time.
 - `PUNK_SMOKE_PART=<n>/<total>` selects a deterministic slice of entries, and the flows run in the first part only. `plan` raises the part count when the entry count passes the budget.
-- `test:stories` runs the same part of the stories with Vitest's `--shard=<n>/<total>` ([accessibility.md §13](accessibility.md)).
+- `test:stories` runs the same part of the stories with Vitest's `--shard=<n>/<total>` ([accessibility.md §13](accessibility.md)), including the interaction stories in that part ([workbench.md §5](workbench.md)).
 
 ## 6. Matrix generation
 

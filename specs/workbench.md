@@ -40,14 +40,27 @@ The workbench is where people build with and review the library, not a marketing
 | Screen reader checklist  | The manual scenarios and combinations of [accessibility.md §14](accessibility.md), and the results table                                                                                              |
 | Asset policy             | What is original, what applications must supply, and the rule against game-derived assets                                                                                                             |
 
-## 5. Smoke test
+## 5. Smoke and interaction tests
 
-`scripts/smoke.ts` loads the built workbench in Chromium and fails on:
+Two runners check the workbench, and each flow runs in one of them, never both.
+
+**Interaction tests** are `play` functions written with `storybook/test` (`userEvent`, `expect`, `waitFor`). `test:stories` runs them together with the accessibility check ([accessibility.md §13](accessibility.md)), and a failure can be stepped through in the Interactions panel. They cover the compositions:
+
+- the Application shell: tabs, the live form, opening the Stop dialog, and the Actions menu;
+- the examples: dashboard updates, pause, and resume without focus moves or announcements; logistics removal, cancel, Undo, filter, and focus targets; interface-settings `lang`, `dir`, and names for every locale.
+
+The rules for them:
+
+- **Compositions only.** A component's own behavior is tested beside its source, in three engines and with real input ([testing.md §2](testing.md)). A component story has a `play` function only to wait for a state its accessibility check needs.
+- **A flow is its own story.** It reuses the render of the story it drives, tagged `!dev` and `!autodocs` so it is tested but not listed, and named `<Story> flow`. **Why:** a `play` function also runs when a reader opens the story, which would leave an example mid-flow, with a dialog open or a row removed.
+- **Synthetic input stays synthetic.** `userEvent` dispatches events from the page; it does not do what the browser does with a real key. A step that depends on that (Escape closing a native `<dialog>` or a popover, Tab moving focus, `:focus-visible`) stays in the smoke test.
+- **Flows that move focus or run timers do not run beside each other.** They run in their own Vitest project without file parallelism, since a story that takes focus in one frame blurs the others.
+
+**The smoke test**, `scripts/smoke.ts`, loads the built workbench in Chromium with Playwright and fails on:
 
 - any story or docs page that throws, or logs a warning or error other than Lit's one-time development notice (so a story that misuses a component fails);
 - sideways scrolling of more than 1px at 375px and 187px for the overviews, the examples, and the responsive-layout stories;
-- the Application shell's keyboard flows: tabs, the live form, the Stop dialog and its focus return, and the Actions menu;
-- the examples' flows: dashboard updates, pause, and resume without focus moves or announcements; logistics removal, cancel, Undo, filter, and focus targets; interface-settings `lang`, `dir`, and names for every locale;
+- the steps that need real input: Escape on the Stop dialog, the Actions menu, and the removal dialog, and where focus returns after each;
 - guide content: each framework guide contains its app's code, the Integration guide contains its import-map page, the Localization table lists every message id, the checklist has its rows and combinations, and the guides with Markdown tables render them as tables.
 
 An entry counts as loaded when Storybook's preview reports it rendered (or failed), and two frames later; entries load 4 at a time, and the flows run after them, one at a time. `PUNK_SMOKE_PART=<n>/<total>` checks one slice of the entries, with the flows in the first part ([ci.md §5.4](ci.md)).
@@ -102,7 +115,7 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 
 ## Verification
 
-- `npm run build` builds the workbench; `test:smoke` runs §5 in CI, and `test:stories` runs the accessibility addon over every story ([accessibility.md §13](accessibility.md)).
+- `npm run build` builds the workbench; `test:smoke` runs the smoke test of §5 in CI, and `test:stories` runs §5's interaction tests and the accessibility addon over every story ([accessibility.md §13](accessibility.md)).
 - Every guide's framework code is the code `check:frameworks` builds, and the Integration guide's import-map page is the page `check:consumer` loads from a fresh install.
 - Foundations data is measured from the built CSS, so it cannot drift from what consumers get.
 - Nothing gates a deploy but a successful build: a commit that fails CI on `main` is still published, and the CI failure is fixed on `main`.
@@ -113,5 +126,6 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 - **Only the pre-1.0 path is built.** `docs.yml` deploys `main` to `/`. The release build into `/`, `main` into `/next/`, and the kept `/v<major>/` folders are added with the first release.
 - **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, or 404 page.
 - **No published-ids file or check** in CI.
+- **The flows are still in the smoke test.** No flow has moved to an interaction test yet. Closing it: add a `<Story> flow` story for the Application shell and each example, move each step that does not need real input into its `play` function, and remove those steps from `smoke.ts`.
 - **The guides are not scanned by axe.** The accessibility addon checks stories, which include the overviews and examples, but not MDX docs pages ([accessibility.md §13](accessibility.md)). Closing it: run axe over every docs page in the smoke test, outside the Storybook chrome.
 - **Manifest descriptions do not link their docs pages.**
