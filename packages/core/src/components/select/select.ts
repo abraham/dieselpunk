@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html, isServer } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { PunkFieldBase } from '../../internal/field-base.ts';
@@ -89,8 +89,9 @@ export class PunkSelect extends PunkFieldBase {
     this.#choose(index);
   }
 
+  // The server has no children (specs/ssr.md §3).
   get #options(): HTMLOptionElement[] {
-    return [...this.querySelectorAll('option')];
+    return isServer ? [] : [...this.querySelectorAll('option')];
   }
 
   #choose(index: number): void {
@@ -154,6 +155,7 @@ export class PunkSelect extends PunkFieldBase {
 
   #entries(): Array<OptionData | GroupData> {
     const entries: Array<OptionData | GroupData> = [];
+    if (isServer) return entries;
     for (const child of this.children) {
       if (child instanceof HTMLOptionElement) entries.push(describe(child));
       else if (child instanceof HTMLOptGroupElement) {

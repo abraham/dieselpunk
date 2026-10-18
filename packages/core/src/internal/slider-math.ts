@@ -123,7 +123,7 @@ export function tickRatios(range: SliderRange): number[] {
 }
 
 /** `value` for people, in the language of the page; an unknown language falls back to the default. */
-export function formatValue(value: number, lang: string): string {
+export function formatValue(value: number, lang: string | undefined): string {
   try {
     return new Intl.NumberFormat(lang || undefined).format(value);
   } catch {

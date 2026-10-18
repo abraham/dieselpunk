@@ -13,6 +13,7 @@ import {
   tickRatios,
   valueFromPointer,
 } from '../../internal/slider-math.ts';
+import { resolveLang } from '../../utilities/locale.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { sliderStyles } from './slider.styles.ts';
 
@@ -158,8 +159,8 @@ export class PunkSlider extends PunkFormControl {
     else if (this.getAttribute(name) !== value) this.setAttribute(name, value);
   }
 
-  get #lang(): string {
-    return this.closest('[lang]')?.getAttribute('lang') ?? document.documentElement.lang;
+  get #lang(): string | undefined {
+    return resolveLang(this);
   }
 
   #syncHost(): void {

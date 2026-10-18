@@ -99,8 +99,7 @@ import '@dieselpunk/core/button/register.js';
 
 ## Gaps
 
-- **Seven tags throw on the server.** `punk-breadcrumb`, `punk-steps`, `punk-slot-grid`, and `punk-select` read `this.children`; `punk-combobox` calls `querySelectorAll`; `punk-slider` and `punk-range-slider` call `closest` to find a language. Every other tag renders, and every entry imports. Closing it: the server values of §3 in those render paths.
 - **An open popover or tooltip paints unplaced.** With `open`, their surface carries the `open` class, whose `display: block` shows it on the server without the top layer or a position. Closing it: show the surface on `:popover-open`, which only the browser can match.
 - **The upgrade does not replace.** `PunkElement` has no handling for an existing shadow root. With Lit's hydration support loaded, components hydrate, with the results of §1; without it, Lit renders a second shadow tree after the server's. Focus and values from before the upgrade are not carried over. Closing it: §4 in `PunkElement`.
 - **No fixture and no guide.** `check:consumer` has no SSR fixture, and the Integration guide does not describe server rendering.
-- **No hydration.** §5 is the follow-up to §4 and is built after it: it needs §3's server values in every render path (the first gap) and the replacement path for pages without the support.
+- **No hydration.** §5 is the follow-up to §4 and is built after it: it needs the replacement path for pages without the support.
