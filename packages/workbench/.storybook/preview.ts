@@ -14,6 +14,7 @@ import { getStorybookHelpers, setStorybookHelpersConfig } from '@wc-toolkit/stor
 import { html } from 'lit';
 import manifest from '@dieselpunk/core/custom-elements.json' with { type: 'json' };
 import { axeConfig } from '../src/lib/a11y.ts';
+import { getLocale, locales, setLocale } from '../src/lib/localization.ts';
 import { densities, themes } from '../src/lib/options.ts';
 
 setCustomElementsManifest(manifest as Parameters<typeof setCustomElementsManifest>[0]);
@@ -26,7 +27,7 @@ const docs = { extractArgTypes: (tag: string) => getStorybookHelpers(tag).argTyp
 export default definePreview({
   addons: [addonDocs(), addonA11y()],
   tags: ['autodocs'],
-  initialGlobals: { theme: 'dark', density: 'compact' },
+  initialGlobals: { theme: 'dark', density: 'compact', locale: 'en' },
   globalTypes: {
     theme: {
       description: 'Theme (data-punk-theme)',
@@ -46,6 +47,21 @@ export default definePreview({
         items: densities.map(({ value, title }) => ({ value, title })),
       },
     },
+    locale: {
+      description: 'Language (setLocale, with lang and dir on the page)',
+      toolbar: {
+        title: 'Language',
+        icon: 'globe',
+        dynamicTitle: true,
+        items: locales.map(({ code, name }) => ({ value: code, title: name })),
+      },
+    },
+  },
+  // The language is the page's, so every render applies the toolbar's, and one a story chose
+  // (Interface settings) does not carry over to the next.
+  beforeEach: async ({ globals }) => {
+    const locale = String(globals['locale']);
+    if (getLocale() !== locale) await setLocale(locale);
   },
   decorators: [
     // Attributes on the stage, not <html>, so each story is themed independently and the

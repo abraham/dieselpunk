@@ -253,6 +253,30 @@ async function checkLogistics(): Promise<void> {
   await page.close();
 }
 
+// The Language toolbar's locale is in place before a story renders: lang, dir, and the words.
+async function checkLanguageToolbar(): Promise<void> {
+  const id = 'examples-interface-settings--interface-settings';
+  const page = await openStory(`${id}&globals=locale:ar`, 1100, 1000);
+  const shown = await page.evaluate(`(() => {
+    const row = document.querySelector('punk-connection-row');
+    return {
+      lang: document.documentElement.lang,
+      dir: document.documentElement.dir,
+      readout: document.querySelector('[data-readout]')?.textContent,
+      chosen: document.querySelector('punk-select')?.value,
+      name: row?.shadowRoot?.querySelector('[part="remove-button"]')?.getAttribute('aria-label'),
+    };
+  })()`);
+  const { lang, dir, readout, chosen, name } = shown as Record<string, string | undefined>;
+  const problems: string[] = [];
+  if (lang !== 'ar' || dir !== 'rtl') problems.push(`the page is lang=${lang} dir=${dir}`);
+  if (!readout?.includes('lang="ar"')) problems.push(`the readout shows ${readout}`);
+  if (chosen !== 'ar') problems.push(`the language select shows ${chosen}`);
+  if (!name || name.startsWith('Remove connection')) problems.push(`the button is named "${name}"`);
+  if (problems.length > 0) failures.push(`${id} in Arabic: ${problems.join(' | ')}`);
+  await page.close();
+}
+
 // The Localization guide lists every message of the XLIFF, with its English and description.
 async function checkScreenReaderChecklist(): Promise<void> {
   const page = await openDocs('guides-screen-reader-checklist--docs');
@@ -314,6 +338,7 @@ try {
     await checkApplicationShell();
     await checkExamples();
     await checkLogistics();
+    await checkLanguageToolbar();
     await checkLocalizationGuide();
     await checkScreenReaderChecklist();
     await checkFrameworkGuides();

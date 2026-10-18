@@ -10,7 +10,7 @@ import '@dieselpunk/core/select/register.js';
 import '@dieselpunk/core/slot/register.js';
 import '@dieselpunk/core/window/register.js';
 import { item } from '../icons/items.ts';
-import { locales, setLocale } from '../lib/localization.ts';
+import { getLocale, locales, setLocale } from '../lib/localization.ts';
 import { densities, paletteThemes } from '../lib/options.ts';
 
 const meta = preview.meta({
@@ -33,9 +33,6 @@ export const InterfaceSettings = meta.story({
     host.style.maxInlineSize = '760px';
     let theme = 'dark';
     let density = 'compact';
-    // The workbench page is one page: start each showing in English, so a language chosen earlier
-    // does not carry over.
-    void setLocale('en');
 
     const readout = () => {
       const root = document.documentElement;
@@ -55,7 +52,7 @@ export const InterfaceSettings = meta.story({
             <punk-select label="Language" @change=${onLanguage}>
               ${locales.map(
                 (locale) =>
-                  html`<option value=${locale.code} ?selected=${locale.code === 'en'}>
+                  html`<option value=${locale.code} ?selected=${locale.code === getLocale()}>
                     ${locale.name}
                   </option>`,
               )}
