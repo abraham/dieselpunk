@@ -16,6 +16,7 @@ import manifest from '@dieselpunk/core/custom-elements.json' with { type: 'json'
 import { axeConfig } from '../src/lib/a11y.ts';
 import { getLocale, locales, setLocale } from '../src/lib/localization.ts';
 import { densities, themes } from '../src/lib/options.ts';
+import { reflowWidths } from '../src/lib/viewports.ts';
 
 setCustomElementsManifest(manifest as Parameters<typeof setCustomElementsManifest>[0]);
 setStorybookHelpersConfig({ hideArgRef: true });
@@ -80,6 +81,25 @@ export default definePreview({
     layout: 'fullscreen',
     controls: { expanded: true },
     backgrounds: { disable: true },
+    viewport: {
+      options: {
+        ...Object.fromEntries(
+          reflowWidths.map((width, index) => [
+            `reflow-${width}`,
+            {
+              name: index === 0 ? `${width}px` : `${width}px (${reflowWidths[0]}px at 200%)`,
+              styles: { width: `${width}px`, height: `${width * 2}px` },
+              type: 'mobile',
+            },
+          ]),
+        ),
+        wide: {
+          name: '1024px (visual tests)',
+          styles: { width: '1024px', height: '768px' },
+          type: 'desktop',
+        },
+      },
+    },
     docs,
     // specs/accessibility.md §13. The addon's default rules stop at WCAG 2.1.
     a11y: {

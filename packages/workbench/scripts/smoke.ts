@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import type { Page } from 'playwright';
 import { serveStatic } from '@dieselpunk/testing/server';
+import { reflowWidths } from '../src/lib/viewports.ts';
 
 // Loads every story and docs page in the built workbench and fails on a render error or on any
 // console warning or error. Run after `npm run build`. See specs/workbench.md §5.
@@ -159,7 +160,7 @@ async function checkResponsiveExamples(): Promise<void> {
     .map((entry) => entry.id);
   if (ids.length === 0) failures.push('the Responsive layouts examples are missing');
   for (const id of ids) {
-    for (const width of [375, 187]) {
+    for (const width of reflowWidths) {
       const page = await openStory(id, width);
       const extra = Number(
         await page.evaluate(
@@ -213,7 +214,7 @@ async function checkExamples(): Promise<void> {
   if (examples.length !== 3) failures.push(`expected 3 examples, found ${examples.length}`);
   // The two overview stories are the first screen, and are held to the same widths.
   for (const id of [...examples, ...stories('overview--')]) {
-    for (const width of [375, 187]) {
+    for (const width of reflowWidths) {
       const page = await openStory(id, width, 900);
       const extra = Number(
         await page.evaluate(
