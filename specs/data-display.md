@@ -1,7 +1,7 @@
 # Data Display
 
-**Scope:** components that present data and status in the flow of a page: the table, the alert, the badge, and the spinner.
-**Code:** `src/components/table/`, `alert/`, `badge/`, `spinner/`; `src/styles/status-shape.ts`, `close-button.ts`, `visually-hidden.ts`.
+**Scope:** components that present data and status in the flow of a page: the table, the alert, the badge, the spinner, the keyboard key, the description list, and the tag.
+**Code:** `src/components/table/`, `alert/`, `badge/`, `spinner/`, `kbd/`, `description-list/`, `tag/`; `src/styles/status-shape.ts`, `close-button.ts`, `visually-hidden.ts`.
 
 ## 1. Table
 
@@ -40,14 +40,48 @@
 - It turns while shown, and stands still under reduced motion. It is one of the two animations allowed to run continuously ([performance.md §3](performance.md)).
 - For a busy button the button's own `loading` is used instead ([layout-and-actions.md §4](layout-and-actions.md)).
 
+## 5. Keyboard key
+
+`punk-kbd`: one keyboard key, drawn as a keycap, with the default slot for its name.
+
+- A native `<kbd>` in the shadow tree holds the slot. The host has no role, and its text joins the name of the element that holds it ("Save Ctrl + S").
+- **A shortcut is markup.** It is several keys with the application's own text between them (`+`, "then"), so it reads in order and is translated with the page. **Why** not a `keys` property: the separator and the key names are language, and the library's own strings are only its chrome ([localization.md](localization.md)).
+- **Key names are the application's text.** The docs ask for words a screen reader can say ("Up arrow") where a symbol alone would be skipped or read as punctuation.
+- The cap is the raised surface with a deeper bottom edge, and `text` in the mono face, so a key differs from a badge without color. Under forced colors the edges become a `CanvasText` border, still deeper at the bottom.
+- A long name wraps rather than overflow its container.
+- **Warning:** no text.
+
+## 6. Description list
+
+`punk-description-list`: label and value pairs for details and specification sheets. The application writes native `<dt>` and `<dd>` elements as its children.
+
+- **Semantics.** The shadow tree is a `<dl>` around one slot, so the terms and values are a description list in the flat tree and keep their `term` and `definition` roles. **Why** not a light-DOM `<dl>` like the table's `<table>`: its `<dt>` and `<dd>` could then be styled only by a second stylesheet outside the shadow roots, and the table's is the only one ([component-model.md §7](component-model.md)). `::slotted()` reaches the pairs because they are direct children.
+- **Layout.** A two-column grid: each term at the start, its values beside it on the same text baseline. A term may have several values, each on its own row in the value column, and several terms may share the values that follow them. The term column is at most 40% of the width.
+- **Narrow.** Below 320px of its own width (a container query on the host) each term sits above its values.
+- Terms are `text-muted` and values `text`, in tabular figures so numbers line up. Long words break rather than overflow.
+- **Warnings:** a child that is not a `<dt>` or a `<dd>`; a first child that is a `<dd>`.
+
+## 7. Tag
+
+`punk-tag`: a chip for a filter, a chosen value, or a label. `removable`, `remove-label`, `disabled`, `value`, with the default slot for its text.
+
+- Its text on a `panel-inset` plate in `text`, as the badge's. The host has no role, and the text is read where it stands.
+- **Removal.** `removable` adds the shared native close button at the inline end, named by `remove-label` or the localized "Remove" and the tag's text ("Remove Copper"). The text is read when the tag connects and on `slotchange`, never in a render. The button sends `punk-remove` with `{ value, item }`, the connection row's event, and cannot be canceled. The tag does not remove itself: the application removes it and moves focus, since the focused button goes with it; the docs show focus moving to the next tag.
+- `disabled` disables the button and leaves the text as readable as it was.
+- The button is smaller than the window's to sit in the plate, and keeps the 40px target for a coarse pointer. A long text wraps; the button stays inside the container.
+- **Warning:** no text.
+
 ## Verification
 
 - `table.test.ts`: the native table and its name, the adopted styles and their zero specificity, the region only while overflowing, sorting by click and from script, `aria-sort` restoration, the direction shapes under forced colors, selection by row and select-all, `values`, and the warnings.
 - `alert.test.ts`: shapes under forced colors, roles with `announce` and their restoration, optional heading and actions, the localized dismiss button, cancelable dismissal.
 - `badge.test.ts`: shapes and their absence for `neutral`, contrast of text and shapes in every theme, the name of the holding element, wrapping, and the warning.
 - `spinner.test.ts` and `spinner.reduced-motion.test.ts`: the status text and its locale, slotted text, sizes, the ring stopping under reduced motion.
+- `kbd.test.ts`: the native `<kbd>`, no role, a shortcut in the name of its button, the mono face and deeper edge, text contrast on the cap in every theme, forced colors, wrapping, and the warning.
+- `description-list.test.ts`: the shadow `<dl>` and its slotted pairs, the term and definition roles, terms beside values and further values below, right to left, terms above values when narrow, long words at 187px, the colors and tabular figures in every theme, and both warnings.
+- `tag.test.ts`: no role and no button unless removable, the button's name from the text, `remove-label`, and the locale, `punk-remove` by click, Enter, and Space and not from the text, `disabled`, the button's side in both directions, contrast in every theme, forced colors, wrapping, and the warning.
 - The `data` gallery group: axe, reflow, manifest, strings, and the visual matrix.
-- `aria.spec.ts`: a sorted table with a selected row, an announcing alert, a badge in a button, and a spinner, in the three engines.
+- `aria.spec.ts`: a sorted table with a selected row, an announcing alert, a badge in a button, a spinner, keys in a button and in a paragraph, a description list, and tags with and without a remove button, in the three engines.
 
 ## Gaps
 

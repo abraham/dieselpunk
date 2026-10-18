@@ -25,14 +25,14 @@
     "path": "dist/ja.js",
     "ignore": ["@lit/localize"],
     "gzip": true,
-    "limit": "1 kB"
+    "limit": "1.1 kB"
   },
   {
     "name": "ar",
     "path": "dist/ar.js",
     "ignore": ["@lit/localize"],
     "gzip": true,
-    "limit": "1 kB"
+    "limit": "1.1 kB"
   },
   {
     "name": "loader",

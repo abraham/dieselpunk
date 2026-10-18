@@ -46,6 +46,17 @@ import '../../../src/components/spinner/register.ts';
 import '../../../src/components/drawer/register.ts';
 import '../../../src/components/breadcrumb/register.ts';
 import '../../../src/components/pagination/register.ts';
+import '../../../src/components/kbd/register.ts';
+import '../../../src/components/description-list/register.ts';
+import '../../../src/components/tag/register.ts';
+import '../../../src/components/steps/register.ts';
+import '../../../src/components/date-field/register.ts';
+import '../../../src/components/time-field/register.ts';
+import '../../../src/components/file-field/register.ts';
+import '../../../src/components/splitter/register.ts';
+import '../../../src/components/range-slider/register.ts';
+import '../../../src/components/menubar/register.ts';
+import '../../../src/components/tree/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -631,6 +642,18 @@ const builders: Record<ComponentName, Builder> = {
     `;
   },
 
+  splitter: (c) => {
+    const pane = (slot: string, text: string) =>
+      `<div slot="${slot}" style="padding: 8px; overflow-wrap: anywhere">${text}</div>`;
+    return `
+      <div class="stack" style="max-inline-size: 480px">
+        <punk-splitter style="block-size: 80px">${pane('start', c.title || c.body)}${pane('end', c.footer || c.body)}</punk-splitter>
+        <punk-splitter value="30" label="${c.settings}" style="block-size: 80px">${pane('start', c.start)}${pane('end', c.body)}</punk-splitter>
+        <punk-splitter orientation="vertical" value="40" style="block-size: 160px">${pane('start', c.start)}${pane('end', c.stop)}</punk-splitter>
+      </div>
+    `;
+  },
+
   checkbox: (c) => `
     <div class="stack">
       <punk-checkbox>${c.start}</punk-checkbox>
@@ -665,6 +688,14 @@ const builders: Record<ComponentName, Builder> = {
       <punk-slider aria-label="${c.settings}" value="60"></punk-slider>
       <punk-slider label="${c.start}" value="0.3" min="0" max="1" step="0.1" show-value ticks></punk-slider>
       <punk-slider label="${c.pause}" value="30" show-value disabled></punk-slider>
+    </div>
+  `,
+
+  'range-slider': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-range-slider label="${c.settings}" low="20" high="70" show-value></punk-range-slider>
+      <punk-range-slider aria-label="${c.settings}" low="40" high="40"></punk-range-slider>
+      <punk-range-slider label="${c.stop}" low="1500" high="4500" max="5000" step="100" show-value disabled></punk-range-slider>
     </div>
   `,
 
@@ -705,6 +736,26 @@ const builders: Record<ComponentName, Builder> = {
       <punk-select label="${c.settings}" disabled><option value="a">${c.start}</option></punk-select>
       <punk-select label="${c.settings}" required data-touched><option value="">${c.divider}</option><option value="a">${c.start}</option><span slot="hint">${c.footer}</span></punk-select>
       <punk-select aria-label="${c.settings}"><option value="a">${c.start}</option><option value="b">${c.pause}</option></punk-select>
+    </div>
+  `,
+
+  'date-field': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-date-field label="${c.settings}"></punk-date-field>
+      <punk-date-field label="${c.settings}" value="2025-03-14"><span slot="hint">${c.footer}</span></punk-date-field>
+      <punk-date-field label="${c.settings}" value="2025-03-14" readonly></punk-date-field>
+      <punk-date-field label="${c.settings}" value="2025-03-14" disabled></punk-date-field>
+      <punk-date-field label="${c.settings}" required data-touched><span slot="hint">${c.footer}</span></punk-date-field>
+      <punk-date-field aria-label="${c.settings}" value="2025-03-14" min="2025-04-01" data-touched><span slot="prefix">${plus}</span></punk-date-field>
+    </div>
+  `,
+
+  'time-field': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-time-field label="${c.settings}"></punk-time-field>
+      <punk-time-field label="${c.settings}" value="06:30"><span slot="suffix">UTC</span></punk-time-field>
+      <punk-time-field label="${c.settings}" value="06:30:15" step="1" disabled></punk-time-field>
+      <punk-time-field label="${c.settings}" required data-touched><span slot="hint">${c.footer}</span></punk-time-field>
     </div>
   `,
 
@@ -839,6 +890,16 @@ const builders: Record<ComponentName, Builder> = {
     </div>
   `,
 
+  // Markup cannot choose files, so the list of chosen files is in the component's own tests.
+  'file-field': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-file-field label="${c.settings}"><span slot="hint">${c.footer}</span></punk-file-field>
+      <punk-file-field label="${c.settings}" drop-zone multiple></punk-file-field>
+      <punk-file-field label="${c.settings}" drop-zone disabled></punk-file-field>
+      <punk-file-field aria-label="${c.settings}" required data-touched></punk-file-field>
+    </div>
+  `,
+
   'toggle-group': (c) => `
     <div class="stack">
       <punk-toggle-group aria-label="${c.settings}">
@@ -916,6 +977,71 @@ const builders: Record<ComponentName, Builder> = {
       <punk-pagination page="10" pages="20"></punk-pagination>
       <punk-pagination page="20" pages="20" siblings="2"></punk-pagination>
       <punk-pagination page="1" pages="1"></punk-pagination>
+    </div>
+  `,
+
+  steps: (c) => {
+    const items = [c.start, c.settings, c.recipe || c.makes, c.stop]
+      .map((text) => `<punk-step>${text}</punk-step>`)
+      .join('');
+    return `
+      <div class="stack">
+        <punk-steps current="2">${items}</punk-steps>
+        <punk-steps current="0" label="${c.title || c.settings}">${items}</punk-steps>
+        <punk-steps current="5">${items}</punk-steps>
+      </div>
+    `;
+  },
+
+  // A step outside its steps has no number, no connector, and no state but upcoming.
+  step: (c) => `
+    <div class="stack">
+      <div role="list" class="row">
+        <punk-step>${c.start}</punk-step>
+        <punk-step>${c.stop}</punk-step>
+      </div>
+      <punk-steps current="2"><punk-step>${c.start}</punk-step><punk-step>${c.stop}</punk-step></punk-steps>
+    </div>
+  `,
+
+  // Closed: a menu is in the top layer, so menus are open only in `overlays`.
+  menubar: (c) => `
+    <punk-menubar aria-label="${c.settings}">
+      <punk-menu-item>${c.start}</punk-menu-item>
+      <punk-menu><punk-menu-item value="a">${c.pause}</punk-menu-item></punk-menu>
+      <punk-menu-item>${c.settings}</punk-menu-item>
+      <punk-menu><punk-menu-item value="b">${c.stop}</punk-menu-item></punk-menu>
+      <punk-menu-item disabled>${c.stop}</punk-menu-item>
+      <punk-menu><punk-menu-item value="c">${c.stop}</punk-menu-item></punk-menu>
+    </punk-menubar>
+  `,
+
+  tree: (c) => {
+    const nodes = (selected: string) => `
+      <punk-tree-item label="${c.title || c.settings}" value="a" expanded>
+        <span slot="icon">${gear}</span>
+        <punk-tree-item label="${c.start}" value="b"${selected}></punk-tree-item>
+        <punk-tree-item label="${c.pause}" value="c" disabled></punk-tree-item>
+        <punk-tree-item label="${c.body}" value="d" expanded>
+          <punk-tree-item label="${c.stop}" value="e"></punk-tree-item>
+        </punk-tree-item>
+      </punk-tree-item>
+      <punk-tree-item label="${c.settings}" value="f">
+        <punk-tree-item label="${c.stop}" value="g"></punk-tree-item>
+      </punk-tree-item>`;
+    return `
+      <div class="stack" style="max-inline-size: 360px">
+        <punk-tree aria-label="${c.settings}">${nodes('')}</punk-tree>
+        <punk-tree aria-label="${c.settings}" selection="multiple">${nodes(' selected')}</punk-tree>
+      </div>
+    `;
+  },
+
+  // An item outside a tree still draws its row; its children show while it is expanded.
+  'tree-item': (c) => `
+    <div role="tree" aria-label="${c.settings}" class="stack" style="max-inline-size: 360px">
+      <punk-tree-item label="${c.start}" expanded><span slot="icon">${gear}</span><punk-tree-item label="${c.pause}" selected></punk-tree-item></punk-tree-item>
+      <punk-tree-item label="${c.stop}" disabled></punk-tree-item>
     </div>
   `,
 
@@ -1024,6 +1150,41 @@ const builders: Record<ComponentName, Builder> = {
       <punk-spinner>${c.progress || c.body}</punk-spinner>
     </div>
   `,
+
+  kbd: (c) => `
+    <div class="stack">
+      <div class="row"><punk-kbd>Ctrl</punk-kbd> + <punk-kbd>S</punk-kbd> <punk-kbd>Esc</punk-kbd> <punk-kbd>↑</punk-kbd></div>
+      <p style="margin: 0; overflow-wrap: anywhere">${c.body} <punk-kbd>${c.start}</punk-kbd></p>
+      <punk-button>${c.settings} <punk-kbd>F2</punk-kbd></punk-button>
+    </div>
+  `,
+
+  'description-list': (c) => {
+    const list = `
+      <punk-description-list>
+        <dt>${c.makes}</dt><dd>${c.needs}</dd>
+        <dt>${c.settings}</dt><dd>0.75</dd><dd>1,240 /min</dd>
+        <dt>${c.statuses[2]}</dt><dd>${c.body}</dd>
+      </punk-description-list>`;
+    return `
+      <div class="stack">
+        <div style="max-inline-size: 480px">${list}</div>
+        <div style="max-inline-size: 240px">${list}</div>
+      </div>
+    `;
+  },
+
+  tag: (c) => {
+    const [idle, , running] = c.statuses;
+    return `
+      <div class="row">
+        <punk-tag>${idle}</punk-tag>
+        <punk-tag removable value="a">${running}</punk-tag>
+        <punk-tag removable value="b">${c.item || c.makes}</punk-tag>
+        <punk-tag removable disabled value="c">${c.recipe || c.needs}</punk-tag>
+      </div>
+    `;
+  },
 };
 
 /** HTML for one component's states. */

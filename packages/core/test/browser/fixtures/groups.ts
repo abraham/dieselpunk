@@ -8,11 +8,31 @@ export const galleryGroups = {
   foundation: ['panel', 'divider', 'button', 'icon-button', 'progress-bar', 'tooltip'],
   inventory: ['slot', 'item-stack', 'slot-grid', 'recipe', 'meter', 'status-light'],
   production: ['production-stat', 'connection-row'],
-  shell: ['stack', 'cluster', 'accordion', 'accordion-item', 'tabs', 'tab', 'toolbar', 'window'],
+  shell: [
+    'stack',
+    'cluster',
+    'accordion',
+    'accordion-item',
+    'tabs',
+    'tab',
+    'toolbar',
+    'window',
+    'splitter',
+  ],
   // Every form control in every state, in flow: no top layer, so one page holds them all.
-  forms: ['checkbox', 'switch', 'slider', 'text-field', 'number-field', 'select'],
+  forms: [
+    'checkbox',
+    'switch',
+    'slider',
+    'range-slider',
+    'text-field',
+    'number-field',
+    'select',
+    'date-field',
+    'time-field',
+  ],
   // The form controls that group or choose, in flow like the first six.
-  inputs: ['radio-group', 'radio', 'textarea', 'combobox', 'fieldset'],
+  inputs: ['radio-group', 'radio', 'textarea', 'combobox', 'fieldset', 'file-field'],
   // Navigation and selection in flow; a menu is in the top layer, so it is open only in `overlays`.
   navigation: [
     'toggle-group',
@@ -21,10 +41,15 @@ export const galleryGroups = {
     'breadcrumb',
     'breadcrumb-item',
     'pagination',
+    'steps',
+    'step',
+    'menubar',
+    'tree',
+    'tree-item',
     'menu-item',
   ],
   // Readouts of data and status that sit in the page.
-  data: ['table', 'alert', 'badge', 'spinner'],
+  data: ['table', 'alert', 'badge', 'spinner', 'kbd', 'description-list', 'tag'],
   // Overlays open on a page of their own, since the top layer covers everything else.
   overlays: ['dialog', 'window', 'popover', 'toast-stack', 'drawer', 'menu'],
 } as const;

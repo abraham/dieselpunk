@@ -30,6 +30,14 @@ const german = {
     previousPage: 'Vorherige Seite',
     nextPage: 'Nächste Seite',
     pageNumber: str`Seite ${0}`,
+    removeTag: str`${0} entfernen`,
+    steps: 'Schritte',
+    stepComplete: 'abgeschlossen',
+    stepUpcoming: 'nicht begonnen',
+    dropFiles: 'oder Dateien hier ablegen',
+    resizePanes: 'Größe ändern',
+    rangeMinimum: 'Minimum',
+    rangeMaximum: 'Maximum',
   },
 };
 

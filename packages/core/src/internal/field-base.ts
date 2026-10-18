@@ -57,7 +57,7 @@ export abstract class PunkFieldBase extends PunkFormControl {
 
   protected override validate(): Validation | null {
     const control = this.control;
-    if (!control || control.validity.valid) return null;
+    if (!control || control.validity.valid || !control.willValidate) return null;
     const v = control.validity;
     return {
       flags: {

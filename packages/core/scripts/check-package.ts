@@ -41,7 +41,7 @@ const sentinels: Record<string, string> = {
   'slot-grid': '--punk-slot-gap',
   recipe: 'can craft ',
   'production-stat': '--punk-stat-value-min',
-  'connection-row': '"punk-remove"',
+  'connection-row': 'removeConnection',
   meter: '--punk-meter-length',
   'status-light': 'The text carries the meaning',
   stack: '--punk-stack-gap',
@@ -73,9 +73,23 @@ const sentinels: Record<string, string> = {
   drawer: 'punk-drawer-in',
   breadcrumb: '"punk-breadcrumb-item"',
   pagination: 'punk-page-change',
+  kbd: '"punk-kbd"',
+  'description-list': '"punk-description-list"',
+  tag: '"punk-tag"',
+  steps: 'stepUpcoming',
+  'date-field': '"punk-date-field"',
+  'time-field': '"punk-time-field"',
+  'file-field': 'dropFiles',
+  splitter: 'punk-split-change',
+  'range-slider': 'rangeMinimum',
+  menubar: 'role="menubar"',
+  tree: '"punk-tree-item"',
 };
 // Components whose register entry must also bring these, and no others.
-const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };
+const dependencies: Record<string, string[]> = {
+  'icon-button': ['tooltip'],
+  menubar: ['menu'],
+};
 
 for (const component of components) {
   if (!sentinels[component]) fail(`No tree-shaking sentinel is defined for "${component}"`);

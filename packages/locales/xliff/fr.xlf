@@ -162,6 +162,46 @@
   <target>Pagination</target>
   <note from="lit-localize">The name of the landmark around the buttons that move between pages of results.</note>
 </trans-unit>
+<trans-unit id="removeTag">
+  <source>Remove <x id="0" equiv-text="${label}"/></source>
+  <target>Retirer <x id="0" equiv-text="${label}"/></target>
+  <note from="lit-localize">The name of the button that removes a tag, with the tag's text.</note>
+</trans-unit>
+<trans-unit id="stepComplete">
+  <source>completed</source>
+  <target>terminée</target>
+  <note from="lit-localize">Said after the text of a completed step.</note>
+</trans-unit>
+<trans-unit id="stepUpcoming">
+  <source>not started</source>
+  <target>non commencée</target>
+  <note from="lit-localize">Said after the text of a step that has not been reached.</note>
+</trans-unit>
+<trans-unit id="steps">
+  <source>Steps</source>
+  <target>Étapes</target>
+  <note from="lit-localize">The name of a list of the steps of a task.</note>
+</trans-unit>
+<trans-unit id="dropFiles">
+  <source>or drop files here</source>
+  <target>ou déposez des fichiers ici</target>
+  <note from="lit-localize">Shown beside the button of a file field that also takes files dropped on it.</note>
+</trans-unit>
+<trans-unit id="resizePanes">
+  <source>Resize</source>
+  <target>Redimensionner</target>
+  <note from="lit-localize">The name of the divider between two panes that the user can move.</note>
+</trans-unit>
+<trans-unit id="rangeMaximum">
+  <source>Maximum</source>
+  <target>Maximum</target>
+  <note from="lit-localize">The name of the thumb that sets the high end of a range.</note>
+</trans-unit>
+<trans-unit id="rangeMinimum">
+  <source>Minimum</source>
+  <target>Minimum</target>
+  <note from="lit-localize">The name of the thumb that sets the low end of a range.</note>
+</trans-unit>
 </body>
 </file>
 </xliff>

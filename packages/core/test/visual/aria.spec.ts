@@ -271,6 +271,24 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
+  test('range slider', { tag: at('forms') }, async ({ page }) => {
+    await render(page, '<punk-range-slider label="Price" low="20" high="80"></punk-range-slider>');
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - group "Price":
+        - text: Price
+        - slider "Minimum"
+        - slider "Maximum"
+    `);
+    const low = page.getByRole('slider', { name: 'Minimum' });
+    await low.focus();
+    await page.keyboard.press('End');
+    await expect(low).toHaveAttribute('aria-valuenow', '80');
+    await expect(page.getByRole('slider', { name: 'Maximum' })).toHaveAttribute(
+      'aria-valuemin',
+      '80',
+    );
+  });
+
   test('text, number, and select fields', { tag: at('forms') }, async ({ page }) => {
     await render(
       page,
@@ -298,6 +316,39 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
       'Three letters',
     );
     await expect(page.getByRole('textbox', { name: 'Callsign' })).toHaveValue('Echo');
+  });
+
+  // The engines expose a date or time input differently, so the names and values are asked of
+  // the inputs found by label rather than written out as one tree.
+  test('date and time fields', { tag: at('forms') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-date-field label="Delivery" value="2025-03-14"><span slot="hint">Weekdays only</span></punk-date-field>
+       <punk-time-field label="Shift start" value="06:30" disabled></punk-time-field>`,
+    );
+    const date = page.getByLabel('Delivery', { exact: true });
+    await expect(date).toHaveAttribute('type', 'date');
+    await expect(date).toHaveValue('2025-03-14');
+    await expect(date).toHaveAccessibleDescription('Weekdays only');
+    const time = page.getByLabel('Shift start', { exact: true });
+    await expect(time).toHaveAttribute('type', 'time');
+    await expect(time).toHaveValue('06:30');
+    await expect(time).toBeDisabled();
+  });
+
+  test('file field', { tag: at('inputs') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-file-field label="Plans" drop-zone multiple><span slot="hint">PDF only</span></punk-file-field>`,
+    );
+    const input = page.getByLabel('Plans', { exact: true });
+    await expect(input).toHaveAttribute('type', 'file');
+    await expect(input).toHaveAccessibleDescription('PDF only');
+    await expect(page.getByText('or drop files here')).toBeVisible();
+    await input.setInputFiles([
+      { name: 'plan.pdf', mimeType: 'application/pdf', buffer: Buffer.from('x'.repeat(1540)) },
+    ]);
+    await expect(page.getByRole('listitem')).toHaveText(/plan\.pdf\s+1\.5 kB/);
   });
 
   test(
@@ -383,6 +434,26 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
         - option "Copper plate" [selected]
         - option "Steel plate" [disabled]
     `);
+  });
+
+  test('splitter', { tag: at('shell') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-splitter value="30" label="Map width" style="block-size: 120px">
+         <div slot="start">Map</div>
+         <div slot="end">Details</div>
+       </punk-splitter>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - text: Map
+      - separator "Map width"
+      - text: Details
+    `);
+    const bar = page.getByRole('separator', { name: 'Map width' });
+    await expect(bar).toHaveAttribute('aria-valuenow', '30');
+    await bar.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(bar).toHaveAttribute('aria-valuenow', '35');
   });
 
   test('fieldset', { tag: at('inputs') }, async ({ page }) => {
@@ -506,6 +577,58 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
   });
 
   test(
+    'tree, with one parent open and an item selected',
+    { tag: at('navigation') },
+    async ({ page }) => {
+      await render(
+        page,
+        `<punk-tree aria-label="Recipes" selection="single">
+         <punk-tree-item label="Smelting" value="smelting" expanded>
+           <punk-tree-item label="Iron" value="iron" selected></punk-tree-item>
+           <punk-tree-item label="Copper" value="copper" disabled></punk-tree-item>
+         </punk-tree-item>
+         <punk-tree-item label="Assembly" value="assembly">
+           <punk-tree-item label="Gears" value="gears"></punk-tree-item>
+         </punk-tree-item>
+       </punk-tree>`,
+      );
+      await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - tree "Recipes":
+        - treeitem "Smelting" [expanded] [level=1]:
+          - group:
+            - treeitem "Iron" [level=2] [selected]
+            - treeitem "Copper" [disabled] [level=2]
+        - treeitem "Assembly" [level=1]
+    `);
+      await page.getByRole('treeitem', { name: 'Assembly' }).focus();
+      await page.keyboard.press('ArrowRight');
+      await expect(page.getByRole('treeitem', { name: 'Assembly' })).toHaveAttribute(
+        'aria-expanded',
+        'true',
+      );
+      await expect(page.getByRole('treeitem', { name: 'Gears' })).toBeVisible();
+    },
+  );
+
+  test('steps', { tag: at('navigation') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-steps current="2" label="Setup">
+         <punk-step>Drivers</punk-step>
+         <punk-step>Network</punk-step>
+         <punk-step>Account</punk-step>
+       </punk-steps>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - list "Setup":
+        - listitem: Drivers completed
+        - listitem: Network
+        - listitem: Account not started
+    `);
+    await expect(page.getByRole('listitem').nth(1)).toHaveAttribute('aria-current', 'step');
+  });
+
+  test(
     'menu, open, with checkable items and a submenu',
     { tag: at('overlays') },
     async ({ page }) => {
@@ -536,6 +659,33 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
     },
   );
+
+  test('menubar, with one menu open', { tag: at('overlays') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-menubar aria-label="Application">
+         <punk-menu-item>File</punk-menu-item>
+         <punk-menu><punk-menu-item value="new">New</punk-menu-item></punk-menu>
+         <punk-menu-item>Edit</punk-menu-item>
+         <punk-menu><punk-menu-item value="undo">Undo</punk-menu-item></punk-menu>
+       </punk-menubar>`,
+    );
+    await page.getByRole('menuitem', { name: 'Edit' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - menubar "Application":
+        - menuitem "File"
+        - menuitem "Edit" [expanded]
+        - menu:
+          - menuitem "Undo"
+    `);
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.getByRole('menuitem', { name: 'New' })).toBeFocused();
+    await expect(page.getByRole('menuitem', { name: 'File' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+  });
 
   test('drawer, open', { tag: at('overlays') }, async ({ page }) => {
     await render(
@@ -601,14 +751,16 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     );
   });
 
-  test('alert, badge, and spinner', { tag: at('data') }, async ({ page }) => {
+  test('alert, badge, spinner, and kbd', { tag: at('data') }, async ({ page }) => {
     await render(
       page,
       `<punk-alert variant="warning" heading="Belt blocked" dismissible>Clear it.</punk-alert>
        <punk-alert variant="danger" announce>Reactor offline</punk-alert>
        <punk-button>Alerts <punk-badge variant="warning">3</punk-badge></punk-button>
        <punk-spinner></punk-spinner>
-       <punk-spinner>Loading recipes</punk-spinner>`,
+       <punk-spinner>Loading recipes</punk-spinner>
+       <punk-button>Save <punk-kbd>Ctrl</punk-kbd> + <punk-kbd>S</punk-kbd></punk-button>
+       <p>Press <punk-kbd>Esc</punk-kbd> to close.</p>`,
     );
     await expect(page.locator('#case')).toMatchAriaSnapshot(`
       - text: Belt blocked Clear it.
@@ -617,6 +769,40 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
       - button "Alerts 3"
       - status: Loading
       - status: Loading recipes
+      - button "Save Ctrl + S"
+      - paragraph: Press Esc to close.
+    `);
+  });
+
+  test('description list', { tag: at('data') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-description-list>
+         <dt>Speed</dt><dd>0.75</dd>
+         <dt>Output</dt><dd>1,240 /min</dd><dd>80 MW</dd>
+       </punk-description-list>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - term: Speed
+      - definition: "0.75"
+      - term: Output
+      - definition: 1,240 /min
+      - definition: 80 MW
+    `);
+  });
+
+  test('tag', { tag: at('data') }, async ({ page }) => {
+    await render(
+      page,
+      `<punk-tag>Idle</punk-tag>
+       <punk-tag removable value="cu">Copper</punk-tag>
+       <punk-tag removable disabled>Tin</punk-tag>`,
+    );
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - text: Idle Copper
+      - button "Remove Copper"
+      - text: Tin
+      - button "Remove Tin" [disabled]
     `);
   });
 

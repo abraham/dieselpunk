@@ -79,20 +79,21 @@ import '@dieselpunk/core/slot-grid/register.js'; // defines punk-slot-grid
 - Native `input` and `change` are real `Event`s, with `input` composed. A control that wraps a native input dispatches `change` again on its host, since the native one does not cross the shadow boundary.
 - Every custom event is declared on `HTMLElementEventMap`, and its detail type is exported from the root, so `addEventListener` is typed with no cast.
 
-| Event                              | Detail                     | Sent by                                        | Cancelable |
-| ---------------------------------- | -------------------------- | ---------------------------------------------- | ---------- |
-| `punk-activate`                    | `{ value, item }`          | slot, item stack, recipe, list item, menu item | no         |
-| `punk-selection-change`            | `{ values, items }`        | slot grid, toggle group, list, table           | no         |
-| `punk-tab-change`                  | `{ value, tab, panel }`    | tabs                                           | no         |
-| `punk-toggle`                      | `{ expanded }`             | accordion item                                 | no         |
-| `punk-overflow-change`             | `{ hidden }`               | toolbar                                        | no         |
-| `punk-open`                        | none                       | window, dialog, popover, drawer, menu          | no         |
-| `punk-close`                       | `{ reason, returnValue? }` | window, dialog, popover, drawer, menu          | no         |
-| `punk-move-start`, `punk-move-end` | `{ x, y }`                 | window                                         | no         |
-| `punk-dismiss`                     | `{ reason }`               | toast, alert                                   | yes        |
-| `punk-remove`                      | `{ value, item }`          | connection row                                 | no         |
-| `punk-sort-change`                 | `{ key, direction }`       | table                                          | no         |
-| `punk-page-change`                 | `{ page }`                 | pagination                                     | no         |
+| Event                              | Detail                     | Sent by                                                   | Cancelable |
+| ---------------------------------- | -------------------------- | --------------------------------------------------------- | ---------- |
+| `punk-activate`                    | `{ value, item }`          | slot, item stack, recipe, list item, menu item, tree item | no         |
+| `punk-selection-change`            | `{ values, items }`        | slot grid, toggle group, list, table, tree                | no         |
+| `punk-tab-change`                  | `{ value, tab, panel }`    | tabs                                                      | no         |
+| `punk-toggle`                      | `{ expanded }`             | accordion item, tree item                                 | no         |
+| `punk-overflow-change`             | `{ hidden }`               | toolbar                                                   | no         |
+| `punk-open`                        | none                       | window, dialog, popover, drawer, menu                     | no         |
+| `punk-close`                       | `{ reason, returnValue? }` | window, dialog, popover, drawer, menu                     | no         |
+| `punk-move-start`, `punk-move-end` | `{ x, y }`                 | window                                                    | no         |
+| `punk-dismiss`                     | `{ reason }`               | toast, alert                                              | yes        |
+| `punk-remove`                      | `{ value, item }`          | connection row, tag                                       | no         |
+| `punk-sort-change`                 | `{ key, direction }`       | table                                                     | no         |
+| `punk-page-change`                 | `{ page }`                 | pagination                                                | no         |
+| `punk-split-change`                | `{ value }`                | splitter                                                  | no         |
 
 Open and close events report every change of `open`, whoever made it, because an overlay's visibility is state the application must track; the `reason` says who. A cancelable event exists only where an application may need to take over the action (a framework that owns the toast removes it itself; an application that keeps an alert in its own state).
 

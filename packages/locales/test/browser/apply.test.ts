@@ -6,6 +6,7 @@ import { cleanup, track } from '@dieselpunk/testing/browser';
 // This suite renders core's gallery, which is core's own (specs/testing.md Gaps).
 /* eslint-disable local/workspace-imports */
 import { addStylesheets } from '../../../core/test/browser/helpers.ts';
+import { scanForViolations, seriousViolations } from '../../../core/test/browser/axe.ts';
 import {
   buildGallery,
   galleryCss,
@@ -227,13 +228,8 @@ describe.each(targetLocales)('the components in %s', (code) => {
       await setLocale(code);
       const { frame } = mountGallery(variant);
       await settle(frame);
-      const results = await axe.run(frame, {
-        resultTypes: ['violations'],
-        rules: { region: { enabled: false } },
-      });
-      const found = results.violations.filter((violation) =>
-        ['serious', 'critical'].includes(violation.impact ?? ''),
-      );
+      const results = await scanForViolations(frame);
+      const found = seriousViolations(results);
       expect(found, describeViolations(found)).toEqual([]);
 
       const page = await axe.run(root, {

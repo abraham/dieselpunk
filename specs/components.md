@@ -17,16 +17,17 @@ A planned component is built only after its section exists in its family spec, w
 
 ## 2. Implemented
 
-50 tags in 43 registration entries.
+63 tags in 54 registration entries.
 
 ### 2.1 Layout and surfaces
 
-| Tag            | Purpose                                                                                 | Status      | Spec                                              |
-| -------------- | --------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------- |
-| `punk-panel`   | A structural metal surface (raised, inset, flat) with optional header and footer strips | Implemented | [layout-and-actions.md §1](layout-and-actions.md) |
-| `punk-divider` | An etched separator, horizontal or vertical, with an optional label                     | Implemented | [layout-and-actions.md §2](layout-and-actions.md) |
-| `punk-stack`   | A vertical layout primitive with token-based gaps                                       | Implemented | [layout-and-actions.md §3](layout-and-actions.md) |
-| `punk-cluster` | A wrapping horizontal layout primitive with token-based gaps                            | Implemented | [layout-and-actions.md §3](layout-and-actions.md) |
+| Tag             | Purpose                                                                                 | Status      | Spec                                               |
+| --------------- | --------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------- |
+| `punk-panel`    | A structural metal surface (raised, inset, flat) with optional header and footer strips | Implemented | [layout-and-actions.md §1](layout-and-actions.md)  |
+| `punk-divider`  | An etched separator, horizontal or vertical, with an optional label                     | Implemented | [layout-and-actions.md §2](layout-and-actions.md)  |
+| `punk-stack`    | A vertical layout primitive with token-based gaps                                       | Implemented | [layout-and-actions.md §3](layout-and-actions.md)  |
+| `punk-cluster`  | A wrapping horizontal layout primitive with token-based gaps                            | Implemented | [layout-and-actions.md §3](layout-and-actions.md)  |
+| `punk-splitter` | Two panes with a draggable, keyboard-operable divider                                   | Implemented | [layout-and-actions.md §10](layout-and-actions.md) |
 
 ### 2.2 Actions
 
@@ -45,8 +46,11 @@ A planned component is built only after its section exists in its family spec, w
 | `punk-menu`, `punk-menu-item`             | A menu of commands, checkable items, and radio items, with separators and submenus; also a context menu | Implemented | [keyboard-and-selection.md §10](keyboard-and-selection.md) |
 | `punk-toggle-group`                       | A set of pressed-state buttons, single or multiple: view modes, alignment, filters                      | Implemented | [keyboard-and-selection.md §11](keyboard-and-selection.md) |
 | `punk-list`, `punk-list-item`             | A one-column list of rich rows, optionally selectable: file lists, queues, search results               | Implemented | [keyboard-and-selection.md §12](keyboard-and-selection.md) |
+| `punk-menubar`                            | A persistent row of menus at the top of an application window                                           | Implemented | [keyboard-and-selection.md §13](keyboard-and-selection.md) |
+| `punk-tree`, `punk-tree-item`             | Hierarchical navigation and selection: file trees, tech trees, category browsers                        | Implemented | [keyboard-and-selection.md §14](keyboard-and-selection.md) |
 | `punk-breadcrumb`, `punk-breadcrumb-item` | The path to the current page or folder, collapsing its middle on request                                | Implemented | [layout-and-actions.md §7](layout-and-actions.md)          |
 | `punk-pagination`                         | Moving through pages of a long result set                                                               | Implemented | [layout-and-actions.md §8](layout-and-actions.md)          |
+| `punk-steps`, `punk-step`                 | Progress through a multi-step task, such as a setup wizard                                              | Implemented | [layout-and-actions.md §9](layout-and-actions.md)          |
 
 ### 2.4 Inventory
 
@@ -69,12 +73,15 @@ A planned component is built only after its section exists in its family spec, w
 
 ### 2.6 Data display
 
-| Tag            | Purpose                                                                                                      | Status      | Spec                                  |
-| -------------- | ------------------------------------------------------------------------------------------------------------ | ----------- | ------------------------------------- |
-| `punk-table`   | Tabular data in a native table, with sortable headers, row selection, a sticky header, and its own scrolling | Implemented | [data-display.md §1](data-display.md) |
-| `punk-alert`   | A persistent inline message (info, success, warning, danger) with optional heading, actions, and dismissal   | Implemented | [data-display.md §2](data-display.md) |
-| `punk-badge`   | A small count or status label attached to a tab, button, or row                                              | Implemented | [data-display.md §3](data-display.md) |
-| `punk-spinner` | A standalone loading indicator for regions, not buttons                                                      | Implemented | [data-display.md §4](data-display.md) |
+| Tag                     | Purpose                                                                                                      | Status      | Spec                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------ | ----------- | ------------------------------------- |
+| `punk-table`            | Tabular data in a native table, with sortable headers, row selection, a sticky header, and its own scrolling | Implemented | [data-display.md §1](data-display.md) |
+| `punk-alert`            | A persistent inline message (info, success, warning, danger) with optional heading, actions, and dismissal   | Implemented | [data-display.md §2](data-display.md) |
+| `punk-badge`            | A small count or status label attached to a tab, button, or row                                              | Implemented | [data-display.md §3](data-display.md) |
+| `punk-spinner`          | A standalone loading indicator for regions, not buttons                                                      | Implemented | [data-display.md §4](data-display.md) |
+| `punk-kbd`              | A keyboard key, shown as a keycap; a shortcut is several in a row                                            | Implemented | [data-display.md §5](data-display.md) |
+| `punk-description-list` | Label and value pairs for details and specification sheets                                                   | Implemented | [data-display.md §6](data-display.md) |
+| `punk-tag`              | A chip for a filter, a chosen value, or a label, optionally removable                                        | Implemented | [data-display.md §7](data-display.md) |
 
 ### 2.7 Overlays and feedback
 
@@ -94,6 +101,7 @@ A planned component is built only after its section exists in its family spec, w
 | `punk-checkbox`                  | A boolean or mixed choice that submits with a form                                           | Implemented | [forms.md §6](forms.md)  |
 | `punk-switch`                    | An on/off setting that takes effect at once and submits with a form                          | Implemented | [forms.md §6](forms.md)  |
 | `punk-slider`                    | A value chosen from a continuous or stepped range                                            | Implemented | [forms.md §7](forms.md)  |
+| `punk-range-slider`              | A low and a high value chosen on one track                                                   | Implemented | [forms.md §18](forms.md) |
 | `punk-text-field`                | Single-line text input with label, hint, affixes, and validation                             | Implemented | [forms.md §9](forms.md)  |
 | `punk-number-field`              | Numeric input with bounds, step, and pointer steppers                                        | Implemented | [forms.md §10](forms.md) |
 | `punk-select`                    | A single choice from a short native list                                                     | Implemented | [forms.md §11](forms.md) |
@@ -101,6 +109,9 @@ A planned component is built only after its section exists in its family spec, w
 | `punk-textarea`                  | Multiline text, with an optional count and growth                                            | Implemented | [forms.md §13](forms.md) |
 | `punk-combobox`                  | A searchable choice from a long list, optionally free text                                   | Implemented | [forms.md §14](forms.md) |
 | `punk-fieldset`                  | A titled group of controls with a shared description, error summary, and group-level disable | Implemented | [forms.md §15](forms.md) |
+| `punk-date-field`                | A date, with the platform's picker                                                           | Implemented | [forms.md §16](forms.md) |
+| `punk-time-field`                | A time of day, with the platform's picker                                                    | Implemented | [forms.md §16](forms.md) |
+| `punk-file-field`                | Choosing files, with an optional drop zone and a list of the chosen files                    | Implemented | [forms.md §17](forms.md) |
 
 ## 3. Planned (P1)
 
@@ -108,18 +119,11 @@ None: every component that general-purpose use needs is implemented. The part of
 
 ## 4. Planned (P2)
 
-| Tag(s)                               | Purpose                                                                          | Basis                                                                                       | Spec                                                   |
-| ------------------------------------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `punk-tree`, `punk-tree-item`        | Hierarchical navigation and selection: file trees, tech trees, category browsers | APG tree view; `SelectionModel`; roving focus with expand and collapse keys                 | [keyboard-and-selection.md](keyboard-and-selection.md) |
-| `punk-menubar`                       | A persistent row of menus at the top of an application window                    | APG menubar, built from `punk-menu`                                                         | [keyboard-and-selection.md](keyboard-and-selection.md) |
-| `punk-splitter`                      | Two panes with a draggable, keyboard-operable divider                            | APG window splitter (`separator` with a value); pointer capture with a keyboard alternative | [layout-and-actions.md](layout-and-actions.md)         |
-| `punk-steps`                         | Progress through a multi-step task, such as a setup wizard                       | An ordered list with `aria-current="step"` and a word for each state                        | [layout-and-actions.md](layout-and-actions.md)         |
-| `punk-date-field`, `punk-time-field` | Date and time entry                                                              | Native `<input type="date">` and `"time"` on `PunkFieldBase`; the picker is the platform's  | [forms.md](forms.md)                                   |
-| `punk-file-field`                    | Choosing files, with an optional drop zone and a list of the chosen files        | Native `<input type="file">`; drop is an enhancement, never the only way                    | [forms.md](forms.md)                                   |
-| `punk-range-slider`                  | A low and high value chosen on one track                                         | Two `slider` thumbs on the slider's math and pointer model; submits two values              | [forms.md](forms.md)                                   |
-| `punk-tag`                           | A removable chip for a filter, a selected value, or a label                      | Text and a native remove button named with the tag's text, as the connection row's          | [data-display.md](data-display.md)                     |
-| `punk-description-list`              | Label and value pairs for details and specification sheets                       | Native `<dl>` semantics; values in tabular figures; label above value when narrow           | [data-display.md](data-display.md)                     |
-| `punk-kbd`                           | A keyboard key or shortcut, shown as a keycap                                    | Native `<kbd>`; the key names are the application's text                                    | [data-display.md](data-display.md)                     |     | Data modes of the slot grid, list, table, and tree | Collections of thousands of items with only the visible ones in the DOM | `@lit-labs/virtualizer`, as a peer dependency of an optional package, not core; `items` and `renderItem`, `aria-setsize` and `aria-posinset`, selection by value, roving focus by index | [performance.md §4.1](performance.md) |
+Every P2 component is implemented (§2). What remains is not a component of core: data modes for the containers, in an optional package.
+
+| Tag(s)                                             | Purpose                                                                 | Basis                                                                                                                                                                                   | Spec                                  |
+| -------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Data modes of the slot grid, list, table, and tree | Collections of thousands of items with only the visible ones in the DOM | `@lit-labs/virtualizer`, as a peer dependency of an optional package, not core; `items` and `renderItem`, `aria-setsize` and `aria-posinset`, selection by value, roving focus by index | [performance.md §4.1](performance.md) |
 
 ## 5. Not planned
 
@@ -137,4 +141,4 @@ Capabilities of existing components that are deferred, not new components: a ver
 
 ## Gaps
 
-- **No P2 component has its spec section yet.**
+- **The data modes of §4 have no spec section yet.** They are an optional package around `@lit-labs/virtualizer`, so they need its own spec, package, and gates before any code ([performance.md §4.1](performance.md)).

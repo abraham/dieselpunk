@@ -2,8 +2,8 @@
   "de": "Within the 1 kB budget of specs/performance.md §2 for a locale module.",
   "fr": "Within the 1 kB budget of specs/performance.md §2 for a locale module.",
   "es": "Within the 1 kB budget of specs/performance.md §2 for a locale module.",
-  "ja": "Within the 1 kB budget of specs/performance.md §2 for a locale module.",
-  "ar": "Within the 1 kB budget of specs/performance.md §2 for a locale module.",
+  "ja": "Over 1 kB: a locale module is one table of every component's messages, which Lit Localize loads whole, and Japanese text is multi-byte UTF-8 that compresses less than the Latin packs.",
+  "ar": "Over 1 kB: a locale module is one table of every component's messages, which Lit Localize loads whole, and Arabic text is multi-byte UTF-8 that compresses less than the Latin packs.",
   "loader": "Within the 1 kB budget of specs/performance.md §2 for the loader, `mergeLocaleModules`, and the metadata; the five languages are left out by name.",
   "document": "Within the 0.5 kB budget of specs/performance.md §2 for `bindDocumentLocale`."
 }

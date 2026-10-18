@@ -1,7 +1,7 @@
 # Forms
 
-**Scope:** how controls take part in native forms: association, values and defaults, validation and messages, names and labels, and events; and the ten form controls and the fieldset.
-**Code:** `src/internal/form-control.ts`, `toggle-base.ts`, `field-base.ts`, `fieldset.ts`, `slider-math.ts`; `src/styles/field.ts`; `src/components/checkbox/`, `switch/`, `slider/`, `text-field/`, `number-field/`, `select/`, `radio-group/`, `textarea/`, `combobox/`, `fieldset/`.
+**Scope:** how controls take part in native forms: association, values and defaults, validation and messages, names and labels, and events; and the fourteen form controls and the fieldset.
+**Code:** `src/internal/form-control.ts`, `toggle-base.ts`, `field-base.ts`, `date-time-field.ts`, `fieldset.ts`, `slider-math.ts`; `src/styles/field.ts`, `date-time-field.ts`; `src/components/checkbox/`, `switch/`, `slider/`, `text-field/`, `number-field/`, `select/`, `radio-group/`, `textarea/`, `combobox/`, `fieldset/`, `date-field/`, `time-field/`, `file-field/`, `range-slider/`.
 
 ## 1. Form association
 
@@ -21,7 +21,7 @@ Subclasses implement `formValue()`, `validate()`, `resetToDefault()`, and `resto
 
 As in native controls, **the attribute is the default and the property is the live value.**
 
-- `checked` (checkbox, switch) and `value` (slider, text field, number field, select) do not reflect. The attribute holds what the author wrote, and `form.reset()` restores it.
+- `checked` (checkbox, switch) and `value` (slider, text field, number field, select, date and time fields) do not reflect. The attribute holds what the author wrote, and `form.reset()` restores it.
 - A select's default is its options' `selected` attributes, not the host's `value` attribute, which only sets the first choice.
 - A control styles itself from state classes in its shadow tree, not from `:host([checked])`, since the attribute is not the state.
 
@@ -152,20 +152,50 @@ A native `<select>` filled with copies of the host's light-DOM `<option>` and `<
 - **Look.** An etched frame with the legend set into its top edge.
 - **Warning:** no legend.
 
+## 16. Date and time fields
+
+`punk-date-field` and `punk-time-field` are fields ([§8](#8-field-base)) around a native `<input type="date">` and `<input type="time">`, on one base, `PunkDateTimeFieldBase` (`internal/date-time-field.ts`): `value`, `min`, `max`, `step`, `readonly`, and `autocomplete`, with the `prefix`, `suffix`, and `hint` slots.
+
+- **The picker is the platform's.** How the value is shown and typed, the calendar or clock that opens, and a 12- or 24-hour display are the engine's, in the browser's language. **Why:** they are accessible in every engine, and a calendar grid of the library's own is a large accessibility surface ([components.md §5](components.md)).
+- **Values** are the input's formats, whatever the display: `YYYY-MM-DD` for a date, `HH:MM` or `HH:MM:SS` for a time. Before each render a detached input of the same type parses an assigned value: one it cannot parse is cleared and warns once, and one it normalizes is taken as normalized, so the field never disagrees with its input. `step` is in days for a date and seconds for a time; below 60 a time takes seconds.
+- **Form and validity** as the text field: `value` under `name`, the `value` attribute as the reset default, and `valueMissing`, `rangeUnderflow`, `rangeOverflow`, `stepMismatch`, and `badInput` (a value the user left incomplete) from the input.
+- **Look.** The field's frame. Chromium's picker button is an image in a fixed color, so it is redrawn as a mask filled with the text color (a calendar or a clock), and with `ButtonText` under forced colors. The other engines draw their own, which follows the theme's `color-scheme`.
+
+## 17. File field
+
+`punk-file-field` is a field ([§8](#8-field-base)) around a native `<input type="file">`: `accept`, `multiple`, `drop-zone`, and the read-only `files`, with the `hint` slot and no affixes.
+
+- **Choosing.** The input's own button opens the platform's chooser, so the keyboard and every pointer can always choose. Its text and "No file chosen" are the browser's; the button is drawn raised through `::file-selector-button`.
+- **The list.** The chosen files' names and sizes, as a list below the input inside the box. Sizes are in the largest unit that keeps them at 1 or more, formatted for the nearest `lang` (`file-kinds.ts`, pure).
+- **Drop zone.** With `drop-zone` the box is taller and dashed, says the localized "or drop files here", and turns solid `accent` while files are dragged over it. A drop takes the files `accept` names (extensions, MIME types, or `type/*`), only the first unless `multiple`, into the input through a `DataTransfer`, and sends `input` and `change` as a choice does. A drop it takes nothing from is still stopped, so the browser does not open the file in place of the page. It is an enhancement, never the only way ([accessibility.md](accessibility.md)). A disabled field takes no drops.
+- **Form.** Each chosen file is submitted under `name` (a `File`, or a `FormData` for several), and nothing when none is chosen or there is no name. **Why** nothing rather than the empty file a native input submits: a form-associated element has no way to submit an entry with an empty filename that servers read as "no file". A reset clears the choice; the browser keeps no files across navigation, so there is no state to restore. `required` with no file is `valueMissing`.
+- The field base reads validity only while the control is being validated, since a disabled file input still reports `valueMissing` with no message.
+
+## 18. Range slider
+
+`punk-range-slider` is a form control with two thumbs on one track: `low` and `high`, `min`, `max`, `step`, `show-value`, and `label`.
+
+- **Semantics.** The thumbs are two `role="slider"` elements in the shadow tree, in a `group` named by `label` (rendered above it) or the host's `aria-label`. Each is named by the localized "Minimum" or "Maximum", with `aria-valuenow`, `aria-valuetext` (the number formatted for the nearest `lang`), and a range that ends at the other thumb, so neither can pass the other. The host is not a tab stop; it delegates focus, and `focus()` reaches the low thumb. While disabled, the group and both thumbs are `aria-disabled` and the thumbs leave the tab order. **Why** two sliders and not one control with two values: each end is set and announced on its own, which is the APG multi-thumb slider.
+- **Values** are the slider's arithmetic (`slider-math.ts`): inside the range and on a step, with the same repair and warning. `low` defaults to `min` and `high` to the last step; a value from code past the other end is held at it.
+- **Keys** are the slider's for the focused thumb, in both directions. **Pointer:** a press on the track moves the nearer thumb there and focuses it (two thumbs at one value part toward the press, and at the top the low one moves) and a drag follows the pointer, reading the track once. `input` while a value changes; `change` when a key press or a drag ends with a change.
+- **Form.** It submits `low` and then `high` under `name`, as two entries, and nothing without a name. The `low` and `high` attributes are the defaults a reset restores, and a kept state restores both.
+- **Look.** The slider's trough and thumbs, with the `accent` fill between the thumbs.
+- **Warning:** no name.
+
 ## Verification
 
 - Node: `slider-math.test.ts`.
 - `test/browser/forms.test.ts`, for every control in all three engines (the radio group, textarea, and combobox included): `FormData` under the name when enabled and named and nothing otherwise, the `form` attribute, a disabled fieldset, reset to the authored default in both directions, state restore, `labels` and label clicks, the name fallback, `required` and each native constraint, `setCustomValidity`, `reportValidity()` focusing the control, and a blocked `requestSubmit`. **Slider parity:** every arrow, Home, and End against a native range with the same range, step, and direction.
 - `toggle-base.test.ts`, `field-base.test.ts`, `form-control.test.ts`, and each control's tests: roles and states, keys, events once per user change, steppers and their repeat, the select's observer, messages and their timing, `aria-invalid` and descriptions, contrast of boundaries and placeholders read from the render.
-- `radio-group.test.ts`: the tab stop, arrows in both directions skipping disabled radios without wrapping, Space and click, values from code before their radio, group disabling, release of a radio that leaves. `textarea.test.ts`: rows and their repair, the count and its description, `autogrow`. `combobox.test.ts`: filtering, keys, choosing by click without losing focus, Escape absorbed, settling on leave, `allow-custom`, `filter="none"` with changing options, listeners only while open. `fieldset.test.ts`: the named and described group, disabling native and form-associated controls and giving back exactly those, the legend exception, added and removed children.
+- `radio-group.test.ts`: the tab stop, arrows in both directions skipping disabled radios without wrapping, Space and click, values from code before their radio, group disabling, release of a radio that leaves. `textarea.test.ts`: rows and their repair, the count and its description, `autogrow`. `combobox.test.ts`: filtering, keys, choosing by click without losing focus, Escape absorbed, settling on leave, `allow-custom`, `filter="none"` with changing options, listeners only while open. `fieldset.test.ts`: the named and described group, disabling native and form-associated controls and giving back exactly those, the legend exception, added and removed children. `date-field.test.ts` and `time-field.test.ts`: the native type and name, the value both ways, attributes passed through, events, values cleared with a warning, range validity and its message, seconds, the picker rules, and 187px. `file-field.test.ts`: the native input and its attributes, the list and its sizes by language, events, `FormData` for one and several files and without a name, reset, `required` and `reportValidity()`, a disabled fieldset, the drop zone's words and locale, dragging, `accept` and `multiple` on drop, no drop without `drop-zone` or while disabled, and 187px. Node: `file-kinds.test.ts`. `range-slider.test.ts`: the group and the named thumbs, their ranges, formatting and locale, the name fallback and warning, snapping and ordering, the repair, keys stopping at the other thumb in both directions, focus and the disabled state, presses on the track and their ties, a drag that cannot pass, `FormData`, reset and restore, the fill, and forced colors.
 - `check:frameworks`: each fixture binds a text field, switch, and slider and submits the form ([workbench.md §4](workbench.md)).
 
 ## Gaps
 
-- **The combobox chooses one value.** The catalog's multiple-value combobox (chips for the chosen values) is not built. Closing it: a `multiple` mode that submits each value under `name`, with `punk-tag` for the chosen values once it exists ([components.md §4](components.md)).
+- **The combobox chooses one value.** The catalog's multiple-value combobox (chips for the chosen values) is not built. Closing it: a `multiple` mode that submits each value under `name`, with `punk-tag` for the chosen values ([data-display.md §7](data-display.md)).
 - **The textarea does not grow in engines without `field-sizing`.** Closing it waits for the engines, or a measurement on `input` that the performance rules would have to allow.
 
 Platform limits, documented in the Forms guide and not closable inside the library:
 
-- autofill and password managers in shadow roots, the unthemed select list, number parsing by engine and locale, `SubmitEvent.submitter` for `punk-button`, and native validation messages in the browser's language;
+- autofill and password managers in shadow roots, the unthemed select list, number parsing by engine and locale, date and time display in the browser's language, `SubmitEvent.submitter` for `punk-button`, and native validation messages in the browser's language;
 - WebKit's native range does not swap Left and Right in right-to-left text, though it draws the range reversed. The slider swaps them, as Chromium and Firefox do, so the parity test omits those two keys in WebKit and says why.

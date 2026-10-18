@@ -1,8 +1,8 @@
-import axe from 'axe-core';
-import type { AxeResults, Result } from 'axe-core';
+import type { Result } from 'axe-core';
 import { commands, server } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { addStylesheets, cleanup, focusWithKeyboard, track } from './helpers.ts';
+import { scanForViolations, seriousViolations } from './axe.ts';
 import './commands.ts';
 import { buildGallery, contentVariants, galleryCss, openTooltips } from './fixtures/gallery.ts';
 import type { ComponentName, ContentVariant } from './fixtures/gallery.ts';
@@ -57,18 +57,8 @@ function describeViolations(violations: Result[]): string {
     .join('\n');
 }
 
-async function scan(root: HTMLElement): Promise<AxeResults> {
-  return axe.run(root, {
-    resultTypes: ['violations'],
-    // `region` asks that page content sit in landmarks, which is the page's job, not a component's.
-    rules: { region: { enabled: false } },
-  });
-}
-
-const serious = (results: AxeResults): Result[] =>
-  results.violations.filter((violation) =>
-    ['serious', 'critical'].includes(violation.impact ?? ''),
-  );
+const scan = scanForViolations;
+const serious = seriousViolations;
 
 describe.each(galleryCombinations)('axe: $theme, $density', ({ theme, density }) => {
   it.each(contentVariants)(

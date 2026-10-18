@@ -11,6 +11,8 @@ import '../../src/components/radio-group/register.ts';
 import '../../src/components/combobox/register.ts';
 import '../../src/components/number-field/register.ts';
 import '../../src/components/select/register.ts';
+import '../../src/components/date-field/register.ts';
+import '../../src/components/time-field/register.ts';
 import type { PunkFormControl } from '../../src/internal/form-control.ts';
 import type { PunkSlider } from '../../src/components/slider/index.ts';
 
@@ -139,6 +141,38 @@ const controls: Control[] = [
       base: 'label="Callsign"',
       attributes: 'value="Echo"',
       change: (element) => typeInto(element, 'Hotel'),
+    },
+    labelClick: 'focus',
+  },
+  {
+    tag: 'punk-date-field',
+    base: 'label="Delivery"',
+    content: '',
+    change: (element) => typeInto(element, '2025-06-01'),
+    submittedDefault: '',
+    submittedChanged: '2025-06-01',
+    required: 'required',
+    restore: ['2025-01-02', '2025-01-02'],
+    authored: {
+      base: 'label="Delivery"',
+      attributes: 'value="2025-03-14"',
+      change: (element) => typeInto(element, '2025-04-15'),
+    },
+    labelClick: 'focus',
+  },
+  {
+    tag: 'punk-time-field',
+    base: 'label="Shift start"',
+    content: '',
+    change: (element) => typeInto(element, '22:15'),
+    submittedDefault: '',
+    submittedChanged: '22:15',
+    required: 'required',
+    restore: ['07:00', '07:00'],
+    authored: {
+      base: 'label="Shift start"',
+      attributes: 'value="06:30"',
+      change: (element) => typeInto(element, '08:45'),
     },
     labelClick: 'focus',
   },

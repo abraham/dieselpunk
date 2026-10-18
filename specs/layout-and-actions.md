@@ -1,7 +1,7 @@
 # Layout and Actions
 
-**Scope:** the structural surfaces and layout primitives (panel, divider, stack, cluster), the buttons (the shared button base, button, icon button), and the page navigation (breadcrumb, pagination).
-**Code:** `src/components/panel/`, `divider/`, `stack/`, `cluster/`, `button/`, `icon-button/`, `breadcrumb/`, `pagination/`; `src/internal/button-base.ts`, `button-base.styles.ts`, `slot-presence.ts`; `src/styles/density.ts`, `gap.ts`, `surfaces.ts`, `texture.ts`.
+**Scope:** the structural surfaces and layout primitives (panel, divider, stack, cluster, splitter), the buttons (the shared button base, button, icon button), and the page navigation (breadcrumb, pagination, steps).
+**Code:** `src/components/panel/`, `divider/`, `stack/`, `cluster/`, `button/`, `icon-button/`, `breadcrumb/`, `pagination/`, `steps/`, `splitter/`; `src/internal/button-base.ts`, `button-base.styles.ts`, `slot-presence.ts`; `src/styles/density.ts`, `gap.ts`, `surfaces.ts`, `texture.ts`.
 
 ## 1. Panel
 
@@ -81,6 +81,29 @@ A square, icon-only button: one icon in the default slot (inline SVG in `current
 - **Repairs.** `pages` below 1 or not a number is 1, and a `page` outside 1 to `pages` is clamped; each warns once per occurrence.
 - **Look.** Raised buttons; the current page is set in with the inset bevel and an `accent` bar along its foot, and under forced colors a double border.
 
+## 9. Steps
+
+`punk-steps` with `punk-step` children: progress through a task of several steps, such as a setup wizard. `current` (1-based, default 1), `label`.
+
+- **Semantics.** An `<ol>` named by `label`, else the localized "Steps". Each step host is `role="listitem"`. The steps before `current` are completed: a check, and the localized "completed" after the text, visually hidden. The current one has its number in an `accent` ring, bold text, and `aria-current="step"`. The ones after it are not started: the number, muted text, and the localized "not started". The marker and the connector before each step but the first are hidden from assistive technology, since the list gives the position. Numbers are formatted for the nearest `lang`.
+- **Bounds.** `0` is before the first step, and a `current` past the last step means every step is completed, so neither needs a repair. A fraction is rounded down.
+- **A record, not navigation.** The steps are not links or buttons, and the application moves `current`. **Why:** a wizard decides which steps may be revisited, and its own Back and Next buttons already say so.
+- **Ownership.** The steps give each step its index and state through a symbol-keyed property ([component-model.md §8](component-model.md)), and clear it when the step leaves or the steps disconnect. A step writes `role` and `aria-current` only to its own host. A step outside a `punk-steps` has no number and no connector, and reads as not started.
+- Steps wrap onto more lines and never scroll sideways. Under forced colors the completed marker is filled with `CanvasText`, and the current one has a `Highlight` ring.
+- **Warning:** a child that is not a step.
+
+## 10. Splitter
+
+`punk-splitter`: two panes, in the `start` and `end` slots, with a divider the user drags or moves with the keyboard (the APG window splitter). `value` (the start pane's share, default 50), `min` (0), `max` (100), `step` (5), `orientation` (`horizontal`, side by side, or `vertical`, stacked), `label`.
+
+- **Semantics.** The divider is a focusable `role="separator"` named by `label`, else the localized "Resize", with `aria-valuenow`, `aria-valuemin`, `aria-valuemax`, `aria-controls` on the start pane, and `aria-orientation` across the layout (`vertical` for side-by-side panes). The docs ask for a `label` that names the start pane.
+- **Layout.** A grid: the start pane takes its share of the space left after the 8px divider, and the end pane the rest; both scroll their own overflow. Side by side the start pane is on the inline start, so on the right in `rtl`. Stacked panes need a height on the host.
+- **Keys.** Side by side, Left and Right move the divider by `step` (swapped in `rtl`), and Up and Down are left to the page; stacked, Up and Down move it, as the arrows point. PageUp and PageDown move by the larger of `step` and 10%, Home and End go to `min` and `max`, and Enter collapses the start pane to `min` and gives back the share it had. The arithmetic is the slider's (`slider-math.ts`).
+- **Pointer.** A press on the divider focuses it, captures the pointer, and reads the splitter's rectangle once; every move is arithmetic on it, to a tenth of a percent, clamped to the range. `touch-action: none` on the divider keeps the page from scrolling under a drag. Under a coarse pointer the divider has a 40px target.
+- **Events.** `punk-split-change` with `{ value }` for each change the user makes, during a drag too, and none for a change from script or at an end.
+- **Repairs.** A value outside the range is shown clamped. An inverted range or a `step` not above 0 is 0 to 100 in steps of 1, and warns once.
+- **Look.** A raised bar with a grip of three lines that turns `accent` on hover and focus, and under forced colors a `ButtonText` border and grip.
+
 ## Verification
 
 - Each component's tests, including its unstyled appearance, both directions of every property, and its warnings.
@@ -90,7 +113,7 @@ A square, icon-only button: one icon in the default slot (inline SVG in `current
 - Stack and cluster tests: gap mapping and density, overrides, alignment in both directions, reflow at 187px.
 - `reflow.test.ts` and the `foundation` and `shell` visual groups.
 - Node: `page-window.test.ts`, every page and sibling count up to 30 pages.
-- `breadcrumb.test.ts`: the landmark and its name in each locale, links and the current page, separators, wrapping, collapsing and focus on expand, and ownership restoration. `pagination.test.ts`: the landmark, names and formatting by language, the ends, focus after a change, no event for script changes, and the repairs. Both are in the `navigation` gallery group.
+- `breadcrumb.test.ts`: the landmark and its name in each locale, links and the current page, separators, wrapping, collapsing and focus on expand, and ownership restoration. `pagination.test.ts`: the landmark, names and formatting by language, the ends, focus after a change, no event for script changes, and the repairs. `steps.test.ts`: the list and its name in each locale, the state words and `aria-current`, `current` both ways and its bounds, numbers by language, steps added and removed, the states under forced colors, connectors, wrapping at 187px in every theme, and the warning. All three are in the `navigation` gallery group. `splitter.test.ts`: the separator, its values and orientation, its name in each locale, the panes' shares in both directions and stacked, clamping and the repair, every key in both orientations and directions, Enter's collapse and restore, no event at an end or from script, drags in both orientations with one layout read, the range under a drag, and forced colors; in the `shell` gallery group.
 
 ## Gaps
 

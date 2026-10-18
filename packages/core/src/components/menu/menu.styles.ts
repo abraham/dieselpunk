@@ -139,6 +139,10 @@ export const menuItemStyles = css`
     display: block;
   }
 
+  .item.bar .arrow {
+    display: none;
+  }
+
   :host(:dir(rtl)) .arrow {
     transform: scaleX(-1);
   }

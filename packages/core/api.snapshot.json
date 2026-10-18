@@ -357,6 +357,82 @@
       },
       "cssProperties": {}
     },
+    "punk-date-field": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "autocomplete": "string | null = null",
+        "disabled": "boolean = false",
+        "label": "string = ''",
+        "max": "string | null = null",
+        "min": "string | null = null",
+        "name": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "step": "string | null = null",
+        "value": "string = ''"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "autocomplete": "string | null = null",
+        "disabled": "boolean = false",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "max": "string | null = null",
+        "min": "string | null = null",
+        "name": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "step": "string | null = null",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "value": "string = ''",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "select": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "",
+        "input": ""
+      },
+      "slots": {
+        "hint": "",
+        "prefix": "",
+        "suffix": ""
+      },
+      "parts": {
+        "control": "",
+        "field": "",
+        "hint": "",
+        "label": "",
+        "message": "",
+        "prefix": "",
+        "suffix": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-description-list": {
+      "attributes": {},
+      "properties": {},
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "list": ""
+      },
+      "cssProperties": {}
+    },
     "punk-dialog": {
       "attributes": {
         "alert": "boolean = false",
@@ -483,6 +559,62 @@
       },
       "cssProperties": {}
     },
+    "punk-file-field": {
+      "attributes": {
+        "accept": "string = ''",
+        "aria-label": "string | null = null",
+        "disabled": "boolean = false",
+        "drop-zone": "boolean = false",
+        "label": "string = ''",
+        "multiple": "boolean = false",
+        "name": "string = ''",
+        "required": "boolean = false"
+      },
+      "properties": {
+        "accept": "string = ''",
+        "accessibleLabel": "string | null = null",
+        "disabled": "boolean = false",
+        "dropZone": "boolean = false",
+        "files": "FileList | null",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "multiple": "boolean = false",
+        "name": "string = ''",
+        "required": "boolean = false",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "select": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "",
+        "input": ""
+      },
+      "slots": {
+        "hint": ""
+      },
+      "parts": {
+        "control": "",
+        "drop": "",
+        "field": "",
+        "hint": "",
+        "label": "",
+        "list": "",
+        "message": ""
+      },
+      "cssProperties": {}
+    },
     "punk-icon-button": {
       "attributes": {
         "aria-label": "string | null = null",
@@ -569,6 +701,19 @@
       "cssProperties": {
         "--punk-slot-size": "= 40px"
       }
+    },
+    "punk-kbd": {
+      "attributes": {},
+      "properties": {},
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "key": ""
+      },
+      "cssProperties": {}
     },
     "punk-list": {
       "attributes": {
@@ -680,6 +825,23 @@
         "item": "",
         "label": "",
         "shortcut": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-menubar": {
+      "attributes": {
+        "aria-label": "string | null = null"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "bar": ""
       },
       "cssProperties": {}
     },
@@ -1034,6 +1196,63 @@
       },
       "cssProperties": {}
     },
+    "punk-range-slider": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "disabled": "boolean = false",
+        "high": "number",
+        "label": "string = ''",
+        "low": "number",
+        "max": "number = 100",
+        "min": "number = 0",
+        "name": "string = ''",
+        "required": "boolean = false",
+        "show-value": "boolean = false",
+        "step": "number = 1"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "disabled": "boolean = false",
+        "form": "HTMLFormElement | null",
+        "high": "number",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "low": "number",
+        "max": "number = 100",
+        "min": "number = 0",
+        "name": "string = ''",
+        "required": "boolean = false",
+        "showValue": "boolean = false",
+        "step": "number = 1",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "",
+        "input": "Event"
+      },
+      "slots": {},
+      "parts": {
+        "fill": "",
+        "header": "",
+        "label": "",
+        "thumb": "",
+        "track": "",
+        "value": ""
+      },
+      "cssProperties": {}
+    },
     "punk-recipe": {
       "attributes": {
         "available": "boolean = false",
@@ -1266,6 +1485,38 @@
       },
       "cssProperties": {}
     },
+    "punk-splitter": {
+      "attributes": {
+        "label": "string = ''",
+        "max": "number = 100",
+        "min": "number = 0",
+        "orientation": "SplitterOrientation = 'horizontal'",
+        "step": "number = 5",
+        "value": "number = 50"
+      },
+      "properties": {
+        "label": "string = ''",
+        "max": "number = 100",
+        "min": "number = 0",
+        "orientation": "SplitterOrientation = 'horizontal'",
+        "step": "number = 5",
+        "value": "number = 50"
+      },
+      "methods": {},
+      "events": {
+        "punk-split-change": ""
+      },
+      "slots": {
+        "end": "",
+        "start": ""
+      },
+      "parts": {
+        "end": "",
+        "separator": "",
+        "start": ""
+      },
+      "cssProperties": {}
+    },
     "punk-stack": {
       "attributes": {
         "align": "StackAlign = 'stretch'",
@@ -1303,6 +1554,40 @@
       "parts": {
         "indicator": "",
         "label": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-step": {
+      "attributes": {},
+      "properties": {},
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "connector": "",
+        "label": "",
+        "marker": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-steps": {
+      "attributes": {
+        "current": "number = 1",
+        "label": "string = ''"
+      },
+      "properties": {
+        "current": "number = 1",
+        "label": "string = ''"
+      },
+      "methods": {},
+      "events": {},
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "list": ""
       },
       "cssProperties": {}
     },
@@ -1427,6 +1712,33 @@
       },
       "parts": {
         "tablist": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-tag": {
+      "attributes": {
+        "disabled": "boolean = false",
+        "removable": "boolean = false",
+        "remove-label": "string = ''",
+        "value": "string = ''"
+      },
+      "properties": {
+        "disabled": "boolean = false",
+        "removable": "boolean = false",
+        "removeLabel": "string = ''",
+        "value": "string = ''"
+      },
+      "methods": {},
+      "events": {
+        "punk-remove": ""
+      },
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "label": "",
+        "remove-button": "",
+        "tag": ""
       },
       "cssProperties": {}
     },
@@ -1567,6 +1879,69 @@
         "--punk-textarea-max-height": "= 20lh"
       }
     },
+    "punk-time-field": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "autocomplete": "string | null = null",
+        "disabled": "boolean = false",
+        "label": "string = ''",
+        "max": "string | null = null",
+        "min": "string | null = null",
+        "name": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "step": "string | null = null",
+        "value": "string = ''"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "autocomplete": "string | null = null",
+        "disabled": "boolean = false",
+        "form": "HTMLFormElement | null",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "max": "string | null = null",
+        "min": "string | null = null",
+        "name": "string = ''",
+        "readonly": "boolean = false",
+        "required": "boolean = false",
+        "step": "string | null = null",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "value": "string = ''",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "select": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "",
+        "input": ""
+      },
+      "slots": {
+        "hint": "",
+        "prefix": "",
+        "suffix": ""
+      },
+      "parts": {
+        "control": "",
+        "field": "",
+        "hint": "",
+        "label": "",
+        "message": "",
+        "prefix": "",
+        "suffix": ""
+      },
+      "cssProperties": {}
+    },
     "punk-toast": {
       "attributes": {
         "duration": "number | null = null",
@@ -1701,6 +2076,62 @@
         "--punk-tooltip-max-width": "= 320px",
         "--punk-tooltip-offset": "= 8px"
       }
+    },
+    "punk-tree": {
+      "attributes": {
+        "selection": "TreeSelection = 'none'"
+      },
+      "properties": {
+        "selection": "TreeSelection = 'none'",
+        "values": "string[]"
+      },
+      "methods": {},
+      "events": {
+        "punk-selection-change": ""
+      },
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "tree": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-tree-item": {
+      "attributes": {
+        "disabled": "boolean = false",
+        "expanded": "boolean = false",
+        "label": "string = ''",
+        "selected": "boolean = false",
+        "value": "string = ''"
+      },
+      "properties": {
+        "disabled": "boolean = false",
+        "expanded": "boolean = false",
+        "isParent": "boolean",
+        "label": "string = ''",
+        "level": "number",
+        "selected": "boolean = false",
+        "value": "string = ''"
+      },
+      "methods": {},
+      "events": {
+        "punk-activate": "",
+        "punk-toggle": ""
+      },
+      "slots": {
+        "(default)": "",
+        "icon": ""
+      },
+      "parts": {
+        "check": "",
+        "group": "",
+        "icon": "",
+        "label": "",
+        "row": "",
+        "toggle": ""
+      },
+      "cssProperties": {}
     },
     "punk-window": {
       "attributes": {
