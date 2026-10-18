@@ -21,7 +21,7 @@ Living specifications for `@dieselpunk/core` and `@dieselpunk/locales`. Each one
 | [layout-and-actions.md](layout-and-actions.md)         | Panel, divider, stack, cluster, splitter, button, icon button, breadcrumb, pagination, steps                                       |
 | [localization.md](localization.md)                     | Messages, locale changes, the locales package, translation gates, number formatting, direction                                     |
 | [performance.md](performance.md)                       | Size budgets, runtime cost rules, and the deterministic gates that hold them                                                       |
-| [security.md](security.md)                             | Threat model, rules for shipped code, dependency and supply-chain audits, code and workflow scanning, the release path, response   |
+| [security.md](security.md)                             | Threat model, rules for shipped code, checks on each change, release provenance, response                                          |
 | [ssr.md](ssr.md)                                       | Server rendering with Lit SSR: what the server renders and cannot know, the upgrade that replaces it, hydration, cost, setup       |
 | [testing.md](testing.md)                               | Test layers, the gallery, engines, visual regression, mutation checking, the gate list, the testing package                        |
 | [ci.md](ci.md)                                         | The CI workflows: jobs, shared setup, splitting by gallery group, generated matrices, change detection, budgets                    |

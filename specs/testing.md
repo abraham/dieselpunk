@@ -125,26 +125,26 @@ A test or gate is trusted only after it has failed against a deliberately broken
 
 ## 9. Gate list
 
-| Gate               | Where     | Fails on                                                                                 |
-| ------------------ | --------- | ---------------------------------------------------------------------------------------- |
-| `check:toolchain`  | root      | Another Node major, or more than one TypeScript                                          |
-| `format:check`     | root      | Unformatted files                                                                        |
-| `lint`             | root      | ESLint errors                                                                            |
-| `typecheck`        | all       | Type errors in either compilation context                                                |
-| `build`            | all       | Build errors                                                                             |
-| `check:contrast`   | core      | A theme below a contrast rule                                                            |
-| `check:strings`    | locales   | Extraction changes the XLIFF; a unit without id or note; a non-literal id or description |
-| `check:locales`    | locales   | Any translation rule ([localization.md §6](localization.md))                             |
-| `check:api`        | core      | Any API difference from the snapshot; an undocumented public name                        |
-| `test`             | all       | Node and browser suites; split across CI jobs as [ci.md](ci.md) describes                |
-| `check:package`    | all       | Export, side-effect, registration, chunk, `publint`, or `attw` errors                    |
-| `check:size`       | all       | An entry over its limit, or without a reason                                             |
-| `check:audit`      | root      | An advisory, lockfile, or install-script finding ([security.md §5](security.md))         |
-| `check:consumer`   | core      | The consumer fixtures                                                                    |
-| `check:frameworks` | core      | The framework fixtures                                                                   |
-| `test:smoke`       | storybook | A story or page that errors, warns, overflows, or fails a real-input step                |
-| `test:stories`     | storybook | A story that throws, fails its `play` function, or has an accessibility violation        |
-| `test:visual`      | core      | A screenshot that differs from its baseline (CI visual job)                              |
+| Gate               | Where     | Fails on                                                                                                                             |
+| ------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `check:toolchain`  | root      | Another Node major, or more than one TypeScript                                                                                      |
+| `format:check`     | root      | Unformatted files                                                                                                                    |
+| `lint`             | root      | ESLint errors                                                                                                                        |
+| `typecheck`        | all       | Type errors in either compilation context                                                                                            |
+| `build`            | all       | Build errors                                                                                                                         |
+| `check:contrast`   | core      | A theme below a contrast rule                                                                                                        |
+| `check:strings`    | locales   | Extraction changes the XLIFF; a unit without id or note; a non-literal id or description                                             |
+| `check:locales`    | locales   | Any translation rule ([localization.md §6](localization.md))                                                                         |
+| `check:api`        | core      | Any API difference from the snapshot; an undocumented public name                                                                    |
+| `test`             | all       | Node and browser suites; split across CI jobs as [ci.md](ci.md) describes                                                            |
+| `check:package`    | all       | Export, side-effect, registration, chunk, `publint`, or `attw` errors                                                                |
+| `check:size`       | all       | An entry over its limit, or without a reason                                                                                         |
+| `check:lockfile`   | root      | A package from another registry or without integrity, a bad signature, or an unlisted install script ([security.md §5](security.md)) |
+| `check:consumer`   | core      | The consumer fixtures                                                                                                                |
+| `check:frameworks` | core      | The framework fixtures                                                                                                               |
+| `test:smoke`       | storybook | A story or page that errors, warns, overflows, or fails a real-input step                                                            |
+| `test:stories`     | storybook | A story that throws, fails its `play` function, or has an accessibility violation                                                    |
+| `test:visual`      | core      | A screenshot that differs from its baseline (CI visual job)                                                                          |
 
 ## 10. The testing package
 
