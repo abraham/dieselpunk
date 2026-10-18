@@ -11,6 +11,7 @@ const name = '@dieselpunk/locales';
 
 interface PackageJson {
   license: unknown;
+  publishConfig?: { access?: unknown };
   sideEffects: unknown;
   exports: Record<string, { types: string; default: string }>;
 }
@@ -29,6 +30,8 @@ if (!existsSync(`${packageDir}dist`)) {
 
 // npm packs only this folder, so it carries a copy of the repository's license (specs/package-contract.md §10).
 if (pkg.license !== 'MIT') fail('"license" must be "MIT"');
+// A scoped package is private unless it says otherwise.
+if (pkg.publishConfig?.access !== 'public') fail('"publishConfig.access" must be "public"');
 const license = `${packageDir}LICENSE`;
 if (
   !existsSync(license) ||

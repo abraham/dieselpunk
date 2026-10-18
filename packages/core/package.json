@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Industrial game-style UI Web Components built with Lit.",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://dieselpunk.dev",
   "repository": {
     "type": "git",

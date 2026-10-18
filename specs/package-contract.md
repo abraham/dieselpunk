@@ -141,10 +141,11 @@ These are implementation contracts between the library's own classes, not applic
 - A deprecated name keeps working for at least one minor release, is marked `@deprecated` in JSDoc, and warns once in development.
 - The published packages are at `0.1.0`, and move together; the private workspaces stay `0.0.0`. Publishing, changelogs, and release automation are the owner's.
 - **License.** MIT, in the repository's `LICENSE`. Each published package's `license` is `MIT`, and it carries an identical `LICENSE` beside its `package.json`, since npm packs only the package's own folder.
+- **Published as public.** Each published package sets `publishConfig.access` to `public`, since npm publishes a scoped package as private otherwise, and has a `README.md` for its npm page.
 
 ## Verification
 
-- `check:package`: the license field and the `LICENSE` copy (§10), export resolution (`register.js` wins), `sideEffects` exactly the register entries and CSS, nothing but a register entry calls `define`, each register bundle holds its own family and only its documented dependency, a class-only import registers nothing; `publint --strict`; `attw` with the `esm-only` profile. The same for the locales package, with its chunk rules.
+- `check:package`: the license field, the `LICENSE` copy, and public access (§10), export resolution (`register.js` wins), `sideEffects` exactly the register entries and CSS, nothing but a register entry calls `define`, each register bundle holds its own family and only its documented dependency, a class-only import registers nothing; `publint --strict`; `attw` with the `esm-only` profile. The same for the locales package, with its chunk rules.
 - `*.registration.test.ts` beside each component: the class entry defines nothing; `register.js` defines the family; a second import does not throw.
 - `test/browser/manifest.test.ts`: the manifest against rendered parts and slots, observed attributes, read CSS properties, and descriptions.
 - `check:api`: the snapshot and descriptions.
