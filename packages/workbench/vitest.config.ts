@@ -16,6 +16,14 @@ const browser = () => ({
 // the interaction stories run their flows (specs/workbench.md §5).
 export default defineConfig({
   test: {
+    coverage: {
+      provider: 'v8',
+      // The stories run the built packages, which have no source maps, so the report is of dist/.
+      include: ['../core/dist/**/*.js', '../locales/dist/**/*.js'],
+      allowExternal: true,
+      reporter: ['text-summary', 'html'],
+      reportsDirectory: 'coverage',
+    },
     projects: [
       {
         plugins: [storybookTest({ configDir, tags: { include: ['test'], exclude: ['flow'] } })],

@@ -12,7 +12,8 @@
     "build:site": "node scripts/site.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test:smoke": "node scripts/smoke.ts",
-    "test:stories": "vitest run"
+    "test:stories": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@dieselpunk/core": "^0.0.0",
@@ -29,6 +30,7 @@
     "@storybook/addon-vitest": "^10.6.2",
     "@storybook/web-components-vite": "^10.6.2",
     "@vitest/browser-playwright": "^5.0.5",
+    "@vitest/coverage-v8": "^5.0.5",
     "@wc-toolkit/storybook-helpers": "^10.7.7",
     "playwright": "^1.64.1",
     "remark-gfm": "^4.0.1",
