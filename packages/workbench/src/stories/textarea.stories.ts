@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkTextarea>('punk-tex
 
 const meta = preview.type<{ args: StoryArgs<PunkTextarea> }>().meta({
   title: 'Components/Textarea',
+  tags: ['forms'],
   component: 'punk-textarea',
   args: { ...args, label: 'Shift notes' },
   argTypes: {

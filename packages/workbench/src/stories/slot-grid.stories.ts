@@ -25,6 +25,7 @@ const stacks = (count: number): string =>
 
 const meta = preview.type<{ args: StoryArgs<PunkSlotGrid> }>().meta({
   title: 'Components/Slot Grid',
+  tags: ['inventory'],
   component: 'punk-slot-grid',
   args: {
     ...args,

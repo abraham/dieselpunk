@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import type { Page } from 'playwright';
 import { serveStatic } from '@dieselpunk/testing/server';
+import { categoryTags } from '../src/lib/categories.ts';
 import { reflowWidths } from '../src/lib/viewports.ts';
 
 // Loads every story and docs page in the built workbench and fails on a render error or on any
@@ -320,6 +321,16 @@ async function checkMarkdownTables(): Promise<void> {
   }
 }
 
+// Each component page is in exactly one sidebar category (specs/workbench.md §3).
+function checkCategoryTags(): void {
+  const known = new Set<string>(categoryTags);
+  for (const entry of Object.values(entries)) {
+    if (!entry.id.startsWith('components-')) continue;
+    const tags = (entry.tags ?? []).filter((tag) => known.has(tag));
+    if (tags.length !== 1) failures.push(`${entry.id} has category tags [${tags.join(', ')}]`);
+  }
+}
+
 // Sorted, so that a part is the same set of entries on every run.
 const mine = Object.values(entries)
   .sort((a, b) => a.id.localeCompare(b.id))
@@ -340,6 +351,7 @@ try {
     await checkExamples();
     await checkLogistics();
     await checkLanguageToolbar();
+    checkCategoryTags();
     await checkLocalizationGuide();
     await checkScreenReaderChecklist();
     await checkFrameworkGuides();

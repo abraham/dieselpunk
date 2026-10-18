@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkSlider>('punk-slide
 
 const meta = preview.type<{ args: StoryArgs<PunkSlider> }>().meta({
   title: 'Components/Slider',
+  tags: ['forms'],
   component: 'punk-slider',
   args: { ...args, label: 'Crafting speed', value: 40, 'show-value': true },
   argTypes,

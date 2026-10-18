@@ -13,6 +13,7 @@ const { args, argTypes, template } =
 
 const meta = preview.type<{ args: StoryArgs<PunkProductionStat> }>().meta({
   title: 'Components/Production Stat',
+  tags: ['readouts'],
   component: 'punk-production-stat',
   args: { ...args, label: 'Iron plates', value: 1240, unit: '/min' },
   argTypes,

@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkToggleGroup>('punk-
 
 const meta = preview.type<{ args: StoryArgs<PunkToggleGroup> }>().meta({
   title: 'Components/Toggle Group',
+  tags: ['navigation'],
   component: 'punk-toggle-group',
   args: {
     ...args,

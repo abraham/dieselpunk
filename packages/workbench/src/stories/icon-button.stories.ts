@@ -15,6 +15,7 @@ const sizes = ['sm', 'md', 'lg'] as const;
 
 const meta = preview.type<{ args: StoryArgs<PunkIconButton> }>().meta({
   title: 'Components/Icon Button',
+  tags: ['actions'],
   component: 'punk-icon-button',
   args: { ...args, label: 'Settings', 'default-slot': iconSvg.gear },
   argTypes,

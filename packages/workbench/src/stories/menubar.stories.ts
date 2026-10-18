@@ -34,6 +34,7 @@ const menus = `
 
 const meta = preview.type<{ args: StoryArgs<PunkMenubar> }>().meta({
   title: 'Components/Menubar',
+  tags: ['navigation'],
   component: 'punk-menubar',
   subcomponents: { 'punk-menu': 'punk-menu', 'punk-menu-item': 'punk-menu-item' },
   args: { ...args, 'aria-label': 'Workbench', 'default-slot': menus },

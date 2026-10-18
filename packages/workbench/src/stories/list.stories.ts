@@ -18,6 +18,7 @@ const rows = `
 
 const meta = preview.type<{ args: StoryArgs<PunkList> }>().meta({
   title: 'Components/List',
+  tags: ['navigation'],
   component: 'punk-list',
   subcomponents: { 'punk-list-item': 'punk-list-item' },
   args: { ...args, 'aria-label': 'Machines', selection: 'single', 'default-slot': rows },

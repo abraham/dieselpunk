@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkTag>('punk-tag');
 
 const meta = preview.type<{ args: StoryArgs<PunkTag> }>().meta({
   title: 'Components/Tag',
+  tags: ['data'],
   component: 'punk-tag',
   args: { ...args, 'default-slot': 'Copper', removable: true },
   argTypes,

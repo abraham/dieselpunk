@@ -20,6 +20,7 @@ const options = [
 
 const meta = preview.type<{ args: StoryArgs<PunkCombobox> }>().meta({
   title: 'Components/Combobox',
+  tags: ['forms'],
   component: 'punk-combobox',
   args: { ...args, label: 'Item' },
   argTypes,

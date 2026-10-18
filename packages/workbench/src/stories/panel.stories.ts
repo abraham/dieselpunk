@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkPanel>('punk-panel'
 
 const meta = preview.type<{ args: StoryArgs<PunkPanel> }>().meta({
   title: 'Components/Panel',
+  tags: ['layout'],
   component: 'punk-panel',
   args: {
     ...args,

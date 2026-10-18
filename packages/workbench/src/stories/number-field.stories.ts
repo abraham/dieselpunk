@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkNumberField>('punk-
 
 const meta = preview.type<{ args: StoryArgs<PunkNumberField> }>().meta({
   title: 'Components/Number field',
+  tags: ['forms'],
   component: 'punk-number-field',
   args: { ...args, label: 'Thrust', value: '3', min: 0, max: 10 },
   argTypes,

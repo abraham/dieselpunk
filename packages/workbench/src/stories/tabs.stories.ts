@@ -11,6 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkTabs>('punk-tabs');
 
 const meta = preview.type<{ args: StoryArgs<PunkTabs> }>().meta({
   title: 'Components/Tabs',
+  tags: ['navigation'],
   component: 'punk-tabs',
   subcomponents: { 'punk-tab': 'punk-tab' },
   args: {

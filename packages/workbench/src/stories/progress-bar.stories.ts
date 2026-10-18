@@ -12,6 +12,7 @@ const variants = ['default', 'success', 'warning', 'danger'] as const;
 
 const meta = preview.type<{ args: StoryArgs<PunkProgressBar> }>().meta({
   title: 'Components/Progress Bar',
+  tags: ['readouts'],
   component: 'punk-progress-bar',
   args: { ...args, value: 64, label: 'Crafting', showValue: true },
   argTypes,

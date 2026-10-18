@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkTimeField>('punk-ti
 
 const meta = preview.type<{ args: StoryArgs<PunkTimeField> }>().meta({
   title: 'Components/Time field',
+  tags: ['forms'],
   component: 'punk-time-field',
   args: { ...args, label: 'Shift start' },
   argTypes,

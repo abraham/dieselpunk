@@ -11,6 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkKbd>('punk-kbd');
 
 const meta = preview.type<{ args: StoryArgs<PunkKbd> }>().meta({
   title: 'Components/Kbd',
+  tags: ['data'],
   component: 'punk-kbd',
   args: { ...args, 'default-slot': 'Ctrl' },
   argTypes,

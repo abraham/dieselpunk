@@ -13,6 +13,7 @@ const open = (event: Event) =>
 
 const meta = preview.type<{ args: StoryArgs<PunkDialog> }>().meta({
   title: 'Components/Dialog',
+  tags: ['overlays'],
   component: 'punk-dialog',
   args: {
     ...args,

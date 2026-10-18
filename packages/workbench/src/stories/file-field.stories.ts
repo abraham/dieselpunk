@@ -10,6 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkFileField>('punk-fi
 
 const meta = preview.type<{ args: StoryArgs<PunkFileField> }>().meta({
   title: 'Components/File field',
+  tags: ['forms'],
   component: 'punk-file-field',
   args: { ...args, label: 'Plans', 'drop-zone': true, multiple: true },
   argTypes,

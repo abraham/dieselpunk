@@ -11,6 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkPagination>('punk-p
 
 const meta = preview.type<{ args: StoryArgs<PunkPagination> }>().meta({
   title: 'Components/Pagination',
+  tags: ['navigation'],
   component: 'punk-pagination',
   args: { ...args, page: 5, pages: 12 },
   argTypes,

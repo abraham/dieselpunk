@@ -12,6 +12,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkWindow>('punk-windo
 
 const meta = preview.type<{ args: StoryArgs<PunkWindow> }>().meta({
   title: 'Components/Window',
+  tags: ['overlays'],
   component: 'punk-window',
   args: {
     ...args,

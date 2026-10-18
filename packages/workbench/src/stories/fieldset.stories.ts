@@ -13,6 +13,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkFieldset>('punk-fie
 
 const meta = preview.type<{ args: StoryArgs<PunkFieldset> }>().meta({
   title: 'Components/Fieldset',
+  tags: ['forms'],
   component: 'punk-fieldset',
   args: {
     ...args,
