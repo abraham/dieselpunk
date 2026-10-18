@@ -65,6 +65,36 @@ body += await ssr(html`
   >
 `);
 
+// Components with children, labels, and values. Each must end as a client render of its markup,
+// children included, so the page keeps the markup in a template for the browser to render.
+const composed = [
+  '<punk-tabs aria-label="Modules"><punk-tab slot="tab" panel="cp1">One</punk-tab><punk-tab slot="tab" panel="cp2" selected>Two</punk-tab><div id="cp1">First</div><div id="cp2">Second</div></punk-tabs>',
+  '<punk-breadcrumb max-items="3"><punk-breadcrumb-item href="#a">A</punk-breadcrumb-item><punk-breadcrumb-item href="#b">B</punk-breadcrumb-item><punk-breadcrumb-item href="#c">C</punk-breadcrumb-item><punk-breadcrumb-item current>D</punk-breadcrumb-item></punk-breadcrumb>',
+  '<punk-steps current="2"><punk-step>Mine</punk-step><punk-step>Smelt</punk-step><punk-step>Craft</punk-step></punk-steps>',
+  '<punk-slot-grid aria-label="Inventory" selection="single" columns="3"><punk-slot value="s1"></punk-slot><punk-slot value="s2" selected></punk-slot><punk-slot value="s3"></punk-slot></punk-slot-grid>',
+  '<punk-toolbar aria-label="Actions"><punk-button>Start</punk-button><punk-button>Stop</punk-button></punk-toolbar>',
+  '<punk-accordion><punk-accordion-item heading="One" expanded><p>First</p></punk-accordion-item><punk-accordion-item heading="Two"><p>Second</p></punk-accordion-item></punk-accordion>',
+  '<punk-list aria-label="Items" selection="single"><punk-list-item value="a">Alpha</punk-list-item><punk-list-item value="b" selected>Beta</punk-list-item></punk-list>',
+  '<punk-toggle-group aria-label="Mode"><button value="a">A</button><button value="b">B</button></punk-toggle-group>',
+  '<punk-radio-group label="Speed"><punk-radio value="a" checked>Slow</punk-radio><punk-radio value="b">Fast</punk-radio><span slot="hint">Pick one</span></punk-radio-group>',
+  '<punk-menubar aria-label="Main"><punk-menu-item>File</punk-menu-item><punk-menu><punk-menu-item value="a">Open</punk-menu-item></punk-menu></punk-menubar>',
+  '<punk-combobox label="Item" value="b"><option value="a">Iron</option><option value="b">Copper</option></punk-combobox>',
+  '<punk-text-field label="Callsign" value="Echo"><span slot="hint">Your name</span></punk-text-field>',
+  '<label for="cl">Thrust</label><punk-number-field id="cl" value="3"></punk-number-field>',
+  '<fieldset disabled><punk-checkbox checked>Agree</punk-checkbox><punk-button>Send</punk-button></fieldset>',
+  '<punk-date-field label="Day" value="2025-01-31"></punk-date-field>',
+  '<punk-production-stat label="Iron" value="1200" unit="/min"><svg slot="sparkline" viewBox="0 0 1 1"></svg></punk-production-stat>',
+  '<punk-panel variant="inset"><span slot="header">Header</span>Body<span slot="footer">Footer</span></punk-panel>',
+];
+for (const [index, markup] of composed.entries()) {
+  try {
+    const rendered = await ssr(html`${unsafeStatic(markup)}`);
+    body += `<div data-composed="${index}">${rendered}</div><template data-source="${index}">${markup}</template>\n`;
+  } catch (error) {
+    problems.push(`composed case ${index} threw: ${error.message}`);
+  }
+}
+
 console.error = logError;
 problems.push(...errors.map((error) => `the server logged an error: ${error}`));
 

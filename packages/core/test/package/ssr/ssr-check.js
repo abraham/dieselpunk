@@ -15,7 +15,7 @@ window.checkUpgrade = async () => {
   // Generated ids differ between two instances, so they are compared as a placeholder.
   const value = (element, name) => {
     const text = element.getAttribute(name);
-    return /^punk-.*-\d+$/.test(text) || /-\d+$/.test(text) ? '#' : text;
+    return /^[a-z][\w-]*-\d+$/i.test(text) ? '#' : text;
   };
   const tree = (node) =>
     [...node.childNodes]
@@ -58,6 +58,41 @@ window.checkUpgrade = async () => {
       );
     }
     box.remove();
+  }
+
+  // A whole subtree, light DOM and every shadow root, so what an owner writes to its children counts.
+  const deep = (node) =>
+    [...node.childNodes]
+      .map((child) => {
+        if (child.nodeType === Node.TEXT_NODE) return child.data.trim();
+        if (child.nodeType !== Node.ELEMENT_NODE || child.localName === 'template') return '';
+        const attributes = child.getAttributeNames().sort();
+        const shadow = child.shadowRoot ? `#shadow(${deep(child.shadowRoot)})` : '';
+        return `<${child.localName} ${attributes.map((name) => `${name}=${value(child, name)}`).join(' ')}>${shadow}${deep(child)}</>`;
+      })
+      .join('');
+  for (const upgraded of document.querySelectorAll('[data-composed]')) {
+    const index = upgraded.dataset.composed;
+    const source = document.querySelector(`template[data-source="${index}"]`);
+    const seen = deep(upgraded);
+    // The fresh copy repeats the case's ids, so the upgraded one leaves the page first.
+    const parent = upgraded.parentNode;
+    const next = upgraded.nextSibling;
+    upgraded.remove();
+    const box = document.createElement('div');
+    box.append(source.content.cloneNode(true));
+    document.body.append(box);
+    await settle([...box.querySelectorAll('*')].filter((el) => el.updateComplete));
+    const expected = deep(box);
+    if (seen !== expected) {
+      let at = 0;
+      while (seen[at] === expected[at]) at++;
+      problems.push(
+        `composed case ${index} (${source.content.firstElementChild?.localName}) differs from a client render: …${seen.slice(Math.max(0, at - 60), at + 80)}… instead of …${expected.slice(Math.max(0, at - 60), at + 80)}…`,
+      );
+    }
+    box.remove();
+    parent.insertBefore(upgraded, next);
   }
 
   const byId = (id) => document.getElementById(id);
