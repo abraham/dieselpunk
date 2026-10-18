@@ -52,9 +52,9 @@ Two runners check the workbench, and each flow runs in one of them, never both.
 The rules for them:
 
 - **Compositions only.** A component's own behavior is tested beside its source, in three engines and with real input ([testing.md §2](testing.md)). A component story has a `play` function only to wait for a state its accessibility check needs.
-- **A flow is its own story.** It reuses the render of the story it drives, tagged `!dev` and `!autodocs` so it is tested but not listed, and named `<Story> flow`. **Why:** a `play` function also runs when a reader opens the story, which would leave an example mid-flow, with a dialog open or a row removed.
+- **A flow is its own story.** It extends the story it drives (`Story.extend()`), is tagged `!dev`, `!autodocs`, and `flow` so it is tested but not listed, and is named `<Story> flow`. The smoke test skips stories tagged `flow`. **Why:** a `play` function also runs when a reader opens the story, which would leave an example mid-flow, with a dialog open or a row removed.
 - **Synthetic input stays synthetic.** `userEvent` dispatches events from the page; it does not do what the browser does with a real key. A step that depends on that (Escape closing a native `<dialog>` or a popover, Tab moving focus, `:focus-visible`) stays in the smoke test.
-- **Flows that move focus or run timers do not run beside each other.** They run in their own Vitest project without file parallelism, since a story that takes focus in one frame blurs the others.
+- **Flows that move focus or run timers do not run beside each other.** The stories tagged `flow` run in their own Vitest project, `flows`, without file parallelism and after the other stories, since a story that takes focus in one frame blurs the others.
 
 **The smoke test**, `scripts/smoke.ts`, loads the built workbench in Chromium with Playwright and fails on:
 
@@ -126,6 +126,5 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 - **Only the pre-1.0 path is built.** `docs.yml` deploys `main` to `/`. The release build into `/`, `main` into `/next/`, and the kept `/v<major>/` folders are added with the first release.
 - **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, or 404 page.
 - **No published-ids file or check** in CI.
-- **The flows are still in the smoke test.** No flow has moved to an interaction test yet. Closing it: add a `<Story> flow` story for the Application shell and each example, move each step that does not need real input into its `play` function, and remove those steps from `smoke.ts`.
 - **The guides are not scanned by axe.** The accessibility addon checks stories, which include the overviews and examples, but not MDX docs pages ([accessibility.md §13](accessibility.md)). Closing it: run axe over every docs page in the smoke test, outside the Storybook chrome.
 - **Manifest descriptions do not link their docs pages.**

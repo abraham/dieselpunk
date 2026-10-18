@@ -1,5 +1,6 @@
 import preview from '#.storybook/preview';
 import { html, render } from 'lit';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import type { PunkSwitch } from '@dieselpunk/core';
 import '@dieselpunk/core/meter/register.js';
 import '@dieselpunk/core/production-stat/register.js';
@@ -7,6 +8,7 @@ import '@dieselpunk/core/progress-bar/register.js';
 import '@dieselpunk/core/status-light/register.js';
 import '@dieselpunk/core/switch/register.js';
 import '@dieselpunk/core/window/register.js';
+import { pause } from '../lib/flow.ts';
 import { createProductionDemo } from '../lib/production-demo.ts';
 import type { DemoState } from '../lib/production-demo.ts';
 import { sparkline } from '../lib/sparkline.ts';
@@ -159,5 +161,40 @@ export const ProductionDashboard = meta.story({
     draw();
     start();
     return host;
+  },
+});
+
+export const ProductionDashboardFlow = ProductionDashboard.extend({
+  name: 'Production dashboard flow',
+  tags: ['!dev', '!autodocs', 'flow'],
+  play: async ({ canvasElement }) => {
+    const host = canvasElement.querySelector<HTMLElement>('[data-ticks]');
+    const ticks = () => Number(host?.dataset['ticks']);
+    const toggle = canvasElement.querySelector<PunkSwitch>('punk-switch');
+    await expect(toggle).toBeVisible();
+    toggle?.focus();
+    const before = ticks();
+    await pause(2500);
+    await expect(ticks() - before).toBeGreaterThanOrEqual(2);
+    // Updates set properties and nothing else: focus stays, and nothing announces.
+    await expect(toggle).toHaveFocus();
+    await expect(
+      canvasElement.querySelectorAll(
+        'punk-production-stat[announce], punk-production-stat[role], [aria-live]',
+      ),
+    ).toHaveLength(0);
+    await expect(
+      canvasElement.querySelector('punk-production-stat')?.shadowRoot?.textContent,
+    ).not.toBe('');
+
+    await userEvent.click(toggle as PunkSwitch);
+    await waitFor(() => expect(host?.dataset['paused']).toBe('true'));
+    const stopped = ticks();
+    await pause(2500);
+    await expect(ticks()).toBe(stopped);
+
+    await userEvent.click(toggle as PunkSwitch);
+    await pause(2500);
+    await expect(ticks()).toBeGreaterThan(stopped);
   },
 });

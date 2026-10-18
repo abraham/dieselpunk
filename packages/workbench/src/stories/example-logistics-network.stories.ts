@@ -1,6 +1,7 @@
 import preview from '#.storybook/preview';
 import { html, render } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import type { PunkCloseDetail, PunkDialog, PunkToastStack } from '@dieselpunk/core';
 import '@dieselpunk/core/button/register.js';
 import '@dieselpunk/core/connection-row/register.js';
@@ -11,6 +12,7 @@ import '@dieselpunk/core/toast/register.js';
 import '@dieselpunk/core/toolbar/register.js';
 import '@dieselpunk/core/window/register.js';
 import { icon } from '../icons/icons.ts';
+import { byText, focused } from '../lib/flow.ts';
 
 const meta = preview.meta({
   title: 'Examples/Logistics network',
@@ -232,5 +234,44 @@ export const LogisticsNetwork = meta.story({
     }
     draw();
     return host;
+  },
+});
+
+// Escape on the dialog needs a real key: it stays in the smoke test (specs/workbench.md §5).
+export const LogisticsNetworkFlow = LogisticsNetwork.extend({
+  name: 'Logistics network flow',
+  tags: ['!dev', '!autodocs', 'flow'],
+  play: async ({ canvasElement }) => {
+    const rows = () => [...canvasElement.querySelectorAll<HTMLElement>('punk-connection-row')];
+    const removeButton = (row: HTMLElement | undefined) =>
+      row?.shadowRoot?.querySelector<HTMLElement>('[part="remove-button"]') as HTMLElement;
+    const dialog = () => canvasElement.querySelector('punk-dialog');
+    const button = (text: string) => byText(canvasElement, 'punk-button', text);
+    const removeRow = async (row: HTMLElement | undefined, answer: string) => {
+      await userEvent.click(removeButton(row));
+      await waitFor(() => expect(dialog()).toHaveAttribute('open'));
+      await userEvent.click(button(answer));
+      // The host as well as its <dialog>, since a host still open ignores the next show().
+      await waitFor(() => expect(dialog()).not.toHaveAttribute('open'));
+    };
+    await expect(rows()).toHaveLength(12);
+
+    await removeRow(rows()[0], 'Keep it');
+    await expect(rows()).toHaveLength(12);
+
+    // Focus goes to the row that took its place, and back to the row after Undo.
+    await removeRow(rows()[0], 'Remove');
+    await waitFor(() => expect(rows()).toHaveLength(11));
+    await waitFor(() => expect(focused(canvasElement)).toBe('punk-connection-row:c2'));
+    await userEvent.click(button('Undo'));
+    await waitFor(() => expect(rows()).toHaveLength(12));
+    await waitFor(() => expect(focused(canvasElement)).toBe('punk-connection-row:c1'));
+
+    // Filtered to the blocked rows, removing the last one sends focus to the heading.
+    const filter = canvasElement.querySelector('punk-select')?.shadowRoot?.querySelector('select');
+    await userEvent.selectOptions(filter as HTMLSelectElement, 'blocked');
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await removeRow(rows()[1], 'Remove');
+    await waitFor(() => expect(focused(canvasElement)).toBe('h3:network-heading'));
   },
 });
