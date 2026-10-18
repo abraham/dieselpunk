@@ -89,6 +89,7 @@ jobs:
           browsers: chromium
           build: true
       - run: npm run test:smoke
+      - run: npm run test:stories -w @dieselpunk/workbench -- --shard=${{ matrix.part }}
 
   browser:
     name: browser (${{ matrix.name }})

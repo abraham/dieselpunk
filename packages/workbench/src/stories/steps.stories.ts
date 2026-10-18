@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkSteps } from '@dieselpunk/core';
@@ -9,9 +9,10 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes } = getStorybookHelpers<PunkSteps>('punk-steps');
 
-const meta: Meta<StoryArgs<PunkSteps>> = {
+const meta = preview.type<{ args: StoryArgs<PunkSteps> }>().meta({
   title: 'Components/Steps',
   component: 'punk-steps',
+  subcomponents: { 'punk-step': 'punk-step' },
   args: { ...args, current: 2 },
   argTypes,
   render: (storyArgs) =>
@@ -39,12 +40,9 @@ Back and Next buttons move \`current\`.
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkSteps>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const items = html`<punk-step>Drivers</punk-step><punk-step>Network</punk-step
   ><punk-step>Account</punk-step><punk-step>Finish</punk-step>`;
@@ -57,16 +55,16 @@ const states = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 640px">${states()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(states),
-};
+});
 
 /** The application's buttons move `current`; the steps only show it. */
-export const Wizard: Story = {
+export const Wizard = meta.story({
   render: () => {
     const move = (by: number) => (event: Event) => {
       const steps = (event.currentTarget as HTMLElement)
@@ -82,4 +80,4 @@ export const Wizard: Story = {
       </div>
     </div>`;
   },
-};
+});

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html } from 'lit';
 import '@dieselpunk/core/button/register.js';
 import '@dieselpunk/core/cluster/register.js';
@@ -12,14 +12,11 @@ import { group } from '../lib/matrix.ts';
 // The examples of the Responsive layouts guide. The smoke test loads each at 375px and at 187px,
 // the layout width of a 375px window at 200% zoom, and fails if the page scrolls sideways.
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Guides/Responsive layouts',
   tags: ['!autodocs'],
   parameters: { layout: 'padded' },
-};
-
-export default meta;
-type Story = StoryObj;
+});
 
 const rowStyles = html`<style>
   /* The container is the setting, and the row inside it reacts to the container's width. */
@@ -50,7 +47,7 @@ const actions = html`
   <punk-button slot="footer" variant="danger">Discard the run</punk-button>
 `;
 
-export const WindowFooter: Story = {
+export const WindowFooter = meta.story({
   name: 'Window footer',
   render: () => html`
     <div class="wb-stack" style="max-inline-size: 640px">
@@ -74,9 +71,9 @@ export const WindowFooter: Story = {
       )}
     </div>
   `,
-};
+});
 
-export const SettingsRow: Story = {
+export const SettingsRow = meta.story({
   name: 'Settings row',
   render: () => html`
     ${rowStyles}
@@ -91,7 +88,7 @@ export const SettingsRow: Story = {
       )}
     </div>
   `,
-};
+});
 
 function settings() {
   return html`
@@ -124,7 +121,7 @@ function settings() {
   `;
 }
 
-export const ModalWindow: Story = {
+export const ModalWindow = meta.story({
   name: 'Modal window',
   render: () => html`
     <punk-button
@@ -149,4 +146,4 @@ export const ModalWindow: Story = {
       </punk-window>
     </div>
   `,
-};
+});

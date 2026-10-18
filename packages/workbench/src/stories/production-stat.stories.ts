@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkProductionStat } from '@dieselpunk/core';
@@ -11,7 +11,7 @@ import type { StoryArgs } from '../lib/types.ts';
 const { args, argTypes, template } =
   getStorybookHelpers<PunkProductionStat>('punk-production-stat');
 
-const meta: Meta<StoryArgs<PunkProductionStat>> = {
+const meta = preview.type<{ args: StoryArgs<PunkProductionStat> }>().meta({
   title: 'Components/Production Stat',
   component: 'punk-production-stat',
   args: { ...args, label: 'Iron plates', value: 1240, unit: '/min' },
@@ -42,12 +42,9 @@ A compact metric on an inset plate: a \`label\`, a \`value\` with its \`unit\`, 
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkProductionStat>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const stats = () => html`
   <div class="wb-stack" style="max-inline-size: 480px">
@@ -148,10 +145,10 @@ const stats = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => stats(),
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(stats),
-};
+});

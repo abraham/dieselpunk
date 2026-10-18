@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkPopover } from '@dieselpunk/core';
@@ -18,7 +18,7 @@ const item = (text: string, disabled = false) =>
     ${text}
   </button>`;
 
-const meta: Meta<StoryArgs<PunkPopover>> = {
+const meta = preview.type<{ args: StoryArgs<PunkPopover> }>().meta({
   title: 'Components/Popover',
   component: 'punk-popover',
   args: {
@@ -47,14 +47,11 @@ An interactive surface anchored to a trigger, for content or a menu. The trigger
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkPopover>>;
+export const Playground = meta.story();
 
-export const Playground: Story = {};
-
-export const Menu: Story = {
+export const Menu = meta.story({
   render: () => html`
     <div style="min-block-size: 220px">
       <punk-button>Actions</punk-button>
@@ -63,7 +60,7 @@ export const Menu: Story = {
       </punk-popover>
     </div>
   `,
-};
+});
 
 const popovers = () => html`
   <div class="wb-stack">
@@ -85,10 +82,10 @@ const popovers = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 640px">${popovers()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(popovers),
-};
+});

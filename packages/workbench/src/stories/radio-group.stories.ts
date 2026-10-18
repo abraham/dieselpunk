@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkRadioGroup } from '@dieselpunk/core';
@@ -11,9 +11,10 @@ const { args, argTypes, template } = getStorybookHelpers<PunkRadioGroup>('punk-r
 const radios =
   '<punk-radio value="coal">Coal</punk-radio><punk-radio value="solar" checked>Solar</punk-radio><punk-radio value="wind" disabled>Wind</punk-radio><punk-radio value="nuclear">Nuclear</punk-radio>';
 
-const meta: Meta<StoryArgs<PunkRadioGroup>> = {
+const meta = preview.type<{ args: StoryArgs<PunkRadioGroup> }>().meta({
   title: 'Components/Radio Group',
   component: 'punk-radio-group',
+  subcomponents: { 'punk-radio': 'punk-radio' },
   args: { ...args, label: 'Power source', 'default-slot': radios },
   argTypes,
   render: (storyArgs) => template(storyArgs),
@@ -32,12 +33,9 @@ One choice from a small set of \`punk-radio\` children, every one of them visibl
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkRadioGroup>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const groups = () => html`
   <div class="wb-stack">
@@ -68,10 +66,10 @@ const groups = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${groups()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(groups),
-};
+});

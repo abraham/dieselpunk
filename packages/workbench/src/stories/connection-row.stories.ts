@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html, render } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
@@ -13,7 +13,7 @@ const { args, argTypes } = getStorybookHelpers<PunkConnectionRow>('punk-connecti
 const node = (slot: 'source' | 'destination', text: string) =>
   html`<span slot=${slot}><span aria-hidden="true">${icon('gear')}</span> ${text}</span>`;
 
-const meta: Meta<StoryArgs<PunkConnectionRow>> = {
+const meta = preview.type<{ args: StoryArgs<PunkConnectionRow> }>().meta({
   title: 'Components/Connection Row',
   component: 'punk-connection-row',
   args: {
@@ -58,12 +58,9 @@ A name that changes without a slot change (an edit inside a slotted node) does n
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkConnectionRow>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const statuses = [
   ['neutral', 'Idle'],
@@ -126,13 +123,13 @@ const rows = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => rows(),
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(rows),
-};
+});
 
 interface Belt {
   id: string;
@@ -150,7 +147,7 @@ const belts: Belt[] = [
  * The application owns the list: `punk-remove` only says that the button was used. This removes
  * the row, and moves focus to the next row's button, or to the heading after the last one.
  */
-export const RemovalPattern: Story = {
+export const RemovalPattern = meta.story({
   render: () => {
     const host = document.createElement('div');
     host.className = 'wb-stack';
@@ -199,4 +196,4 @@ export const RemovalPattern: Story = {
     draw();
     return host;
   },
-};
+});

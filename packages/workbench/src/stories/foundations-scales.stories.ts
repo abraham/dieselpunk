@@ -1,16 +1,13 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html } from 'lit';
 import '../lib/foundations.ts';
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Foundations/Scales',
   tags: ['!autodocs'],
-};
+});
 
-export default meta;
-type Story = StoryObj;
-
-export const Tokens: Story = {
+export const Tokens = meta.story({
   render: () => html`
     <p>
       Non-color tokens at both densities, read from <code>tokens.css</code>. Font sizes do not
@@ -18,4 +15,4 @@ export const Tokens: Story = {
     </p>
     <wb-scales></wb-scales>
   `,
-};
+});

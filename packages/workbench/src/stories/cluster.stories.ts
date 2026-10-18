@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkCluster } from '@dieselpunk/core';
@@ -9,7 +9,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkCluster>('punk-cluster');
 
-const meta: Meta<StoryArgs<PunkCluster>> = {
+const meta = preview.type<{ args: StoryArgs<PunkCluster> }>().meta({
   title: 'Components/Cluster',
   component: 'punk-cluster',
   args: {
@@ -34,12 +34,9 @@ A row that wraps onto further lines when its children do not fit, with a gap fro
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkCluster>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const buttons = html`<punk-button>Start</punk-button><punk-button>Pause</punk-button
   ><punk-button variant="danger">Stop</punk-button>`;
@@ -83,10 +80,10 @@ const clusters = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${clusters()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(clusters),
-};
+});

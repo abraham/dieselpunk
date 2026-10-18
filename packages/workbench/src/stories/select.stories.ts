@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkSelect } from '@dieselpunk/core';
@@ -8,7 +8,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkSelect>('punk-select');
 
-const meta: Meta<StoryArgs<PunkSelect>> = {
+const meta = preview.type<{ args: StoryArgs<PunkSelect> }>().meta({
   title: 'Components/Select',
   component: 'punk-select',
   args: { ...args, label: 'Squadron' },
@@ -39,12 +39,9 @@ A single choice from a list, with a native \`<select>\` in its shadow tree. Writ
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkSelect>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const fields = () => html`
   <div class="wb-stack" style="max-inline-size: 420px">
@@ -85,10 +82,10 @@ const fields = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${fields()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(fields),
-};
+});

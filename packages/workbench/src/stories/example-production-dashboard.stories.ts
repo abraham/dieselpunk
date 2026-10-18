@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html, render } from 'lit';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import type { PunkSwitch } from '@dieselpunk/core';
 import '@dieselpunk/core/meter/register.js';
 import '@dieselpunk/core/production-stat/register.js';
@@ -7,11 +8,12 @@ import '@dieselpunk/core/progress-bar/register.js';
 import '@dieselpunk/core/status-light/register.js';
 import '@dieselpunk/core/switch/register.js';
 import '@dieselpunk/core/window/register.js';
+import { pause } from '../lib/flow.ts';
 import { createProductionDemo } from '../lib/production-demo.ts';
 import type { DemoState } from '../lib/production-demo.ts';
 import { sparkline } from '../lib/sparkline.ts';
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Examples/Production dashboard',
   tags: ['!autodocs'],
   parameters: {
@@ -22,10 +24,7 @@ const meta: Meta = {
       },
     },
   },
-};
-
-export default meta;
-type Story = StoryObj;
+});
 
 const series = [
   ['iron', 'Iron plates'],
@@ -112,7 +111,7 @@ const dashboard = (state: DemoState) => html`
  * Updates set properties and nothing else: no focus moves, and nothing is a live region, so a
  * screen reader is not told about each second. The timer stops when the story leaves the page.
  */
-export const ProductionDashboard: Story = {
+export const ProductionDashboard = meta.story({
   render: () => {
     const demo = createProductionDemo();
     const host = document.createElement('div');
@@ -163,4 +162,39 @@ export const ProductionDashboard: Story = {
     start();
     return host;
   },
-};
+});
+
+export const ProductionDashboardFlow = ProductionDashboard.extend({
+  name: 'Production dashboard flow',
+  tags: ['!dev', '!autodocs', 'flow'],
+  play: async ({ canvasElement }) => {
+    const host = canvasElement.querySelector<HTMLElement>('[data-ticks]');
+    const ticks = () => Number(host?.dataset['ticks']);
+    const toggle = canvasElement.querySelector<PunkSwitch>('punk-switch');
+    await expect(toggle).toBeVisible();
+    toggle?.focus();
+    const before = ticks();
+    await pause(2500);
+    await expect(ticks() - before).toBeGreaterThanOrEqual(2);
+    // Updates set properties and nothing else: focus stays, and nothing announces.
+    await expect(toggle).toHaveFocus();
+    await expect(
+      canvasElement.querySelectorAll(
+        'punk-production-stat[announce], punk-production-stat[role], [aria-live]',
+      ),
+    ).toHaveLength(0);
+    await expect(
+      canvasElement.querySelector('punk-production-stat')?.shadowRoot?.textContent,
+    ).not.toBe('');
+
+    await userEvent.click(toggle as PunkSwitch);
+    await waitFor(() => expect(host?.dataset['paused']).toBe('true'));
+    const stopped = ticks();
+    await pause(2500);
+    await expect(ticks()).toBe(stopped);
+
+    await userEvent.click(toggle as PunkSwitch);
+    await pause(2500);
+    await expect(ticks()).toBeGreaterThan(stopped);
+  },
+});

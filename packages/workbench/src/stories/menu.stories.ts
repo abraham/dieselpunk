@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkMenu } from '@dieselpunk/core';
@@ -24,9 +24,10 @@ const items = `
   <punk-menu-item type="radio" value="large">Large icons</punk-menu-item>
 `;
 
-const meta: Meta<StoryArgs<PunkMenu>> = {
+const meta = preview.type<{ args: StoryArgs<PunkMenu> }>().meta({
   title: 'Components/Menu',
   component: 'punk-menu',
+  subcomponents: { 'punk-menu-item': 'punk-menu-item' },
   args: { ...args, 'default-slot': items },
   argTypes,
   render: (storyArgs) =>
@@ -50,14 +51,11 @@ A menu of \`punk-menu-item\` commands in the top layer, anchored to its trigger:
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkMenu>>;
+export const Playground = meta.story();
 
-export const Playground: Story = {};
-
-export const ContextMenu: Story = {
+export const ContextMenu = meta.story({
   render: () => html`
     <div class="wb-stack" style="min-block-size: 360px">
       ${group(
@@ -77,9 +75,9 @@ export const ContextMenu: Story = {
       )}
     </div>
   `,
-};
+});
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`
     <div style="min-block-size: 360px">
       <punk-button>Blueprint</punk-button>
@@ -97,4 +95,4 @@ export const States: Story = {
       </punk-menu>
     </div>
   `,
-};
+});

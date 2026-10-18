@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html } from 'lit';
 import '@dieselpunk/core/panel/register.js';
 import '@dieselpunk/core/divider/register.js';
@@ -8,15 +8,12 @@ import '@dieselpunk/core/progress-bar/register.js';
 import '@dieselpunk/core/tooltip/register.js';
 import { icon } from '../icons/icons.ts';
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Foundations/Machine panel',
   tags: ['!autodocs'],
-};
+});
 
-export default meta;
-type Story = StoryObj;
-
-export const MachinePanel: Story = {
+export const MachinePanel = meta.story({
   name: 'Machine panel',
   render: () => html`
     <div class="wb-stack" style="max-inline-size: 640px">
@@ -83,4 +80,4 @@ export const MachinePanel: Story = {
       </punk-panel>
     </div>
   `,
-};
+});

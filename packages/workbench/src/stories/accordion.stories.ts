@@ -1,17 +1,19 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkAccordion } from '@dieselpunk/core';
 import '@dieselpunk/core/accordion/register.js';
 import { icon } from '../icons/icons.ts';
+import { axeConfig, repeatedLandmarks } from '../lib/a11y.ts';
 import { group, themeDensityMatrix } from '../lib/matrix.ts';
 import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkAccordion>('punk-accordion');
 
-const meta: Meta<StoryArgs<PunkAccordion>> = {
+const meta = preview.type<{ args: StoryArgs<PunkAccordion> }>().meta({
   title: 'Components/Accordion',
   component: 'punk-accordion',
+  subcomponents: { 'punk-accordion-item': 'punk-accordion-item' },
   args: {
     ...args,
     'default-slot':
@@ -38,12 +40,9 @@ A stack of collapsible sections. Each \`punk-accordion-item\` is a heading holdi
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkAccordion>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const items = () => html`
   <div class="wb-stack">
@@ -60,9 +59,9 @@ const items = () => html`
     ${group(
       'Multiple',
       html`<punk-accordion multiple>
-        <punk-accordion-item heading="Inputs" expanded><p>Iron plates.</p></punk-accordion-item>
-        <punk-accordion-item heading="Outputs" expanded><p>Gears.</p></punk-accordion-item>
-        <punk-accordion-item heading="Maintenance"><p>Weekly.</p></punk-accordion-item>
+        <punk-accordion-item heading="Fuel" expanded><p>Coal.</p></punk-accordion-item>
+        <punk-accordion-item heading="Byproducts" expanded><p>Slag.</p></punk-accordion-item>
+        <punk-accordion-item heading="Repairs"><p>Weekly.</p></punk-accordion-item>
       </punk-accordion>`,
     )}
     ${group(
@@ -89,10 +88,11 @@ const items = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${items()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(items),
-};
+  parameters: { a11y: { config: axeConfig(repeatedLandmarks) } },
+});

@@ -1,8 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkTree } from '@dieselpunk/core';
 import '@dieselpunk/core/tree/register.js';
+import { axeConfig } from '../lib/a11y.ts';
 import { group, themeDensityMatrix } from '../lib/matrix.ts';
 import type { StoryArgs } from '../lib/types.ts';
 
@@ -23,9 +24,10 @@ const nodes = html`
   <punk-tree-item label="Logistics" value="logistics"></punk-tree-item>
 `;
 
-const meta: Meta<StoryArgs<PunkTree>> = {
+const meta = preview.type<{ args: StoryArgs<PunkTree> }>().meta({
   title: 'Components/Tree',
   component: 'punk-tree',
+  subcomponents: { 'punk-tree-item': 'punk-tree-item' },
   args: { ...args, selection: 'single' },
   argTypes,
   render: (storyArgs) =>
@@ -36,6 +38,14 @@ const meta: Meta<StoryArgs<PunkTree>> = {
       >${nodes}</punk-tree
     >`,
   parameters: {
+    a11y: {
+      // An open parent shows its children inside it, so axe counts their text as its visible label.
+      // Its name is its label, which is in that text, so it meets WCAG 2.5.3 (as in core's axe.ts).
+      config: axeConfig({
+        id: 'label-content-name-mismatch',
+        selector: '*:not(punk-tree-item[expanded])',
+      }),
+    },
     docs: {
       description: {
         component: `
@@ -56,12 +66,9 @@ collapses, and \`punk-toggle\` reports it.
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkTree>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const trees = () => html`
   <div class="wb-stack">
@@ -73,10 +80,10 @@ const trees = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 360px">${trees()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(trees),
-};
+});

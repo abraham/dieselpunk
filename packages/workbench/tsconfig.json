@@ -6,5 +6,5 @@
     "resolveJsonModule": true,
     "types": ["vite/client"]
   },
-  "include": ["src/**/*.ts", ".storybook/**/*.ts"]
+  "include": ["src/**/*.ts", ".storybook/**/*.ts", "vitest.config.ts"]
 }

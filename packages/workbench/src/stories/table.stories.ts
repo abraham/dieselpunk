@@ -1,6 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
+import { expect, waitFor } from 'storybook/test';
 import type { PunkTable } from '@dieselpunk/core';
 import '@dieselpunk/core/table/register.js';
 import { group } from '../lib/matrix.ts';
@@ -48,7 +49,7 @@ const sort = (event: CustomEvent<{ key: string; direction: string }>) => {
   table.append(...rows);
 };
 
-const meta: Meta<StoryArgs<PunkTable>> = {
+const meta = preview.type<{ args: StoryArgs<PunkTable> }>().meta({
   title: 'Components/Table',
   component: 'punk-table',
   args: { ...args, 'default-slot': tableHtml },
@@ -69,14 +70,20 @@ Tabular data in a native \`<table>\` you write inside it, which keeps its own se
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkTable>>;
+export const Playground = meta.story();
 
-export const Playground: Story = {};
-
-export const States: Story = {
+export const States = meta.story({
+  // The narrow table's scroll area becomes a tab stop once its ResizeObserver reports the overflow.
+  play: async ({ canvasElement }) => {
+    const narrow = canvasElement.querySelector('punk-table:not([sort-key="count"])');
+    await waitFor(() =>
+      expect(narrow?.shadowRoot?.querySelector('[part="scroller"]')?.getAttribute('tabindex')).toBe(
+        '0',
+      ),
+    );
+  },
   render: () => html`
     <div class="wb-stack" @punk-sort-change=${sort}>
       ${group(
@@ -148,4 +155,4 @@ export const States: Story = {
       )}
     </div>
   `,
-};
+});

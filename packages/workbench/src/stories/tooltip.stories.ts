@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkTooltip } from '@dieselpunk/core';
@@ -9,7 +9,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkTooltip>('punk-tooltip');
 
-const meta: Meta<StoryArgs<PunkTooltip>> = {
+const meta = preview.type<{ args: StoryArgs<PunkTooltip> }>().meta({
   title: 'Components/Tooltip',
   component: 'punk-tooltip',
   args: { ...args, 'default-slot': 'Starts the assembler' },
@@ -44,20 +44,17 @@ A themed matrix cannot hold open tooltips side by side, because only one can be 
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkTooltip>>;
+export const Playground = meta.story();
 
-export const Playground: Story = {};
-
-export const Open: Story = {
+export const Open = meta.story({
   play: ({ canvasElement }) => {
     canvasElement.querySelector('punk-tooltip')?.show();
   },
-};
+});
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`
     <div class="wb-stack">
       ${group(
@@ -90,9 +87,9 @@ export const States: Story = {
       )}
     </div>
   `,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () =>
     themeDensityMatrix(
       () => html`
@@ -102,4 +99,4 @@ export const ThemeAndDensityMatrix: Story = {
         </div>
       `,
     ),
-};
+});

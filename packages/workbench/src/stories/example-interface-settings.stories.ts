@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html, render } from 'lit';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import '@dieselpunk/core/connection-row/register.js';
 import '@dieselpunk/core/item-stack/register.js';
 import '@dieselpunk/core/meter/register.js';
@@ -12,7 +13,7 @@ import { item } from '../icons/items.ts';
 import { locales, setLocale } from '../lib/localization.ts';
 import { densities, paletteThemes } from '../lib/options.ts';
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Examples/Interface settings',
   tags: ['!autodocs'],
   parameters: {
@@ -23,12 +24,9 @@ const meta: Meta = {
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj;
-
-export const InterfaceSettings: Story = {
+export const InterfaceSettings = meta.story({
   render: () => {
     const host = document.createElement('div');
     host.className = 'wb-stack';
@@ -142,4 +140,39 @@ export const InterfaceSettings: Story = {
     draw();
     return host;
   },
-};
+});
+
+// Ends in English, so a language chosen here does not carry over to the next story.
+export const InterfaceSettingsFlow = InterfaceSettings.extend({
+  name: 'Interface settings flow',
+  tags: ['!dev', '!autodocs', 'flow'],
+  play: async ({ canvasElement }) => {
+    const page = canvasElement.ownerDocument.documentElement;
+    const name = () =>
+      canvasElement
+        .querySelector('punk-connection-row')
+        ?.shadowRoot?.querySelector('[part="remove-button"]')
+        ?.getAttribute('aria-label');
+    const english = 'Remove connection: Iron smelter, Assembler';
+    await waitFor(() => expect(name()).toBe(english));
+    const language = canvasElement
+      .querySelector('punk-select')
+      ?.shadowRoot?.querySelector('select');
+    const languages = [
+      ['ar', 'rtl'],
+      ['de', 'ltr'],
+      ['ja', 'ltr'],
+      ['fr', 'ltr'],
+      ['es', 'ltr'],
+      ['en', 'ltr'],
+    ] as const;
+    for (const [code, dir] of languages) {
+      await userEvent.selectOptions(language as HTMLSelectElement, code);
+      await waitFor(() => expect(page.lang).toBe(code));
+      await expect(page.dir).toBe(dir);
+      await waitFor(() =>
+        code === 'en' ? expect(name()).toBe(english) : expect(name()).not.toBe(english),
+      );
+    }
+  },
+});

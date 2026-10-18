@@ -7,17 +7,24 @@ import '@fontsource/ibm-plex-mono/500.css';
 import '@dieselpunk/core/tokens.css';
 import '@dieselpunk/core/themes.css';
 import '../src/styles/workbench.css';
-import { setCustomElementsManifest } from '@storybook/web-components-vite';
-import type { Preview } from '@storybook/web-components-vite';
-import { setStorybookHelpersConfig } from '@wc-toolkit/storybook-helpers';
+import addonA11y from '@storybook/addon-a11y';
+import addonDocs from '@storybook/addon-docs';
+import { definePreview, setCustomElementsManifest } from '@storybook/web-components-vite';
+import { getStorybookHelpers, setStorybookHelpersConfig } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import manifest from '@dieselpunk/core/custom-elements.json' with { type: 'json' };
+import { axeConfig } from '../src/lib/a11y.ts';
 import { densities, themes } from '../src/lib/options.ts';
 
 setCustomElementsManifest(manifest as Parameters<typeof setCustomElementsManifest>[0]);
 setStorybookHelpersConfig({ hideArgRef: true });
 
-const preview: Preview = {
+// CSF Next's web-components preview leaves this out, and `subcomponents` tables need it. The
+// docs parameter's type does not declare it.
+const docs = { extractArgTypes: (tag: string) => getStorybookHelpers(tag).argTypes } as object;
+
+export default definePreview({
+  addons: [addonDocs(), addonA11y()],
   tags: ['autodocs'],
   initialGlobals: { theme: 'dark', density: 'compact' },
   globalTypes: {
@@ -56,7 +63,16 @@ const preview: Preview = {
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true },
-    backgrounds: { disabled: true },
+    backgrounds: { disable: true },
+    docs,
+    // specs/accessibility.md §13. The addon's default rules stop at WCAG 2.1.
+    a11y: {
+      test: 'error',
+      options: {
+        runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'],
+      },
+      config: axeConfig(),
+    },
     options: {
       storySort: {
         order: [
@@ -140,6 +156,4 @@ const preview: Preview = {
       },
     },
   },
-};
-
-export default preview;
+});

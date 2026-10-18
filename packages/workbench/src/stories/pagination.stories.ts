@@ -1,14 +1,15 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkPagination } from '@dieselpunk/core';
 import '@dieselpunk/core/pagination/register.js';
+import { axeConfig, repeatedLandmarks } from '../lib/a11y.ts';
 import { group, themeDensityMatrix } from '../lib/matrix.ts';
 import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkPagination>('punk-pagination');
 
-const meta: Meta<StoryArgs<PunkPagination>> = {
+const meta = preview.type<{ args: StoryArgs<PunkPagination> }>().meta({
   title: 'Components/Pagination',
   component: 'punk-pagination',
   args: { ...args, page: 5, pages: 12 },
@@ -27,25 +28,37 @@ Moving through the pages of a long result set: a \`nav\` landmark named "Paginat
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkPagination>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const paginations = () => html`
   <div class="wb-stack">
-    ${group('First page', html`<punk-pagination page="1" pages="5"></punk-pagination>`)}
-    ${group('In the middle', html`<punk-pagination page="10" pages="20"></punk-pagination>`)}
-    ${group('Two siblings', html`<punk-pagination page="10" pages="20" siblings="2"></punk-pagination>`)}
+    ${group(
+      'First page',
+      html`<punk-pagination label="Shipment pages" page="1" pages="5"></punk-pagination>`,
+    )}
+    ${group(
+      'In the middle',
+      html`<punk-pagination label="Order pages" page="10" pages="20"></punk-pagination>`,
+    )}
+    ${group(
+      'Two siblings',
+      html`<punk-pagination
+        label="Recipe pages"
+        page="10"
+        pages="20"
+        siblings="2"
+      ></punk-pagination>`,
+    )}
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${paginations()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(paginations),
-};
+  parameters: { a11y: { config: axeConfig(repeatedLandmarks) } },
+});

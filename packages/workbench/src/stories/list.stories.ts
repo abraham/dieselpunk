@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkList } from '@dieselpunk/core';
@@ -16,9 +16,10 @@ const rows = `
   <punk-list-item value="lab">Research lab<span slot="description">Running</span><span slot="end">4/min</span></punk-list-item>
 `;
 
-const meta: Meta<StoryArgs<PunkList>> = {
+const meta = preview.type<{ args: StoryArgs<PunkList> }>().meta({
   title: 'Components/List',
   component: 'punk-list',
+  subcomponents: { 'punk-list-item': 'punk-list-item' },
   args: { ...args, 'aria-label': 'Machines', selection: 'single', 'default-slot': rows },
   argTypes,
   render: (storyArgs) => html`<div style="max-inline-size: 420px">${template(storyArgs)}</div>`,
@@ -37,12 +38,9 @@ A one-column list of \`punk-list-item\` rows: files, queues, search results, set
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkList>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const lists = () => html`
   <div class="wb-stack">
@@ -74,10 +72,10 @@ const lists = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 420px">${lists()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(lists),
-};
+});

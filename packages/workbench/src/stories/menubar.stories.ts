@@ -1,37 +1,44 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
+import preview from '#.storybook/preview';
+import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
+import type { PunkMenubar } from '@dieselpunk/core';
 import '@dieselpunk/core/menubar/register.js';
+import type { StoryArgs } from '../lib/types.ts';
 
-const meta: Meta = {
+const { args, argTypes, template } = getStorybookHelpers<PunkMenubar>('punk-menubar');
+
+const menus = `
+  <punk-menu-item>File</punk-menu-item>
+  <punk-menu>
+    <punk-menu-item value="new">New layout<span slot="shortcut">Ctrl+N</span></punk-menu-item>
+    <punk-menu-item value="open">Open…</punk-menu-item>
+    <hr />
+    <punk-menu-item value="export">Export</punk-menu-item>
+    <punk-menu>
+      <punk-menu-item value="png">As image</punk-menu-item>
+      <punk-menu-item value="json">As blueprint</punk-menu-item>
+    </punk-menu>
+  </punk-menu>
+  <punk-menu-item>Edit</punk-menu-item>
+  <punk-menu>
+    <punk-menu-item value="undo">Undo</punk-menu-item>
+    <punk-menu-item value="redo" disabled>Redo</punk-menu-item>
+  </punk-menu>
+  <punk-menu-item>View</punk-menu-item>
+  <punk-menu>
+    <punk-menu-item type="checkbox" value="grid" checked>Show grid</punk-menu-item>
+    <punk-menu-item type="checkbox" value="flow">Show flow</punk-menu-item>
+  </punk-menu>
+  <punk-menu-item disabled>Window</punk-menu-item>
+  <punk-menu><punk-menu-item value="tile">Tile</punk-menu-item></punk-menu>
+`;
+
+const meta = preview.type<{ args: StoryArgs<PunkMenubar> }>().meta({
   title: 'Components/Menubar',
   component: 'punk-menubar',
-  render: () => html`
-    <punk-menubar aria-label="Workbench">
-      <punk-menu-item>File</punk-menu-item>
-      <punk-menu>
-        <punk-menu-item value="new">New layout<span slot="shortcut">Ctrl+N</span></punk-menu-item>
-        <punk-menu-item value="open">Open…</punk-menu-item>
-        <hr />
-        <punk-menu-item value="export">Export</punk-menu-item>
-        <punk-menu>
-          <punk-menu-item value="png">As image</punk-menu-item>
-          <punk-menu-item value="json">As blueprint</punk-menu-item>
-        </punk-menu>
-      </punk-menu>
-      <punk-menu-item>Edit</punk-menu-item>
-      <punk-menu>
-        <punk-menu-item value="undo">Undo</punk-menu-item>
-        <punk-menu-item value="redo" disabled>Redo</punk-menu-item>
-      </punk-menu>
-      <punk-menu-item>View</punk-menu-item>
-      <punk-menu>
-        <punk-menu-item type="checkbox" value="grid" checked>Show grid</punk-menu-item>
-        <punk-menu-item type="checkbox" value="flow">Show flow</punk-menu-item>
-      </punk-menu>
-      <punk-menu-item disabled>Window</punk-menu-item>
-      <punk-menu><punk-menu-item value="tile">Tile</punk-menu-item></punk-menu>
-    </punk-menubar>
-  `,
+  subcomponents: { 'punk-menu': 'punk-menu', 'punk-menu-item': 'punk-menu-item' },
+  args: { ...args, 'aria-label': 'Workbench', 'default-slot': menus },
+  argTypes,
+  render: (storyArgs) => template(storyArgs),
   parameters: {
     docs: {
       description: {
@@ -50,9 +57,6 @@ Each menu item sends \`punk-activate\`, which bubbles to the menubar.
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj;
-
-export const Playground: Story = {};
+export const Playground = meta.story();

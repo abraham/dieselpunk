@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkIconButton } from '@dieselpunk/core';
@@ -13,7 +13,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkIconButton>('punk-i
 const variants = ['default', 'primary', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
 
-const meta: Meta<StoryArgs<PunkIconButton>> = {
+const meta = preview.type<{ args: StoryArgs<PunkIconButton> }>().meta({
   title: 'Components/Icon Button',
   component: 'punk-icon-button',
   args: { ...args, label: 'Settings', 'default-slot': iconSvg.gear },
@@ -38,12 +38,9 @@ A missing \`label\` is an accessibility problem and warns in development builds.
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkIconButton>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const iconNames: IconName[] = ['gear', 'plus', 'close', 'check', 'info', 'warning'];
 
@@ -62,7 +59,7 @@ const cluster = (props: { variant?: string; disabled?: boolean; loading?: boolea
     `,
   )}`;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`
     <div class="wb-stack">
       ${group(
@@ -99,9 +96,9 @@ export const States: Story = {
       )}
     </div>
   `,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () =>
     themeDensityMatrix(
       () => html`
@@ -111,4 +108,4 @@ export const ThemeAndDensityMatrix: Story = {
         </div>
       `,
     ),
-};
+});

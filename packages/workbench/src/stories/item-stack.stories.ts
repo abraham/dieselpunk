@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkItemStack } from '@dieselpunk/core';
@@ -9,7 +9,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkItemStack>('punk-item-stack');
 
-const meta: Meta<StoryArgs<PunkItemStack>> = {
+const meta = preview.type<{ args: StoryArgs<PunkItemStack> }>().meta({
   title: 'Components/Item Stack',
   component: 'punk-item-stack',
   args: {
@@ -44,12 +44,9 @@ Importing \`item-stack/register.js\` does not register \`punk-slot\`.
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkItemStack>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const stacks = () => html`
   <div class="wb-stack">
@@ -130,10 +127,10 @@ const stacks = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 560px">${stacks()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(stacks),
-};
+});

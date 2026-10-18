@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkTag } from '@dieselpunk/core';
@@ -8,7 +8,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkTag>('punk-tag');
 
-const meta: Meta<StoryArgs<PunkTag>> = {
+const meta = preview.type<{ args: StoryArgs<PunkTag> }>().meta({
   title: 'Components/Tag',
   component: 'punk-tag',
   args: { ...args, 'default-slot': 'Copper', removable: true },
@@ -28,12 +28,9 @@ the focused button goes with it. A tag with no text warns in development.
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkTag>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const tags = () => html`
   <div class="wb-stack">
@@ -49,16 +46,16 @@ const tags = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${tags()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(tags),
-};
+});
 
 /** Removing a tag moves focus to the next one, or to the previous one after the last. */
-export const RemovableFilters: Story = {
+export const RemovableFilters = meta.story({
   render: () => {
     const onRemove = (event: CustomEvent<{ item: HTMLElement }>) => {
       const tag = event.detail.item;
@@ -77,4 +74,4 @@ export const RemovableFilters: Story = {
       <punk-tag removable value="stone">Stone</punk-tag>
     </div>`;
   },
-};
+});

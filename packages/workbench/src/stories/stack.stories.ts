@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkStack } from '@dieselpunk/core';
@@ -10,7 +10,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkStack>('punk-stack');
 
-const meta: Meta<StoryArgs<PunkStack>> = {
+const meta = preview.type<{ args: StoryArgs<PunkStack> }>().meta({
   title: 'Components/Stack',
   component: 'punk-stack',
   args: {
@@ -35,12 +35,9 @@ A column that spaces its children with a gap from the spacing scale. It has no r
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkStack>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const panel = (text: string) => html`<punk-panel variant="flat">${text}</punk-panel>`;
 
@@ -88,10 +85,10 @@ const stacks = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${stacks()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(stacks),
-};
+});

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkWindow } from '@dieselpunk/core';
@@ -10,7 +10,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkWindow>('punk-window');
 
-const meta: Meta<StoryArgs<PunkWindow>> = {
+const meta = preview.type<{ args: StoryArgs<PunkWindow> }>().meta({
   title: 'Components/Window',
   component: 'punk-window',
   args: {
@@ -44,12 +44,9 @@ A titled application window, optionally modal, movable, and dismissible. Give it
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkWindow>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const launcher = (modal: boolean) => html`
   <punk-button
@@ -111,15 +108,15 @@ const windows = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 640px">${windows()}</div>`,
-};
+});
 
 /** A modal window covers the story, so it opens from a button. */
-export const Modal: Story = {
+export const Modal = meta.story({
   render: () => launcher(true),
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(windows),
-};
+});

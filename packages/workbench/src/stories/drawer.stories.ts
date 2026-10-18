@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkDrawer } from '@dieselpunk/core';
@@ -12,7 +12,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkDrawer>('punk-drawe
 const open = (event: Event) =>
   ((event.currentTarget as HTMLElement).nextElementSibling as PunkDrawer | null)?.show();
 
-const meta: Meta<StoryArgs<PunkDrawer>> = {
+const meta = preview.type<{ args: StoryArgs<PunkDrawer> }>().meta({
   title: 'Components/Drawer',
   component: 'punk-drawer',
   args: {
@@ -40,17 +40,14 @@ A panel that slides in from an edge of the viewport: navigation, filters, or det
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkDrawer>>;
+export const Playground = meta.story();
 
-export const Playground: Story = {};
-
-export const End: Story = {
+export const End = meta.story({
   args: { placement: 'end', heading: 'Machine details' },
-};
+});
 
-export const Bottom: Story = {
+export const Bottom = meta.story({
   args: { placement: 'bottom', heading: 'Production log', modal: false },
-};
+});

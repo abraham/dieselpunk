@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html } from 'lit';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import type { PunkSelectionChangeDetail } from '@dieselpunk/core';
 import '@dieselpunk/core/panel/register.js';
 import '@dieselpunk/core/divider/register.js';
@@ -14,21 +15,19 @@ import '@dieselpunk/core/status-light/register.js';
 import { icon } from '../icons/icons.ts';
 import { item, itemLabels, itemNames } from '../icons/items.ts';
 import { applicationShell } from '../lib/application-shell.ts';
+import { byText } from '../lib/flow.ts';
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Overview',
   tags: ['!autodocs'],
-};
-
-export default meta;
-type Story = StoryObj;
+});
 
 const showSelection = (event: CustomEvent<PunkSelectionChangeDetail>) => {
   const output = (event.currentTarget as HTMLElement).parentElement?.querySelector('output');
   if (output) output.textContent = event.detail.values.join(', ') || 'nothing selected';
 };
 
-export const Inventory: Story = {
+export const Inventory = meta.story({
   render: () => html`
     <div class="wb-stack" style="max-inline-size: 720px">
       <div>
@@ -162,9 +161,48 @@ export const Inventory: Story = {
       </punk-panel>
     </div>
   `,
-};
+});
 
-export const ApplicationShell: Story = {
+export const ApplicationShell = meta.story({
   name: 'Application shell',
   render: () => applicationShell(),
-};
+});
+
+// Escape on the dialog and the menu, and where focus returns, need real keys: they stay in the
+// smoke test (specs/workbench.md §5).
+export const ApplicationShellFlow = ApplicationShell.extend({
+  name: 'Application shell flow',
+  tags: ['!dev', '!autodocs', 'flow'],
+  play: async ({ canvasElement }) => {
+    const tab = (name: string) => byText(canvasElement, 'punk-tab', name);
+    const panel = (name: string) => canvasElement.querySelector(`[id$="-${name}"]`);
+    tab('Production').focus();
+    await userEvent.keyboard('{ArrowRight}');
+    await waitFor(() => expect(tab('Modules')).toHaveAttribute('aria-selected', 'true'));
+    await expect(panel('production')).not.toBeVisible();
+    await expect(panel('modules')).toBeVisible();
+
+    await userEvent.keyboard('{ArrowRight}');
+    await waitFor(() =>
+      expect(canvasElement.querySelector('form output')).toHaveTextContent('name = Assembler 03'),
+    );
+
+    const dialog = () =>
+      canvasElement.querySelector('punk-dialog')?.shadowRoot?.querySelector('dialog');
+    await userEvent.click(byText(canvasElement, 'punk-button', 'Stop'));
+    await waitFor(() => expect(dialog()?.open).toBe(true));
+    await userEvent.click(byText(canvasElement, 'punk-button', 'Keep crafting'));
+    await waitFor(() => expect(dialog()?.open).toBe(false));
+
+    byText(canvasElement, 'punk-button', 'Actions').focus();
+    await userEvent.keyboard('{ArrowDown}');
+    const copy = byText(canvasElement, 'button', 'Copy recipe');
+    await waitFor(() => expect(copy).toHaveFocus());
+    await userEvent.click(copy);
+    await waitFor(() =>
+      expect(canvasElement.querySelector('punk-toast-stack')).toHaveTextContent(
+        'Copy recipe: done.',
+      ),
+    );
+  },
+});

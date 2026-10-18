@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkSlot } from '@dieselpunk/core';
@@ -11,7 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkSlot>('punk-slot');
 
 const sizes = ['sm', 'md', 'lg'] as const;
 
-const meta: Meta<StoryArgs<PunkSlot>> = {
+const meta = preview.type<{ args: StoryArgs<PunkSlot> }>().meta({
   title: 'Components/Slot',
   component: 'punk-slot',
   args: { ...args, label: 'Engine slot', value: 'engine', 'default-slot': itemMarkup('gear') },
@@ -44,12 +44,9 @@ The square receptacle for an item, a tool, or equipment. The host is the control
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkSlot>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const slots = () => html`
   <div class="wb-stack">
@@ -97,11 +94,11 @@ const slots = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 560px">${slots()}</div>`,
-};
+});
 
-export const StandaloneSelection: Story = {
+export const StandaloneSelection = meta.story({
   name: 'Standalone selection',
   render: () => html`
     <div class="wb-stack">
@@ -127,8 +124,8 @@ export const StandaloneSelection: Story = {
       </div>
     </div>
   `,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(slots),
-};
+});

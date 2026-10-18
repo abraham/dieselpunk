@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkSlider } from '@dieselpunk/core';
@@ -8,7 +8,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkSlider>('punk-slider');
 
-const meta: Meta<StoryArgs<PunkSlider>> = {
+const meta = preview.type<{ args: StoryArgs<PunkSlider> }>().meta({
   title: 'Components/Slider',
   component: 'punk-slider',
   args: { ...args, label: 'Crafting speed', value: 40, 'show-value': true },
@@ -33,12 +33,9 @@ A slider for a number in a range, in steps. It is \`role="slider"\` on the host,
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkSlider>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const sliders = () => html`
   <div class="wb-stack" style="max-inline-size: 420px">
@@ -75,10 +72,10 @@ const sliders = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${sliders()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(sliders),
-};
+});

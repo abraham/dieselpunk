@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkProgressBar } from '@dieselpunk/core';
@@ -10,7 +10,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkProgressBar>('punk-
 
 const variants = ['default', 'success', 'warning', 'danger'] as const;
 
-const meta: Meta<StoryArgs<PunkProgressBar>> = {
+const meta = preview.type<{ args: StoryArgs<PunkProgressBar> }>().meta({
   title: 'Components/Progress Bar',
   component: 'punk-progress-bar',
   args: { ...args, value: 64, label: 'Crafting', showValue: true },
@@ -35,16 +35,13 @@ Values outside \`0\` to \`max\` are clamped, and a value that is not a number sh
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkProgressBar>>;
+export const Playground = meta.story();
 
-export const Playground: Story = {};
-
-export const Indeterminate: Story = {
+export const Indeterminate = meta.story({
   args: { value: undefined, label: 'Searching', showValue: false },
-};
+});
 
 const bars = () => html`
   <div class="wb-stack">
@@ -70,7 +67,7 @@ const bars = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`
     <div class="wb-stack" style="max-inline-size: 480px">
       ${group('Values, indeterminate, variants, and a hidden label', bars())}
@@ -82,8 +79,8 @@ export const States: Story = {
       )}
     </div>
   `,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(bars),
-};
+});
