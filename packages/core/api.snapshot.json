@@ -2077,6 +2077,62 @@
         "--punk-tooltip-offset": "= 8px"
       }
     },
+    "punk-tree": {
+      "attributes": {
+        "selection": "TreeSelection = 'none'"
+      },
+      "properties": {
+        "selection": "TreeSelection = 'none'",
+        "values": "string[]"
+      },
+      "methods": {},
+      "events": {
+        "punk-selection-change": ""
+      },
+      "slots": {
+        "(default)": ""
+      },
+      "parts": {
+        "tree": ""
+      },
+      "cssProperties": {}
+    },
+    "punk-tree-item": {
+      "attributes": {
+        "disabled": "boolean = false",
+        "expanded": "boolean = false",
+        "label": "string = ''",
+        "selected": "boolean = false",
+        "value": "string = ''"
+      },
+      "properties": {
+        "disabled": "boolean = false",
+        "expanded": "boolean = false",
+        "isParent": "boolean",
+        "label": "string = ''",
+        "level": "number",
+        "selected": "boolean = false",
+        "value": "string = ''"
+      },
+      "methods": {},
+      "events": {
+        "punk-activate": "",
+        "punk-toggle": ""
+      },
+      "slots": {
+        "(default)": "",
+        "icon": ""
+      },
+      "parts": {
+        "check": "",
+        "group": "",
+        "icon": "",
+        "label": "",
+        "row": "",
+        "toggle": ""
+      },
+      "cssProperties": {}
+    },
     "punk-window": {
       "attributes": {
         "aria-label": "string | null = null",

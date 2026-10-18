@@ -1,7 +1,7 @@
 # Keyboard, Focus, and Selection
 
-**Scope:** the shared keyboard model, roving focus, activation, the selection model, and grid navigation; and the composite widgets built on them: slot grid, tabs, toolbar, accordion, menu, toggle group, list, and menubar.
-**Code:** `src/internal/roving.ts`, `roving-keys.ts`, `selection-model.ts`, `grid-navigation.ts`, `tab-navigation.ts`, `selectable-base.ts`; `src/components/slot-grid/`, `tabs/`, `toolbar/`, `accordion/`, `menu/`, `toggle-group/`, `list/`, `menubar/`.
+**Scope:** the shared keyboard model, roving focus, activation, the selection model, and grid navigation; and the composite widgets built on them: slot grid, tabs, toolbar, accordion, menu, toggle group, list, menubar, and tree.
+**Code:** `src/internal/roving.ts`, `roving-keys.ts`, `selection-model.ts`, `grid-navigation.ts`, `tab-navigation.ts`, `selectable-base.ts`; `src/components/slot-grid/`, `tabs/`, `toolbar/`, `accordion/`, `menu/`, `toggle-group/`, `list/`, `menubar/`, `tree/`.
 
 ## 1. Keyboard model
 
@@ -213,14 +213,25 @@ The application names the grid with `aria-label`; a missing name warns.
 - **Look.** The toolbar's flat strip, wrapping rather than scrolling, with the menu items' own hover and focus.
 - **Warnings:** no name; no items.
 
+## 14. Tree
+
+`punk-tree` with nested `punk-tree-item` children: hierarchical navigation and selection, the APG tree view. `selection` (`none`, the default, `single`, `multiple`) and `values`, as the list's.
+
+- **Semantics.** The host is `role="tree"` (with `aria-multiselectable` in `multiple`), named by its `aria-label`. Each item host is a `treeitem` named by its `label` (copied to `aria-label`, so its children's text never joins its name), with `aria-level` from its nesting, `aria-expanded` while it has child items, and `aria-disabled`; its children sit in a `role="group"` in its shadow tree, shown only while it is `expanded`. The tree writes `aria-selected` in a selecting tree, and `tabindex`. A parent draws a triangle that turns toward its children while they show.
+- **Keys.** One tab stop: the item last focused, else the first selected one that shows, else the first. `Up` and `Down` move among the enabled items that show, without wrapping; `Home` and `End` go to the first and last. `Right` (`Left` in `rtl`) expands a closed parent and moves into an open one; `Left` collapses an open parent or moves to the item's parent. `*` expands every sibling of the item. A letter moves to the next item whose label starts with it. `Enter` sends `punk-activate` (`{ value, item }`) from the item; in a tree that does not select, so does `Space`.
+- **Selection.** `Space` and a click select (`single`) or toggle (`multiple`) through `SelectionModel` ([§4](#4-selection-model)), and `Ctrl+A` or `Cmd+A` selects every enabled item in `multiple`, hidden ones included. A click also activates. `punk-selection-change` carries `{ values, items }` once per change the user makes, never for `values` from code. Before anything is assigned, items marked `selected` start selected. A selected row shows a check and an `accent` bar on its start edge, a border under forced colors.
+- **Expanding.** A click on a parent's triangle, the keys, or `*` expand and collapse, and send `punk-toggle` (`{ expanded }`) from the item; setting `expanded` from code sends nothing. Collapsing an item that holds focus deeper inside moves focus to it.
+- **Ownership.** The tree owns every item, nested ones included, through the owner protocol ([component-model.md §8](component-model.md)); an item reports changes to its value, state, and children, and is let go when it leaves.
+- **Warnings:** no name; a child that is not an item; items without distinct, non-empty values in a selecting tree.
+
 ## Verification
 
 - Node: `selection-model.test.ts`, `grid-navigation.test.ts`, `roving.test.ts`, `tab-navigation.test.ts`, covering every table row, disabled items, removed keys, empty lists, unequal rows, and `rtl`.
 - Browser: each component's tests cover every key table in `ltr` and `rtl`, both orientations and activation modes, tab-stop survival, events once per user change and never for script changes, ownership restoration, and the warnings.
 - `test/browser/perf.test.ts`: a 100-item grid listens once on itself, reads no layout on a horizontal key and one rectangle per item on a vertical key, changes two `tabindex` values per move, and re-renders only the items whose selection changed.
 - `perf-shell.test.ts`: one `ResizeObserver` per non-wrapping toolbar, none with `wrap`, no layout read on an arrow key.
-- `aria.spec.ts`: slot grid in each mode, tabs with panels inside and beside, toolbar, accordion, an open menu with checkable items and a submenu, the toggle group in each mode, the list with and without selection, and a menubar with a menu open and moving to the next one.
-- `menu.test.ts`: the trigger's ARIA, opening by click and by Down and Up, every key of the table in both directions, typeahead, checkbox and radio items, disabled items, submenus, Escape order, Tab, presses outside, context menus, listeners only while open, and the warnings. `toggle-group.test.ts` and `list.test.ts`: roles in each mode, keys in both directions, events once per user change and never for script changes, initial state from markup, ownership restoration, and the warnings. `menubar.test.ts`: the menubar and its name, the items' ARIA, one tab stop, no arrows, the row's keys in both directions past a disabled item, opening by Enter, Space, Down, Up, and click, moving between open menus and stopping at the ends, a submenu's keys first, Escape, an action, Tab, and the warnings.
+- `aria.spec.ts`: slot grid in each mode, tabs with panels inside and beside, toolbar, accordion, an open menu with checkable items and a submenu, the toggle group in each mode, the list with and without selection, and a menubar with a menu open and moving to the next one, and a tree with a parent open and an item selected.
+- `menu.test.ts`: the trigger's ARIA, opening by click and by Down and Up, every key of the table in both directions, typeahead, checkbox and radio items, disabled items, submenus, Escape order, Tab, presses outside, context menus, listeners only while open, and the warnings. `toggle-group.test.ts` and `list.test.ts`: roles in each mode, keys in both directions, events once per user change and never for script changes, initial state from markup, ownership restoration, and the warnings. `menubar.test.ts`: the menubar and its name, the items' ARIA, one tab stop, no arrows, the row's keys in both directions past a disabled item, opening by Enter, Space, Down, Up, and click, moving between open menus and stopping at the ends, a submenu's keys first, Escape, an action, Tab, and the warnings. `tree.test.ts`: roles, levels, names, and expanded states, children shown only while expanded, indentation in both directions, every key in both directions, `*` and letters, activation, focus kept out of a collapse, both selection modes and `Ctrl+A`, values from markup and code, forced colors, items added and removed, and the warnings. The axe suites (`test/browser/axe.ts`, shared with the locales package) set aside `label-content-name-mismatch` on parent tree items only, since their children's text is inside them while their name is their label.
 
 ## Gaps
 

@@ -30,23 +30,23 @@
 
 `test/browser/fixtures/gallery.ts` renders every component in its states, grouped:
 
-| Group        | Components                                                                                                |
-| ------------ | --------------------------------------------------------------------------------------------------------- |
-| `foundation` | panel, divider, button, icon button, progress bar, tooltip                                                |
-| `inventory`  | slot, item stack, slot grid, recipe, meter, status light                                                  |
-| `production` | production stat, connection row                                                                           |
-| `shell`      | stack, cluster, accordion and its items, tabs and tab, toolbar, non-modal windows, splitter               |
-| `forms`      | checkbox, switch, slider, range slider, text field, number field, select, date field, time field          |
-| `inputs`     | radio group and radio, textarea, combobox, fieldset, file field                                           |
-| `navigation` | toggle group, list and list item, breadcrumb and item, pagination, steps and step, menubar, menu items    |
-| `data`       | table, alert, badge, spinner, keyboard key, description list, tag                                         |
-| `overlays`   | each overlay open on its own page: modal window, dialog, popover in both modes, toast stack, drawer, menu |
+| Group        | Components                                                                                                                 |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `foundation` | panel, divider, button, icon button, progress bar, tooltip                                                                 |
+| `inventory`  | slot, item stack, slot grid, recipe, meter, status light                                                                   |
+| `production` | production stat, connection row                                                                                            |
+| `shell`      | stack, cluster, accordion and its items, tabs and tab, toolbar, non-modal windows, splitter                                |
+| `forms`      | checkbox, switch, slider, range slider, text field, number field, select, date field, time field                           |
+| `inputs`     | radio group and radio, textarea, combobox, fieldset, file field                                                            |
+| `navigation` | toggle group, list and list item, breadcrumb and item, pagination, steps and step, menubar, tree and tree item, menu items |
+| `data`       | table, alert, badge, spinner, keyboard key, description list, tag                                                          |
+| `overlays`   | each overlay open on its own page: modal window, dialog, popover in both modes, toast stack, drawer, menu                  |
 
 Each renders in four content variants: `short`, `long` (German), `unlabeled` (optional labels missing), and `rtl`. Fields marked as touched show their messages. The full gallery (`componentNames`, used by the axe, reflow, and manifest suites) also holds the dialog, popover, drawer, and menu closed, an empty toast stack, and inline toasts of each variant; an open modal would make the rest of the page inert, so overlays are open only in `overlays`.
 
 Suites over the gallery:
 
-- **Axe** (`a11y.test.ts`, `overlays-a11y.test.ts`): every group, theme, density, and variant; no serious or critical violation; two control tests that axe reports a planted violation, one inside a shadow root.
+- **Axe** (`a11y.test.ts`, `overlays-a11y.test.ts`): every group, theme, density, and variant; no serious or critical violation; one exemption, `label-content-name-mismatch` on parent tree items, in `axe.ts` ([keyboard-and-selection.md §14](keyboard-and-selection.md)); two control tests that axe reports a planted violation, one inside a shadow root.
 - **Reflow** (`reflow.test.ts`): 187, 256, 375, and 512px; no component past its container's edge and no container scrolling; overlays against the viewport.
 - **Manifest** (`manifest.test.ts`): rendered parts and slots, observed attributes, and CSS properties read, against the manifest; descriptions present.
 - **Strings** (`strings.test.ts`): no unlocalized text in the pseudo-locale ([localization.md](localization.md) Verification).

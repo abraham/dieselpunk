@@ -56,6 +56,7 @@ import '../../../src/components/file-field/register.ts';
 import '../../../src/components/splitter/register.ts';
 import '../../../src/components/range-slider/register.ts';
 import '../../../src/components/menubar/register.ts';
+import '../../../src/components/tree/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -1013,6 +1014,35 @@ const builders: Record<ComponentName, Builder> = {
       <punk-menu-item disabled>${c.stop}</punk-menu-item>
       <punk-menu><punk-menu-item value="c">${c.stop}</punk-menu-item></punk-menu>
     </punk-menubar>
+  `,
+
+  tree: (c) => {
+    const nodes = (selected: string) => `
+      <punk-tree-item label="${c.title || c.settings}" value="a" expanded>
+        <span slot="icon">${gear}</span>
+        <punk-tree-item label="${c.start}" value="b"${selected}></punk-tree-item>
+        <punk-tree-item label="${c.pause}" value="c" disabled></punk-tree-item>
+        <punk-tree-item label="${c.body}" value="d" expanded>
+          <punk-tree-item label="${c.stop}" value="e"></punk-tree-item>
+        </punk-tree-item>
+      </punk-tree-item>
+      <punk-tree-item label="${c.settings}" value="f">
+        <punk-tree-item label="${c.stop}" value="g"></punk-tree-item>
+      </punk-tree-item>`;
+    return `
+      <div class="stack" style="max-inline-size: 360px">
+        <punk-tree aria-label="${c.settings}">${nodes('')}</punk-tree>
+        <punk-tree aria-label="${c.settings}" selection="multiple">${nodes(' selected')}</punk-tree>
+      </div>
+    `;
+  },
+
+  // An item outside a tree still draws its row; its children show while it is expanded.
+  'tree-item': (c) => `
+    <div role="tree" aria-label="${c.settings}" class="stack" style="max-inline-size: 360px">
+      <punk-tree-item label="${c.start}" expanded><span slot="icon">${gear}</span><punk-tree-item label="${c.pause}" selected></punk-tree-item></punk-tree-item>
+      <punk-tree-item label="${c.stop}" disabled></punk-tree-item>
+    </div>
   `,
 
   'menu-item': (c) => `

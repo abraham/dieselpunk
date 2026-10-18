@@ -576,6 +576,40 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
+  test(
+    'tree, with one parent open and an item selected',
+    { tag: at('navigation') },
+    async ({ page }) => {
+      await render(
+        page,
+        `<punk-tree aria-label="Recipes" selection="single">
+         <punk-tree-item label="Smelting" value="smelting" expanded>
+           <punk-tree-item label="Iron" value="iron" selected></punk-tree-item>
+           <punk-tree-item label="Copper" value="copper" disabled></punk-tree-item>
+         </punk-tree-item>
+         <punk-tree-item label="Assembly" value="assembly">
+           <punk-tree-item label="Gears" value="gears"></punk-tree-item>
+         </punk-tree-item>
+       </punk-tree>`,
+      );
+      await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - tree "Recipes":
+        - treeitem "Smelting" [expanded] [level=1]:
+          - group:
+            - treeitem "Iron" [level=2] [selected]
+            - treeitem "Copper" [disabled] [level=2]
+        - treeitem "Assembly" [level=1]
+    `);
+      await page.getByRole('treeitem', { name: 'Assembly' }).focus();
+      await page.keyboard.press('ArrowRight');
+      await expect(page.getByRole('treeitem', { name: 'Assembly' })).toHaveAttribute(
+        'aria-expanded',
+        'true',
+      );
+      await expect(page.getByRole('treeitem', { name: 'Gears' })).toBeVisible();
+    },
+  );
+
   test('steps', { tag: at('navigation') }, async ({ page }) => {
     await render(
       page,

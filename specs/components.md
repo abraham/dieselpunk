@@ -17,7 +17,7 @@ A planned component is built only after its section exists in its family spec, w
 
 ## 2. Implemented
 
-61 tags in 53 registration entries.
+63 tags in 54 registration entries.
 
 ### 2.1 Layout and surfaces
 
@@ -47,6 +47,7 @@ A planned component is built only after its section exists in its family spec, w
 | `punk-toggle-group`                       | A set of pressed-state buttons, single or multiple: view modes, alignment, filters                      | Implemented | [keyboard-and-selection.md §11](keyboard-and-selection.md) |
 | `punk-list`, `punk-list-item`             | A one-column list of rich rows, optionally selectable: file lists, queues, search results               | Implemented | [keyboard-and-selection.md §12](keyboard-and-selection.md) |
 | `punk-menubar`                            | A persistent row of menus at the top of an application window                                           | Implemented | [keyboard-and-selection.md §13](keyboard-and-selection.md) |
+| `punk-tree`, `punk-tree-item`             | Hierarchical navigation and selection: file trees, tech trees, category browsers                        | Implemented | [keyboard-and-selection.md §14](keyboard-and-selection.md) |
 | `punk-breadcrumb`, `punk-breadcrumb-item` | The path to the current page or folder, collapsing its middle on request                                | Implemented | [layout-and-actions.md §7](layout-and-actions.md)          |
 | `punk-pagination`                         | Moving through pages of a long result set                                                               | Implemented | [layout-and-actions.md §8](layout-and-actions.md)          |
 | `punk-steps`, `punk-step`                 | Progress through a multi-step task, such as a setup wizard                                              | Implemented | [layout-and-actions.md §9](layout-and-actions.md)          |
@@ -118,10 +119,9 @@ None: every component that general-purpose use needs is implemented. The part of
 
 ## 4. Planned (P2)
 
-| Tag(s)                                             | Purpose                                                                          | Basis                                                                                                                                                                                   | Spec                                                   |
-| -------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `punk-tree`, `punk-tree-item`                      | Hierarchical navigation and selection: file trees, tech trees, category browsers | APG tree view; `SelectionModel`; roving focus with expand and collapse keys                                                                                                             | [keyboard-and-selection.md](keyboard-and-selection.md) |
-| Data modes of the slot grid, list, table, and tree | Collections of thousands of items with only the visible ones in the DOM          | `@lit-labs/virtualizer`, as a peer dependency of an optional package, not core; `items` and `renderItem`, `aria-setsize` and `aria-posinset`, selection by value, roving focus by index | [performance.md §4.1](performance.md)                  |
+| Tag(s)                                             | Purpose                                                                 | Basis                                                                                                                                                                                   | Spec                                  |
+| -------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Data modes of the slot grid, list, table, and tree | Collections of thousands of items with only the visible ones in the DOM | `@lit-labs/virtualizer`, as a peer dependency of an optional package, not core; `items` and `renderItem`, `aria-setsize` and `aria-posinset`, selection by value, roving focus by index | [performance.md §4.1](performance.md) |
 
 ## 5. Not planned
 

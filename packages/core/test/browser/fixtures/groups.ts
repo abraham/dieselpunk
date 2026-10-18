@@ -44,6 +44,8 @@ export const galleryGroups = {
     'steps',
     'step',
     'menubar',
+    'tree',
+    'tree-item',
     'menu-item',
   ],
   // Readouts of data and status that sit in the page.

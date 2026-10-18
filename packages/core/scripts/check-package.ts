@@ -83,6 +83,7 @@ const sentinels: Record<string, string> = {
   splitter: 'punk-split-change',
   'range-slider': 'rangeMinimum',
   menubar: 'role="menubar"',
+  tree: '"punk-tree-item"',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = {

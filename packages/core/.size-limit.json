@@ -434,5 +434,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "8.5 kB"
+  },
+  {
+    "name": "punk-tree (both tags)",
+    "path": "dist/components/tree/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "5.75 kB"
   }
 ]
