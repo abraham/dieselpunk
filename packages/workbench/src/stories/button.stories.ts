@@ -9,7 +9,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkButton>('punk-button');
 
-const variants = ['default', 'primary', 'danger'] as const;
+const variants = ['default', 'primary', 'danger', 'confirm'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
 
 const meta = preview.type<{ args: StoryArgs<PunkButton> }>().meta({
@@ -34,7 +34,7 @@ A raised push button. Clicks surface as the native \`click\` event. \`type\` def
 
 A \`disabled\` button cannot be focused. A \`loading\` button stays focusable and announces the loading state, but ignores activation.
 
-Hover and pressed states are interactive, so try them in the stories. The loading and disabled states are shown in the matrix.
+Hover and pressed states are interactive, so try them in the stories. Hover lights a \`default\` button with the accent and shifts a filled one toward the text color; pressing shifts it further. The loading and disabled states are shown in the matrix.
 `,
       },
     },

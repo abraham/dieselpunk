@@ -10,7 +10,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkIconButton>('punk-icon-button');
 
-const variants = ['default', 'primary', 'danger'] as const;
+const variants = ['default', 'primary', 'danger', 'confirm'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
 
 const meta = preview.type<{ args: StoryArgs<PunkIconButton> }>().meta({

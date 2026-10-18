@@ -37,8 +37,16 @@ Layout primitives with no decoration, no role, and no parts.
 
 - **Structure.** A native `<button type="button">` fills the host, with `delegatesFocus`. Subclasses supply its content and may add content after it.
 - **Size.** `size` (`sm`, `md`, `lg`) sets a minimum height from `--punk-control-height-<size>` and an icon box from `--punk-icon-size-<size>`. Height is a minimum, not a fixed value, so a wrapping label grows the button; the host is at most 100% wide.
-- **Variants.** `default`, `primary` (accent fill with `accent-text`), `danger` (danger fill with `danger-text`). Under forced colors, `primary` has a 4px border and `danger` a dashed one, so a destructive action keeps its cue.
-- **States.** Idle raised; hover adds the hover ring; active presses in (the inset shadow, and the content shifts 1px down and toward the inline end; a default button also takes the inset fill); focus-visible shows the ring; disabled is flat with the disabled colors and a readable label. Hover and press apply only while neither disabled nor loading.
+- **Variants.** `default` (raised panel), `primary` (accent fill with `accent-text`), `danger` (danger fill with `danger-text`), `confirm` (success fill with `success-text`, for an action that commits or approves). Under forced colors, `primary` has a 4px border, `danger` a dashed one, and `confirm` a 4px double one, so each keeps its cue.
+- **States.** Idle raised; hover adds the hover ring; active presses in (the inset shadow, and the content shifts 1px down and toward the inline end); focus-visible shows the ring; disabled is flat with the disabled colors and a readable label. Hover and press apply only while neither disabled nor loading. Fills by state:
+
+  | Variant          | Hover                            | Press                            | Disabled                                                               |
+  | ---------------- | -------------------------------- | -------------------------------- | ---------------------------------------------------------------------- |
+  | `default`        | `accent` with `accent-text`      | `accent` mixed 45% toward `text` | `disabled-fill` with `disabled-text`                                   |
+  | The filled three | Its fill mixed 25% toward `text` | Its fill mixed 45% toward `text` | Its fill mixed 30% into `disabled-fill`, text 45% into `disabled-text` |
+
+  Mixing toward `text` lightens a fill on dark themes and darkens it on light ones; the contrast gate checks each fill's text on both mixes ([visual-system.md §4.1](visual-system.md)). A disabled filled button keeps a trace of its fill so its kind still shows; under forced colors every disabled button is `GrayText`.
+
 - **Disabled.** Sets the inner button's `disabled`. A capturing click listener on the host stops clicks in the host's padding from reaching any listener or form action. A disabled `<fieldset>` ancestor disables the button outside its first `<legend>`, read on every render.
 - **Loading.** `aria-disabled="true"` and `aria-busy="true"` on the inner button, without `disabled`, so focus stays. Clicks are suppressed. The label is kept at `opacity: 0`, so the width and the accessible name do not change, and a CSS gear spinner sits over it (static under reduced motion). A visually hidden `role="status"` beside the inner button says "Loading".
 - **Forms.** The class is form-associated. With `type="submit"` a click calls `requestSubmit()` on its form, and with `type="reset"` `reset()`. `type` defaults to `button`, unlike the native default, to prevent accidental submission. `SubmitEvent.submitter` is `null`, a platform limit.

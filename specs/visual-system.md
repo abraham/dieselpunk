@@ -146,7 +146,7 @@ If a theme fails a rule, the theme's token changes. The rule does not.
 
 - `forcedColorsSurface(selector, colors?)` returns the `@media (forced-colors: active)` block for one surface: gradients, texture, and bevels become a 2px solid border in system colors (`Canvas`/`CanvasText`, or `ButtonFace`/`ButtonText` for controls).
 - Selected and active emphasis uses `Highlight`, disabled uses `GrayText`, and focus a `Highlight` outline.
-- States stay apart by outline style, not color: selected is a heavy `Highlight` outline, highlighted dotted, invalid dashed. Variants that differ only by fill gain a border difference (a primary button's 4px border, a danger button's dashed border).
+- States stay apart by outline style, not color: selected is a heavy `Highlight` outline, highlighted dotted, invalid dashed. Variants that differ only by fill gain a border difference (a primary button's 4px border, a danger button's dashed border, a confirm button's double border).
 - Glyphs drawn as background images are erased by forced colors, so every glyph is drawn with a system color (`ButtonText`, `CanvasText`, `HighlightText`) in a forced-colors rule. Patterns use `Highlight` with `Canvas` gaps, so they survive.
 
 ## 8. The non-color vocabulary

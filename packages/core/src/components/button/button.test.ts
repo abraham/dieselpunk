@@ -79,6 +79,22 @@ function shadowCount(boxShadow: string): number {
   return (boxShadow.match(/inset/g) ?? []).length;
 }
 
+/** How the browser serializes a CSS color, such as a `color-mix()`, as a computed background. */
+function computedColor(color: string): string {
+  const probe = track(document.createElement('div'));
+  probe.style.background = color;
+  return getComputedStyle(probe).backgroundColor;
+}
+
+const fills = [
+  ['primary', 'color-accent', 'color-accent-text'],
+  ['danger', 'color-danger', 'color-danger-text'],
+  ['confirm', 'color-success', 'color-success-text'],
+] as const;
+
+const towardText = (fill: string, share: number) =>
+  computedColor(`color-mix(in srgb, ${fill}, ${dark['color-text']} ${share}%)`);
+
 function container(attributes: Record<string, string> = {}): HTMLElement {
   const element = track(document.createElement('div'));
   for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, value);
@@ -363,6 +379,10 @@ describe('variants, sizes, and states', () => {
     const danger = getComputedStyle(inner(await mount({ variant: 'danger' })));
     expect(danger.color).toBe(rgb(dark['color-danger-text']));
     expect(danger.backgroundColor).toBe(rgb(dark['color-danger']));
+
+    const confirm = getComputedStyle(inner(await mount({ variant: 'confirm' })));
+    expect(confirm.color).toBe(rgb(dark['color-success-text']));
+    expect(confirm.backgroundColor).toBe(rgb(dark['color-success']));
   });
 
   it('renders an unknown variant or size as the default', async () => {
@@ -389,6 +409,35 @@ describe('variants, sizes, and states', () => {
     expect(style.backgroundColor).toBe(rgb(dark['color-disabled-fill']));
     expect(style.color).toBe(rgb(dark['color-disabled-text']));
     expect(style.backgroundImage).toBe('none');
+  });
+
+  it('keeps a trace of its fill when a filled variant is disabled', async () => {
+    for (const [variant, fill] of fills) {
+      const style = getComputedStyle(inner(await mount({ variant, disabled: true })));
+      const expected = `color-mix(in srgb, ${dark[fill]} 30%, ${dark['color-disabled-fill']})`;
+      expect(style.backgroundColor, variant).toBe(computedColor(expected));
+      expect(style.backgroundImage, variant).toBe('none');
+    }
+  });
+
+  it('lights the default button with the accent on hover', async () => {
+    const button = await mount();
+    await userEvent.hover(button);
+    const hovered = getComputedStyle(inner(button));
+    expect(hovered.backgroundColor).toBe(rgb(dark['color-accent']));
+    expect(hovered.backgroundImage).toBe('none');
+    expect(hovered.color).toBe(rgb(dark['color-accent-text']));
+  });
+
+  it('mixes a filled fill a quarter toward the text on hover', async () => {
+    for (const [variant, fill, text] of fills) {
+      const button = await mount({ variant });
+      await userEvent.hover(button);
+      const hovered = getComputedStyle(inner(button));
+      expect(hovered.backgroundColor, variant).toBe(towardText(dark[fill], 25));
+      expect(hovered.backgroundImage, variant).toBe('none');
+      expect(hovered.color, variant).toBe(rgb(dark[text]));
+    }
   });
 
   it('strengthens its edges on hover', async () => {
@@ -419,19 +468,23 @@ describe('variants, sizes, and states', () => {
     const pressed = getComputedStyle(inner(button));
     const content = getComputedStyle(part(button, 'label').parentElement as HTMLElement);
     expect(pressed.boxShadow.startsWith(rgb(dark['color-edge-dark']))).toBe(true);
-    expect(pressed.backgroundColor).toBe(rgb(dark['color-panel-inset']));
+    expect(pressed.backgroundColor).toBe(towardText(dark['color-accent'], 45));
+    expect(pressed.color).toBe(rgb(dark['color-accent-text']));
     expect(content.top).toBe('1px');
     expect(content.left).toBe('1px');
   });
 
-  it('keeps the filled fill when a primary button is pressed', async () => {
-    const button = await mount({ variant: 'primary', id: 'subject' });
-    pointerHeld = true;
-    await commands.holdPointer('#subject');
-    const pressed = getComputedStyle(inner(button));
-    expect(pressed.boxShadow.startsWith(rgb(dark['color-edge-dark']))).toBe(true);
-    expect(pressed.backgroundImage).toContain('linear-gradient');
-  });
+  for (const [variant, fill, text] of fills) {
+    it(`mixes the ${variant} fill further toward the text when pressed`, async () => {
+      const button = await mount({ variant, id: 'subject' });
+      pointerHeld = true;
+      await commands.holdPointer('#subject');
+      const pressed = getComputedStyle(inner(button));
+      expect(pressed.boxShadow.startsWith(rgb(dark['color-edge-dark']))).toBe(true);
+      expect(pressed.backgroundColor).toBe(towardText(dark[fill], 45));
+      expect(pressed.color).toBe(rgb(dark[text]));
+    });
+  }
 });
 
 describe('focus ring (12.4.7)', () => {
@@ -440,7 +493,7 @@ describe('focus ring (12.4.7)', () => {
   it('is drawn for keyboard focus on every variant in every theme', async () => {
     addStylesheets();
     for (const theme of themeNames) {
-      for (const variant of ['default', 'primary', 'danger'] as const) {
+      for (const variant of ['default', 'primary', 'danger', 'confirm'] as const) {
         const wrapper = container({ 'data-punk-theme': theme });
         const button = await mount({ variant, parent: wrapper });
         await focusWithKeyboard(button);
@@ -584,7 +637,7 @@ describe('forced colors', () => {
     'tells the variants apart by border, since colors are unavailable',
     async () => {
       const buttons = await Promise.all(
-        (['default', 'primary', 'danger'] as const).map((variant) => mount({ variant })),
+        (['default', 'primary', 'danger', 'confirm'] as const).map((variant) => mount({ variant })),
       );
       await commands.setForcedColors('active');
       try {
@@ -592,7 +645,23 @@ describe('forced colors', () => {
           const style = getComputedStyle(inner(button));
           return `${style.borderTopWidth} ${style.borderTopStyle}`;
         });
-        expect(new Set(borders).size).toBe(3);
+        expect(new Set(borders).size).toBe(4);
+      } finally {
+        await commands.setForcedColors(null);
+      }
+    },
+  );
+
+  it.skipIf(server.browser !== 'chromium')(
+    'draws every disabled variant in the same system color',
+    async () => {
+      const buttons = await Promise.all(
+        (['default', 'confirm'] as const).map((variant) => mount({ variant, disabled: true })),
+      );
+      await commands.setForcedColors('active');
+      try {
+        const [plain, filled] = buttons.map((button) => getComputedStyle(inner(button)).color);
+        expect(filled).toBe(plain);
       } finally {
         await commands.setForcedColors(null);
       }

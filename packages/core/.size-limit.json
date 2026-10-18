@@ -90,7 +90,7 @@
     "path": "dist/components/button/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.2 kB"
+    "limit": "5.5 kB"
   },
   {
     "name": "punk-progress-bar",
@@ -272,7 +272,7 @@
     "path": "dist/components/icon-button/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "8.05 kB"
+    "limit": "8.35 kB"
   },
   {
     "name": "punk-radio-group (both tags)",
