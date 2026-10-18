@@ -1,7 +1,7 @@
 # Security
 
 **Scope:** what keeps the published packages, the release path, and the pages that use them safe: the threat model, rules for shipped code, checks on each change (code, dependencies, workflows), the provenance of a release, and how findings are handled. Known advisories in dependencies are Dependabot's (§5.1); this spec's checks run on changes and releases, never on a schedule.
-**Code:** `eslint.config.js`, `packages/testing/test/security-lint.test.ts`, `scripts/check-lockfile.ts`, `.install-scripts.json`, `packages/testing/test/workflows.test.ts`, `packages/core/test/package/csp/`, `.github/workflows/ci.yml` (the `security` job), `.github/workflows/publish.yml`, `.github/dependabot.yml`, `SECURITY.md`.
+**Code:** `eslint.config.js`, `packages/testing/test/security-lint.test.ts`, `scripts/check-lockfile.ts`, `packages/testing/src/lockfile.ts`, `.install-scripts.json`, `packages/testing/test/workflows.test.ts`, `packages/core/test/package/csp/`, `.github/workflows/ci.yml` (the `security` job), `.github/workflows/publish.yml`, `.github/dependabot.yml`, `SECURITY.md`.
 
 ## 1. Goals
 
@@ -153,17 +153,16 @@ Every check runs in `ci.yml` or `publish.yml`; there is no separate security wor
 - `lint` fails on each sink of §4.1 and §4.4 and an unguarded URL binding of §4.2. `packages/testing/test/security-lint.test.ts` lints a sample of each through the real configuration, as shipped source (it must fail), as a test (it must pass), and as styles (only `unsafeCSS` passes).
 - `test/safe-url.test.ts` covers the schemes `safeUrl()` keeps and drops, including disguised and unparseable ones. The breadcrumb item's browser tests cover the guard in place: an unsafe `href` renders text and warns once per occurrence; `http:`, `https:`, `mailto:`, and relative URLs render links.
 - `check:consumer` serves the gallery, built against the packed package, with the policy of §4.3 as a header. It fails on a violation, on anything logged, on an undefined tag, or if a probe write to an HTML sink is not blocked, which would mean the policy is not in force. With `style-src-attr` or `require-trusted-types-for` removed from the policy, it fails.
-- `scripts/check-lockfile.test.ts` covers §5.2 and §5.3 on recorded lockfiles: registry and integrity checks, and the install-script list, including an entry without a reason and one that matches nothing.
+- `packages/testing/test/lockfile.test.ts` covers §5.2 and §5.3 on recorded lockfiles: registry and integrity checks, and the install-script list, including an unlisted script, an entry without a reason, and one that matches nothing; it also checks the repository's own lockfile. Removing a package from `.install-scripts.json` fails `check:lockfile`.
 - `packages/testing/test/workflows.test.ts` covers §6.2.
 - Each of these gates has been made to fail once against a deliberately broken input ([testing.md §7](testing.md)).
 - Not checked by any gate: the policy for server-rendered pages ([ssr.md §7](ssr.md)), whose fixture drives its pages with inline scripts; and the repository settings (secret scanning, push protection, private vulnerability reporting, Dependabot security updates, the `npm` environment's rules) and npm's trusted publisher configuration, which need administrator access that a workflow token does not have, and are checked by hand before each release.
 
 ## Gaps
 
-Most of this spec is not built yet. What exists: the rules of §4 and their checks, Dependabot version updates, trusted publishing with provenance, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
+Most of this spec is not built yet. What exists: the rules of §4 and their checks, `check:lockfile`, Dependabot version updates, trusted publishing with provenance, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
 
-- **No `check:lockfile`** (§5.2, §5.3) and no `.install-scripts.json`. Closing it adds the script, its Node tests, the root script, the row in [testing.md §9](testing.md), and the step in `static` and `publish.yml`.
 - **No dependency review or CodeQL** (§5.2, §6.1): no `security` job in `ci.yml`.
 - **Workflows do not fully meet §6.2.** The actions are locked, but `static` does not run `gh actions-lock --verify`, there is no workflow test, `actions/checkout` keeps its credentials, `visual.yml` and `update-visual-baselines.yml` have no top-level `permissions:`, and `ci.yml` puts `${{ matrix.part }}` in a `run:` script. Closing it is the verify step and the test, then fixing what they report.
-- **The release lacks §7:** no `npm` environment, no check that the tagged commit passed `ci-success`, no `check:lockfile` step, and no SBOM.
+- **The release lacks §7:** no `npm` environment, no check that the tagged commit passed `ci-success`, and no SBOM.
 - **No `SECURITY.md`**, and the repository settings of §5.1, §6.3, and §9 are unverified.

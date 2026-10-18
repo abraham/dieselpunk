@@ -43,6 +43,7 @@ jobs:
             fi
           done
 
+      - run: npm run check:lockfile
       - run: npm run build
       - run: npm run check:package
 

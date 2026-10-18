@@ -177,6 +177,7 @@ A test or gate is trusted only after it has failed against a deliberately broken
 | `./pseudo`     | Node    | The pseudo-locale transform ([localization.md](localization.md) Verification)                                                                                                        | Core's `build-pseudo.ts`                                           |
 | `./size`       | Node    | The size-reason check ([performance.md §2](performance.md))                                                                                                                          | `check:size` in each package                                       |
 | `./ci`         | Node    | Visual, browser, and smoke job planning, change detection, the budget report, and baseline merging ([ci.md](ci.md))                                                                  | The `plan` job, the baseline workflow                              |
+| `./lockfile`   | Node    | What a lockfile may install: registry, integrity, and listed install scripts ([security.md §5](security.md))                                                                         |
 
 **Stays in its workspace:**
 

@@ -14,7 +14,8 @@
     "./xliff": "./src/xliff.ts",
     "./pseudo": "./src/pseudo.ts",
     "./size": "./src/size.ts",
-    "./ci": "./src/ci.ts"
+    "./ci": "./src/ci.ts",
+    "./lockfile": "./src/lockfile.ts"
   },
   "scripts": {
     "test": "npm run test:node",
