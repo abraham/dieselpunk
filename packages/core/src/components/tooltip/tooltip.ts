@@ -1,4 +1,5 @@
 import { html } from 'lit';
+import { serverValues } from '../../internal/server-values.ts';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -324,7 +325,7 @@ export class PunkTooltip extends PunkElement {
     return html`
       <div
         part="surface"
-        class=${classMap({ surface: true, open: this.open })}
+        class=${classMap({ surface: true, open: this.open && !serverValues() })}
         popover="manual"
         @pointerenter=${this.#onSurfaceEnter}
         @pointerleave=${this.#onSurfaceLeave}

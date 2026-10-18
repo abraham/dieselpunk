@@ -10,12 +10,13 @@
 ```json
 {
   "type": "module",
-  "sideEffects": ["./dist/components/*/register.js", "./dist/css/*.css"],
+  "sideEffects": ["./dist/components/*/register.js", "./dist/css/*.css", "./dist/hydrate.js"],
   "exports": {
     ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
     "./tokens.css": "./dist/css/tokens.css",
     "./themes.css": "./dist/css/themes.css",
     "./custom-elements.json": "./custom-elements.json",
+    "./hydrate.js": { "types": "./dist/hydrate.d.ts", "default": "./dist/hydrate.js" },
     "./*/register.js": "./dist/components/*/register.js",
     "./*": { "types": "./dist/components/*/index.d.ts", "default": "./dist/components/*/index.js" }
   },
@@ -30,6 +31,7 @@
 - `./<entry>/register.js` defines that family's tags. It is the longer pattern, so it wins over `./*` in every resolver; the package check asserts this for every entry.
 - `tokens.css` and `themes.css` are optional ([visual-system.md §1](visual-system.md)).
 - `custom-elements.json` is published for tooling.
+- `hydrate.js` installs the hydration of server-rendered components; a page that hydrates imports it after Lit's hydration support and before any component ([ssr.md §5](ssr.md)). It registers no element.
 
 `@dieselpunk/locales` has `sideEffects: false`, an entry for the loader (`.`), one per target locale, and `document`. None registers an element, and each language is its own chunk ([localization.md §5](localization.md)).
 

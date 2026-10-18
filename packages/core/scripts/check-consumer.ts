@@ -23,6 +23,9 @@ const corePackage = JSON.parse(readFileSync(join(packageDir, 'package.json'), 'u
 const localesDir = join(packageDir, '../locales');
 const OLDEST_TYPESCRIPT = '5.0.4';
 const NEWEST_TYPESCRIPT = rootPackage.devDependencies['typescript'] ?? '~6.0.3';
+// The latest releases of the Lit SSR majors that match core's Lit 3 (specs/ssr.md §1).
+const LIT_SSR = '^4.1.0';
+const LIT_SSR_CLIENT = '^1.1.8';
 
 if (!existsSync(join(packageDir, 'dist')) || !existsSync(join(localesDir, 'dist'))) {
   console.error('dist/ is missing in core or in locales. Run `npm run build` first.');
@@ -402,8 +405,74 @@ async function checkImportMap(project: string): Promise<void> {
   }
 }
 
+// specs/ssr.md Verification: every tag rendered by Lit SSR under Node from the packed package, then
+// upgraded in Chromium with and without Lit's hydration support.
+async function checkServerRendering(core: string): Promise<void> {
+  const project = join(work, 'ssr');
+  installProject(project, {
+    '@dieselpunk/core': `file:${core}`,
+    '@lit-labs/ssr': LIT_SSR,
+    '@lit-labs/ssr-client': LIT_SSR_CLIENT,
+  });
+  cpSync(join(fixtureDir, 'ssr'), join(project, 'ssr'), { recursive: true });
+  const outDir = join(project, 'out');
+  // The development condition also runs the warnings' code paths on the server.
+  const output = run('node', ['--conditions=development', 'ssr/render.js', outDir], project);
+  const report = JSON.parse(output.trim().split('\n').at(-1) ?? '{}') as {
+    tags: number;
+    problems: string[];
+  };
+  problems.push(...report.problems.map((problem) => `server: ${problem}`));
+  console.log(`  rendered ${report.tags} tags on the server`);
+
+  const built = await build({
+    absWorkingDir: project,
+    entryPoints: {
+      'client-plain.bundle': join(outDir, 'client-plain.js'),
+      'client-support.bundle': join(outDir, 'client-support.js'),
+      'client-hydrate.bundle': join(outDir, 'client-hydrate.js'),
+    },
+    bundle: true,
+    format: 'esm',
+    outdir: outDir,
+    metafile: true,
+    logLevel: 'silent',
+  });
+  // The hydration support patches the LitElement it imports, which must be the components' own.
+  const lits = new Set(
+    Object.keys(built.metafile.inputs)
+      .map((input) => /^(.*\/?node_modules\/lit-element\/)/.exec(input)?.[1])
+      .filter((root): root is string => root !== undefined),
+  );
+  if (lits.size !== 1) problems.push(`server: the client bundles ${lits.size} copies of Lit`);
+  cpSync(join(project, 'ssr/ssr-check.js'), join(outDir, 'ssr-check.js'));
+
+  const { server, port } = await serveStatic(outDir);
+  const browser = await chromium.launch();
+  try {
+    for (const name of ['plain', 'support', 'hydrate']) {
+      const tab = await browser.newPage();
+      const messages = watchPage(tab);
+      await tab.goto(`http://localhost:${port}/${name}.html`);
+      await tab.evaluate('window.markServerNodes()');
+      await tab.locator('#typed input').fill('Ada');
+      await tab.evaluate('window.upgrade()');
+      const found = (await tab.evaluate(`window.checkUpgrade(${name === 'hydrate'})`)) as string[];
+      problems.push(...found.map((problem) => `${name}.html: ${problem}`));
+      if (messages.length > 0) problems.push(`${name}.html logged: ${messages.join(' | ')}`);
+      await tab.close();
+    }
+  } finally {
+    await browser.close();
+    server.close();
+  }
+}
+
 try {
   const tarballs = { core: pack(packageDir, work), locales: pack(localesDir, work) };
+
+  console.log('Rendering on a server and upgrading in a browser:');
+  await checkServerRendering(tarballs.core);
 
   console.log('Type-checking the consumer:');
   const oldest = join(work, 'oldest');

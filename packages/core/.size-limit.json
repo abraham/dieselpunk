@@ -44,6 +44,13 @@
     "limit": "1.8 kB"
   },
   {
+    "name": "Hydration (@dieselpunk/core/hydrate.js)",
+    "path": "dist/hydrate.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "0.75 kB"
+  },
+  {
     "name": "Close button and status shapes (shared by window, toast, and fields)",
     "path": ["dist/styles/close-button.js", "dist/styles/status-shape.js"],
     "ignore": ["lit"],
@@ -83,7 +90,7 @@
     "path": "dist/components/button/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5 kB"
+    "limit": "5.2 kB"
   },
   {
     "name": "punk-progress-bar",
@@ -97,35 +104,35 @@
     "path": "dist/components/slot/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "4.85 kB"
+    "limit": "5.05 kB"
   },
   {
     "name": "punk-item-stack (receptacle, durability, quality, and number formatting)",
     "path": "dist/components/item-stack/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.55 kB"
+    "limit": "6.75 kB"
   },
   {
     "name": "punk-slot-grid",
     "path": "dist/components/slot-grid/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5 kB"
+    "limit": "5.1 kB"
   },
   {
     "name": "punk-recipe",
     "path": "dist/components/recipe/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.4 kB"
+    "limit": "5.6 kB"
   },
   {
     "name": "punk-meter",
     "path": "dist/components/meter/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5 kB"
+    "limit": "5.2 kB"
   },
   {
     "name": "punk-status-light",
@@ -139,14 +146,14 @@
     "path": "dist/components/production-stat/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5 kB"
+    "limit": "5.2 kB"
   },
   {
     "name": "punk-connection-row",
     "path": "dist/components/connection-row/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.3 kB"
+    "limit": "5.5 kB"
   },
   {
     "name": "punk-tooltip",
@@ -160,7 +167,7 @@
     "path": "dist/components/stack/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "1.8 kB"
+    "limit": "1.85 kB"
   },
   {
     "name": "punk-cluster",
@@ -195,14 +202,14 @@
     "path": "dist/components/window/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "7.6 kB"
+    "limit": "7.75 kB"
   },
   {
     "name": "punk-dialog",
     "path": "dist/components/dialog/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5 kB"
+    "limit": "5.15 kB"
   },
   {
     "name": "punk-popover",
@@ -216,7 +223,7 @@
     "path": "dist/components/toast/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.6 kB"
+    "limit": "6.75 kB"
   },
   {
     "name": "punk-checkbox",
@@ -237,35 +244,35 @@
     "path": "dist/components/slider/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.5 kB"
+    "limit": "5.6 kB"
   },
   {
     "name": "punk-text-field",
     "path": "dist/components/text-field/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.7 kB"
+    "limit": "5.95 kB"
   },
   {
     "name": "punk-number-field",
     "path": "dist/components/number-field/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.6 kB"
+    "limit": "6.85 kB"
   },
   {
     "name": "punk-select",
     "path": "dist/components/select/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.2 kB"
+    "limit": "6.45 kB"
   },
   {
     "name": "punk-icon-button (includes the tooltip)",
     "path": "dist/components/icon-button/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "7.85 kB"
+    "limit": "8.05 kB"
   },
   {
     "name": "punk-radio-group (both tags)",
@@ -293,7 +300,7 @@
     "path": "dist/components/fieldset/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "3.5 kB"
+    "limit": "3.6 kB"
   },
   {
     "name": "punk-menu (both tags)",
@@ -356,7 +363,7 @@
     "path": "dist/components/breadcrumb/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "4 kB"
+    "limit": "4.1 kB"
   },
   {
     "name": "punk-pagination",
@@ -377,7 +384,7 @@
     "path": "dist/components/description-list/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "1.75 kB"
+    "limit": "1.85 kB"
   },
   {
     "name": "punk-tag",
@@ -398,21 +405,21 @@
     "path": "dist/components/date-field/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.1 kB"
+    "limit": "6.35 kB"
   },
   {
     "name": "punk-time-field",
     "path": "dist/components/time-field/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.1 kB"
+    "limit": "6.35 kB"
   },
   {
     "name": "punk-file-field",
     "path": "dist/components/file-field/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.7 kB"
+    "limit": "6.9 kB"
   },
   {
     "name": "punk-splitter",
@@ -426,7 +433,7 @@
     "path": "dist/components/range-slider/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6 kB"
+    "limit": "6.25 kB"
   },
   {
     "name": "punk-menubar (includes the menu)",

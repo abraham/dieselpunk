@@ -150,6 +150,10 @@ Mounted components re-render when the locale is ready. A message is found by its
 | `dismiss`       | `Dismiss`                                                       | Toast                |
 | `notifications` | `Notifications`                                                 | Toast stack          |
 
+## Server rendering
+
+The components can be rendered to HTML on a server with Lit SSR, and replaced or hydrated in the browser. See the Server rendering guide.
+
 ## Development warnings
 
 The package logs warnings for misuse, such as an icon button with no `label`, when it is resolved with the `development` export condition (Vite does this in dev mode). Production builds drop them.

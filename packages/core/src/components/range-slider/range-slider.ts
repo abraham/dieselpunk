@@ -15,6 +15,7 @@ import {
   snapValue,
   valueFromPointer,
 } from '../../internal/slider-math.ts';
+import { resolveLang } from '../../utilities/locale.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { rangeSliderStyles } from './range-slider.styles.ts';
 
@@ -159,8 +160,8 @@ export class PunkRangeSlider extends PunkFormControl {
     this.warnIfUnnamed(this.resolveName(this.label));
   }
 
-  get #lang(): string {
-    return this.closest('[lang]')?.getAttribute('lang') ?? document.documentElement.lang;
+  get #lang(): string | undefined {
+    return resolveLang(this);
   }
 
   /** Sets one end for the user, and tells the page. Returns whether it changed. */

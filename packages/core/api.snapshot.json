@@ -4,6 +4,7 @@
     "./*",
     "./*/register.js",
     "./custom-elements.json",
+    "./hydrate.js",
     "./themes.css",
     "./tokens.css"
   ],

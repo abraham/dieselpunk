@@ -1,4 +1,5 @@
 import { html } from 'lit';
+import { serverValues } from '../../internal/server-values.ts';
 import type { PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { optionalNumber } from '../../internal/converters.ts';
@@ -74,6 +75,8 @@ export class PunkBreadcrumb extends PunkElement {
 
   /** Places each item: the first in the default slot, the rest after the button, the middle hidden. */
   #sync(): void {
+    // The server has no children (specs/ssr.md §3).
+    if (serverValues()) return;
     const children = [...this.children];
     const found = children.filter(
       (child): child is PunkBreadcrumbItem => child instanceof PunkBreadcrumbItem,
