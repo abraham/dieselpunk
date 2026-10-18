@@ -1,8 +1,11 @@
 {
   "name": "@dieselpunk/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Industrial game-style UI Web Components built with Lit.",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://dieselpunk.dev",
   "repository": {
     "type": "git",
@@ -42,7 +45,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node scripts/build-css.ts && npm run build:manifest",
     "build:css": "node scripts/build-css.ts",
-    "build:manifest": "cem analyze --config custom-elements-manifest.config.mjs",
+    "build:manifest": "cem analyze --config custom-elements-manifest.config.mjs && node scripts/compact-manifest.ts",
     "build:pseudo": "node scripts/build-pseudo.ts",
     "check:api": "node scripts/check-api.ts",
     "check:contrast": "node scripts/check-contrast.ts",

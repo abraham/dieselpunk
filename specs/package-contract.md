@@ -114,6 +114,7 @@ Open and close events report every change of `open`, whoever made it, because an
 ## 7. The Custom Elements Manifest
 
 - Generated from JSDoc by the analyzer: `@tagname`, `@attr`, `@fires`, `@slot`, `@csspart`, `@cssprop`, and member descriptions. Base classes are in the analyzer's globs, so inherited members are documented on each element.
+- Written without indentation (`scripts/compact-manifest.ts` after the analyzer), since tools read it and the indentation is half its size in the package.
 - Every element, attribute, property, method, event, slot, part, and CSS property that is public has a non-empty description.
 - The manifest is checked against what the components do, not against itself: parts and slots are read from the rendered shadow DOM of every gallery state, attributes from `observedAttributes`, and CSS properties from what each component's styles and class actually read ([testing.md §3](testing.md)).
 
@@ -139,12 +140,13 @@ These are implementation contracts between the library's own classes, not applic
 - Removing or renaming any of these is breaking. Adding is minor. Changing a default is breaking unless the old default was a defect.
 - Experimental components are exported under `experimental/` and are outside the guarantee.
 - A deprecated name keeps working for at least one minor release, is marked `@deprecated` in JSDoc, and warns once in development.
-- Versions stay `0.0.0` until the owner releases. Publishing, changelogs, and release automation are the owner's.
+- The published packages are at `0.1.0`, and move together; the private workspaces stay `0.0.0`. Publishing, changelogs, and release automation are the owner's.
 - **License.** MIT, in the repository's `LICENSE`. Each published package's `license` is `MIT`, and it carries an identical `LICENSE` beside its `package.json`, since npm packs only the package's own folder.
+- **Published as public.** Each published package sets `publishConfig.access` to `public`, since npm publishes a scoped package as private otherwise, and has a `README.md` for its npm page.
 
 ## Verification
 
-- `check:package`: the license field and the `LICENSE` copy (§10), export resolution (`register.js` wins), `sideEffects` exactly the register entries and CSS, nothing but a register entry calls `define`, each register bundle holds its own family and only its documented dependency, a class-only import registers nothing; `publint --strict`; `attw` with the `esm-only` profile. The same for the locales package, with its chunk rules.
+- `check:package`: the license field, the `LICENSE` copy, and public access (§10), export resolution (`register.js` wins), `sideEffects` exactly the register entries and CSS, nothing but a register entry calls `define`, each register bundle holds its own family and only its documented dependency, a class-only import registers nothing; `publint --strict`; `attw` with the `esm-only` profile. The same for the locales package, with its chunk rules.
 - `*.registration.test.ts` beside each component: the class entry defines nothing; `register.js` defines the family; a second import does not throw.
 - `test/browser/manifest.test.ts`: the manifest against rendered parts and slots, observed attributes, read CSS properties, and descriptions.
 - `check:api`: the snapshot and descriptions.

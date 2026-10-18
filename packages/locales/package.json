@@ -1,8 +1,11 @@
 {
   "name": "@dieselpunk/locales",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Translations of the messages in @dieselpunk/core, for use with Lit Localize.",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://dieselpunk.dev",
   "repository": {
     "type": "git",
