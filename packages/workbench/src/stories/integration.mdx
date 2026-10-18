@@ -150,6 +150,44 @@ Mounted components re-render when the locale is ready. A message is found by its
 | `dismiss`       | `Dismiss`                                                       | Toast                |
 | `notifications` | `Notifications`                                                 | Toast stack          |
 
+## Server rendering
+
+The components can be rendered to HTML on a server with [Lit SSR](https://lit.dev/docs/ssr/overview/), so a page paints styled components before any script runs. Install `@lit-labs/ssr` in the server's project, import the same `register.js` entries on the server and in the page, and render the page:
+
+```ts
+// server.ts
+import '@dieselpunk/core/panel/register.js';
+import '@dieselpunk/core/button/register.js';
+import { html, renderThunked } from '@lit-labs/ssr';
+import { RenderResultReadable } from '@lit-labs/ssr/lib/render-result-readable.js';
+
+const page = html`<!doctype html>
+  <html lang="en">
+    <head>
+      <link rel="stylesheet" href="/tokens.css" />
+      <script type="module" src="/client.js"></script>
+    </head>
+    <body>
+      <punk-panel>
+        <span slot="header">Assembler</span>
+        <punk-button>Craft</punk-button>
+      </punk-panel>
+    </body>
+  </html>`;
+response.body = new RenderResultReadable(renderThunked(page));
+```
+
+`client.js` imports the same `register.js` entries. When each definition loads, the component replaces the server's markup with its own render. Text typed into a field before then is kept, and so is focus.
+
+The server cannot see the page, so the first paint can differ from what follows:
+
+- **Language and direction.** Numbers are formatted for the element's own `lang`, else English, and direction is the element's own `dir`, else left to right. Set `lang` and `dir` on the components when the page's are different, and the first paint already matches.
+- **Children and slots.** Options, items, and optional strips such as a panel's header appear when the definition loads.
+- **Overlays** render closed and open when the definition loads.
+- **Forms.** A form submitted before its controls load does not include their values. Enable the submit button once the definitions have loaded.
+
+Loading Lit's hydration support (`@lit-labs/ssr-client/lit-element-hydrate-support.js`) for your own components does not change how these components load.
+
 ## Development warnings
 
 The package logs warnings for misuse, such as an icon button with no `label`, when it is resolved with the `development` export condition (Vite does this in dev mode). Production builds drop them.

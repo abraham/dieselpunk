@@ -1,7 +1,7 @@
 # Server Rendering
 
 **Scope:** rendering core's components to HTML on a server with Lit SSR (`@lit-labs/ssr`), what that HTML holds and what it cannot, what a component does when its definition loads over it, and hydration, which follows.
-**Code:** `packages/core/src/internal/punk-element.ts`, and the constructor, `willUpdate()`, and `render()` of every component; the SSR fixture of `check:consumer`.
+**Code:** `packages/core/src/internal/punk-element.ts`, and the constructor, `willUpdate()`, and `render()` of every component; the SSR fixture of `check:consumer` (`test/package/ssr/`).
 
 ## 1. Model
 
@@ -91,7 +91,7 @@ import '@dieselpunk/core/button/register.js';
 
 ## Verification
 
-- **`check:consumer`** installs `@lit-labs/ssr` into its throwaway project beside the packed tarballs ([testing.md §8](testing.md)) and runs an SSR fixture:
+- **`check:consumer`** installs the packed core with `@lit-labs/ssr` and `@lit-labs/ssr-client` into a throwaway project of its own ([testing.md §8](testing.md)) and runs the SSR fixture in `test/package/ssr/`:
   - Under Node, it imports every registration entry and renders every tag, empty and with representative attributes and children. It fails on a throw, a logged error, output without a declarative shadow root, or a generated id.
   - In Chromium, it serves a server-rendered page with `lang="de"` and `dir="rtl"` and lets it upgrade, once with Lit's hydration support loaded and once without. Every element's shadow tree and host attributes must equal a client render of the same markup; every shadow root must adopt its shared sheets and hold no `<style>`; numbers are German, strips with content are shown, an overlay with `open` is open; a value typed before the upgrade is the control's value; and nothing is logged.
   - With hydration support loaded and §5 built, the same page must also keep each element's server nodes: a node marked before the upgrade is the same node after it, unless an input of §3 changed it.
@@ -100,5 +100,4 @@ import '@dieselpunk/core/button/register.js';
 
 ## Gaps
 
-- **No fixture and no guide.** `check:consumer` has no SSR fixture, and the Integration guide does not describe server rendering.
 - **No hydration.** §5 is the follow-up to §4 and is built after it: it needs the replacement path for pages without the support.
