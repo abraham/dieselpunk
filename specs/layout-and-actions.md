@@ -83,7 +83,8 @@ A square, icon-only button: one icon in the default slot (inline SVG in `current
 - **Separators** are a slash shape before every item but the first, hidden from assistive technology and mirrored in `rtl`. Items wrap onto more lines and never scroll sideways.
 - **Collapsing.** With `max-items` (2 or more), a longer path shows its first item and its last `max-items - 1`; a native button named by the localized "Show full path" (showing an ellipsis) stands where the others were. Activating it shows them all and moves focus to the first revealed link. **Why** not a menu: the catalog's "collapse into a menu" would render another family's component ([component-model.md §9](component-model.md)), and revealing in place keeps every link in the list, in order.
 - **Ownership.** To place the button after the first item, the breadcrumb puts the other items in its `rest` slot by writing their `slot`, and hides collapsed ones with `hidden`, as the toast stack writes its toasts' `slot`. It gives both back when an item leaves or it disconnects.
-- **Warning:** a child that is not an item.
+- **Unsafe links.** An `href` that is not an `http:`, `https:`, `mailto:`, or relative URL makes the item text, not a link ([security.md §4.2](security.md)).
+- **Warnings:** a child that is not an item; an item whose `href` is unsafe.
 
 ## 8. Pagination
 

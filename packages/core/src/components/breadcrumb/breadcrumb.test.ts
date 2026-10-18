@@ -108,3 +108,61 @@ describe('collapsing', () => {
     expect([item.hasAttribute('slot'), item.hidden]).toEqual([false, false]);
   });
 });
+
+describe('links (specs/security.md §4.2)', () => {
+  const linkOf = (item: PunkBreadcrumbItem) =>
+    item.shadowRoot?.querySelector('[part="link"]') as HTMLElement;
+  const warnings = () =>
+    vi.mocked(console.warn).mock.calls.filter(([text]) => String(text).includes('`href`'));
+
+  it('links http:, https:, mailto:, and relative URLs', async () => {
+    const urls = [
+      'https://example.com/a',
+      'http://example.com',
+      'mailto:ops@example.com',
+      '../line',
+    ];
+    const inner = urls
+      .map((url) => `<punk-breadcrumb-item href="${url}">Step</punk-breadcrumb-item>`)
+      .join('');
+    const { items } = await mount('', inner);
+    expect(items.map((item) => linkOf(item).getAttribute('href'))).toEqual(urls);
+    expect(warnings()).toHaveLength(0);
+  });
+
+  it('renders an href that could run script as text, and warns once', async () => {
+    const urls = [
+      'javascript:alert(1)',
+      ' JavaScript:alert(1)',
+      'java\tscript:alert(1)',
+      'data:text/html,x',
+    ];
+    const inner = urls.map(() => '<punk-breadcrumb-item>Step</punk-breadcrumb-item>').join('');
+    const { items } = await mount('', inner);
+    for (const [index, item] of items.entries()) {
+      item.href = urls[index] as string;
+      await item.updateComplete;
+      const link = linkOf(item);
+      expect(link.localName, urls[index]).toBe('span');
+      expect(link.hasAttribute('href'), urls[index]).toBe(false);
+    }
+    expect(page.getByRole('link').elements()).toHaveLength(0);
+    expect(warnings()).toHaveLength(urls.length);
+
+    const item = items[0] as PunkBreadcrumbItem;
+    item.current = true;
+    await item.updateComplete;
+    expect(warnings()).toHaveLength(urls.length);
+  });
+
+  it('warns again when an unsafe href comes back after a safe one', async () => {
+    const { items } = await mount('', '<punk-breadcrumb-item>Step</punk-breadcrumb-item>');
+    const item = items[0] as PunkBreadcrumbItem;
+    for (const href of ['javascript:void 0', '#north', 'javascript:void 0']) {
+      item.href = href;
+      await item.updateComplete;
+    }
+    expect(warnings()).toHaveLength(2);
+    expect(linkOf(item).localName).toBe('span');
+  });
+});

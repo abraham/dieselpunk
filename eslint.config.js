@@ -68,16 +68,34 @@ const urlBindings = {
     },
   },
   create(context) {
+    const isGuard = (node) =>
+      node?.type === 'CallExpression' &&
+      node.callee.type === 'Identifier' &&
+      node.callee.name === 'safeUrl';
+    // A `const` whose initializer is `safeUrl(…)` is guarded too.
+    const isGuardedConst = (node) => {
+      if (node.type !== 'Identifier') return false;
+      for (let scope = context.sourceCode.getScope(node); scope; scope = scope.upper) {
+        const variable = scope.set.get(node.name);
+        if (!variable) continue;
+        const [definition] = variable.defs;
+        return (
+          variable.defs.length === 1 &&
+          definition.type === 'Variable' &&
+          definition.parent.kind === 'const' &&
+          isGuard(definition.node.init)
+        );
+      }
+      return false;
+    };
     return {
       TaggedTemplateExpression(node) {
         if (node.tag.type !== 'Identifier' || !['html', 'svg'].includes(node.tag.name)) return;
         node.quasi.expressions.forEach((expression, index) => {
           if (!urlAttribute.test(node.quasi.quasis[index].value.raw)) return;
-          const guarded =
-            expression.type === 'CallExpression' &&
-            expression.callee.type === 'Identifier' &&
-            expression.callee.name === 'safeUrl';
-          if (!guarded) context.report({ node: expression, messageId: 'unguarded' });
+          if (!isGuard(expression) && !isGuardedConst(expression)) {
+            context.report({ node: expression, messageId: 'unguarded' });
+          }
         });
       },
     };

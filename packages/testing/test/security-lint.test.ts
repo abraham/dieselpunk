@@ -83,6 +83,16 @@ const caught: Array<[string, string, string]> = [
     'import { html } from "lit"; export const t = (u: string) => html`<a .href=${u}></a>`;',
     'local/url-bindings',
   ],
+  [
+    'a let from safeUrl',
+    'import { html } from "lit"; declare const safeUrl: (u: string) => string; export const t = (u: string) => { let h = safeUrl(u); h = u; return html`<a href=${h}></a>`; };',
+    'local/url-bindings',
+  ],
+  [
+    'a const not from safeUrl',
+    'import { html } from "lit"; export const t = (u: string) => { const h = u.trim(); return html`<a href=${h}></a>`; };',
+    'local/url-bindings',
+  ],
 ];
 
 for (const [name, code, rule] of caught) {
@@ -98,6 +108,7 @@ for (const [name, code, rule] of caught) {
 test('shipped source: allowed patterns pass', async () => {
   const allowed = [
     'import { html } from "lit"; declare const safeUrl: (u: string) => string; export const t = (u: string) => html`<a href=${safeUrl(u)}></a>`;',
+    'import { html } from "lit"; declare const safeUrl: (u: string) => string; export const t = (u: string) => { const h = safeUrl(u); return html`<a href=${h}></a>`; };',
     'import { html } from "lit"; export const t = (v: string) => html`<a title=${v}></a>`;',
     'export const load = () => import("./de.ts");',
     'export const f = (e: Element) => e.textContent;',

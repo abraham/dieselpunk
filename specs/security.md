@@ -47,7 +47,7 @@ These apply to `packages/core/src` and `packages/locales/src`, excluding tests.
 
 ### 4.2 URLs
 
-- A property that renders into a URL attribute (the breadcrumb item's `href`) renders no link when its scheme is not `http:`, `https:`, `mailto:`, or relative: the item renders as text and warns once in development ([package-contract.md §6](package-contract.md)). **Why:** Lit binds attributes without checking schemes, so a `javascript:` URL from user data would run in the consumer's origin when clicked. Native `<a>` has the same hole, but a component that builds the link is the place to close it, as frameworks do.
+- A property that renders into a URL attribute (the breadcrumb item's `href`) renders no link when its scheme is not `http:`, `https:`, `mailto:`, or relative: the item renders as text and warns once in development ([package-contract.md §6](package-contract.md)). The check is `safeUrl()` (`src/internal/safe-url.ts`), which parses the URL as the browser does, so whitespace and control characters cannot disguise a scheme, and treats a URL it cannot parse as unsafe. **Why:** Lit binds attributes without checking schemes, so a `javascript:` URL from user data would run in the consumer's origin when clicked. Native `<a>` has the same hole, but a component that builds the link is the place to close it, as frameworks do.
 - `local/url-bindings` in `eslint.config.js` fails `lint` on a URL attribute (`href`, `src`, `srcset`, `action`, `formaction`, `xlink:href`, `poster`, `ping`, or the property of the same name) bound in an `html` or `svg` template other than through `safeUrl(…)`, the guard.
 
 ### 4.3 Content Security Policy and Trusted Types
@@ -141,7 +141,7 @@ Every check runs in `ci.yml` or `publish.yml`; there is no separate security wor
 ## Verification
 
 - `lint` fails on each sink of §4.1 and §4.4 and an unguarded URL binding of §4.2. `packages/testing/test/security-lint.test.ts` lints a sample of each through the real configuration, as shipped source (it must fail), as a test (it must pass), and as styles (only `unsafeCSS` passes).
-- The breadcrumb item's browser tests cover the URL guard: a `javascript:` `href` renders text and warns; `https:` and relative URLs render links.
+- `test/safe-url.test.ts` covers the schemes `safeUrl()` keeps and drops, including disguised and unparseable ones. The breadcrumb item's browser tests cover the guard in place: an unsafe `href` renders text and warns once per occurrence; `http:`, `https:`, `mailto:`, and relative URLs render links.
 - `check:consumer` serves the gallery under the policy of §4.3 and fails on a violation.
 - `scripts/check-lockfile.test.ts` covers §5.2 and §5.3 on recorded lockfiles: registry and integrity checks, and the install-script list, including an entry without a reason and one that matches nothing.
 - `packages/testing/test/workflows.test.ts` covers §6.2.
@@ -150,9 +150,8 @@ Every check runs in `ci.yml` or `publish.yml`; there is no separate security wor
 
 ## Gaps
 
-Most of this spec is not built yet. What exists: the lint rules of §4, Dependabot version updates, trusted publishing with provenance, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
+Most of this spec is not built yet. What exists: the lint rules and URL guard of §4, Dependabot version updates, trusted publishing with provenance, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
 
-- **The breadcrumb `href` is not guarded** (§4.2). It is the one binding `local/url-bindings` reports, and is disabled with a comment citing this gap. Closing it is `safeUrl()`, its development warning and message string, its tests, and removing the comment.
 - **No CSP fixture** (§4.3), and [ssr.md §7](ssr.md) does not yet state the policy for server-rendered pages.
 - **No `check:lockfile`** (§5.2, §5.3) and no `.install-scripts.json`. Closing it adds the script, its Node tests, the root script, the row in [testing.md §9](testing.md), and the step in `static` and `publish.yml`.
 - **No dependency review or CodeQL** (§5.2, §6.1): no `security` job in `ci.yml`.

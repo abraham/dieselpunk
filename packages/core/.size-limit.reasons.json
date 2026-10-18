@@ -47,7 +47,7 @@
   "punk-badge": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-spinner": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-drawer": "Over 5 kB: the shared modal surface, controller, and close button are most of it, as they are of the window, and the drawer adds its four edges and the slide.",
-  "punk-breadcrumb (both tags)": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB. It also carries the server-values switch for hydration (specs/ssr.md §5). It also carries the hook that @dieselpunk/core/hydrate.js installs into (specs/ssr.md §5).",
+  "punk-breadcrumb (both tags)": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB. It also carries the server-values switch for hydration (specs/ssr.md §5). It also carries the hook that @dieselpunk/core/hydrate.js installs into (specs/ssr.md §5). The item guards its href with safeUrl() and warns when it drops one (specs/security.md §4.2).",
   "punk-pagination": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-kbd": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB.",
   "punk-description-list": "Within the 5 kB budget of specs/performance.md §2; the limit is the measured size plus about 6%, rounded up to 0.25 kB. It also carries the hook that @dieselpunk/core/hydrate.js installs into (specs/ssr.md §5).",
