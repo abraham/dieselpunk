@@ -4,6 +4,7 @@ import { html } from 'lit';
 import type { PunkAccordion } from '@dieselpunk/core';
 import '@dieselpunk/core/accordion/register.js';
 import { icon } from '../icons/icons.ts';
+import { axeConfig, repeatedLandmarks } from '../lib/a11y.ts';
 import { group, themeDensityMatrix } from '../lib/matrix.ts';
 import type { StoryArgs } from '../lib/types.ts';
 
@@ -57,9 +58,9 @@ const items = () => html`
     ${group(
       'Multiple',
       html`<punk-accordion multiple>
-        <punk-accordion-item heading="Inputs" expanded><p>Iron plates.</p></punk-accordion-item>
-        <punk-accordion-item heading="Outputs" expanded><p>Gears.</p></punk-accordion-item>
-        <punk-accordion-item heading="Maintenance"><p>Weekly.</p></punk-accordion-item>
+        <punk-accordion-item heading="Fuel" expanded><p>Coal.</p></punk-accordion-item>
+        <punk-accordion-item heading="Byproducts" expanded><p>Slag.</p></punk-accordion-item>
+        <punk-accordion-item heading="Repairs"><p>Weekly.</p></punk-accordion-item>
       </punk-accordion>`,
     )}
     ${group(
@@ -92,4 +93,5 @@ export const States = meta.story({
 
 export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(items),
+  parameters: { a11y: { config: axeConfig(repeatedLandmarks) } },
 });

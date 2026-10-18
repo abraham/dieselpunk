@@ -3,6 +3,7 @@ import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkBreadcrumb } from '@dieselpunk/core';
 import '@dieselpunk/core/breadcrumb/register.js';
+import { axeConfig, repeatedLandmarks } from '../lib/a11y.ts';
 import { group, themeDensityMatrix } from '../lib/matrix.ts';
 import type { StoryArgs } from '../lib/types.ts';
 
@@ -41,7 +42,7 @@ const trails = () => html`
   <div class="wb-stack">
     ${group(
       'Full',
-      html`<punk-breadcrumb>
+      html`<punk-breadcrumb label="Path to settings">
         <punk-breadcrumb-item href="#base">Base</punk-breadcrumb-item>
         <punk-breadcrumb-item href="#north">North works</punk-breadcrumb-item>
         <punk-breadcrumb-item current>Settings</punk-breadcrumb-item>
@@ -49,7 +50,7 @@ const trails = () => html`
     )}
     ${group(
       'Collapsed to three',
-      html`<punk-breadcrumb max-items="3">
+      html`<punk-breadcrumb label="Path to assembler settings" max-items="3">
         <punk-breadcrumb-item href="#base">Base</punk-breadcrumb-item>
         <punk-breadcrumb-item href="#north">North works</punk-breadcrumb-item>
         <punk-breadcrumb-item href="#line">Line 2</punk-breadcrumb-item>
@@ -66,4 +67,5 @@ export const States = meta.story({
 
 export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(trails),
+  parameters: { a11y: { config: axeConfig(repeatedLandmarks) } },
 });

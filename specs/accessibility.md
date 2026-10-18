@@ -99,7 +99,12 @@ The workbench configures the addon once, in `.storybook/preview.ts`:
 
 CI runs the addon through `@storybook/addon-vitest`: the workbench's `test:stories` renders every story in Vitest browser mode with Chromium, in the default theme and density, and fails on a violation. Other themes and densities are the gallery suites' job; in the workbench, a reviewer switches them from the toolbar and reads the Accessibility panel, which re-runs on each change.
 
-**Exceptions are visible.** A story with a known violation is marked `a11y: { test: 'todo' }` in its own parameters, never in the meta or the preview, and each one is listed under Gaps. `'off'` is only for a story that shows misuse on purpose. A rule is turned off in a story's `config` only with a comment that names why.
+**Exceptions are visible.** A story with a known violation is marked `a11y: { test: 'todo' }` in its own parameters, never in the meta or the preview, and each one is listed under Gaps. `'off'` is only for a story that shows misuse on purpose. A rule is turned off in a story's `config` only with a comment that names why. A story's rule list replaces the preview's, so each one is built with `axeConfig()` from `src/lib/a11y.ts`, which starts from the rules every story has. Two exceptions are in place, and no story is `'todo'`:
+
+- Theme and density matrices turn off `landmark-unique`, because each cell repeats one example. A state story names each instance instead, as an application with two breadcrumbs or paginations must.
+- Tree stories leave open parent items out of `label-content-name-mismatch`, the gallery suites' one exemption: a parent's children show inside it, and its name, its label, is in that text.
+
+A story whose accessible state settles after the first frame waits for it in a `play` function before the check runs: the table's narrow container waits until its scroll area is a tab stop.
 
 The addon checks stories, not MDX docs pages, so the guides are outside it ([workbench.md](workbench.md) Gaps).
 
@@ -131,7 +136,6 @@ The results table records each combination as passed, failed with an issue link,
 
 ## Gaps
 
-- **The workbench's accessibility addon is not installed.** §13 is specified but not running: neither `@storybook/addon-a11y` nor `@storybook/addon-vitest` is a dependency, and there is no `test:stories`. Closing it: add both addons, the preview parameters, the script, and the CI step, and mark each story that fails `'todo'` here.
 - **The manual checklist has not been run** for any combination; every cell reads "Not run".
 - **The listbox slot grid is unverified by ear.** A `listbox` navigated in two dimensions is not an APG pattern, and screen readers may announce it as a flat list. If the checklist shows that, `role="grid"` with generated rows is the alternative to evaluate.
 - **A host `aria-label` on `punk-button` is not covered.** Whether axe flags it (`aria-prohibited-attr`) is unknown because the gallery never sets one. Closing it: add the case to the gallery and give the host a role if axe requires one.

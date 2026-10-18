@@ -7,18 +7,20 @@ import '@fontsource/ibm-plex-mono/500.css';
 import '@dieselpunk/core/tokens.css';
 import '@dieselpunk/core/themes.css';
 import '../src/styles/workbench.css';
+import addonA11y from '@storybook/addon-a11y';
 import addonDocs from '@storybook/addon-docs';
 import { definePreview, setCustomElementsManifest } from '@storybook/web-components-vite';
 import { setStorybookHelpersConfig } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import manifest from '@dieselpunk/core/custom-elements.json' with { type: 'json' };
+import { axeConfig } from '../src/lib/a11y.ts';
 import { densities, themes } from '../src/lib/options.ts';
 
 setCustomElementsManifest(manifest as Parameters<typeof setCustomElementsManifest>[0]);
 setStorybookHelpersConfig({ hideArgRef: true });
 
 export default definePreview({
-  addons: [addonDocs()],
+  addons: [addonDocs(), addonA11y()],
   tags: ['autodocs'],
   initialGlobals: { theme: 'dark', density: 'compact' },
   globalTypes: {
@@ -58,6 +60,14 @@ export default definePreview({
     layout: 'fullscreen',
     controls: { expanded: true },
     backgrounds: { disable: true },
+    // specs/accessibility.md §13. The addon's default rules stop at WCAG 2.1.
+    a11y: {
+      test: 'error',
+      options: {
+        runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'],
+      },
+      config: axeConfig(),
+    },
     options: {
       storySort: {
         order: [

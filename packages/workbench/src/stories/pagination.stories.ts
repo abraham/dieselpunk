@@ -3,6 +3,7 @@ import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkPagination } from '@dieselpunk/core';
 import '@dieselpunk/core/pagination/register.js';
+import { axeConfig, repeatedLandmarks } from '../lib/a11y.ts';
 import { group, themeDensityMatrix } from '../lib/matrix.ts';
 import type { StoryArgs } from '../lib/types.ts';
 
@@ -33,9 +34,23 @@ export const Playground = meta.story();
 
 const paginations = () => html`
   <div class="wb-stack">
-    ${group('First page', html`<punk-pagination page="1" pages="5"></punk-pagination>`)}
-    ${group('In the middle', html`<punk-pagination page="10" pages="20"></punk-pagination>`)}
-    ${group('Two siblings', html`<punk-pagination page="10" pages="20" siblings="2"></punk-pagination>`)}
+    ${group(
+      'First page',
+      html`<punk-pagination label="Shipment pages" page="1" pages="5"></punk-pagination>`,
+    )}
+    ${group(
+      'In the middle',
+      html`<punk-pagination label="Order pages" page="10" pages="20"></punk-pagination>`,
+    )}
+    ${group(
+      'Two siblings',
+      html`<punk-pagination
+        label="Recipe pages"
+        page="10"
+        pages="20"
+        siblings="2"
+      ></punk-pagination>`,
+    )}
   </div>
 `;
 
@@ -45,4 +60,5 @@ export const States = meta.story({
 
 export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(paginations),
+  parameters: { a11y: { config: axeConfig(repeatedLandmarks) } },
 });

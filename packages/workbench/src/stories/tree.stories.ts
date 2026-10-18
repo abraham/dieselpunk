@@ -3,6 +3,7 @@ import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkTree } from '@dieselpunk/core';
 import '@dieselpunk/core/tree/register.js';
+import { axeConfig } from '../lib/a11y.ts';
 import { group, themeDensityMatrix } from '../lib/matrix.ts';
 import type { StoryArgs } from '../lib/types.ts';
 
@@ -36,6 +37,14 @@ const meta = preview.type<{ args: StoryArgs<PunkTree> }>().meta({
       >${nodes}</punk-tree
     >`,
   parameters: {
+    a11y: {
+      // An open parent shows its children inside it, so axe counts their text as its visible label.
+      // Its name is its label, which is in that text, so it meets WCAG 2.5.3 (as in core's axe.ts).
+      config: axeConfig({
+        id: 'label-content-name-mismatch',
+        selector: '*:not(punk-tree-item[expanded])',
+      }),
+    },
     docs: {
       description: {
         component: `

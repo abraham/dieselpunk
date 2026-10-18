@@ -23,6 +23,7 @@
     "check:consumer": "npm run check:consumer --workspace @dieselpunk/core",
     "test:visual": "npm run test:visual --workspace @dieselpunk/core",
     "test:smoke": "npm run test:smoke --workspace @dieselpunk/workbench",
+    "test:stories": "npm run test:stories --workspace @dieselpunk/workbench",
     "check:toolchain": "node scripts/check-toolchain.ts",
     "check:frameworks": "npm run check:frameworks --workspace @dieselpunk/core",
     "check:strings": "npm run check:strings --workspace @dieselpunk/locales",
