@@ -139,7 +139,7 @@ These are implementation contracts between the library's own classes, not applic
 - Removing or renaming any of these is breaking. Adding is minor. Changing a default is breaking unless the old default was a defect.
 - Experimental components are exported under `experimental/` and are outside the guarantee.
 - A deprecated name keeps working for at least one minor release, is marked `@deprecated` in JSDoc, and warns once in development.
-- Versions stay `0.0.0` until the owner releases. Publishing, changelogs, and release automation are the owner's.
+- The published packages are at `0.1.0`, and move together; the private workspaces stay `0.0.0`. Publishing, changelogs, and release automation are the owner's.
 - **License.** MIT, in the repository's `LICENSE`. Each published package's `license` is `MIT`, and it carries an identical `LICENSE` beside its `package.json`, since npm packs only the package's own folder.
 
 ## Verification
