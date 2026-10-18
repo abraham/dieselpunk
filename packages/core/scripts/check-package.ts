@@ -81,6 +81,7 @@ const sentinels: Record<string, string> = {
   'time-field': '"punk-time-field"',
   'file-field': 'dropFiles',
   splitter: 'punk-split-change',
+  'range-slider': 'rangeMinimum',
 };
 // Components whose register entry must also bring these, and no others.
 const dependencies: Record<string, string[]> = { 'icon-button': ['tooltip'] };

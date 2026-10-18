@@ -15,7 +15,7 @@ Living specifications for `@dieselpunk/core` and `@dieselpunk/locales`. Each one
 | [accessibility.md](accessibility.md)                   | Names, roles, cross-shadow ARIA, non-color cues, targets, reflow, live regions, manual testing                         |
 | [keyboard-and-selection.md](keyboard-and-selection.md) | Roving focus, grid navigation, selection, activation; slot grid, tabs, toolbar, accordion, menu, toggle group, list    |
 | [overlays.md](overlays.md)                             | Top layer, the Escape stack, modality, anchoring; tooltip, popover, window, dialog, toast, drawer                      |
-| [forms.md](forms.md)                                   | Form association, values and defaults, validation, labels; the thirteen form controls and the fieldset                 |
+| [forms.md](forms.md)                                   | Form association, values and defaults, validation, labels; the fourteen form controls and the fieldset                 |
 | [inventory-and-readouts.md](inventory-and-readouts.md) | Receptacles and readouts; slot, item stack, recipe, progress bar, meter, status light, production stat, connection row |
 | [data-display.md](data-display.md)                     | Data and status in the page; table, alert, badge, spinner, keyboard key, description list, tag                         |
 | [layout-and-actions.md](layout-and-actions.md)         | Panel, divider, stack, cluster, splitter, button, icon button, breadcrumb, pagination, steps                           |

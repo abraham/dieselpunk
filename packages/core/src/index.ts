@@ -98,3 +98,4 @@ export { PunkTimeField } from './components/time-field/index.ts';
 export { PunkFileField } from './components/file-field/index.ts';
 export { PunkSplitter } from './components/splitter/index.ts';
 export type { PunkSplitChangeDetail, SplitterOrientation } from './components/splitter/index.ts';
+export { PunkRangeSlider } from './components/range-slider/index.ts';

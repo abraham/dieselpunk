@@ -36,6 +36,8 @@ const german = {
     stepUpcoming: 'nicht begonnen',
     dropFiles: 'oder Dateien hier ablegen',
     resizePanes: 'Größe ändern',
+    rangeMinimum: 'Minimum',
+    rangeMaximum: 'Maximum',
   },
 };
 

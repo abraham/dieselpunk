@@ -1179,6 +1179,63 @@
       },
       "cssProperties": {}
     },
+    "punk-range-slider": {
+      "attributes": {
+        "aria-label": "string | null = null",
+        "disabled": "boolean = false",
+        "high": "number",
+        "label": "string = ''",
+        "low": "number",
+        "max": "number = 100",
+        "min": "number = 0",
+        "name": "string = ''",
+        "required": "boolean = false",
+        "show-value": "boolean = false",
+        "step": "number = 1"
+      },
+      "properties": {
+        "accessibleLabel": "string | null = null",
+        "disabled": "boolean = false",
+        "form": "HTMLFormElement | null",
+        "high": "number",
+        "isDisabled": "boolean",
+        "label": "string = ''",
+        "labels": "NodeList",
+        "low": "number",
+        "max": "number = 100",
+        "min": "number = 0",
+        "name": "string = ''",
+        "required": "boolean = false",
+        "showValue": "boolean = false",
+        "step": "number = 1",
+        "validationMessage": "string",
+        "validity": "ValidityState",
+        "willValidate": "boolean"
+      },
+      "methods": {
+        "checkValidity": "",
+        "focus": "",
+        "formDisabledCallback": "",
+        "formResetCallback": "",
+        "formStateRestoreCallback": "",
+        "reportValidity": "",
+        "setCustomValidity": ""
+      },
+      "events": {
+        "change": "",
+        "input": "Event"
+      },
+      "slots": {},
+      "parts": {
+        "fill": "",
+        "header": "",
+        "label": "",
+        "thumb": "",
+        "track": "",
+        "value": ""
+      },
+      "cssProperties": {}
+    },
     "punk-recipe": {
       "attributes": {
         "available": "boolean = false",

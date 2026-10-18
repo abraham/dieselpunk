@@ -420,5 +420,12 @@
     "ignore": ["lit"],
     "gzip": true,
     "limit": "4.75 kB"
+  },
+  {
+    "name": "punk-range-slider",
+    "path": "dist/components/range-slider/register.js",
+    "ignore": ["lit"],
+    "gzip": true,
+    "limit": "6 kB"
   }
 ]

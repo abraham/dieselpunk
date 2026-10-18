@@ -54,6 +54,7 @@ import '../../../src/components/date-field/register.ts';
 import '../../../src/components/time-field/register.ts';
 import '../../../src/components/file-field/register.ts';
 import '../../../src/components/splitter/register.ts';
+import '../../../src/components/range-slider/register.ts';
 import { galleryGroups } from './groups.ts';
 
 export { galleryGroups } from './groups.ts';
@@ -685,6 +686,14 @@ const builders: Record<ComponentName, Builder> = {
       <punk-slider aria-label="${c.settings}" value="60"></punk-slider>
       <punk-slider label="${c.start}" value="0.3" min="0" max="1" step="0.1" show-value ticks></punk-slider>
       <punk-slider label="${c.pause}" value="30" show-value disabled></punk-slider>
+    </div>
+  `,
+
+  'range-slider': (c) => `
+    <div class="stack" style="max-inline-size: 420px">
+      <punk-range-slider label="${c.settings}" low="20" high="70" show-value></punk-range-slider>
+      <punk-range-slider aria-label="${c.settings}" low="40" high="40"></punk-range-slider>
+      <punk-range-slider label="${c.stop}" low="1500" high="4500" max="5000" step="100" show-value disabled></punk-range-slider>
     </div>
   `,
 

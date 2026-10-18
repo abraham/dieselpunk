@@ -192,6 +192,16 @@
   <target>Redimensionner</target>
   <note from="lit-localize">The name of the divider between two panes that the user can move.</note>
 </trans-unit>
+<trans-unit id="rangeMaximum">
+  <source>Maximum</source>
+  <target>Maximum</target>
+  <note from="lit-localize">The name of the thumb that sets the high end of a range.</note>
+</trans-unit>
+<trans-unit id="rangeMinimum">
+  <source>Minimum</source>
+  <target>Minimum</target>
+  <note from="lit-localize">The name of the thumb that sets the low end of a range.</note>
+</trans-unit>
 </body>
 </file>
 </xliff>

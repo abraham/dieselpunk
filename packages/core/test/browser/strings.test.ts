@@ -192,6 +192,8 @@ const cases: Record<string, Case> = {
     show: () =>
       mount('<punk-splitter><div slot="start">A</div><div slot="end">B</div></punk-splitter>'),
   },
+  rangeMinimum: { show: () => mount('<punk-range-slider label="Price"></punk-range-slider>') },
+  rangeMaximum: { show: () => mount('<punk-range-slider label="Price"></punk-range-slider>') },
 };
 
 /** The first step of the steps in `markup`, which says the word for its state. */

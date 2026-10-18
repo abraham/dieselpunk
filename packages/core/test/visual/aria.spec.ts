@@ -271,6 +271,24 @@ test.describe('ARIA snapshots', { tag: '@cross-engine' }, () => {
     `);
   });
 
+  test('range slider', { tag: at('forms') }, async ({ page }) => {
+    await render(page, '<punk-range-slider label="Price" low="20" high="80"></punk-range-slider>');
+    await expect(page.locator('#case')).toMatchAriaSnapshot(`
+      - group "Price":
+        - text: Price
+        - slider "Minimum"
+        - slider "Maximum"
+    `);
+    const low = page.getByRole('slider', { name: 'Minimum' });
+    await low.focus();
+    await page.keyboard.press('End');
+    await expect(low).toHaveAttribute('aria-valuenow', '80');
+    await expect(page.getByRole('slider', { name: 'Maximum' })).toHaveAttribute(
+      'aria-valuemin',
+      '80',
+    );
+  });
+
   test('text, number, and select fields', { tag: at('forms') }, async ({ page }) => {
     await render(
       page,

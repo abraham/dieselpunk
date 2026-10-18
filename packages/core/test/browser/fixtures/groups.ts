@@ -24,6 +24,7 @@ export const galleryGroups = {
     'checkbox',
     'switch',
     'slider',
+    'range-slider',
     'text-field',
     'number-field',
     'select',

@@ -17,7 +17,7 @@ A planned component is built only after its section exists in its family spec, w
 
 ## 2. Implemented
 
-59 tags in 51 registration entries.
+60 tags in 52 registration entries.
 
 ### 2.1 Layout and surfaces
 
@@ -99,6 +99,7 @@ A planned component is built only after its section exists in its family spec, w
 | `punk-checkbox`                  | A boolean or mixed choice that submits with a form                                           | Implemented | [forms.md §6](forms.md)  |
 | `punk-switch`                    | An on/off setting that takes effect at once and submits with a form                          | Implemented | [forms.md §6](forms.md)  |
 | `punk-slider`                    | A value chosen from a continuous or stepped range                                            | Implemented | [forms.md §7](forms.md)  |
+| `punk-range-slider`              | A low and a high value chosen on one track                                                   | Implemented | [forms.md §18](forms.md) |
 | `punk-text-field`                | Single-line text input with label, hint, affixes, and validation                             | Implemented | [forms.md §9](forms.md)  |
 | `punk-number-field`              | Numeric input with bounds, step, and pointer steppers                                        | Implemented | [forms.md §10](forms.md) |
 | `punk-select`                    | A single choice from a short native list                                                     | Implemented | [forms.md §11](forms.md) |
@@ -120,7 +121,6 @@ None: every component that general-purpose use needs is implemented. The part of
 | -------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | `punk-tree`, `punk-tree-item`                      | Hierarchical navigation and selection: file trees, tech trees, category browsers | APG tree view; `SelectionModel`; roving focus with expand and collapse keys                                                                                                             | [keyboard-and-selection.md](keyboard-and-selection.md) |
 | `punk-menubar`                                     | A persistent row of menus at the top of an application window                    | APG menubar, built from `punk-menu`                                                                                                                                                     | [keyboard-and-selection.md](keyboard-and-selection.md) |
-| `punk-range-slider`                                | A low and high value chosen on one track                                         | Two `slider` thumbs on the slider's math and pointer model; submits two values                                                                                                          | [forms.md](forms.md)                                   |
 | Data modes of the slot grid, list, table, and tree | Collections of thousands of items with only the visible ones in the DOM          | `@lit-labs/virtualizer`, as a peer dependency of an optional package, not core; `items` and `renderItem`, `aria-setsize` and `aria-posinset`, selection by value, roving focus by index | [performance.md §4.1](performance.md)                  |
 
 ## 5. Not planned
