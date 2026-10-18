@@ -18,7 +18,7 @@
 | Consumers' pages                            | A runtime dependency (`lit`, `@lit/localize`) with a vulnerability, or replaced by a malicious version     | Dependabot (§5.1), dependency review and lockfile integrity (§5.2) |
 | Consumers' pages                            | Library code that turns a property or attribute into markup, script, or a script URL                       | Code rules (§4), CodeQL (§6.1), CSP fixture (§4.3)                 |
 | The published packages and the npm identity | A compromised development dependency that runs during install or build and alters `dist/` or reads a token | Install-script allowlist (§5.3), release provenance (§7)           |
-| The published packages and the npm identity | A compromised GitHub Action, through a moved tag                                                           | Actions pinned to commits (§6.2)                                   |
+| The published packages and the npm identity | A compromised GitHub Action, through a moved tag                                                           | The actions lockfile (§6.2)                                        |
 | `GITHUB_TOKEN` and the repository           | Workflow injection from pull request data, or a token with more rights than its job needs                  | Workflow invariants (§6.2)                                         |
 | The repository                              | A committed credential                                                                                     | Secret scanning with push protection (§6.3)                        |
 | The workbench at dieselpunk.dev             | Third-party script or requests                                                                             | No other origin ([workbench.md §7](workbench.md))                  |
@@ -87,9 +87,11 @@ CodeQL analyzes `javascript-typescript` with the `security-extended` suite, and 
 
 ### 6.2 Workflows
 
-`packages/testing/test/workflows.test.ts`, part of `test:node`, reads every file under `.github/` and fails when:
+Every action a workflow runs is locked in `.github/workflows/actions.lock`, written by `gh actions-lock` ([github/gh-actions-lock](https://github.com/github/gh-actions-lock)). The lockfile pins each action, and each action it uses in turn, to a commit; the runner refuses an action whose tag no longer resolves to its locked commit. Workflows name outside actions by full version tag (`actions/checkout@v7.0.1`), and the repository's own actions as `$/.github/actions/…`, which is pinned to the workflow's own commit. A Dependabot pull request that bumps an action's tag is re-locked with `gh actions-lock` before it merges. **Why** a lockfile rather than commit hashes in each `uses:`: transitive actions are pinned too, and a moved tag is caught before the action runs, not only after someone notices a hash.
 
-- a `uses:` of an action outside this repository is not pinned to a full 40-character commit SHA followed by a `# v<version>` comment (Dependabot updates both);
+`static` runs `gh actions-lock --verify`, which fails when a workflow uses an action the lockfile lacks or a locked tag has moved. `packages/testing/test/workflows.test.ts`, part of `test:node`, reads every file under `.github/` and fails when:
+
+- a `uses:` of an action outside this repository is not a full `vX.Y.Z` tag, or one inside it does not use `$/`;
 - a workflow has no top-level `permissions:`, or its top-level permissions grant more than `contents: read` (and `actions: read` in `ci.yml`); a job that needs more asks for it in its own `permissions:`;
 - a workflow triggers on `pull_request_target` or `workflow_run`;
 - `actions/checkout` runs without `persist-credentials: false`, except in a job that pushes;
@@ -148,13 +150,13 @@ Every check runs in `ci.yml` or `publish.yml`; there is no separate security wor
 
 ## Gaps
 
-Most of this spec is not built yet. What exists: Dependabot version updates, trusted publishing with provenance, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
+Most of this spec is not built yet. What exists: Dependabot version updates, trusted publishing with provenance, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
 
 - **No security lint rules** (§4.1, §4.2, §4.4). The shipped source has no sinks today except `unsafeCSS` with constants and the unguarded breadcrumb `href`, so adding the rules should need no code change beyond the guard.
 - **The breadcrumb `href` is not guarded** (§4.2). Closing it is the guard, its development warning and message string, and its tests.
 - **No CSP fixture** (§4.3), and [ssr.md §7](ssr.md) does not yet state the policy for server-rendered pages.
 - **No `check:lockfile`** (§5.2, §5.3) and no `.install-scripts.json`. Closing it adds the script, its Node tests, the root script, the row in [testing.md §9](testing.md), and the step in `static` and `publish.yml`.
 - **No dependency review or CodeQL** (§5.2, §6.1): no `security` job in `ci.yml`.
-- **Workflows do not meet §6.2.** Actions are pinned to major tags, `actions/checkout` keeps its credentials, `visual.yml` and `update-visual-baselines.yml` have no top-level `permissions:`, and `ci.yml` puts `${{ matrix.part }}` in a `run:` script. Closing it is the test, then fixing what it reports.
+- **Workflows do not fully meet §6.2.** The actions are locked, but `static` does not run `gh actions-lock --verify`, there is no workflow test, `actions/checkout` keeps its credentials, `visual.yml` and `update-visual-baselines.yml` have no top-level `permissions:`, and `ci.yml` puts `${{ matrix.part }}` in a `run:` script. Closing it is the verify step and the test, then fixing what they report.
 - **The release lacks §7:** no `npm` environment, no check that the tagged commit passed `ci-success`, no `check:lockfile` step, and no SBOM.
 - **No `SECURITY.md`**, and the repository settings of §5.1, §6.3, and §9 are unverified.

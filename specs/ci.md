@@ -51,7 +51,7 @@ flowchart LR
 
 ## 4. Shared setup
 
-`.github/actions/setup` is a composite action that every job in every workflow uses after `actions/checkout`:
+`.github/actions/setup` is a composite action, used as `$/.github/actions/setup` so that it is pinned with the workflow ([security.md §6.2](security.md)), that every job in every workflow uses after `actions/checkout`:
 
 - `actions/setup-node` with `node-version-file: .nvmrc` and the npm cache;
 - `npm ci`;
