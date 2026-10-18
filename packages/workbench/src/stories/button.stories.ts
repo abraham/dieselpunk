@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkButton } from '@dieselpunk/core';
@@ -12,7 +12,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkButton>('punk-butto
 const variants = ['default', 'primary', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
 
-const meta: Meta<StoryArgs<PunkButton>> = {
+const meta = preview.type<{ args: StoryArgs<PunkButton> }>().meta({
   title: 'Components/Button',
   component: 'punk-button',
   args: { ...args, 'default-slot': 'Start production' },
@@ -38,12 +38,9 @@ Hover and pressed states are interactive, so try them in the stories. The loadin
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkButton>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const row = (label: string, button: (variant: (typeof variants)[number]) => unknown) => html`
   <div class="wb-row">
@@ -52,7 +49,7 @@ const row = (label: string, button: (variant: (typeof variants)[number]) => unkn
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`
     <div class="wb-stack">
       ${group(
@@ -86,17 +83,17 @@ export const States: Story = {
       )}
     </div>
   `,
-};
+});
 
-export const WithIcons: Story = {
+export const WithIcons = meta.story({
   args: {
     'default-slot': 'Add recipe',
     'icon-start-slot': iconSvg.plus,
     variant: 'primary',
   },
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () =>
     themeDensityMatrix(
       () => html`
@@ -107,4 +104,4 @@ export const ThemeAndDensityMatrix: Story = {
         </div>
       `,
     ),
-};
+});

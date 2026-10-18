@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkPagination } from '@dieselpunk/core';
@@ -8,7 +8,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkPagination>('punk-pagination');
 
-const meta: Meta<StoryArgs<PunkPagination>> = {
+const meta = preview.type<{ args: StoryArgs<PunkPagination> }>().meta({
   title: 'Components/Pagination',
   component: 'punk-pagination',
   args: { ...args, page: 5, pages: 12 },
@@ -27,12 +27,9 @@ Moving through the pages of a long result set: a \`nav\` landmark named "Paginat
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkPagination>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const paginations = () => html`
   <div class="wb-stack">
@@ -42,10 +39,10 @@ const paginations = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${paginations()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(paginations),
-};
+});

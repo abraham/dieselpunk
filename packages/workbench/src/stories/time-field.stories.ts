@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkTimeField } from '@dieselpunk/core';
@@ -8,7 +8,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkTimeField>('punk-time-field');
 
-const meta: Meta<StoryArgs<PunkTimeField>> = {
+const meta = preview.type<{ args: StoryArgs<PunkTimeField> }>().meta({
   title: 'Components/Time field',
   component: 'punk-time-field',
   args: { ...args, label: 'Shift start' },
@@ -33,12 +33,9 @@ its validity.
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkTimeField>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const fields = () => html`
   <div class="wb-stack" style="max-inline-size: 420px">
@@ -61,8 +58,8 @@ const fields = () => html`
   </div>
 `;
 
-export const States: Story = { render: fields };
+export const States = meta.story({ render: fields });
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(fields),
-};
+});

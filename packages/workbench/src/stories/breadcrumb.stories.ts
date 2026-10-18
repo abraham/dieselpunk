@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkBreadcrumb } from '@dieselpunk/core';
@@ -16,7 +16,7 @@ const trail = `
   <punk-breadcrumb-item current>Settings</punk-breadcrumb-item>
 `;
 
-const meta: Meta<StoryArgs<PunkBreadcrumb>> = {
+const meta = preview.type<{ args: StoryArgs<PunkBreadcrumb> }>().meta({
   title: 'Components/Breadcrumb',
   component: 'punk-breadcrumb',
   args: { ...args, 'default-slot': trail },
@@ -33,12 +33,9 @@ The path to the current page or folder: a \`nav\` landmark named "Breadcrumb" (o
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkBreadcrumb>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const trails = () => html`
   <div class="wb-stack">
@@ -63,10 +60,10 @@ const trails = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${trails()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(trails),
-};
+});

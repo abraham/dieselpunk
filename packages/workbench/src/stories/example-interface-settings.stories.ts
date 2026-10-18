@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html, render } from 'lit';
 import '@dieselpunk/core/connection-row/register.js';
 import '@dieselpunk/core/item-stack/register.js';
@@ -12,7 +12,7 @@ import { item } from '../icons/items.ts';
 import { locales, setLocale } from '../lib/localization.ts';
 import { densities, paletteThemes } from '../lib/options.ts';
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Examples/Interface settings',
   tags: ['!autodocs'],
   parameters: {
@@ -23,12 +23,9 @@ const meta: Meta = {
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj;
-
-export const InterfaceSettings: Story = {
+export const InterfaceSettings = meta.story({
   render: () => {
     const host = document.createElement('div');
     host.className = 'wb-stack';
@@ -142,4 +139,4 @@ export const InterfaceSettings: Story = {
     draw();
     return host;
   },
-};
+});

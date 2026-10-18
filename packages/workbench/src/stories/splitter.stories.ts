@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkSplitter } from '@dieselpunk/core';
@@ -10,7 +10,7 @@ const { args, argTypes } = getStorybookHelpers<PunkSplitter>('punk-splitter');
 
 const pane = (text: string) => html`<div style="padding: 12px">${text}</div>`;
 
-const meta: Meta<StoryArgs<PunkSplitter>> = {
+const meta = preview.type<{ args: StoryArgs<PunkSplitter> }>().meta({
   title: 'Components/Splitter',
   component: 'punk-splitter',
   args: { ...args, value: 40, label: 'Map width' },
@@ -49,12 +49,9 @@ Stacked panes need a height on the splitter.
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkSplitter>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const splitters = () => html`
   <div class="wb-stack">
@@ -75,10 +72,10 @@ const splitters = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 640px">${splitters()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(splitters),
-};
+});

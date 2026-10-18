@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkMeter } from '@dieselpunk/core';
@@ -8,7 +8,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkMeter>('punk-meter');
 
-const meta: Meta<StoryArgs<PunkMeter>> = {
+const meta = preview.type<{ args: StoryArgs<PunkMeter> }>().meta({
   title: 'Components/Meter',
   component: 'punk-meter',
   args: {
@@ -43,12 +43,9 @@ Out-of-range values are clamped and warn in development builds. A range where \`
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkMeter>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const meters = () => html`
   <div class="wb-stack">
@@ -116,10 +113,10 @@ const meters = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${meters()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(meters),
-};
+});

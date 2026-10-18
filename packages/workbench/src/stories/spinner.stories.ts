@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkSpinner } from '@dieselpunk/core';
@@ -8,7 +8,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkSpinner>('punk-spinner');
 
-const meta: Meta<StoryArgs<PunkSpinner>> = {
+const meta = preview.type<{ args: StoryArgs<PunkSpinner> }>().meta({
   title: 'Components/Spinner',
   component: 'punk-spinner',
   args: { ...args },
@@ -25,12 +25,9 @@ A loading indicator for a region that is waiting for content: the loading button
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkSpinner>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const spinners = () => html`
   <div class="wb-stack">
@@ -46,10 +43,10 @@ const spinners = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${spinners()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(spinners),
-};
+});

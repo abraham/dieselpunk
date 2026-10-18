@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html, render } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import type { PunkCloseDetail, PunkDialog, PunkToastStack } from '@dieselpunk/core';
@@ -12,7 +12,7 @@ import '@dieselpunk/core/toolbar/register.js';
 import '@dieselpunk/core/window/register.js';
 import { icon } from '../icons/icons.ts';
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Examples/Logistics network',
   tags: ['!autodocs'],
   parameters: {
@@ -23,10 +23,7 @@ const meta: Meta = {
       },
     },
   },
-};
-
-export default meta;
-type Story = StoryObj;
+});
 
 type Condition = 'running' | 'waiting' | 'blocked';
 interface Connection {
@@ -65,7 +62,14 @@ const initial = (): Connection[] =>
     ['Storage chest', 'Dispatch', 'Belt', 'forward', 'blocked'],
   ].map(
     ([from, to, kind, direction, condition], index) =>
-      ({ id: `c${index + 1}`, from, to, kind, direction, condition }) as Connection,
+      ({
+        id: `c${index + 1}`,
+        from,
+        to,
+        kind,
+        direction,
+        condition,
+      }) as Connection,
   );
 
 const menuItem = (label: string) =>
@@ -76,7 +80,7 @@ const menuItem = (label: string) =>
     ${label}
   </button>`;
 
-export const LogisticsNetwork: Story = {
+export const LogisticsNetwork = meta.story({
   render: () => {
     const host = document.createElement('div');
     host.className = 'wb-stack';
@@ -229,4 +233,4 @@ export const LogisticsNetwork: Story = {
     draw();
     return host;
   },
-};
+});

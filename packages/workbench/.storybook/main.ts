@@ -1,8 +1,8 @@
-import type { StorybookConfig } from '@storybook/web-components-vite';
+import { defineMain } from '@storybook/web-components-vite/node';
 import remarkGfm from 'remark-gfm';
 import { defaultClientConditions, mergeConfig } from 'vite';
 
-const config: StorybookConfig = {
+export default defineMain({
   framework: '@storybook/web-components-vite',
   addons: [
     {
@@ -20,6 +20,4 @@ const config: StorybookConfig = {
       // The `development` condition turns on the library's dev warnings (specs/package-contract.md §6).
       resolve: { conditions: ['development', ...defaultClientConditions] },
     }),
-};
-
-export default config;
+});

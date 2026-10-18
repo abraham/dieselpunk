@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkToast, PunkToastStack } from '@dieselpunk/core';
@@ -9,7 +9,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkToast>('punk-toast');
 
-const meta: Meta<StoryArgs<PunkToast>> = {
+const meta = preview.type<{ args: StoryArgs<PunkToast> }>().meta({
   title: 'Components/Toast',
   component: 'punk-toast',
   args: {
@@ -41,12 +41,9 @@ A short message that does not interrupt, and the stack that shows and announces 
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkToast>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const stackFor = (event: Event) =>
   (event.currentTarget as HTMLElement).parentElement?.querySelector(
@@ -54,7 +51,7 @@ const stackFor = (event: Event) =>
   ) as PunkToastStack;
 
 /** A stack covers a corner of the story, so toasts come from buttons. */
-export const Stack: Story = {
+export const Stack = meta.story({
   render: () => html`
     <div style="display: flex; gap: 8px; flex-wrap: wrap; min-block-size: 120px">
       <punk-button
@@ -92,7 +89,7 @@ export const Stack: Story = {
       <punk-toast-stack placement="bottom-end" limit="3"></punk-toast-stack>
     </div>
   `,
-};
+});
 
 const toasts = () => html`
   <div class="wb-stack" style="max-inline-size: 420px">
@@ -120,10 +117,10 @@ const toasts = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => toasts(),
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(toasts),
-};
+});

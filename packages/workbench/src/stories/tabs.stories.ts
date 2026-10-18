@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkTabs } from '@dieselpunk/core';
@@ -9,7 +9,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkTabs>('punk-tabs');
 
-const meta: Meta<StoryArgs<PunkTabs>> = {
+const meta = preview.type<{ args: StoryArgs<PunkTabs> }>().meta({
   title: 'Components/Tabs',
   component: 'punk-tabs',
   args: {
@@ -41,12 +41,9 @@ A list of tabs that show one panel at a time. The tab pair is registered togethe
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkTabs>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const tabs = () => html`
   <div class="wb-stack">
@@ -97,10 +94,10 @@ const tabs = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${tabs()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(tabs),
-};
+});

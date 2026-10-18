@@ -1,17 +1,14 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html } from 'lit';
 import '../lib/foundations.ts';
 import { paletteThemes } from '../lib/options.ts';
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Foundations/Colors',
   tags: ['!autodocs'],
-};
+});
 
-export default meta;
-type Story = StoryObj;
-
-export const Palettes: Story = {
+export const Palettes = meta.story({
   render: () => html`
     <p>
       Colors are read from the page's computed styles, so these are the values a consumer gets from
@@ -32,4 +29,4 @@ export const Palettes: Story = {
       )}
     </div>
   `,
-};
+});

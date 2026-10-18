@@ -7,8 +7,8 @@ import '@fontsource/ibm-plex-mono/500.css';
 import '@dieselpunk/core/tokens.css';
 import '@dieselpunk/core/themes.css';
 import '../src/styles/workbench.css';
-import { setCustomElementsManifest } from '@storybook/web-components-vite';
-import type { Preview } from '@storybook/web-components-vite';
+import addonDocs from '@storybook/addon-docs';
+import { definePreview, setCustomElementsManifest } from '@storybook/web-components-vite';
 import { setStorybookHelpersConfig } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import manifest from '@dieselpunk/core/custom-elements.json' with { type: 'json' };
@@ -17,7 +17,8 @@ import { densities, themes } from '../src/lib/options.ts';
 setCustomElementsManifest(manifest as Parameters<typeof setCustomElementsManifest>[0]);
 setStorybookHelpersConfig({ hideArgRef: true });
 
-const preview: Preview = {
+export default definePreview({
+  addons: [addonDocs()],
   tags: ['autodocs'],
   initialGlobals: { theme: 'dark', density: 'compact' },
   globalTypes: {
@@ -56,7 +57,7 @@ const preview: Preview = {
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true },
-    backgrounds: { disabled: true },
+    backgrounds: { disable: true },
     options: {
       storySort: {
         order: [
@@ -140,6 +141,4 @@ const preview: Preview = {
       },
     },
   },
-};
-
-export default preview;
+});

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkAccordion } from '@dieselpunk/core';
@@ -9,7 +9,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkAccordion>('punk-accordion');
 
-const meta: Meta<StoryArgs<PunkAccordion>> = {
+const meta = preview.type<{ args: StoryArgs<PunkAccordion> }>().meta({
   title: 'Components/Accordion',
   component: 'punk-accordion',
   args: {
@@ -38,12 +38,9 @@ A stack of collapsible sections. Each \`punk-accordion-item\` is a heading holdi
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkAccordion>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const items = () => html`
   <div class="wb-stack">
@@ -89,10 +86,10 @@ const items = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${items()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(items),
-};
+});

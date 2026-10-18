@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkDivider } from '@dieselpunk/core';
@@ -8,7 +8,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkDivider>('punk-divider');
 
-const meta: Meta<StoryArgs<PunkDivider>> = {
+const meta = preview.type<{ args: StoryArgs<PunkDivider> }>().meta({
   title: 'Components/Divider',
   component: 'punk-divider',
   args: { ...args, 'default-slot': 'Inputs' },
@@ -27,14 +27,11 @@ A label is only drawn on horizontal dividers. A vertical divider ignores it and 
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkDivider>>;
+export const Playground = meta.story();
 
-export const Playground: Story = {};
-
-export const States: Story = {
+export const States = meta.story({
   render: () => html`
     <div class="wb-stack">
       ${group('Horizontal', html`<punk-divider></punk-divider>`)}
@@ -51,9 +48,9 @@ export const States: Story = {
       )}
     </div>
   `,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () =>
     themeDensityMatrix(
       () => html`
@@ -66,4 +63,4 @@ export const ThemeAndDensityMatrix: Story = {
         </div>
       `,
     ),
-};
+});

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkRecipe } from '@dieselpunk/core';
@@ -9,7 +9,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkRecipe>('punk-recipe');
 
-const meta: Meta<StoryArgs<PunkRecipe>> = {
+const meta = preview.type<{ args: StoryArgs<PunkRecipe> }>().meta({
   title: 'Components/Recipe',
   component: 'punk-recipe',
   args: {
@@ -52,12 +52,9 @@ A selectable recipe tile: a name, a craft time, whether it can be made, and what
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkRecipe>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const needs = html`<span slot="ingredients">2 gears, 1 circuit</span>`;
 const makes = html`<span slot="products">Gearbox</span>`;
@@ -112,10 +109,10 @@ const recipes = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 520px">${recipes()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(recipes),
-};
+});

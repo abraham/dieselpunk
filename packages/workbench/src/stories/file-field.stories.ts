@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkFileField } from '@dieselpunk/core';
@@ -8,7 +8,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkFileField>('punk-file-field');
 
-const meta: Meta<StoryArgs<PunkFileField>> = {
+const meta = preview.type<{ args: StoryArgs<PunkFileField> }>().meta({
   title: 'Components/File field',
   component: 'punk-file-field',
   args: { ...args, label: 'Plans', 'drop-zone': true, multiple: true },
@@ -33,12 +33,9 @@ kept unless \`multiple\` is set.
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkFileField>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const fields = () => html`
   <div class="wb-stack" style="max-inline-size: 420px">
@@ -58,8 +55,8 @@ const fields = () => html`
   </div>
 `;
 
-export const States: Story = { render: fields };
+export const States = meta.story({ render: fields });
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(fields),
-};
+});

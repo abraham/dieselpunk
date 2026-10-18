@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkSwitch } from '@dieselpunk/core';
@@ -9,7 +9,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkSwitch>('punk-switch');
 
-const meta: Meta<StoryArgs<PunkSwitch>> = {
+const meta = preview.type<{ args: StoryArgs<PunkSwitch> }>().meta({
   title: 'Components/Switch',
   component: 'punk-switch',
   args: { ...args, 'default-slot': 'Power' },
@@ -32,12 +32,9 @@ An on and off switch that takes part in a form, for a setting that takes effect 
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkSwitch>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const switches = () => html`
   <div class="wb-stack">
@@ -66,10 +63,10 @@ const switches = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${switches()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(switches),
-};
+});

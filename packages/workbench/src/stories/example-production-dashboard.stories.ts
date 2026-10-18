@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html, render } from 'lit';
 import type { PunkSwitch } from '@dieselpunk/core';
 import '@dieselpunk/core/meter/register.js';
@@ -11,7 +11,7 @@ import { createProductionDemo } from '../lib/production-demo.ts';
 import type { DemoState } from '../lib/production-demo.ts';
 import { sparkline } from '../lib/sparkline.ts';
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Examples/Production dashboard',
   tags: ['!autodocs'],
   parameters: {
@@ -22,10 +22,7 @@ const meta: Meta = {
       },
     },
   },
-};
-
-export default meta;
-type Story = StoryObj;
+});
 
 const series = [
   ['iron', 'Iron plates'],
@@ -112,7 +109,7 @@ const dashboard = (state: DemoState) => html`
  * Updates set properties and nothing else: no focus moves, and nothing is a live region, so a
  * screen reader is not told about each second. The timer stops when the story leaves the page.
  */
-export const ProductionDashboard: Story = {
+export const ProductionDashboard = meta.story({
   render: () => {
     const demo = createProductionDemo();
     const host = document.createElement('div');
@@ -163,4 +160,4 @@ export const ProductionDashboard: Story = {
     start();
     return host;
   },
-};
+});

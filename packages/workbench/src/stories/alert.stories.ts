@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkAlert } from '@dieselpunk/core';
@@ -9,7 +9,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkAlert>('punk-alert');
 
-const meta: Meta<StoryArgs<PunkAlert>> = {
+const meta = preview.type<{ args: StoryArgs<PunkAlert> }>().meta({
   title: 'Components/Alert',
   component: 'punk-alert',
   args: {
@@ -33,12 +33,9 @@ A message that stays in the page until the problem goes away or the user dismiss
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkAlert>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const alerts = () => html`
   <div class="wb-stack">
@@ -62,10 +59,10 @@ const alerts = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${alerts()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(alerts),
-};
+});

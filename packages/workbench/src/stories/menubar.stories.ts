@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html } from 'lit';
 import '@dieselpunk/core/menubar/register.js';
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Components/Menubar',
   component: 'punk-menubar',
   render: () => html`
@@ -50,9 +50,6 @@ Each menu item sends \`punk-activate\`, which bubbles to the menubar.
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj;
-
-export const Playground: Story = {};
+export const Playground = meta.story();

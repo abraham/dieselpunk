@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -23,7 +23,7 @@ const stackMarkup = (index: number): string => {
 const stacks = (count: number): string =>
   Array.from({ length: count }, (_, index) => stackMarkup(index)).join('');
 
-const meta: Meta<StoryArgs<PunkSlotGrid>> = {
+const meta = preview.type<{ args: StoryArgs<PunkSlotGrid> }>().meta({
   title: 'Components/Slot Grid',
   component: 'punk-slot-grid',
   args: {
@@ -77,12 +77,9 @@ A responsive, keyboard-navigable grid of \`punk-slot\` or \`punk-item-stack\` ch
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkSlotGrid>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const report = (event: CustomEvent<PunkSelectionChangeDetail>) => {
   const output = (event.currentTarget as HTMLElement).parentElement?.querySelector('output');
@@ -163,12 +160,12 @@ const modes = () => html`
   </div>
 `;
 
-export const SelectionModes: Story = {
+export const SelectionModes = meta.story({
   name: 'Selection modes',
   render: () => html`<div style="max-inline-size: 480px">${modes()}</div>`,
-};
+});
 
-export const GridOfStacks: Story = {
+export const GridOfStacks = meta.story({
   name: 'Grid of item stacks',
   render: () => html`
     <div class="wb-stack">
@@ -195,9 +192,9 @@ export const GridOfStacks: Story = {
       <output class="wb-caption">i2, i3</output>
     </div>
   `,
-};
+});
 
-export const NarrowContainer: Story = {
+export const NarrowContainer = meta.story({
   name: 'Narrow container',
   render: () => html`
     <div class="wb-stack">
@@ -218,9 +215,9 @@ export const NarrowContainer: Story = {
       </div>
     </div>
   `,
-};
+});
 
-export const HundredSlots: Story = {
+export const HundredSlots = meta.story({
   name: '100 slots',
   render: () => html`
     <div class="wb-stack">
@@ -251,8 +248,8 @@ export const HundredSlots: Story = {
       <output class="wb-caption">i1</output>
     </div>
   `,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(modes),
-};
+});

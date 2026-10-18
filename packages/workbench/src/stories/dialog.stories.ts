@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkDialog } from '@dieselpunk/core';
@@ -11,7 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkDialog>('punk-dialo
 const open = (event: Event) =>
   ((event.currentTarget as HTMLElement).nextElementSibling as PunkDialog | null)?.show();
 
-const meta: Meta<StoryArgs<PunkDialog>> = {
+const meta = preview.type<{ args: StoryArgs<PunkDialog> }>().meta({
   title: 'Components/Dialog',
   component: 'punk-dialog',
   args: {
@@ -44,17 +44,14 @@ A modal confirmation or task surface. It makes the rest of the page inert, traps
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkDialog>>;
+export const Playground = meta.story();
 
-export const Playground: Story = {};
-
-export const Alert: Story = {
+export const Alert = meta.story({
   args: { alert: true, heading: 'Reactor offline' },
-};
+});
 
-export const Persistent: Story = {
+export const Persistent = meta.story({
   args: { persistent: true, heading: 'Confirm shutdown' },
-};
+});

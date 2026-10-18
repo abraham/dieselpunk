@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkToggleGroup } from '@dieselpunk/core';
@@ -8,7 +8,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkToggleGroup>('punk-toggle-group');
 
-const meta: Meta<StoryArgs<PunkToggleGroup>> = {
+const meta = preview.type<{ args: StoryArgs<PunkToggleGroup> }>().meta({
   title: 'Components/Toggle Group',
   component: 'punk-toggle-group',
   args: {
@@ -36,12 +36,9 @@ A set of native \`<button>\` children that stay pressed: view modes, alignment, 
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkToggleGroup>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const groups = () => html`
   <div class="wb-stack">
@@ -71,10 +68,10 @@ const groups = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${groups()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(groups),
-};
+});

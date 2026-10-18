@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkNumberField } from '@dieselpunk/core';
@@ -8,7 +8,7 @@ import type { StoryArgs } from '../lib/types.ts';
 
 const { args, argTypes, template } = getStorybookHelpers<PunkNumberField>('punk-number-field');
 
-const meta: Meta<StoryArgs<PunkNumberField>> = {
+const meta = preview.type<{ args: StoryArgs<PunkNumberField> }>().meta({
   title: 'Components/Number field',
   component: 'punk-number-field',
   args: { ...args, label: 'Thrust', value: '3', min: 0, max: 10 },
@@ -31,12 +31,9 @@ A field for a number, with a native \`<input type="number">\` in its shadow tree
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkNumberField>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const fields = () => html`
   <div class="wb-stack" style="max-inline-size: 420px">
@@ -69,10 +66,10 @@ const fields = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${fields()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(fields),
-};
+});

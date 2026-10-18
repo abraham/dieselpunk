@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkStatusLight } from '@dieselpunk/core';
@@ -11,7 +11,7 @@ const { args, argTypes, template } = getStorybookHelpers<PunkStatusLight>('punk-
 
 const variants = ['neutral', 'info', 'success', 'warning', 'danger'] as const;
 
-const meta: Meta<StoryArgs<PunkStatusLight>> = {
+const meta = preview.type<{ args: StoryArgs<PunkStatusLight> }>().meta({
   title: 'Components/Status Light',
   component: 'punk-status-light',
   args: { ...args, variant: 'success', 'default-slot': 'Running' },
@@ -34,12 +34,9 @@ A compact status indicator made of a shape and text. The text carries the meanin
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkStatusLight>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const lights = () => html`
   <div class="wb-stack">
@@ -71,10 +68,10 @@ const lights = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${lights()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(lights),
-};
+});

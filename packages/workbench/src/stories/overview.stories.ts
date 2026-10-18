@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { html } from 'lit';
 import type { PunkSelectionChangeDetail } from '@dieselpunk/core';
 import '@dieselpunk/core/panel/register.js';
@@ -15,20 +15,17 @@ import { icon } from '../icons/icons.ts';
 import { item, itemLabels, itemNames } from '../icons/items.ts';
 import { applicationShell } from '../lib/application-shell.ts';
 
-const meta: Meta = {
+const meta = preview.meta({
   title: 'Overview',
   tags: ['!autodocs'],
-};
-
-export default meta;
-type Story = StoryObj;
+});
 
 const showSelection = (event: CustomEvent<PunkSelectionChangeDetail>) => {
   const output = (event.currentTarget as HTMLElement).parentElement?.querySelector('output');
   if (output) output.textContent = event.detail.values.join(', ') || 'nothing selected';
 };
 
-export const Inventory: Story = {
+export const Inventory = meta.story({
   render: () => html`
     <div class="wb-stack" style="max-inline-size: 720px">
       <div>
@@ -162,9 +159,9 @@ export const Inventory: Story = {
       </punk-panel>
     </div>
   `,
-};
+});
 
-export const ApplicationShell: Story = {
+export const ApplicationShell = meta.story({
   name: 'Application shell',
   render: () => applicationShell(),
-};
+});

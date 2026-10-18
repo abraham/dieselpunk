@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import preview from '#.storybook/preview';
 import { getStorybookHelpers } from '@wc-toolkit/storybook-helpers';
 import { html } from 'lit';
 import type { PunkCombobox } from '@dieselpunk/core';
@@ -18,7 +18,7 @@ const options = [
   ['engine', 'Engine unit'],
 ];
 
-const meta: Meta<StoryArgs<PunkCombobox>> = {
+const meta = preview.type<{ args: StoryArgs<PunkCombobox> }>().meta({
   title: 'Components/Combobox',
   component: 'punk-combobox',
   args: { ...args, label: 'Item' },
@@ -45,12 +45,9 @@ A text field with a list of suggestions: the APG combobox, with a native \`<inpu
       },
     },
   },
-};
+});
 
-export default meta;
-type Story = StoryObj<StoryArgs<PunkCombobox>>;
-
-export const Playground: Story = {};
+export const Playground = meta.story();
 
 const fields = () => html`
   <div class="wb-stack">
@@ -79,10 +76,10 @@ const fields = () => html`
   </div>
 `;
 
-export const States: Story = {
+export const States = meta.story({
   render: () => html`<div style="max-inline-size: 480px">${fields()}</div>`,
-};
+});
 
-export const ThemeAndDensityMatrix: Story = {
+export const ThemeAndDensityMatrix = meta.story({
   render: () => themeDensityMatrix(fields),
-};
+});
