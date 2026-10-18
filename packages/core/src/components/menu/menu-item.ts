@@ -2,6 +2,7 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
+import { serverValues } from '../../internal/server-values.ts';
 import { menuItemStyles } from './menu.styles.ts';
 
 export type MenuItemType = 'item' | 'checkbox' | 'radio';
@@ -88,7 +89,10 @@ export class PunkMenuItem extends PunkElement {
 
   protected override render() {
     const change = this.#slots.handleSlotChange;
-    return html`<span part="item" class="item type-${this.#type}${this.#inBar ? ' bar' : ''}">
+    return html`<span
+      part="item"
+      class="item type-${this.#type}${this.#inBar && !serverValues() ? ' bar' : ''}"
+    >
       <span part="check" class="check" aria-hidden="true"></span>
       <span part="icon" class="icon" ?hidden=${!this.#slots.has('icon')}
         ><slot name="icon" @slotchange=${change}></slot

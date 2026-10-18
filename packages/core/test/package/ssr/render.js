@@ -68,6 +68,9 @@ body += await ssr(html`
 // Components with children, labels, and values. Each must end as a client render of its markup,
 // children included, so the page keeps the markup in a template for the browser to render.
 const composed = [
+  '<punk-tabs aria-label="Unselected"><punk-tab slot="tab" panel="cu1">One</punk-tab><punk-tab slot="tab" panel="cu2">Two</punk-tab><div id="cu1">First</div><div id="cu2">Second</div></punk-tabs>',
+  '<punk-list aria-label="Pick" selection="single" value="b"><punk-list-item value="a">Alpha</punk-list-item><punk-list-item value="b">Beta</punk-list-item></punk-list>',
+  '<punk-radio-group label="Size" value="b"><punk-radio value="a">Small</punk-radio><punk-radio value="b">Large</punk-radio></punk-radio-group>',
   '<punk-tabs aria-label="Modules"><punk-tab slot="tab" panel="cp1">One</punk-tab><punk-tab slot="tab" panel="cp2" selected>Two</punk-tab><div id="cp1">First</div><div id="cp2">Second</div></punk-tabs>',
   '<punk-breadcrumb max-items="3"><punk-breadcrumb-item href="#a">A</punk-breadcrumb-item><punk-breadcrumb-item href="#b">B</punk-breadcrumb-item><punk-breadcrumb-item href="#c">C</punk-breadcrumb-item><punk-breadcrumb-item current>D</punk-breadcrumb-item></punk-breadcrumb>',
   '<punk-steps current="2"><punk-step>Mine</punk-step><punk-step>Smelt</punk-step><punk-step>Craft</punk-step></punk-steps>',
@@ -100,10 +103,15 @@ problems.push(...errors.map((error) => `the server logged an error: ${error}`));
 
 mkdirSync(out, { recursive: true });
 const imports = entries.map((entry) => `import '@dieselpunk/core/${entry}/register.js';`);
-for (const name of ['plain', 'hydrate']) {
-  const support =
-    name === 'hydrate' ? ["import '@lit-labs/ssr-client/lit-element-hydrate-support.js';"] : [];
-  writeFileSync(join(out, `client-${name}.js`), [...support, ...imports].join('\n') + '\n');
+const support = "import '@lit-labs/ssr-client/lit-element-hydrate-support.js';";
+// Without Lit's hydration support, with it alone, and with core's hydration entry too.
+const pages = {
+  plain: imports,
+  support: [support, ...imports],
+  hydrate: [support, "import '@dieselpunk/core/hydrate.js';", ...imports],
+};
+for (const [name, lines] of Object.entries(pages)) {
+  writeFileSync(join(out, `client-${name}.js`), lines.join('\n') + '\n');
   writeFileSync(
     join(out, `${name}.html`),
     `<!doctype html>

@@ -1,7 +1,15 @@
 // The browser half of the SSR fixture (specs/ssr.md §4): after `upgrade()` loads the definitions
 // over the server's HTML, every element must equal a client render of the same markup.
 /* global customElements, document, Node, setTimeout, window */
-window.checkUpgrade = async () => {
+// Before the upgrade: the first rendered node of each element, to tell a kept tree from a new one.
+window.markServerNodes = () => {
+  window.serverNodes = [...document.querySelectorAll('[data-case] > *')]
+    .map((host) => [host, [...host.shadowRoot.children].find((el) => el.localName !== 'style')])
+    .filter(([, node]) => node);
+};
+
+// `hydrated`: whether the page loaded Lit's hydration support, so the server's nodes must stay.
+window.checkUpgrade = async (hydrated) => {
   const tags = window.ssrTags;
   await Promise.all(tags.map((tag) => customElements.whenDefined(tag)));
   const settle = async (elements) => {
@@ -12,18 +20,28 @@ window.checkUpgrade = async () => {
   };
   await settle([...document.querySelectorAll('body *')].filter((el) => el.updateComplete));
 
-  // Generated ids differ between two instances, so they are compared as a placeholder.
+  // Generated ids differ between two instances, so they are compared as a placeholder. Classes are
+  // compared as a set, since the server and a directive space them differently.
   const value = (element, name) => {
     const text = element.getAttribute(name);
+    if (name === 'class') return text.split(/\s+/).filter(Boolean).sort().join('.');
     return /^[a-z][\w-]*-\d+$/i.test(text) ? '#' : text;
   };
+  // The server writes a control's value as an attribute, and a client render sets the property.
+  const names = (element) =>
+    element
+      .getAttributeNames()
+      .filter((name) => !(name === 'value' && /^(input|textarea)$/.test(element.localName)))
+      .sort();
+  const field = (element) =>
+    /^(input|textarea|select)$/.test(element.localName) ? ` .value=${element.value}` : '';
   const tree = (node) =>
     [...node.childNodes]
       .map((child) => {
         if (child.nodeType === Node.TEXT_NODE) return child.data.trim();
         if (child.nodeType !== Node.ELEMENT_NODE) return '';
-        const attributes = child.getAttributeNames().sort();
-        return `<${child.localName} ${attributes.map((name) => `${name}=${value(child, name)}`).join(' ')}>${tree(child)}</>`;
+        const attributes = names(child);
+        return `<${child.localName} ${attributes.map((name) => `${name}=${value(child, name)}`).join(' ')}${field(child)}>${tree(child)}</>`;
       })
       .join('');
   const host = (element) =>
@@ -35,6 +53,15 @@ window.checkUpgrade = async () => {
       .join(' ');
 
   const problems = [];
+  if (window.serverNodes.length !== tags.length) {
+    problems.push(`${window.serverNodes.length} of ${tags.length} tags had a server node to mark`);
+  }
+  for (const [host, node] of window.serverNodes) {
+    const kept = host.shadowRoot.contains(node);
+    if (kept !== hydrated) {
+      problems.push(`${host.localName}: the server's nodes were ${kept ? 'kept' : 'replaced'}`);
+    }
+  }
   for (const tag of tags) {
     const upgraded = document.querySelector(`[data-case="${tag}"] > ${tag}`);
     // On its own, so an overlay does not take the upgraded element as its anchor.
@@ -66,9 +93,9 @@ window.checkUpgrade = async () => {
       .map((child) => {
         if (child.nodeType === Node.TEXT_NODE) return child.data.trim();
         if (child.nodeType !== Node.ELEMENT_NODE || child.localName === 'template') return '';
-        const attributes = child.getAttributeNames().sort();
+        const attributes = names(child);
         const shadow = child.shadowRoot ? `#shadow(${deep(child.shadowRoot)})` : '';
-        return `<${child.localName} ${attributes.map((name) => `${name}=${value(child, name)}`).join(' ')}>${shadow}${deep(child)}</>`;
+        return `<${child.localName} ${attributes.map((name) => `${name}=${value(child, name)}`).join(' ')}${field(child)}>${shadow}${deep(child)}</>`;
       })
       .join('');
   for (const upgraded of document.querySelectorAll('[data-composed]')) {

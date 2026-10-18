@@ -8,7 +8,21 @@ let hydrating = false;
  */
 export const serverValues = (): boolean => isServer || hydrating;
 
-/** Marks the hydrating render, which `PunkElement` runs synchronously. */
+/** Marks the hydrating render. */
 export function setHydrating(value: boolean): void {
   hydrating = value;
+}
+
+/** What `@dieselpunk/core/hydrate.js` installs into `PunkElement`. */
+export interface Hydration {
+  /** Whether to hydrate `element`'s server-rendered `root` rather than replace it. */
+  claim(element: HTMLElement, root: ShadowRoot): boolean;
+  /** Runs an update, as the hydrating one when it is the element's first after `claim`. */
+  update(element: HTMLElement, run: () => void): void;
+}
+
+export let hydration: Hydration | undefined;
+
+export function setHydration(value: Hydration): void {
+  hydration = value;
 }

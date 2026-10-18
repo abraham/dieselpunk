@@ -136,14 +136,19 @@ for (const component of components) {
 for (const target of [
   'dist/index.js',
   'dist/index.d.ts',
+  'dist/hydrate.js',
+  'dist/hydrate.d.ts',
   'dist/css/tokens.css',
   'dist/css/themes.css',
 ]) {
   if (!existsSync(`${packageDir}${target}`)) fail(`Missing ${target}`);
 }
+if (toPath(import.meta.resolve(`${name}/hydrate.js`)) !== 'dist/hydrate.js') {
+  fail(`${name}/hydrate.js does not resolve to dist/hydrate.js`);
+}
 if (!existsSync(`${packageDir}custom-elements.json`)) fail('Missing custom-elements.json');
 
-// 2. `sideEffects` covers exactly the register entries and the stylesheets.
+// 2. `sideEffects` covers exactly the register entries, the stylesheets, and the hydration entry.
 const patterns = pkg.sideEffects.map(
   (pattern) =>
     new RegExp(
@@ -157,7 +162,9 @@ const distFiles = listFiles(distDir).map((file) => `dist/${file}`);
 const flagged = distFiles.filter((file) => patterns.some((pattern) => pattern.test(file)));
 const expectedFlagged = distFiles.filter(
   (file) =>
-    /^dist\/components\/[^/]+\/register\.js$/.test(file) || /^dist\/css\/[^/]+\.css$/.test(file),
+    /^dist\/components\/[^/]+\/register\.js$/.test(file) ||
+    /^dist\/css\/[^/]+\.css$/.test(file) ||
+    file === 'dist/hydrate.js',
 );
 for (const file of expectedFlagged.filter((file) => !flagged.includes(file))) {
   fail(`${file} has side effects but "sideEffects" does not list it`);

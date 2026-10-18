@@ -8,6 +8,7 @@ import { PunkElement } from '../../internal/punk-element.ts';
 import { focusItem, itemDisabled, setTabStop } from '../../internal/roving.ts';
 import type { RovingItem } from '../../internal/roving.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
+import { serverValues } from '../../internal/server-values.ts';
 import { radioStyles } from './radio-group.styles.ts';
 
 /** A radio group: it owns its radios' checked state and tab stop, and can disable them all. */
@@ -103,9 +104,15 @@ export class PunkRadio extends PunkElement implements Owned<PunkRadio>, RovingIt
   }
 
   protected override render() {
+    // Its group sets `checked` and may disable it, which the server could not see.
+    const server = serverValues();
     return html`<span
       part="control"
-      class=${classMap({ control: true, checked: this.checked, disabled: this[itemDisabled] })}
+      class=${classMap({
+        control: true,
+        checked: server ? this.hasAttribute('checked') : this.checked,
+        disabled: server ? this.disabled : this[itemDisabled],
+      })}
       ><span part="ring" class="ring"><span part="dot" class="dot"></span></span
       ><span part="label" class="label" ?hidden=${!this.#slots.has('')}
         ><slot @slotchange=${this.#slots.handleSlotChange}></slot></span

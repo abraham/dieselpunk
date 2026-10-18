@@ -4,6 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg } from '../../internal/localize.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
+import { serverValues } from '../../internal/server-values.ts';
 import { formatNumber, resolveLang } from '../../utilities/locale.ts';
 import { stepStyles } from './steps.styles.ts';
 
@@ -75,7 +76,8 @@ export class PunkStep extends PunkElement {
   }
 
   protected override render() {
-    const place = this[position];
+    // Its owner may place it before it hydrates, and the server could not.
+    const place = serverValues() ? null : this[position];
     const state = place?.state ?? 'upcoming';
     const number = place ? formatNumber(place.index + 1, resolveLang(this)) : '';
     const word = this.#word(state);

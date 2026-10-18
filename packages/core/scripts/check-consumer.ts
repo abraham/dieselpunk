@@ -429,6 +429,7 @@ async function checkServerRendering(core: string): Promise<void> {
     absWorkingDir: project,
     entryPoints: {
       'client-plain.bundle': join(outDir, 'client-plain.js'),
+      'client-support.bundle': join(outDir, 'client-support.js'),
       'client-hydrate.bundle': join(outDir, 'client-hydrate.js'),
     },
     bundle: true,
@@ -449,13 +450,14 @@ async function checkServerRendering(core: string): Promise<void> {
   const { server, port } = await serveStatic(outDir);
   const browser = await chromium.launch();
   try {
-    for (const name of ['plain', 'hydrate']) {
+    for (const name of ['plain', 'support', 'hydrate']) {
       const tab = await browser.newPage();
       const messages = watchPage(tab);
       await tab.goto(`http://localhost:${port}/${name}.html`);
+      await tab.evaluate('window.markServerNodes()');
       await tab.locator('#typed input').fill('Ada');
       await tab.evaluate('window.upgrade()');
-      const found = (await tab.evaluate('window.checkUpgrade()')) as string[];
+      const found = (await tab.evaluate(`window.checkUpgrade(${name === 'hydrate'})`)) as string[];
       problems.push(...found.map((problem) => `${name}.html: ${problem}`));
       if (messages.length > 0) problems.push(`${name}.html logged: ${messages.join(' | ')}`);
       await tab.close();

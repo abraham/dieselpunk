@@ -15,7 +15,8 @@
   "type": "module",
   "sideEffects": [
     "./dist/components/*/register.js",
-    "./dist/css/*.css"
+    "./dist/css/*.css",
+    "./dist/hydrate.js"
   ],
   "files": [
     "dist",
@@ -36,6 +37,10 @@
     "./tokens.css": "./dist/css/tokens.css",
     "./themes.css": "./dist/css/themes.css",
     "./custom-elements.json": "./custom-elements.json",
+    "./hydrate.js": {
+      "types": "./dist/hydrate.d.ts",
+      "default": "./dist/hydrate.js"
+    },
     "./*/register.js": "./dist/components/*/register.js",
     "./*": {
       "types": "./dist/components/*/index.d.ts",

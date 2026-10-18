@@ -10,6 +10,7 @@ import { setExternalAria } from './anchor.ts';
 import { isFieldsetDisabled } from './fieldset.ts';
 import { PunkElement } from './punk-element.ts';
 import { focusItem, itemDisabled, setTabStop } from './roving.ts';
+import { serverValues } from './server-values.ts';
 
 export type ButtonVariant = 'default' | 'primary' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -172,7 +173,9 @@ export abstract class PunkButtonBase extends PunkElement {
         aria-describedby=${ifDefined(this.#description === null ? undefined : 'description')}
         aria-expanded=${ifDefined(this.#expanded === null ? undefined : String(this.#expanded))}
         aria-haspopup=${ifDefined(this.#haspopup ?? undefined)}
-        tabindex=${ifDefined(this.#tabStop === null ? undefined : this.#tabStop ? '0' : '-1')}
+        tabindex=${ifDefined(
+          this.#tabStop === null || serverValues() ? undefined : this.#tabStop ? '0' : '-1',
+        )}
         @click=${this.#handleClick}
       >
         <span class="content">${this.renderContent()}</span>
