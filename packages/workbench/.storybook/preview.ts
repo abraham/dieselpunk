@@ -121,6 +121,7 @@ export default definePreview({
             'React',
             'Vue',
             'Svelte',
+            'Server rendering',
             'Forms',
             'Focus and overlays',
             'Responsive layouts',

@@ -91,7 +91,7 @@ import '@dieselpunk/core/panel/register.js';
 import '@dieselpunk/core/button/register.js';
 ```
 
-`tokens.css` and `themes.css` are linked as in a client-only page; their custom properties reach declarative shadow roots like any other. The workbench's Integration guide shows this setup ([workbench.md §4](workbench.md)).
+`tokens.css` and `themes.css` are linked as in a client-only page; their custom properties reach declarative shadow roots like any other. The workbench's Server rendering guide shows this setup, both ways of loading the components, and what the first paint cannot know ([workbench.md §4](workbench.md)).
 
 ## Verification
 
