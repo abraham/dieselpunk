@@ -9,9 +9,9 @@ The workbench is where people build with and review the library, not a marketing
 
 ## 2. Build and consumption
 
-- **The package.** `packages/workbench` is `@dieselpunk/workbench`: `private: true`, never published, and without `check:package`, `check:size`, or `check:api`. Its scripts are `dev`, `build`, `build:site`, `typecheck`, and `test:smoke`; the root `start`, `storybook`, and `test:smoke` delegate to it. It depends on `@dieselpunk/core` and `@dieselpunk/locales`, and on `@dieselpunk/testing` for development, and imports each only by package name ([testing.md §10](testing.md)). **Why:** with every workspace in `packages/`, the root `workspaces` is one glob, and the import rule, `tsconfig.scripts.json`, and CI change detection have one layout to know; an `apps/` folder held this one workspace only.
+- **The package.** `packages/workbench` is `@dieselpunk/workbench`: `private: true`, never published, and without `check:package`, `check:size`, or `check:api`. Its scripts are `dev`, `build`, `build:site`, `typecheck`, `test:smoke`, and `test:stories`; the root `start`, `storybook`, and `test:smoke` delegate to it. It depends on `@dieselpunk/core` and `@dieselpunk/locales`, and on `@dieselpunk/testing` for development, and imports each only by package name ([testing.md §10](testing.md)). **Why:** with every workspace in `packages/`, the root `workspaces` is one glob, and the import rule, `tsconfig.scripts.json`, and CI change detection have one layout to know; an `apps/` folder held this one workspace only.
 - **Addresses do not depend on the folder.** Storybook ids come from titles and export names (§7), so moving or renaming the package changes no published page.
-- Storybook for web components with Vite (`@storybook/web-components-vite`).
+- Storybook for web components with Vite (`@storybook/web-components-vite`), with the docs and accessibility addons, and the Vitest addon to run the accessibility checks ([accessibility.md §13](accessibility.md)).
 - The workbench imports the **built** packages through their public exports, including `custom-elements.json`, exactly as an external consumer does, so it exercises the real `exports` map. The root `storybook` script builds core first; its `typecheck` reads whatever was last built, so run `npm run build` before it, as CI does ([ci.md §3](ci.md)).
 - The `development` export condition is on in every build, so development warnings (a missing name, a bad range) show in stories.
 - Fonts (Chakra Petch, IBM Plex Mono) come from `@fontsource` as development dependencies; neither package bundles a font.
@@ -37,7 +37,7 @@ The workbench is where people build with and review the library, not a marketing
 | Accessibility and layout | Reflow, right-to-left, forced colors, reduced motion, focus, each family's keyboard model and non-color cues                                                                                          |
 | Localization             | Configuring Lit Localize, merging application messages, `bindDocumentLocale`, writing XLIFF, the rules, what does not change, and a table of every message read from the XLIFF                        |
 | Performance              | Budgets, what each component costs, updating many stats, `content-visibility` for long lists with measurements and caveats, a list of connection rows virtualized with `@lit-labs/virtualizer`        |
-| Screen reader checklist  | The manual scenarios and combinations of [accessibility.md §13](accessibility.md), and the results table                                                                                              |
+| Screen reader checklist  | The manual scenarios and combinations of [accessibility.md §14](accessibility.md), and the results table                                                                                              |
 | Asset policy             | What is original, what applications must supply, and the rule against game-derived assets                                                                                                             |
 
 ## 5. Smoke test
@@ -102,7 +102,7 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 
 ## Verification
 
-- `npm run build` builds the workbench; `test:smoke` runs §5 in CI.
+- `npm run build` builds the workbench; `test:smoke` runs §5 in CI, and `test:stories` runs the accessibility addon over every story ([accessibility.md §13](accessibility.md)).
 - Every guide's framework code is the code `check:frameworks` builds, and the Integration guide's import-map page is the page `check:consumer` loads from a fresh install.
 - Foundations data is measured from the built CSS, so it cannot drift from what consumers get.
 - Nothing gates a deploy but a successful build: a commit that fails CI on `main` is still published, and the CI failure is fixed on `main`.
@@ -113,5 +113,5 @@ Before 1.0 there are no releases, so `/` is built from `main` and `/next/` does 
 - **Only the pre-1.0 path is built.** `docs.yml` deploys `main` to `/`. The release build into `/`, `main` into `/next/`, and the kept `/v<major>/` folders are added with the first release.
 - **No identity.** The Storybook manager uses its default theme; there is no logo, favicon, social image, page descriptions, or 404 page.
 - **No published-ids file or check** in CI.
-- **The guides and overviews are not scanned by axe.** Closing it: run axe over every docs page and example in the smoke test, outside the Storybook chrome.
+- **The guides are not scanned by axe.** The accessibility addon checks stories, which include the overviews and examples, but not MDX docs pages ([accessibility.md §13](accessibility.md)). Closing it: run axe over every docs page in the smoke test, outside the Storybook chrome.
 - **Manifest descriptions do not link their docs pages.**

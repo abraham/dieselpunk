@@ -39,7 +39,7 @@ flowchart LR
 | `plan`        |        | `scripts/ci-matrix.ts`: the matrices for `smoke`, `browser`, and `visual`, and which job families the change affects (§7)                                                                     | Node only     |
 | `static`      |        | `check:toolchain`, `format:check`, `lint`, `build` (which also runs `check:locales`), `typecheck`, `check:contrast`, `check:strings`, `check:api`, `test:node`, `check:package`, `check:size` | Node only     |
 | `integration` | `plan` | `build`, `check:consumer`, `check:frameworks`                                                                                                                                                 | Chromium      |
-| `smoke`       | `plan` | `build`, then `test:smoke` for its part of the workbench entries                                                                                                                              | Chromium      |
+| `smoke`       | `plan` | `build`, then `test:smoke` and `test:stories` for its part of the workbench entries                                                                                                           | Chromium      |
 | `browser`     | `plan` | `test:browser` for one engine and one part (§5)                                                                                                                                               | That engine   |
 | `visual`      | `plan` | `test:visual` for one project and a set of groups, in the pinned Playwright image                                                                                                             | The container |
 | `ci-success`  | all    | Fails if any job failed or was cancelled, or was skipped when `plan` said it should run                                                                                                       | None          |
@@ -87,6 +87,7 @@ Theme names are read from the token source (`packages/core/src/tokens/themes.ts`
 - Entries are checked through a pool of 4 pages, and a page is ready when Storybook reports it rendered, not after a fixed wait.
 - The scripted flows (the application shell, the examples, the guides) run after the pool, one at a time.
 - `PUNK_SMOKE_PART=<n>/<total>` selects a deterministic slice of entries, and the flows run in the first part only. `plan` raises the part count when the entry count passes the budget.
+- `test:stories` runs the same part of the stories with Vitest's `--shard=<n>/<total>` ([accessibility.md §13](accessibility.md)).
 
 ## 6. Matrix generation
 

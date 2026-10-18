@@ -24,7 +24,7 @@
 | Package            | Node scripts                             | Exports, side effects, tree shaking, `publint`, `attw`, sizes, the API snapshot, strings and locales (§8)                                                                         |
 | Consumer           | Node scripts and Chromium                | Packed tarballs installed into throwaway projects, type-checked and driven (§8)                                                                                                   |
 | Frameworks         | Node scripts and Chromium                | React, Vue, and Svelte fixture apps built and driven (§8)                                                                                                                         |
-| Workbench          | Node script and Chromium                 | Every story and docs page, widths, and keyboard flows ([workbench.md §5](workbench.md))                                                                                           |
+| Workbench          | Node script, Vitest, and Chromium        | Every story and docs page, widths, and keyboard flows ([workbench.md §5](workbench.md)); axe over every story ([accessibility.md §13](accessibility.md))                          |
 
 ## 3. The gallery
 

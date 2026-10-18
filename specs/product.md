@@ -87,7 +87,7 @@ The slot grid's keyboard and selection model is in [keyboard-and-selection.md §
 - **Older versions** are not supported. The library does not detect the browser, warn, or degrade on purpose for them.
 - **Language and platform features.** Emitted code is ESNext and is not downleveled or polyfilled, so source and styles use only JavaScript, DOM, and CSS features that every supported version ships: custom elements and Shadow DOM, `ElementInternals` and form association, `<dialog>` and the Popover API, `:focus-visible`, `:dir()`, container queries, `color-mix()`, logical properties, and `Intl`. A feature becomes usable when the oldest supported version of all three browsers has it.
 - **Fallbacks** exist only where a feature is missing in a supported version. A fallback is removed once every supported version has the feature.
-- **Testing.** CI runs every browser suite and the visual matrix in Playwright's Chromium, Firefox, and WebKit builds, which track the current releases ([testing.md §4](testing.md)). The previous major version, and the branded browsers on real devices, are covered by the manual screen reader checklist ([accessibility.md §13](accessibility.md)), which uses Chrome, Firefox, and Safari.
+- **Testing.** CI runs every browser suite and the visual matrix in Playwright's Chromium, Firefox, and WebKit builds, which track the current releases ([testing.md §4](testing.md)). The previous major version, and the branded browsers on real devices, are covered by the manual screen reader checklist ([accessibility.md §14](accessibility.md)), which uses Chrome, Firefox, and Safari.
 
 **Gaps.** No gate checks that source uses only features of the supported versions. Closing it: a shared `browserslist` query (`last 2 Chrome versions, last 2 Firefox versions, last 2 Safari versions, last 2 iOS versions, last 2 ChromeAndroid versions`) read by a JavaScript API check in ESLint and a CSS feature check, so a feature newer than the oldest supported version fails lint. The top-layer fallbacks of [overlays.md §1](overlays.md) are reviewed against that query and removed if every supported version has `showModal` and the Popover API.
 
@@ -112,7 +112,7 @@ These hold for every release from 1.0 on, not once:
 9. The workbench's examples are usable at desktop width, 375px, and 187px without overlap, clipping, or sideways scrolling.
 10. Every size entry is within its limit and has a stated reason, and the performance gates pass.
 11. Every component supports every theme and both densities, including `light` with `low`, without loss of function or accessibility.
-12. The manual screen reader checklist has been run for the release, or the owner has named what was not run ([accessibility.md §13](accessibility.md)).
+12. The manual screen reader checklist has been run for the release, or the owner has named what was not run ([accessibility.md §14](accessibility.md)).
 13. Each shipped locale is `reviewed` by a native reader, or is shipped as `draft` by the owner's decision ([localization.md §5](localization.md)).
 
 ## 10. Deliberately deferred

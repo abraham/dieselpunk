@@ -83,7 +83,27 @@ At 200% zoom and 375px (187 CSS pixels), with long German labels, right-to-left 
 - **Moving content** (SC 2.2.2): the workbench's live examples have a visible pause control, and the docs tell applications to provide one.
 - A modal makes the rest of the page inert, including a toast stack outside it; the docs say to put a stack inside a dialog when its toasts must be usable during it.
 
-## 13. Manual testing
+## 13. Automated checks
+
+axe runs at two levels, and neither replaces the other:
+
+- **The gallery suites are the gate for components.** They render every component in every state, theme, density, and content variant, in all three engines (Verification).
+- **The workbench checks compositions** with Storybook's accessibility addon (`@storybook/addon-a11y`, built on axe-core): every story, including the overviews, examples, and foundations, which no gallery group renders.
+
+The workbench configures the addon once, in `.storybook/preview.ts`:
+
+- `parameters.a11y.test` is `'error'`, so a violation of any impact fails the story.
+- `parameters.a11y.options.runOnly` is the WCAG 2.0, 2.1, and 2.2 A and AA tags and `best-practice`, because the addon's default stops at WCAG 2.1, below this spec's target.
+- The `region` rule is off, as in the gallery suites, since landmarks are the page's job.
+- `globals.a11y.manual` is never set: every story is checked when it is shown.
+
+CI runs the addon through `@storybook/addon-vitest`: the workbench's `test:stories` renders every story in Vitest browser mode with Chromium, in the default theme and density, and fails on a violation. Other themes and densities are the gallery suites' job; in the workbench, a reviewer switches them from the toolbar and reads the Accessibility panel, which re-runs on each change.
+
+**Exceptions are visible.** A story with a known violation is marked `a11y: { test: 'todo' }` in its own parameters, never in the meta or the preview, and each one is listed under Gaps. `'off'` is only for a story that shows misuse on purpose. A rule is turned off in a story's `config` only with a comment that names why.
+
+The addon checks stories, not MDX docs pages, so the guides are outside it ([workbench.md](workbench.md) Gaps).
+
+## 14. Manual testing
 
 A person runs the Screen reader checklist in the workbench before each release. It covers, with each of NVDA with Firefox and with Chrome on Windows, VoiceOver with Safari on macOS and on iOS, and TalkBack with Chrome on Android:
 
@@ -106,10 +126,12 @@ The results table records each combination as passed, failed with an issue link,
 - `test/browser/reflow.test.ts`, `focus.test.ts`, `forms.test.ts`.
 - The `chromium-forced` visual project and each component's forced-colors assertions.
 - `packages/locales/test/browser/apply.test.ts`: axe in each shipped locale, including `html-has-lang` and `valid-lang`.
-- §13 is not automated.
+- `packages/workbench`: `test:stories` runs the accessibility addon over every story (§13), in the `smoke` job ([ci.md §3](ci.md)).
+- §14 is not automated.
 
 ## Gaps
 
+- **The workbench's accessibility addon is not installed.** §13 is specified but not running: neither `@storybook/addon-a11y` nor `@storybook/addon-vitest` is a dependency, and there is no `test:stories`. Closing it: add both addons, the preview parameters, the script, and the CI step, and mark each story that fails `'todo'` here.
 - **The manual checklist has not been run** for any combination; every cell reads "Not run".
 - **The listbox slot grid is unverified by ear.** A `listbox` navigated in two dimensions is not an APG pattern, and screen readers may announce it as a flat list. If the checklist shows that, `role="grid"` with generated rows is the alternative to evaluate.
 - **A host `aria-label` on `punk-button` is not covered.** Whether axe flags it (`aria-prohibited-attr`) is unknown because the gallery never sets one. Closing it: add the case to the gallery and give the host a role if axe requires one.
