@@ -36,15 +36,16 @@ Set `dir="rtl"` on `<html>` or any ancestor. Layout uses logical properties thro
 
 Under `forced-colors: active`, the gradients, textures, and bevels give way to plain borders in system colors. Information that normally depends on color is carried by something else:
 
-| Component         | Normal                                                          | Forced colors                                    |
-| ----------------- | --------------------------------------------------------------- | ------------------------------------------------ | --- | ---------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Button            | `default`, `primary`, and `danger` differ in fill               | A normal, a heavy (4px), and a dashed border     |
-| Progress bar      | `default`, `success`, `warning`, and `danger` differ in pattern | The same patterns, in the system highlight color |
-| Disabled controls | Flat and desaturated                                            | The system disabled-text color                   |
-| Focus             | A two-tone ring                                                 | A 2px `Highlight` outline                        |     | Slot, item stack | Selected is a heavier ring and a darker fill; highlighted is a dotted outline; invalid is a frame and a hatched corner | A 3px `Highlight` outline, a dotted border, and a dashed border |
-| Meter             | Solid, diagonally hatched, and cross-hatched fills              | The same patterns, in the system highlight color |
-| Status light      | A ring, diamond, circle, triangle, and square                   | The shapes in the system text color              |
-| Recipe            | A solid or dashed availability chip; selected is a ring         | A 3px `Highlight` outline when selected          |
+| Component         | Normal                                                                                                                 | Forced colors                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Button            | `default`, `primary`, and `danger` differ in fill                                                                      | A normal, a heavy (4px), and a dashed border                    |
+| Progress bar      | `default`, `success`, `warning`, and `danger` differ in pattern                                                        | The same patterns, in the system highlight color                |
+| Disabled controls | Flat and desaturated                                                                                                   | The system disabled-text color                                  |
+| Focus             | A two-tone ring                                                                                                        | A 2px `Highlight` outline                                       |
+| Slot, item stack  | Selected is a heavier ring and a darker fill; highlighted is a dotted outline; invalid is a frame and a hatched corner | A 3px `Highlight` outline, a dotted border, and a dashed border |
+| Meter             | Solid, diagonally hatched, and cross-hatched fills                                                                     | The same patterns, in the system highlight color                |
+| Status light      | A ring, diamond, circle, triangle, and square                                                                          | The shapes in the system text color                             |
+| Recipe            | A solid or dashed availability chip; selected is a ring                                                                | A 3px `Highlight` outline when selected                         |
 
 Sizes do not change in this mode: a button has the same height with and without forced colors.
 
