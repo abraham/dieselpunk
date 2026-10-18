@@ -186,7 +186,17 @@ The server cannot see the page, so the first paint can differ from what follows:
 - **Overlays** render closed and open when the definition loads.
 - **Forms.** A form submitted before its controls load does not include their values. Enable the submit button once the definitions have loaded.
 
-Loading Lit's hydration support (`@lit-labs/ssr-client/lit-element-hydrate-support.js`) for your own components does not change how these components load.
+Loading Lit's hydration support (`@lit-labs/ssr-client/lit-element-hydrate-support.js`) for your own components does not change how these components load. To keep the server's markup and attach to it instead (hydration), import Lit's hydration support and then `@dieselpunk/core/hydrate.js` before any component:
+
+```js
+// client.js
+import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
+import '@dieselpunk/core/hydrate.js';
+import '@dieselpunk/core/panel/register.js';
+import '@dieselpunk/core/button/register.js';
+```
+
+Hydration keeps focus and typed text where they are. Its first render matches the server's markup exactly, then each component updates for the page's language, children, and slots. Built-in text matches when the page uses the server's locale at that moment, English unless you configure one.
 
 ## Development warnings
 

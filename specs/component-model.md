@@ -25,7 +25,7 @@ Every component extends `PunkElement`, which extends `LitElement` and provides:
 
 - the shared base styles: `box-sizing: border-box`, `:host([hidden]) { display: none !important }`, font and color from tokens;
 - `emit(name, detail?)`, which dispatches a bubbling, composed `CustomEvent` ([package-contract.md §5](package-contract.md));
-- the replacement of a server-rendered shadow root when the element upgrades, with the shared sheets adopted and focus and typed text kept ([ssr.md §4](ssr.md)).
+- the replacement of a server-rendered shadow root when the element upgrades, with the shared sheets adopted and focus and typed text kept ([ssr.md §4](ssr.md)), and the hook through which `@dieselpunk/core/hydrate.js` hydrates it instead ([ssr.md §5](ssr.md)).
 
 Every component renders into an open shadow root. A component whose focus target is a native control inside it sets `delegatesFocus: true`.
 
