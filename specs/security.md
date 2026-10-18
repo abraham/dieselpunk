@@ -52,9 +52,19 @@ These apply to `packages/core/src` and `packages/locales/src`, excluding tests.
 
 ### 4.3 Content Security Policy and Trusted Types
 
-- Core and locales run on a page served with `default-src 'self'; script-src 'self'; style-src 'self'; require-trusted-types-for 'script'; trusted-types lit-html`. They inject no inline scripts or `style` attributes from untrusted data, and their styles are constructed stylesheets, which `style-src 'self'` allows.
-- Server-rendered pages carry `<style>` elements in their declarative shadow roots, so they need `style-src` to allow them; [ssr.md §7](ssr.md) states the policy a server-rendering application sets.
-- **Enforced by** a consumer fixture (`test/package/csp/`, run by `check:consumer`) that serves the gallery under that policy and fails on any `securitypolicyviolation` event or console error.
+- Core and locales run on a page served with this policy, strict for scripts:
+
+  ```text
+  default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline';
+  img-src 'self' data:; object-src 'none'; base-uri 'none';
+  require-trusted-types-for 'script'; trusted-types lit-html
+  ```
+
+  Their only script sink is Lit's, through its `lit-html` Trusted Types policy; they need no `unsafe-eval` and no inline scripts. Their styles are constructed stylesheets, which `style-src 'self'` allows.
+
+- **Two relaxations, neither of which runs script.** `style-src-attr 'unsafe-inline'`: components pass computed values to their styles as custom properties in `style` attributes (`--_ratio` on a slider, progress bar, meter, or splitter; `--_level` on a tree item; `--_rows` on a textarea), and Lit's `styleMap` writes a `style` attribute on its first render. `img-src data:`: the date and time fields' icons and the panel texture are `data:` SVG images in the stylesheets. **Why** not move them out: custom properties set through the CSSOM instead would not be in server-rendered markup ([ssr.md §2](ssr.md)), and every component that sets one would grow; a `style` attribute or a `data:` image can change how a page looks, but cannot run anything.
+- Server-rendered pages carry `<style>` elements in their declarative shadow roots, so they also need `style-src-elem 'unsafe-inline'`, or the hashes of those styles; [ssr.md §7](ssr.md) states the policy.
+- **Enforced by** a consumer fixture (`test/package/csp/`, run by `check:consumer`) that serves the gallery under that policy, as a header, and fails on any `securitypolicyviolation` event or console error.
 
 ### 4.4 No network, storage, or messaging
 
@@ -142,17 +152,16 @@ Every check runs in `ci.yml` or `publish.yml`; there is no separate security wor
 
 - `lint` fails on each sink of §4.1 and §4.4 and an unguarded URL binding of §4.2. `packages/testing/test/security-lint.test.ts` lints a sample of each through the real configuration, as shipped source (it must fail), as a test (it must pass), and as styles (only `unsafeCSS` passes).
 - `test/safe-url.test.ts` covers the schemes `safeUrl()` keeps and drops, including disguised and unparseable ones. The breadcrumb item's browser tests cover the guard in place: an unsafe `href` renders text and warns once per occurrence; `http:`, `https:`, `mailto:`, and relative URLs render links.
-- `check:consumer` serves the gallery under the policy of §4.3 and fails on a violation.
+- `check:consumer` serves the gallery, built against the packed package, with the policy of §4.3 as a header. It fails on a violation, on anything logged, on an undefined tag, or if a probe write to an HTML sink is not blocked, which would mean the policy is not in force. With `style-src-attr` or `require-trusted-types-for` removed from the policy, it fails.
 - `scripts/check-lockfile.test.ts` covers §5.2 and §5.3 on recorded lockfiles: registry and integrity checks, and the install-script list, including an entry without a reason and one that matches nothing.
 - `packages/testing/test/workflows.test.ts` covers §6.2.
 - Each of these gates has been made to fail once against a deliberately broken input ([testing.md §7](testing.md)).
-- Not checked by any gate: the repository settings (secret scanning, push protection, private vulnerability reporting, Dependabot security updates, the `npm` environment's rules) and npm's trusted publisher configuration. They need administrator access that a workflow token does not have, and are checked by hand before each release.
+- Not checked by any gate: the policy for server-rendered pages ([ssr.md §7](ssr.md)), whose fixture drives its pages with inline scripts; and the repository settings (secret scanning, push protection, private vulnerability reporting, Dependabot security updates, the `npm` environment's rules) and npm's trusted publisher configuration, which need administrator access that a workflow token does not have, and are checked by hand before each release.
 
 ## Gaps
 
-Most of this spec is not built yet. What exists: the lint rules and URL guard of §4, Dependabot version updates, trusted publishing with provenance, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
+Most of this spec is not built yet. What exists: the rules of §4 and their checks, Dependabot version updates, trusted publishing with provenance, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
 
-- **No CSP fixture** (§4.3), and [ssr.md §7](ssr.md) does not yet state the policy for server-rendered pages.
 - **No `check:lockfile`** (§5.2, §5.3) and no `.install-scripts.json`. Closing it adds the script, its Node tests, the root script, the row in [testing.md §9](testing.md), and the step in `static` and `publish.yml`.
 - **No dependency review or CodeQL** (§5.2, §6.1): no `security` job in `ci.yml`.
 - **Workflows do not fully meet §6.2.** The actions are locked, but `static` does not run `gh actions-lock --verify`, there is no workflow test, `actions/checkout` keeps its credentials, `visual.yml` and `update-visual-baselines.yml` have no top-level `permissions:`, and `ci.yml` puts `${{ matrix.part }}` in a `run:` script. Closing it is the verify step and the test, then fixing what they report.

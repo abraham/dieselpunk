@@ -26,6 +26,18 @@ const NEWEST_TYPESCRIPT = rootPackage.devDependencies['typescript'] ?? '~6.0.3';
 // The latest releases of the Lit SSR majors that match core's Lit 3 (specs/ssr.md §1).
 const LIT_SSR = '^4.1.0';
 const LIT_SSR_CLIENT = '^1.1.8';
+// specs/security.md §4.3: strict for scripts; style attributes and data: images cannot run any.
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "style-src-attr 'unsafe-inline'",
+  "img-src 'self' data:",
+  "object-src 'none'",
+  "base-uri 'none'",
+  "require-trusted-types-for 'script'",
+  'trusted-types lit-html csp-fixture',
+].join('; ');
 
 if (!existsSync(join(packageDir, 'dist')) || !existsSync(join(localesDir, 'dist'))) {
   console.error('dist/ is missing in core or in locales. Run `npm run build` first.');
@@ -468,6 +480,67 @@ async function checkServerRendering(core: string): Promise<void> {
   }
 }
 
+// specs/security.md §4.3: every component of the gallery, from the installed package, served with
+// the supported policy as a header, with no violation and nothing logged.
+async function checkContentSecurityPolicy(project: string): Promise<void> {
+  const outDir = join(work, 'csp');
+  const installed = join(project, 'node_modules/@dieselpunk/core');
+  await build({
+    absWorkingDir: project,
+    entryPoints: { page: join(fixtureDir, 'csp/page.ts') },
+    bundle: true,
+    format: 'esm',
+    outdir: outDir,
+    logLevel: 'silent',
+    plugins: [
+      {
+        // The gallery registers from source; here each registration comes from the package.
+        name: 'installed-registrations',
+        setup(builder) {
+          builder.onResolve({ filter: /\/src\/components\/[^/]+\/register\.ts$/ }, (args) => {
+            const name = /\/components\/([^/]+)\/register\.ts$/.exec(args.path)?.[1];
+            return { path: join(installed, `dist/components/${name}/register.js`) };
+          });
+        },
+      },
+    ],
+  });
+  cpSync(join(fixtureDir, 'csp/index.html'), join(outDir, 'index.html'));
+  for (const sheet of ['tokens.css', 'themes.css']) {
+    cpSync(join(installed, 'dist/css', sheet), join(outDir, sheet));
+  }
+
+  const { server, port } = await serveStatic(outDir, 0, {
+    'content-security-policy': CONTENT_SECURITY_POLICY,
+  });
+  const browser = await chromium.launch();
+  try {
+    const tab = await browser.newPage();
+    const messages = watchPage(tab);
+    await tab.goto(`http://localhost:${port}/index.html`);
+    await tab.waitForSelector('html[data-csp="ready"]', { timeout: 15000 });
+    const report = (await tab.evaluate('window.cspReport')) as {
+      enforced: boolean;
+      undefinedTags: string[];
+      violations: string[];
+    };
+    if (!report.enforced)
+      problems.push('csp: the policy is not in force, so the page proves nothing');
+    if (report.undefinedTags.length > 0) {
+      problems.push(`csp: [${report.undefinedTags}] are not registered`);
+    }
+    for (const violation of new Set(report.violations)) problems.push(`csp: ${violation}`);
+    // The page's own probe of enforcement logs exactly one blocked assignment.
+    const probe = messages.findIndex((message) => message.includes("requires 'TrustedHTML'"));
+    if (report.enforced && probe !== -1) messages.splice(probe, 1);
+    if (messages.length > 0) problems.push(`csp logged: ${messages.join(' | ')}`);
+    console.log('  rendered the gallery under the policy');
+  } finally {
+    await browser.close();
+    server.close();
+  }
+}
+
 try {
   const tarballs = { core: pack(packageDir, work), locales: pack(localesDir, work) };
 
@@ -515,6 +588,9 @@ try {
   cpSync(join(fixtureDir, 'production.html'), join(outDir, 'production.html'));
   await checkPages(outDir);
   await checkImportMap(newest);
+
+  console.log('Running under a Content Security Policy:');
+  await checkContentSecurityPolicy(newest);
 } catch (error) {
   problems.push(String((error as { stderr?: string }).stderr ?? error));
 } finally {

@@ -16,10 +16,14 @@ const types: Record<string, string> = {
   '.woff2': 'font/woff2',
 };
 
-/** Serves the files under `root`, and `index.html` for a folder. Port 0 picks a free port. */
+/**
+ * Serves the files under `root`, and `index.html` for a folder. Port 0 picks a free port. `headers`
+ * go on every response, as a Content-Security-Policy would.
+ */
 export async function serveStatic(
   root: string,
   port = 0,
+  headers: Record<string, string> = {},
 ): Promise<{ server: Server; port: number }> {
   const base = resolve(root);
   const server = createServer((request, response) => {
@@ -40,7 +44,10 @@ export async function serveStatic(
       response.writeHead(404).end();
       return;
     }
-    response.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream' });
+    response.writeHead(200, {
+      ...headers,
+      'content-type': types[extname(file)] ?? 'application/octet-stream',
+    });
     response.end(readFileSync(file));
   });
   await new Promise<void>((done) => server.listen(port, done));
