@@ -72,13 +72,14 @@ describe('punk-date-field', () => {
       'label="Delivery" min="2025-01-01" max="2025-12-31" step="7" readonly autocomplete="bday"',
     );
     const native = input(element);
-    expect([native.min, native.max, native.step, native.readOnly, native.autocomplete]).toEqual([
-      '2025-01-01',
-      '2025-12-31',
-      '7',
-      true,
-      'bday',
-    ]);
+    // Firefox's autocomplete property is empty for date inputs, so read the attribute.
+    expect([
+      native.min,
+      native.max,
+      native.step,
+      native.readOnly,
+      native.getAttribute('autocomplete'),
+    ]).toEqual(['2025-01-01', '2025-12-31', '7', true, 'bday']);
   });
 
   it('takes the user value, sends input and a change from the host, and nothing for script', async () => {
