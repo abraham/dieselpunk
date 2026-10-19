@@ -1,19 +1,35 @@
 import { css } from 'lit';
+import type { CSSResult } from 'lit';
 import { hostFocusRing } from '../../styles/focus.ts';
 import { forcedColorsSurface } from '../../styles/forced-colors.ts';
 import {
+  flatSurface,
   insetShadow,
   outlineShadow,
+  raisedFill,
   raisedHoverShadow,
   raisedSurface,
 } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
+const none = css`0`;
+const edge = token('border-width');
+
+// A shadow in the panels' fill, offset toward them, covers the seam under the selected tab.
+const join = (x: CSSResult, y: CSSResult) => css`
+  ${x} ${y} 0 ${token('color-panel')},
+  inset 1px 1px 0 ${token('color-edge-light')},
+  ${outlineShadow}
+`;
+
+// When the panels are inside the tabs, they sit on one flat surface and the selected tab takes
+// that surface's fill and covers the seam below it, so it joins its panel: a cue of shape, not
+// color. The other tabs recede to the inset fill. Otherwise the selected tab is pressed in with a
+// bar on the edge that faces its panel.
 export const tabsStyles = css`
   :host {
     display: flex;
     flex-direction: column;
-    gap: ${token('space-2')};
     min-inline-size: 0;
     max-inline-size: 100%;
   }
@@ -26,7 +42,6 @@ export const tabsStyles = css`
   .tablist {
     display: flex;
     flex-wrap: wrap;
-    gap: ${token('space-1')};
     min-inline-size: 0;
   }
 
@@ -37,14 +52,43 @@ export const tabsStyles = css`
     max-inline-size: 50%;
   }
 
-  ::slotted(:not([slot])) {
-    flex: 1 1 0;
-    min-inline-size: 0;
+  .tablist.joined {
+    --_tab-idle-bg: ${token('color-panel-inset')};
+    --_tab-selected-bg: ${token('color-panel')};
+    --_tab-selected-shadow: ${join(none, edge)};
+    --_tab-bar: none;
   }
+
+  :host([orientation='vertical']) .tablist.joined {
+    --_tab-selected-shadow: ${join(edge, none)};
+  }
+
+  :host([orientation='vertical']:dir(rtl)) .tablist.joined {
+    --_tab-selected-shadow: ${join(css`calc(-1 * ${edge})`, none)};
+  }
+
+  /* Positioned so it paints over the tabs' lower edges, under the selected tab (z-index 1). */
+  .panels {
+    ${flatSurface}
+    position: relative;
+    min-inline-size: 0;
+    padding: var(--punk-tabs-padding, ${token('space-3')});
+    border-radius: ${token('radius')};
+    color: ${token('color-text')};
+  }
+
+  .panels[hidden] {
+    display: none;
+  }
+
+  :host([orientation='vertical']) .panels {
+    flex: 1 1 0;
+    align-self: stretch;
+  }
+
+  ${forcedColorsSurface('.panels')}
 `;
 
-// The selected tab is pressed in and has a bar on the edge that faces its panel, so it differs
-// from the others by shape and not only by surface.
 export const tabStyles = css`
   :host {
     display: flex;
@@ -53,12 +97,18 @@ export const tabStyles = css`
     cursor: pointer;
   }
 
+  :host([selected]) {
+    position: relative;
+    z-index: 1;
+  }
+
   :host([disabled]) {
     cursor: default;
   }
 
   .tab {
     ${raisedSurface}
+    background: var(--_tab-idle-bg, ${raisedFill});
     position: relative;
     display: flex;
     flex: 1 1 auto;
@@ -92,7 +142,7 @@ export const tabStyles = css`
   }
 
   :host([selected]) .tab::before {
-    display: block;
+    display: var(--_tab-bar, block);
   }
 
   .label {
@@ -108,8 +158,12 @@ export const tabStyles = css`
     box-shadow: ${raisedHoverShadow};
   }
 
-  :host([selected]:not([disabled])) .tab,
-  :host(:active:not([disabled])) .tab {
+  :host([selected]:not([disabled])) .tab {
+    background: var(--_tab-selected-bg, ${token('color-panel-inset')});
+    box-shadow: var(--_tab-selected-shadow, ${insetShadow});
+  }
+
+  :host(:active:not([disabled], [selected])) .tab {
     background: ${token('color-panel-inset')};
     box-shadow: ${insetShadow};
   }
@@ -135,6 +189,7 @@ export const tabStyles = css`
     }
 
     :host([selected]) .tab::before {
+      display: block;
       background: Highlight;
     }
 

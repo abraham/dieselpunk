@@ -120,7 +120,7 @@ The application names the grid with `aria-label`; a missing name warns.
 
 - The first enabled tab is selected when none is. Removing the selected tab selects the nearest enabled one, forward first. `value` (the selected tab's `panel`) can be read and assigned; assigned before tabs exist, it applies when they arrive.
 - `punk-tab-change` carries `{ value, tab, panel }` for user changes.
-- **Look.** The tab list wraps onto more rows and never scrolls sideways. The selected tab is inset with a 3px `accent` bar on the edge facing the panel; others have none.
+- **Look.** The tabs sit edge to edge, and the tab list wraps onto more rows and never scrolls sideways. When the panels are inside the tabs, they sit on one flat surface (`part="panels"`, padded by `--punk-tabs-padding`), and the selected tab takes that surface's fill and covers the seam below it, so it joins its panel: a cue of shape, not color. The other tabs recede to the `panel-inset` fill. When the panels are elsewhere the surface is hidden, and the selected tab is inset with a 3px `accent` bar on the edge facing the panel. Under forced colors the selected tab always has the bar, in `Highlight`. **Why** a join and not the selection outline of [visual-system.md §5](visual-system.md): an outline would draw a line between the tab and the panel it opens.
 - **Panels that are parsed late.** A panel after the tabs in the markup may not exist yet; a missing panel is not reported while `document.readyState` is `loading`, and the tabs look again on `DOMContentLoaded`.
 - **Warnings:** no name; a tab naming a missing panel; two tabs naming one panel.
 
