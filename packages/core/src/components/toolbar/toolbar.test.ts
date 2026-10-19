@@ -398,6 +398,15 @@ describe('wrap with a long item', () => {
 });
 
 describe('appearance', () => {
+  it('is an inset strip, darker than a panel, under its raised controls', async () => {
+    const { strip } = await mount();
+    const probe = track(document.createElement('span'));
+    probe.style.color = 'var(--punk-color-panel-inset, #292b28)';
+    const style = getComputedStyle(strip);
+    expect(style.backgroundColor).toBe(getComputedStyle(probe).color);
+    expect(style.boxShadow).toContain('inset');
+  });
+
   it('is a bordered box under forced colors', async () => {
     await commands.setForcedColors('active');
     const { strip } = await mount();

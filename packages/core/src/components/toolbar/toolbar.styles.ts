@@ -1,8 +1,10 @@
 import { css } from 'lit';
-import { flatSurface } from '../../styles/surfaces.ts';
+import { insetSurface } from '../../styles/surfaces.ts';
 import { forcedColorsSurface } from '../../styles/forced-colors.ts';
 import { token } from '../../tokens/token.ts';
 
+// The strip is inset, darker than a panel, so the raised controls on it stand out by value as well
+// as by bevel.
 export const toolbarStyles = css`
   :host {
     display: block;
@@ -11,7 +13,7 @@ export const toolbarStyles = css`
   }
 
   .toolbar {
-    ${flatSurface}
+    ${insetSurface}
     display: flex;
     align-items: center;
     gap: ${token('space-1')};

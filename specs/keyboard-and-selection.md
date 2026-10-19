@@ -126,7 +126,7 @@ The application names the grid with `aria-label`; a missing name warns.
 
 ## 8. Toolbar
 
-`punk-toolbar` is a fixed-height strip with a minimum height, `role="toolbar"`, `aria-orientation` from `orientation`, and the application's `aria-label`.
+`punk-toolbar` is a fixed-height strip with a minimum height, `role="toolbar"`, `aria-orientation` from `orientation`, and the application's `aria-label`. The strip is the inset surface, darker than a panel, so the raised controls on it stand out by value as well as by bevel.
 
 - **Items** are direct children that are a `punk-button`, `punk-icon-button`, `punk-checkbox`, `punk-switch`, `button`, or `a[href]`, or that have `data-punk-toolbar-item`. A `punk-divider`, `hr`, or `[role="separator"]` is a separator and is skipped. A select, text field, number field, or slider keeps its own tab stop outside the group, since each uses the arrow keys itself (APG). Anything else is ignored.
 - **Roving.** `RovingController` keeps one tab stop; `Left`, `Right` (swapped in `rtl`), `Home`, and `End` move without wrapping. Tab enters at the item that last had focus, else the first.
