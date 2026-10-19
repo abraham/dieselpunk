@@ -16,6 +16,9 @@ on:
         type: string
         default: ''
 
+permissions:
+  contents: read
+
 jobs:
   plan:
     runs-on: ubuntu-latest
@@ -23,8 +26,10 @@ jobs:
     outputs:
       visual: ${{ steps.matrix.outputs.visual }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: $/.github/actions/setup
       - id: matrix
         env:
           PUNK_GALLERY_GROUPS: ${{ inputs.groups }}

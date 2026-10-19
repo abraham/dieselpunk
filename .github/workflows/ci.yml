@@ -27,11 +27,12 @@ jobs:
       browser: ${{ steps.matrix.outputs.browser }}
       full: ${{ steps.matrix.outputs.full }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           # The merge commit and its base, to list what the pull request changes.
           fetch-depth: 2
-      - uses: ./.github/actions/setup
+          persist-credentials: false
+      - uses: $/.github/actions/setup
       - id: matrix
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -41,9 +42,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      # The runner enforces actions.lock; this also fails on an action the lock does not list.
+      - name: Verify the actions lockfile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh extension install github/gh-actions-lock --pin v0.2.0
+          gh actions-lock --verify --no-interactive
+      - uses: $/.github/actions/setup
       - run: npm run check:toolchain
+      - run: npm run check:lockfile
       - run: npm run format:check
       - run: npm run lint
       - run: npm run build
@@ -62,8 +73,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: $/.github/actions/setup
         with:
           browsers: chromium
           build: true
@@ -83,13 +96,15 @@ jobs:
     env:
       PUNK_SMOKE_PART: ${{ matrix.part }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: $/.github/actions/setup
         with:
           browsers: chromium
           build: true
       - run: npm run test:smoke
-      - run: npm run test:stories -w @dieselpunk/workbench -- --shard=${{ matrix.part }}
+      - run: npm run test:stories -w @dieselpunk/workbench -- --shard="$PUNK_SMOKE_PART"
 
   browser:
     name: browser (${{ matrix.name }})
@@ -107,8 +122,10 @@ jobs:
       PUNK_GALLERY_GROUPS: ${{ matrix.groups }}
       PUNK_GALLERY_THEMES: ${{ matrix.themes }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: $/.github/actions/setup
         with:
           browsers: ${{ matrix.engine }}
       - run: npm run test:browser --workspaces --if-present
@@ -121,10 +138,45 @@ jobs:
       mode: check
       matrix: ${{ needs.plan.outputs.visual }}
 
+  # Dependency review on pull requests, CodeQL on both (specs/security.md §5.2, §6.1). The
+  # analysis of main is the baseline that code scanning compares a pull request with.
+  security:
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      # Licenses are checked by check:lockfile, for the published packages' runtime trees only.
+      - if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v5.0.0
+        with:
+          fail-on-severity: high
+          fail-on-scopes: runtime, development, unknown
+          license-check: false
+      - uses: github/codeql-action/init@v4.39.0
+        with:
+          languages: javascript-typescript, actions
+          build-mode: none
+          config-file: ./.github/codeql/codeql-config.yml
+      - uses: github/codeql-action/analyze@v4.39.0
+        with:
+          output: codeql-results
+      # After the analysis, so the installed packages are not in the tree it reads.
+      - if: github.event_name == 'pull_request'
+        uses: $/.github/actions/setup
+      - if: github.event_name == 'pull_request'
+        run: node scripts/check-codeql.ts codeql-results
+
   # The one check to require in branch protection: it passes only when every job above passed.
   ci-success:
     if: always()
-    needs: [plan, static, integration, smoke, browser, visual]
+    needs: [plan, static, integration, smoke, browser, visual, security]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

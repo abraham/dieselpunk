@@ -1212,7 +1212,18 @@ export function buildGallery(
   root.className = 'gallery';
   root.lang = lang;
   root.dir = dir;
-  root.innerHTML = names
+  root.innerHTML = galleryMarkup(variant, names, options);
+  finishGallery(root);
+  return root;
+}
+
+/** The markup of `buildGallery`, for a page that inserts it itself, as one under Trusted Types. */
+export function galleryMarkup(
+  variant: ContentVariant,
+  names: readonly ComponentName[] = componentNames,
+  options: BuildOptions = {},
+): string {
+  return names
     .map(
       (name) => `
         <section data-component="${name}" class="stack">
@@ -1222,9 +1233,12 @@ export function buildGallery(
       `,
     )
     .join('');
+}
+
+/** Sets what markup cannot carry, once the gallery's markup is in the document. */
+export function finishGallery(root: ParentNode): void {
   applyGridValues(root);
   touchFields(root);
-  return root;
 }
 
 /** A field marked `data-touched` behaves as if the user had left it, so its message shows. */

@@ -93,6 +93,8 @@ import '@dieselpunk/core/button/register.js';
 
 `tokens.css` and `themes.css` are linked as in a client-only page; their custom properties reach declarative shadow roots like any other. The workbench's Server rendering guide shows this setup, both ways of loading the components, and what the first paint cannot know ([workbench.md §4](workbench.md)).
 
+**Content Security Policy.** A server-rendered page takes the policy of [security.md §4.3](security.md) and adds `style-src-elem 'unsafe-inline'`, or the hashes of the components' styles: each declarative shadow root carries its component's styles in a `<style>` element, where a client-only page adopts them as constructed stylesheets. Scripts stay as strict; hydration needs no inline script. No gate renders a server page under this policy, since the SSR fixture drives its pages with inline scripts.
+
 ## Verification
 
 - **`check:consumer`** installs the packed core with `@lit-labs/ssr` and `@lit-labs/ssr-client` into a throwaway project of its own ([testing.md §8](testing.md)) and runs the SSR fixture in `test/package/ssr/`:

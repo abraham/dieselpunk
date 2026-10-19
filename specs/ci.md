@@ -25,24 +25,26 @@
 
 ```mermaid
 flowchart LR
-  plan[plan] --> static & integration & smoke & browser & visual
+  plan[plan] --> static & integration & smoke & browser & visual & security
   static[static]
   integration[integration]
   smoke[smoke x n]
   browser[browser: engine x part]
   visual[visual: project x groups]
-  static & integration & smoke & browser & visual --> ok[ci-success]
+  security[security]
+  static & integration & smoke & browser & visual & security --> ok[ci-success]
 ```
 
-| Job           | Needs  | Runs                                                                                                                                                                                          | Installs      |
-| ------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| `plan`        |        | `scripts/ci-matrix.ts`: the matrices for `smoke`, `browser`, and `visual`, and which job families the change affects (§7)                                                                     | Node only     |
-| `static`      |        | `check:toolchain`, `format:check`, `lint`, `build` (which also runs `check:locales`), `typecheck`, `check:contrast`, `check:strings`, `check:api`, `test:node`, `check:package`, `check:size` | Node only     |
-| `integration` | `plan` | `build`, `check:consumer`, `check:frameworks`                                                                                                                                                 | Chromium      |
-| `smoke`       | `plan` | `build`, then `test:smoke` and `test:stories` for its part of the workbench entries                                                                                                           | Chromium      |
-| `browser`     | `plan` | `test:browser` for one engine and one part (§5)                                                                                                                                               | That engine   |
-| `visual`      | `plan` | `test:visual` for one project and a set of groups, in the pinned Playwright image                                                                                                             | The container |
-| `ci-success`  | all    | Fails if any job failed or was cancelled, or was skipped when `plan` said it should run                                                                                                       | None          |
+| Job           | Needs  | Runs                                                                                                                                                                                                                                        | Installs      |
+| ------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `plan`        |        | `scripts/ci-matrix.ts`: the matrices for `smoke`, `browser`, and `visual`, and which job families the change affects (§7)                                                                                                                   | Node only     |
+| `static`      |        | `gh actions-lock --verify`, `check:toolchain`, `check:lockfile`, `format:check`, `lint`, `build` (which also runs `check:locales`), `typecheck`, `check:contrast`, `check:strings`, `check:api`, `test:node`, `check:package`, `check:size` | Node only     |
+| `integration` | `plan` | `build`, `check:consumer`, `check:frameworks`                                                                                                                                                                                               | Chromium      |
+| `smoke`       | `plan` | `build`, then `test:smoke` and `test:stories` for its part of the workbench entries                                                                                                                                                         | Chromium      |
+| `browser`     | `plan` | `test:browser` for one engine and one part (§5)                                                                                                                                                                                             | That engine   |
+| `visual`      | `plan` | `test:visual` for one project and a set of groups, in the pinned Playwright image                                                                                                                                                           | The container |
+| `security`    | `plan` | Dependency review on a pull request, CodeQL, and `scripts/check-codeql.ts` on a pull request's results ([security.md §8](security.md))                                                                                                      | Node only     |
+| `ci-success`  | all    | Fails if any job failed or was cancelled, or was skipped when `plan` said it should run                                                                                                                                                     | None          |
 
 - `static` does not wait for `plan`, so the fastest feedback starts at once. It runs `build` before `typecheck`, and no typecheck script builds anything itself.
 - `integration` is separate from `static` because it is the only non-browser work that needs a browser.
@@ -51,7 +53,7 @@ flowchart LR
 
 ## 4. Shared setup
 
-`.github/actions/setup` is a composite action that every job in every workflow uses after `actions/checkout`:
+`.github/actions/setup` is a composite action, used as `$/.github/actions/setup` so that it is pinned with the workflow ([security.md §6.2](security.md)), that every job in every workflow uses after `actions/checkout`:
 
 - `actions/setup-node` with `node-version-file: .nvmrc` and the npm cache;
 - `npm ci`;
@@ -111,7 +113,7 @@ A Node test covers the packing. The browser parts are packed the same way, from 
 - **Visual jobs are one reusable workflow,** `visual.yml` (`workflow_call`), with a `mode` input of `check` or `update`. `ci.yml` calls it with `check`. `update-visual-baselines.yml` calls it with `update` on the same matrix, and each job uploads its groups' baselines as an artifact, merged into one artifact to commit. The update workflow takes optional `groups` and `themes` inputs (all by default): a palette change in one theme re-renders only that theme's baselines in each group. The baselines being rendered are deleted first, so baselines of removed tests do not linger, and those outside the inputs are kept. `scripts/merge-baselines.ts` does the merge; it reads a baseline's theme from its file name, and a capture named for no theme belongs to the default theme, as its test's tag says. **Why:** rendering every baseline in one job grows with every component, two definitions of the visual matrix would drift, and a change to one theme should not rewrite every other theme's files.
 - **Docs** (`docs.yml`) builds and deploys the workbench on a push to `main` and runs no tests ([workbench.md §8](workbench.md)).
 - **Security** checks run in the jobs above and in `publish.yml`, with a `security` job in `ci.yml` for dependency review and CodeQL; nothing runs on a schedule ([security.md §8](security.md)).
-- **Publish** (`publish.yml`) runs when a GitHub release is published. It fails unless the release tag is `v<version>` for both packages' version, installs with no cache, builds, runs `check:package`, and publishes core and then locales to npm through trusted publishing (`id-token: write`, no token) ([package-contract.md §10](package-contract.md)). It runs no other tests: CI has tested the commit.
+- **Publish** (`publish.yml`) runs when a GitHub release is published. It fails unless the tagged commit was once the tip of `main` and the release tag is `v<version>` for both packages' version, installs with no cache, runs `check:lockfile`, builds, runs `check:package`, writes each package's SBOM, and publishes core and then locales to npm through trusted publishing (`id-token: write`, no token), in the `npm` environment, which only `v*` tags may deploy to ([package-contract.md §10](package-contract.md)). A second job attaches the SBOMs to the release ([security.md §7](security.md)). It runs no other tests: `main`'s ruleset requires `ci-success`, so CI has tested the commit.
 
 ## 9. Budgets
 
@@ -122,6 +124,7 @@ A Node test covers the packing. The browser parts are packed the same way, from 
 | `integration`, each `smoke` part | 3 minutes               | 10 minutes |
 | each `browser` part              | 4 minutes               | 15 minutes |
 | each `visual` job                | 4 minutes               | 15 minutes |
+| `security`                       | 4 minutes               | 15 minutes |
 | the whole run                    | 5 minutes               |            |
 
 The packing cap of §6 is set so a packed job meets its target. The `plan` job writes the slowest jobs of the last successful run on `main` to its summary, against their targets, so a job creeping toward its target is seen before it misses it. A job that misses its target is split by the matrix, or its suite is made cheaper; the target stays. Jobs outside this table (`ci-success`, the baseline merge, the docs jobs) have a timeout of 5 or 10 minutes.

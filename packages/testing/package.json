@@ -14,7 +14,9 @@
     "./xliff": "./src/xliff.ts",
     "./pseudo": "./src/pseudo.ts",
     "./size": "./src/size.ts",
-    "./ci": "./src/ci.ts"
+    "./ci": "./src/ci.ts",
+    "./lockfile": "./src/lockfile.ts",
+    "./sarif": "./src/sarif.ts"
   },
   "scripts": {
     "test": "npm run test:node",
@@ -28,5 +30,8 @@
   },
   "peerDependencies": {
     "vitest": "^5.0.5"
+  },
+  "devDependencies": {
+    "yaml": "^2.9.1"
   }
 }

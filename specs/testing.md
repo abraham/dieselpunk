@@ -120,31 +120,32 @@ A test or gate is trusted only after it has failed against a deliberately broken
   - `shell.ts`: the acceptance scenario's assembler ([product.md §8](product.md)): the window opens and is named, a tab switch changes the panel, a selection is reported, a form submits a control's value, Escape closes the window, and only the expected tags are defined.
   - `production.ts`: stats, a meter, a status light, and a connection row in a window; Lit Localize configured from the consumer's own copy; German and Arabic set `lang`, `dir`, and the remove button's name; a remove click reports its detail; and the bundle holds one `@lit/localize`.
   - `ssr/`: in a project with Lit SSR, every tag rendered under Node, then the page upgraded in Chromium without Lit's hydration support, with it alone, and with it and `hydrate.js` ([ssr.md](ssr.md) Verification).
+  - `csp/`: the gallery's markup for every component, built against the installed package and served with the Content Security Policy of [security.md §4.3](security.md) as a header: the policy is in force, every tag is defined, and there is no violation and nothing logged.
   - An older TypeScript is installed into the throwaway project, never aliased in the repository, since an alias's binary can replace the real `tsc`.
 - **`check:frameworks`** builds a React, a Vue, and a Svelte app from `test/frameworks/` with esbuild and drives each in Chromium with real input: a text field, switch, and slider bound to framework state, a property set from the framework, a submitted form, a tab change, a dialog closed with an action, and a window closed with Escape. Each app reports what it received, which must equal the expected report. The React app is type-checked. The guides show the fixtures' code.
 
 ## 9. Gate list
 
-| Gate               | Where     | Fails on                                                                                                                             |
-| ------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `check:toolchain`  | root      | Another Node major, or more than one TypeScript                                                                                      |
-| `format:check`     | root      | Unformatted files                                                                                                                    |
-| `lint`             | root      | ESLint errors                                                                                                                        |
-| `typecheck`        | all       | Type errors in either compilation context                                                                                            |
-| `build`            | all       | Build errors                                                                                                                         |
-| `check:contrast`   | core      | A theme below a contrast rule                                                                                                        |
-| `check:strings`    | locales   | Extraction changes the XLIFF; a unit without id or note; a non-literal id or description                                             |
-| `check:locales`    | locales   | Any translation rule ([localization.md §6](localization.md))                                                                         |
-| `check:api`        | core      | Any API difference from the snapshot; an undocumented public name                                                                    |
-| `test`             | all       | Node and browser suites; split across CI jobs as [ci.md](ci.md) describes                                                            |
-| `check:package`    | all       | Export, side-effect, registration, chunk, `publint`, or `attw` errors                                                                |
-| `check:size`       | all       | An entry over its limit, or without a reason                                                                                         |
-| `check:lockfile`   | root      | A package from another registry or without integrity, a bad signature, or an unlisted install script ([security.md §5](security.md)) |
-| `check:consumer`   | core      | The consumer fixtures                                                                                                                |
-| `check:frameworks` | core      | The framework fixtures                                                                                                               |
-| `test:smoke`       | storybook | A story or page that errors, warns, overflows, or fails a real-input step                                                            |
-| `test:stories`     | storybook | A story that throws, fails its `play` function, or has an accessibility violation                                                    |
-| `test:visual`      | core      | A screenshot that differs from its baseline (CI visual job)                                                                          |
+| Gate               | Where     | Fails on                                                                                                                                                                                             |
+| ------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `check:toolchain`  | root      | Another Node major, or more than one TypeScript                                                                                                                                                      |
+| `format:check`     | root      | Unformatted files                                                                                                                                                                                    |
+| `lint`             | root      | ESLint errors                                                                                                                                                                                        |
+| `typecheck`        | all       | Type errors in either compilation context                                                                                                                                                            |
+| `build`            | all       | Build errors                                                                                                                                                                                         |
+| `check:contrast`   | core      | A theme below a contrast rule                                                                                                                                                                        |
+| `check:strings`    | locales   | Extraction changes the XLIFF; a unit without id or note; a non-literal id or description                                                                                                             |
+| `check:locales`    | locales   | Any translation rule ([localization.md §6](localization.md))                                                                                                                                         |
+| `check:api`        | core      | Any API difference from the snapshot; an undocumented public name                                                                                                                                    |
+| `test`             | all       | Node and browser suites; split across CI jobs as [ci.md](ci.md) describes                                                                                                                            |
+| `check:package`    | all       | Export, side-effect, registration, chunk, `publint`, or `attw` errors                                                                                                                                |
+| `check:size`       | all       | An entry over its limit, or without a reason                                                                                                                                                         |
+| `check:lockfile`   | root      | A package from another registry or without integrity, a bad signature, an unlisted install script, or a published package's runtime dependency under another license ([security.md §5](security.md)) |
+| `check:consumer`   | core      | The consumer fixtures                                                                                                                                                                                |
+| `check:frameworks` | core      | The framework fixtures                                                                                                                                                                               |
+| `test:smoke`       | storybook | A story or page that errors, warns, overflows, or fails a real-input step                                                                                                                            |
+| `test:stories`     | storybook | A story that throws, fails its `play` function, or has an accessibility violation                                                                                                                    |
+| `test:visual`      | core      | A screenshot that differs from its baseline (CI visual job)                                                                                                                                          |
 
 ## 10. The testing package
 
@@ -176,6 +177,8 @@ A test or gate is trusted only after it has failed against a deliberately broken
 | `./pseudo`     | Node    | The pseudo-locale transform ([localization.md](localization.md) Verification)                                                                                                        | Core's `build-pseudo.ts`                                           |
 | `./size`       | Node    | The size-reason check ([performance.md §2](performance.md))                                                                                                                          | `check:size` in each package                                       |
 | `./ci`         | Node    | Visual, browser, and smoke job planning, change detection, the budget report, and baseline merging ([ci.md](ci.md))                                                                  | The `plan` job, the baseline workflow                              |
+| `./lockfile`   | Node    | What a lockfile may install: registry, integrity, listed install scripts, and runtime licenses ([security.md §5](security.md))                                                       |
+| `./sarif`      | Node    | The high and critical results of a CodeQL analysis ([security.md §6.1](security.md))                                                                                                 |
 
 **Stays in its workspace:**
 

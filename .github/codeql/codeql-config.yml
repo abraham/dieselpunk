@@ -1,0 +1,10 @@
+name: CodeQL
+
+# specs/security.md §6.1. A query filter added here carries its reason.
+queries:
+  - uses: security-extended
+
+paths-ignore:
+  - '**/dist'
+  - '**/test-results'
+  - packages/core/test/visual/__screenshots__

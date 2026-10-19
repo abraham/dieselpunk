@@ -1,0 +1,5 @@
+{
+  "esbuild": "Its postinstall installs and checks its platform binary, from an optional dependency.",
+  "fsevents": "npm flags it from its published metadata; it ships its native module prebuilt, and installs only on macOS, as an optional dependency.",
+  "rs-module-lexer": "Used by the manifest analyzer. Its postinstall checks its native binding, and installs the WebAssembly build from npm if the binding is missing."
+}

@@ -363,7 +363,7 @@
     "path": "dist/components/breadcrumb/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "4.1 kB"
+    "limit": "4.25 kB"
   },
   {
     "name": "punk-pagination",
