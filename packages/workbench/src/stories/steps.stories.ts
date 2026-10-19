@@ -24,6 +24,7 @@ const meta = preview.type<{ args: StoryArgs<PunkSteps> }>().meta({
       <punk-step>Finish</punk-step>
     </punk-steps>`,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

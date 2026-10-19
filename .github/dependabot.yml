@@ -9,7 +9,7 @@ updates:
     groups:
       # These packages release together and must stay on matching versions.
       storybook:
-        patterns: ['storybook', '@storybook/*', '@wc-toolkit/*']
+        patterns: ['storybook', '@storybook/*', '@wc-toolkit/*', '@etchteam/storybook-addon-*']
       size-limit:
         patterns: ['size-limit', '@size-limit/*']
       vitest:

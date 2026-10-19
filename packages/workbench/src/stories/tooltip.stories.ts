@@ -22,6 +22,7 @@ const meta = preview.type<{ args: StoryArgs<PunkTooltip> }>().meta({
     </div>
   `,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

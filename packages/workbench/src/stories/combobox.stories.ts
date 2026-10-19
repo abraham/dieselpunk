@@ -34,6 +34,7 @@ const meta = preview.type<{ args: StoryArgs<PunkCombobox> }>().meta({
       )}
     </div>`,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

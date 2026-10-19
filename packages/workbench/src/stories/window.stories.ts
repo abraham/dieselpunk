@@ -27,6 +27,7 @@ const meta = preview.type<{ args: StoryArgs<PunkWindow> }>().meta({
   argTypes,
   render: (storyArgs) => html`<div style="min-block-size: 280px">${template(storyArgs)}</div>`,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

@@ -16,6 +16,7 @@ const meta = preview.type<{ args: StoryArgs<PunkTag> }>().meta({
   argTypes,
   render: (storyArgs) => template(storyArgs),
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

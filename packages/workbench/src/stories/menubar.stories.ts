@@ -41,6 +41,7 @@ const meta = preview.type<{ args: StoryArgs<PunkMenubar> }>().meta({
   argTypes,
   render: (storyArgs) => template(storyArgs),
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

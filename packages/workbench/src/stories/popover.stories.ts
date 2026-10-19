@@ -32,6 +32,7 @@ const meta = preview.type<{ args: StoryArgs<PunkPopover> }>().meta({
       <punk-button>Details</punk-button>${template(storyArgs)}
     </div>`,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

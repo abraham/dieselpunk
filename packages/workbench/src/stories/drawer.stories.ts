@@ -29,6 +29,7 @@ const meta = preview.type<{ args: StoryArgs<PunkDrawer> }>().meta({
     html`<punk-button @click=${open}>Open the drawer</punk-button
       >${template({ ...storyArgs, open: false })}`,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

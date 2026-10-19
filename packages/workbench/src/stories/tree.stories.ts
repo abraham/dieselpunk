@@ -39,6 +39,7 @@ const meta = preview.type<{ args: StoryArgs<PunkTree> }>().meta({
       >${nodes}</punk-tree
     >`,
   parameters: {
+    githubLink: { auto: true },
     a11y: {
       // An open parent shows its children inside it, so axe counts their text as its visible label.
       // Its name is its label, which is in that text, so it meets WCAG 2.5.3 (as in core's axe.ts).

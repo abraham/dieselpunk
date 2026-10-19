@@ -45,6 +45,7 @@ const meta = preview.type<{ args: StoryArgs<PunkSlotGrid> }>().meta({
     </punk-slot-grid>
   `,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

@@ -20,6 +20,7 @@ const meta = preview.type<{ args: StoryArgs<PunkRadioGroup> }>().meta({
   argTypes,
   render: (storyArgs) => template(storyArgs),
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

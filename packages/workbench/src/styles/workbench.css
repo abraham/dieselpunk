@@ -27,6 +27,10 @@ body:not(:has(.sbdocs)) .wb-stage {
   margin: 0 0 12px;
 }
 
+.wb-stage a {
+  color: var(--punk-color-link);
+}
+
 .wb-stack {
   display: flex;
   flex-direction: column;
