@@ -1,6 +1,7 @@
 import { css } from 'lit';
 import { token } from '../tokens/token.ts';
 import { forcedColorsSurface } from './forced-colors.ts';
+import { requiredMarkStyles } from './required-mark.ts';
 import { statusLensStyles, statusShapeStyles } from './status-shape.ts';
 
 // The shape of a text, number, or select field:
@@ -32,6 +33,8 @@ export const fieldStyles = css`
     font-weight: 600;
     overflow-wrap: break-word;
   }
+
+  ${requiredMarkStyles}
 
   .box {
     --_frame: 0 0 0 0 transparent;

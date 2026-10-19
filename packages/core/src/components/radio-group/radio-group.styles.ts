@@ -1,5 +1,6 @@
 import { css } from 'lit';
 import { toggleBaseStyles } from '../../internal/toggle-base.styles.ts';
+import { requiredMarkStyles } from '../../styles/required-mark.ts';
 import { statusLensStyles, statusShapeStyles } from '../../styles/status-shape.ts';
 import { raisedHoverShadow } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
@@ -98,6 +99,8 @@ export const radioGroupStyles = css`
     font-weight: 600;
     overflow-wrap: break-word;
   }
+
+  ${requiredMarkStyles}
 
   .hint {
     color: ${token('color-text-muted')};

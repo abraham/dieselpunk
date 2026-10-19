@@ -39,6 +39,7 @@ As in native controls, **the attribute is the default and the property is the li
 - A slider copies `label` to its host's `aria-label`.
 - An external `<label for>` populates `labels` and focuses the control when clicked.
 - A hint (the `hint` slot) is the inner control's description, with the message when it shows.
+- **Required.** A `required` control shows a bold `*` after its rendered label (a field's, a checkbox's or switch's text, a radio group's label), so a sighted user sees it before submitting (SC 3.3.2). The mark has an empty text alternative, since `aria-required` already tells assistive technology, and the name stays the label alone. An application that labels its controls another way says it in its own text.
 - A control with no name warns.
 
 ## 5. Events

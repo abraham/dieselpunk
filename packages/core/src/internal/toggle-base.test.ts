@@ -84,6 +84,14 @@ describe.each([
       expect(element.getAttribute('tabindex')).toBe('0');
     });
 
+    it('marks a required one for sight', async () => {
+      const mark = (element: Toggle) =>
+        getComputedStyle(element.shadowRoot?.querySelector('[part="label"]') as Element, '::after')
+          .content;
+      expect(mark(await mount(tag))).toBe('none');
+      expect(mark(await mount(tag, 'required'))).toContain('*');
+    });
+
     it('has them before it renders, so tools see what users get at once', async () => {
       const element = track(document.createElement(tag)) as Toggle;
       expect(element.getAttribute('role')).toBe(role);

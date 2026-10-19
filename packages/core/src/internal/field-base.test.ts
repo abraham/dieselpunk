@@ -76,6 +76,13 @@ describe.each(tags)('%s as a field', (tag) => {
     expect(part(element, 'label').hidden).toBe(true);
   });
 
+  it('marks a required field for sight, with an empty text alternative', async () => {
+    const optional = await mount(tag);
+    expect(getComputedStyle(part(optional, 'label'), '::after').content).toBe('none');
+    const element = await mount(tag, 'label="Callsign" required');
+    expect(getComputedStyle(part(element, 'label'), '::after').content).toBe('" *" / ""');
+  });
+
   it('names the control with the rendered label', async () => {
     const element = await mount(tag);
     expect(control(element).labels?.[0]).toBe(part(element, 'label'));
