@@ -144,6 +144,12 @@ export const receptacleStyles = css`
     background: ${token('color-disabled-fill')};
   }
 
+  /* Disabled controls are exempt from the boundary rule, so an empty one is no brighter than its
+     filled neighbors. */
+  :host([disabled]:not([selected])) .slot.empty {
+    --_ring: ${token('color-edge-dark')};
+  }
+
   :host([disabled]) .content {
     filter: grayscale(1);
     opacity: 0.5;

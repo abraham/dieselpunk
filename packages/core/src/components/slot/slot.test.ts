@@ -222,6 +222,12 @@ describe('boundary', () => {
     const selected = slotOf(await mount({ label: 'Selected', selected: '' }));
     expect(ringColor(selected)).not.toBe(ringColor(empty));
   });
+
+  it('drops the boundary on a disabled empty slot, as disabled controls are exempt', async () => {
+    const filled = slotOf(await mount({ label: 'Filled', disabled: '' }, { content: art }));
+    const empty = slotOf(await mount({ label: 'Empty', disabled: '' }));
+    expect(ringColor(empty)).toBe(ringColor(filled));
+  });
 });
 
 describe('states without color', () => {
