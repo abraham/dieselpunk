@@ -1,12 +1,15 @@
 // The server half of the SSR fixture (specs/ssr.md Verification), run under Node in the installed
 // project: renders every tag of the packed package with Lit SSR, checks the output, and writes a
-// page of it for the browser half, once with Lit's hydration support and once without.
+// page of it for the browser half, once with Lit's hydration support and once without, and again
+// with shared styles (specs/ssr.md §6).
 /* global console, customElements, process */
 import { readdirSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { render } from '@lit-labs/ssr';
+import { LitElementRenderer, render } from '@lit-labs/ssr';
 import { collectResult } from '@lit-labs/ssr/lib/render-result.js';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { html, unsafeStatic } from 'lit/static-html.js';
+import { shareStyles, sharedStylesScript } from '@dieselpunk/core/ssr.js';
 
 const out = process.argv[2];
 const components = 'node_modules/@dieselpunk/core/dist/components';
@@ -28,6 +31,8 @@ for (const entry of entries) {
 const tags = [...customElements.__definitions.keys()].filter((tag) => tag.startsWith('punk-'));
 
 const ssr = (template) => collectResult(render(template));
+// The same page in one render with shared styles, so later roots only name their sheets.
+const parts = [];
 let body = '';
 for (const tag of tags) {
   const t = unsafeStatic(tag);
@@ -45,7 +50,10 @@ for (const tag of tags) {
       }
       const ids = markup.match(/(?:id|for|aria-[a-z]+)="punk-[a-z-]+-\d+"/g);
       if (ids) problems.push(`${tag} (case ${index}) generated ids on the server: ${ids}`);
-      if (index === 0) body += `<div data-case="${tag}">${markup}</div>\n`;
+      if (index === 0) {
+        body += `<div data-case="${tag}">${markup}</div>\n`;
+        parts.push(html`<div data-case="${unsafeStatic(tag)}">${template}</div>`);
+      }
     } catch (error) {
       problems.push(`${tag} (case ${index}) threw: ${error.message}`);
     }
@@ -53,7 +61,7 @@ for (const tag of tags) {
 }
 
 // What the server cannot know (specs/ssr.md §3), and a field to type into before the upgrade.
-body += await ssr(html`
+const unknowns = html`
   <punk-production-stat id="stat" label="Iron" value="12345.6"></punk-production-stat>
   <punk-panel id="panel"><span slot="header">Assembler</span>Body</punk-panel>
   <punk-divider id="divider">Section</punk-divider>
@@ -63,7 +71,9 @@ body += await ssr(html`
     ><option value="a">A</option>
     <option value="b" selected>B</option></punk-select
   >
-`);
+`;
+body += await ssr(unknowns);
+parts.push(unknowns);
 
 // A textarea's text is its content, so it shows before scripts load, escaped.
 const textarea = await ssr(
@@ -115,9 +125,30 @@ for (const [index, markup] of composed.entries()) {
   try {
     const rendered = await ssr(html`${unsafeStatic(markup)}`);
     body += `<div data-composed="${index}">${rendered}</div><template data-source="${index}">${markup}</template>\n`;
+    parts.push(
+      html`<div data-composed="${unsafeStatic(String(index))}">${unsafeStatic(markup)}</div>
+        ${unsafeHTML(`<template data-source="${index}">${markup}</template>`)}`,
+    );
   } catch (error) {
     problems.push(`composed case ${index} threw: ${error.message}`);
   }
+}
+
+// Shared styles write each sheet once, however many roots use it.
+const shared = { elementRenderers: [shareStyles(LitElementRenderer)] };
+const sharedBody = await collectResult(render(html`${parts}`, shared));
+const buttons = (count) =>
+  html`${Array.from({ length: count }, () => html`<punk-icon-button label="Craft"></punk-icon-button>`)}`;
+const count = (markup, pattern) => markup.match(pattern)?.length ?? 0;
+const one = await collectResult(render(buttons(1), shared));
+const nine = await collectResult(render(buttons(9), shared));
+if (count(nine, /<style\b/g) !== count(one, /<style\b/g) || count(one, /<style\b/g) === 0) {
+  problems.push(
+    `nine icon buttons with shared styles wrote ${count(nine, /<style\b/g)} <style> elements, and one wrote ${count(one, /<style\b/g)}`,
+  );
+}
+if (count(nine, /<punk-styles /g) !== count(nine, /shadowrootmode="open"/g)) {
+  problems.push('a shadow root rendered with shared styles does not name its sheets');
 }
 
 console.error = logError;
@@ -127,14 +158,19 @@ mkdirSync(out, { recursive: true });
 const imports = entries.map((entry) => `import '@dieselpunk/core/${entry}/register.js';`);
 const support = "import '@lit-labs/ssr-client/lit-element-hydrate-support.js';";
 // Without Lit's hydration support, with it alone, and with core's hydration entry too.
+const hydrateLines = [support, "import '@dieselpunk/core/hydrate.js';", ...imports];
 const pages = {
   plain: imports,
   support: [support, ...imports],
-  hydrate: [support, "import '@dieselpunk/core/hydrate.js';", ...imports],
+  hydrate: hydrateLines,
   // A bundler that evaluates `lit-element` before the support: it must replace, not hydrate.
   late: ["import 'lit';", support, "import '@dieselpunk/core/hydrate.js';", ...imports],
+  // Rendered with shared styles, replacing and hydrating.
+  shared: imports,
+  'shared-hydrate': hydrateLines,
 };
 for (const [name, lines] of Object.entries(pages)) {
+  const isShared = name.startsWith('shared');
   writeFileSync(join(out, `client-${name}.js`), lines.join('\n') + '\n');
   writeFileSync(
     join(out, `${name}.html`),
@@ -142,12 +178,13 @@ for (const [name, lines] of Object.entries(pages)) {
 <html lang="de" dir="rtl">
   <head>
     <meta charset="utf-8" />
+    ${isShared ? `<script>${sharedStylesScript}</script>` : ''}
     <script>window.ssrTags = ${JSON.stringify(tags)};</script>
     <script src="ssr-check.js"></script>
     <script type="module">window.upgrade = () => import('./client-${name}.bundle.js');</script>
   </head>
   <body>
-${body}
+${isShared ? sharedBody : body}
   </body>
 </html>
 `,

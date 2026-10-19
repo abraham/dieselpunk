@@ -139,14 +139,18 @@ for (const target of [
   'dist/index.d.ts',
   'dist/hydrate.js',
   'dist/hydrate.d.ts',
+  'dist/ssr.js',
+  'dist/ssr.d.ts',
   'dist/css/tokens.css',
   'dist/css/themes.css',
   'dist/css/surfaces.css',
 ]) {
   if (!existsSync(`${packageDir}${target}`)) fail(`Missing ${target}`);
 }
-if (toPath(import.meta.resolve(`${name}/hydrate.js`)) !== 'dist/hydrate.js') {
-  fail(`${name}/hydrate.js does not resolve to dist/hydrate.js`);
+for (const entry of ['hydrate.js', 'ssr.js']) {
+  if (toPath(import.meta.resolve(`${name}/${entry}`)) !== `dist/${entry}`) {
+    fail(`${name}/${entry} does not resolve to dist/${entry}`);
+  }
 }
 if (!existsSync(`${packageDir}custom-elements.json`)) fail('Missing custom-elements.json');
 
@@ -178,6 +182,8 @@ for (const file of flagged.filter((file) => !expectedFlagged.includes(file))) {
 // 3. Nothing but register entries may register an element.
 for (const file of distFiles.filter((file) => file.endsWith('.js'))) {
   if (/\/register\.js$/.test(file) || file === 'dist/utilities/register-element.js') continue;
+  // Its script for the page defines `punk-styles` there; importing it registers nothing.
+  if (file === 'dist/ssr.js') continue;
   const source = readFileSync(`${packageDir}${file}`, 'utf8');
   if (/customElements\.define|register-element\.js/.test(source)) {
     fail(`${file} registers an element, but only register.js entries may`);

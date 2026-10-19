@@ -42,6 +42,10 @@
       "types": "./dist/hydrate.d.ts",
       "default": "./dist/hydrate.js"
     },
+    "./ssr.js": {
+      "types": "./dist/ssr.d.ts",
+      "default": "./dist/ssr.js"
+    },
     "./*/register.js": "./dist/components/*/register.js",
     "./*": {
       "types": "./dist/components/*/index.d.ts",

@@ -107,4 +107,35 @@ A form submitted before its controls load does not include their values, since a
 
 ## Cost
 
-Lit SSR writes a component's styles into every instance, and styles are most of each instance's bytes: one slot is about 6 kB of HTML. Compression absorbs the repetition, so 100 slots are about 634 kB raw and about 7 kB gzipped. Serve pages compressed, and render long collections in the browser.
+Lit SSR writes a component's styles into every instance, and styles are most of each instance's bytes: 100 slots are about 692 kB of HTML. Brotli absorbs the repetition (about 2.2 kB), but gzip does not when instances are far apart: nine icon buttons about 40 kB apart add about 32 kB gzipped. Serve pages compressed, preferably with brotli, share styles where gzip is all a host serves, and render long collections in the browser.
+
+## Sharing styles
+
+To write each style sheet once instead of in every instance, render with `shareStyles()` from `@dieselpunk/core/ssr.js` and inline its script in the `<head>`:
+
+```ts
+// server.ts
+import { LitElementRenderer, html, renderThunked } from '@lit-labs/ssr';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { shareStyles, sharedStylesScript } from '@dieselpunk/core/ssr.js';
+
+const elementRenderers = [shareStyles(LitElementRenderer)];
+const page = html`<!doctype html>
+  <html lang="en">
+    <head>
+      ${unsafeHTML(`<script>${sharedStylesScript}</script>`)}
+      <link rel="stylesheet" href="/tokens.css" />
+      <script type="module" src="/client.js"></script>
+    </head>
+    <body>
+      …
+    </body>
+  </html>`;
+response.body = new RenderResultReadable(renderThunked(page, { elementRenderers }));
+```
+
+The first component to use a sheet writes it; every later one names the sheets it uses, and the script adopts them into its shadow root while the page is parsed, so nothing paints unstyled. The 100 slots become about 94 kB raw and 3.1 kB gzipped, and the nine icon buttons about 9 kB gzipped. The script is about 0.43 kB gzipped. It works with both ways of loading the components, and with your own Lit components, whose sheets it shares too.
+
+- **One render per page.** Sheets are shared within one render; a page put together from several renders writes each part's sheets again.
+- **It needs the script.** Without it, components that only name their sheets paint unstyled. A page that must look right without script should not share styles.
+- **Content Security Policy.** Add the script's hash to `script-src`: `'sha256-'` and the base64 SHA-256 of `sharedStylesScript`, which your server can compute when it starts.

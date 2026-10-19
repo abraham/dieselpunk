@@ -27,7 +27,10 @@ setHydration({
       return false;
     }
     claimed.add(element);
-    root.querySelector('style')?.remove();
+    // The server's styles: one `<style>`, or with shared styles (§6) any it did not adopt yet.
+    for (const child of [...root.children]) {
+      if (child.localName === 'style' || child.localName === 'punk-styles') child.remove();
+    }
     return true;
   },
 
