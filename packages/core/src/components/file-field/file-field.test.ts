@@ -187,6 +187,17 @@ describe('drop zone', () => {
     expect(drag(disabled, 'drop', plan()).defaultPrevented).toBe(false);
     expect(disabled.files?.length ?? 0).toBe(0);
   });
+
+  it('looks disabled while disabled: a flat button, and no brighter zone', async () => {
+    const live = await mount('label="Plans" drop-zone');
+    const off = await mount('label="Plans" drop-zone disabled');
+    const button = (element: Element) => getComputedStyle(input(element), '::file-selector-button');
+    expect(button(off).backgroundImage).toBe('none');
+    expect(button(off).color).not.toBe(button(live).color);
+    expect(getComputedStyle(zone(off)).backgroundColor).toBe(
+      getComputedStyle(zone(live)).backgroundColor,
+    );
+  });
 });
 
 describe('layout', () => {

@@ -1,6 +1,6 @@
 import { css } from 'lit';
 import { fieldStyles } from '../../styles/field.ts';
-import { raisedHoverShadow, raisedSurface } from '../../styles/surfaces.ts';
+import { outlineShadow, raisedHoverShadow, raisedSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
 // The input's own button is drawn as a raised button; its text and "No file chosen" are the
@@ -34,13 +34,26 @@ export const fileFieldStyles = css`
     cursor: pointer;
   }
 
-  .control:hover::file-selector-button {
+  .control:not(:disabled):hover::file-selector-button {
     box-shadow: ${raisedHoverShadow};
   }
 
   .control:disabled,
   .control:disabled::file-selector-button {
     cursor: default;
+  }
+
+  /* The button is drawn as every disabled control is, so it never looks pressable. */
+  .control:disabled::file-selector-button {
+    background: ${token('color-disabled-fill')};
+    box-shadow: ${outlineShadow};
+    color: ${token('color-disabled-text')};
+  }
+
+  /* A disabled zone keeps the well's fill: the lighter disabled fill over this much area made it
+     look more active than an enabled one. */
+  .zone .field.disabled .box {
+    background: ${token('color-panel-inset')};
   }
 
   .drop {
@@ -87,6 +100,11 @@ export const fileFieldStyles = css`
   @media (forced-colors: active) {
     .control::file-selector-button {
       border: 1px solid ButtonText;
+    }
+
+    .control:disabled::file-selector-button {
+      border-color: GrayText;
+      color: GrayText;
     }
 
     .zone.dragging .box {
