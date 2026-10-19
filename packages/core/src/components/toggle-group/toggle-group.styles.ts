@@ -1,10 +1,6 @@
 import { css } from 'lit';
-import {
-  insetShadow,
-  raisedShadow,
-  raisedHoverShadow,
-  selectedShadow,
-} from '../../styles/surfaces.ts';
+import { selectedShadow } from '../../styles/selected.ts';
+import { insetShadow, raisedShadow, raisedHoverShadow } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
 // The buttons are the application's light-DOM `<button>` elements, styled through `::slotted`. A

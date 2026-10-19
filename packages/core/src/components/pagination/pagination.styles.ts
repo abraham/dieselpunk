@@ -1,7 +1,8 @@
 import { css } from 'lit';
 import { focusRing } from '../../styles/focus.ts';
 import { forcedColorsSurface } from '../../styles/forced-colors.ts';
-import { raisedHoverShadow, raisedSurface, selectedShadow } from '../../styles/surfaces.ts';
+import { selectedShadow } from '../../styles/selected.ts';
+import { raisedHoverShadow, raisedSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
 // The current page is set into the strip (the inset bevel) with a warm outline, the same marker as
