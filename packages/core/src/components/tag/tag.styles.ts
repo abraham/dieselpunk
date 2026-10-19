@@ -1,10 +1,12 @@
 import { css } from 'lit';
 import { closeButtonStyles } from '../../styles/close-button.ts';
+import { forcedColorsSurface } from '../../styles/forced-colors.ts';
+import { insetSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
-// The plate is `panel-inset` with `text`, as the badge's, so the contrast gate covers it. The
-// remove button is the window's close button, smaller to sit inside the plate; a coarse pointer
-// still gets its 40px target.
+// The plate is `panel-inset` with `text`, as the badge's, so the contrast gate covers it; its
+// light lower lip keeps it visible on the canvas. The remove button is the window's close button,
+// smaller to sit inside the plate; a coarse pointer still gets its 40px target.
 export const tagStyles = css`
   :host {
     display: inline-flex;
@@ -22,11 +24,11 @@ export const tagStyles = css`
     max-inline-size: 100%;
     min-block-size: ${token('control-height-sm')};
     padding: 2px ${token('space-2')};
-    border: 1px solid ${token('color-edge-dark')};
     border-radius: ${token('radius')};
-    background: ${token('color-panel-inset')};
+    ${insetSurface}
     color: ${token('color-text')};
     font-size: 0.875rem;
+    font-weight: 600;
     line-height: 1.3;
   }
 
@@ -49,9 +51,5 @@ export const tagStyles = css`
     block-size: 10px;
   }
 
-  @media (forced-colors: active) {
-    .tag {
-      border-color: CanvasText;
-    }
-  }
+  ${forcedColorsSurface('.tag')}
 `;

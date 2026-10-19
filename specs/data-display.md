@@ -65,7 +65,7 @@
 
 `punk-tag`: a chip for a filter, a chosen value, or a label. `removable`, `remove-label`, `disabled`, `value`, with the default slot for its text.
 
-- Its text on a `panel-inset` plate in `text`, as the badge's. The host has no role, and the text is read where it stands.
+- Its text, at weight 600, on an inset `panel-inset` plate in `text`, as the badge's. The inset bevel's light lower edge keeps the chip visible on the canvas, where a plain `panel-inset` plate nearly disappears. The host has no role, and the text is read where it stands.
 - **Removal.** `removable` adds the shared native close button at the inline end, named by `remove-label` or the localized "Remove" and the tag's text ("Remove Copper"). The text is read when the tag connects and on `slotchange`, never in a render. The button sends `punk-remove` with `{ value, item }`, the connection row's event, and cannot be canceled. The tag does not remove itself: the application removes it and moves focus, since the focused button goes with it; the docs show focus moving to the next tag.
 - `disabled` disables the button and leaves the text as readable as it was. The disabled button is drawn as every disabled control is: flat, in `disabled-fill` and `disabled-text`, with a `not-allowed` cursor, so it never looks pressable.
 - The button is smaller than the window's to sit in the plate, and keeps the 40px target for a coarse pointer. A long text wraps; the button stays inside the container.
