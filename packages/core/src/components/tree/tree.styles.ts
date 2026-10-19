@@ -2,6 +2,7 @@ import { css } from 'lit';
 import { hostFocusRing } from '../../styles/focus.ts';
 import { token } from '../../tokens/token.ts';
 
+// The tree is the list's inset well, so lists and trees read as one family.
 export const treeStyles = css`
   :host {
     display: block;
@@ -13,11 +14,25 @@ export const treeStyles = css`
     display: grid;
     gap: 1px;
     min-inline-size: 0;
+    padding: 2px;
+    border-radius: ${token('radius')};
+    background: ${token('color-panel-inset')};
+    box-shadow:
+      inset 1px 1px 0 ${token('color-edge-dark')},
+      inset -1px -1px 0 ${token('color-edge-light')},
+      0 0 0 ${token('border-width')} ${token('color-edge-dark')};
+  }
+
+  @media (forced-colors: active) {
+    .tree {
+      border: 1px solid CanvasText;
+    }
   }
 `;
 
-// A row is indented by its level. Focus is the shared ring, and a selected row has a check and an
-// `accent` bar on its start edge, so selection never rests on color.
+// A row is indented by its level. Focus is the shared ring, and a selected row is raised out of
+// the well as a list's is, with a check and an `accent` bar on its start edge, so selection never
+// rests on color.
 export const treeItemStyles = css`
   :host {
     display: block;
@@ -46,16 +61,21 @@ export const treeItemStyles = css`
 
   :host(:not([disabled])) .row:hover,
   :host(:focus) > .row {
-    background: ${token('color-panel-inset')};
+    background: color-mix(in srgb, ${token('color-panel')} 60%, transparent);
   }
 
   .row.selected {
-    background: ${token('color-panel-inset')};
-    box-shadow: inset 3px 0 0 ${token('color-accent')};
+    background: ${token('color-panel')};
+    box-shadow:
+      inset 3px 0 0 ${token('color-accent')},
+      inset 0 0 0 1px ${token('color-edge-light')};
+    font-weight: 600;
   }
 
   :host(:dir(rtl)) .row.selected {
-    box-shadow: inset -3px 0 0 ${token('color-accent')};
+    box-shadow:
+      inset -3px 0 0 ${token('color-accent')},
+      inset 0 0 0 1px ${token('color-edge-light')};
   }
 
   :host([disabled]) .row {

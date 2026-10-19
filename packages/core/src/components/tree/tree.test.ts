@@ -117,6 +117,18 @@ describe('semantics', () => {
     expect(rtlOuter.right - rtlInner.right).toBeGreaterThan(8);
   });
 
+  it('sits in the inset well of a list, with a selected row raised out of it', async () => {
+    const tree = await mount('aria-label="Recipes" selection="single"');
+    const well = getComputedStyle(part(tree, 'tree'));
+    expect(well.backgroundColor).toBe('rgb(41, 43, 40)');
+    expect(well.boxShadow).toContain('inset');
+    tree.values = ['logistics'];
+    await settle(tree);
+    const row = getComputedStyle(part(item(tree, 'logistics'), 'row'));
+    expect(row.backgroundColor).toBe('rgb(65, 67, 63)');
+    expect(row.fontWeight).toBe('600');
+  });
+
   it('warns about a missing name, a stray child, and missing values when selecting', async () => {
     await mount('', '<punk-tree-item label="A"></punk-tree-item><div>Stray</div>');
     const said = warn.mock.calls.map((call) => String(call[0]));
