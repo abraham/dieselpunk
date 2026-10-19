@@ -19,6 +19,7 @@ const rootPackage = JSON.parse(readFileSync(join(packageDir, '../../package.json
 };
 const corePackage = JSON.parse(readFileSync(join(packageDir, 'package.json'), 'utf8')) as {
   dependencies: Record<string, string>;
+  devDependencies: Record<string, string>;
 };
 const localesDir = join(packageDir, '../locales');
 const OLDEST_TYPESCRIPT = '5.0.4';
@@ -26,6 +27,7 @@ const NEWEST_TYPESCRIPT = rootPackage.devDependencies['typescript'] ?? '~6.0.3';
 // The latest releases of the Lit SSR majors that match core's Lit 3 (specs/ssr.md §1).
 const LIT_SSR = '^4.1.0';
 const LIT_SSR_CLIENT = '^1.1.8';
+const HAPPY_DOM = '^21.0.0';
 // specs/security.md §4.3: strict for scripts; style attributes and data: images cannot run any.
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
@@ -503,6 +505,25 @@ async function checkServerRendering(core: string): Promise<void> {
   }
 }
 
+// The Integration guide's setup for unit tests under Node: Vitest and happy-dom, with the browser
+// condition first so components render as in a browser, not as on a server.
+function checkNodeTests(core: string): void {
+  const project = join(work, 'node-test');
+  installProject(
+    project,
+    { '@dieselpunk/core': `file:${core}` },
+    { vitest: corePackage.devDependencies['vitest'] ?? '^5.0.5', 'happy-dom': HAPPY_DOM },
+  );
+  cpSync(join(fixtureDir, 'node-test'), project, { recursive: true });
+  try {
+    run(join(project, 'node_modules/.bin/vitest'), ['run'], project);
+    console.log('  passed under Node');
+  } catch (error) {
+    const { stdout = '', stderr = '' } = error as { stdout?: string; stderr?: string };
+    problems.push(`node tests failed:\n${stdout}${stderr}`);
+  }
+}
+
 // specs/security.md §4.3: every component of the gallery, from the installed package, served with
 // the supported policy as a header, with no violation and nothing logged.
 async function checkContentSecurityPolicy(project: string): Promise<void> {
@@ -569,6 +590,9 @@ try {
 
   console.log('Rendering on a server and upgrading in a browser:');
   await checkServerRendering(tarballs.core);
+
+  console.log('Running unit tests under Node with happy-dom:');
+  checkNodeTests(tarballs.core);
 
   console.log('Type-checking the consumer:');
   const oldest = join(work, 'oldest');
