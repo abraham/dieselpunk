@@ -143,6 +143,7 @@ The application names the grid with `aria-label`; a missing name warns.
 - **Single mode** (default): expanding an item collapses the others, whether the user, a property, or an attribute expanded it. The open item can be collapsed, so none may be open. Several expanded at connection keep the first and warn once. **`multiple`** allows any number.
 - **Every enabled header is a tab stop**, as in the APG accordion; there is no roving. `Up` and `Down` move between enabled headers without wrapping, and `Home` and `End` go to the first and last; the keys act only when they come from a header, so arrows in a field inside a panel are left alone. Enter and Space are the native button's.
 - The indicator is a plus when collapsed and a minus when expanded.
+- **Look.** A collapsed header is raised; an expanded one is pressed in, and its content meets it with no gap and square inner corners, as a panel's header strip meets its body, so an open item reads as one framed section.
 - `punk-toggle` carries `{ expanded }` for user changes.
 - An out-of-range `level` is clamped and warns.
 
