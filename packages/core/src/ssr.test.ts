@@ -130,9 +130,11 @@ describe('sharedStylesScript (ssr.md §6)', () => {
       expect([...root.children].map((child) => child.localName)).toEqual(['p']);
       expect(root.adoptedStyleSheets).toHaveLength(2);
     }
-    const [one, two, reversed] = roots.map((root) => root.adoptedStyleSheets);
-    expect(two).toEqual(one);
-    expect(reversed).toEqual([one![1], one![0]]);
+    // Identity is what matters, and Firefox's deep equality fails on another frame's sheets.
+    const [one, two, reversed] = roots.map((root) => [...root.adoptedStyleSheets]);
+    expect(two!.every((sheet, index) => sheet === one![index])).toBe(true);
+    expect(reversed![0]).toBe(one![1]);
+    expect(reversed![1]).toBe(one![0]);
   });
 
   it('works when it runs after the page, in document order', async () => {
