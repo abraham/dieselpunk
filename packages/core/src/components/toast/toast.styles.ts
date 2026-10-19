@@ -28,6 +28,7 @@ export const toastStyles = css`
     }
   }
 
+  /* The variant's color as a bar on the start edge, as the alert's: decoration beside the shape. */
   .toast {
     ${raisedSurface}
     box-sizing: border-box;
@@ -35,6 +36,7 @@ export const toastStyles = css`
     align-items: flex-start;
     gap: ${token('space-2')};
     padding: ${token('space-2')} ${token('space-3')};
+    border-inline-start: 4px solid var(--_c);
     border-radius: ${token('radius')};
     color: ${token('color-text')};
     overflow-wrap: anywhere;
@@ -97,6 +99,12 @@ export const toastStyles = css`
 
   ${closeButtonStyles}
   ${forcedColorsSurface('.toast')}
+
+  @media (forced-colors: active) {
+    .toast {
+      border-inline-start-width: 4px;
+    }
+  }
 `;
 
 export const toastStackStyles = css`

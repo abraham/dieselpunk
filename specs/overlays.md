@@ -114,7 +114,7 @@ An interactive anchored surface: `for`, `placement` (default `bottom`), `mode` (
 
 `punk-toast`: `variant`, `duration`, `heading`, with the default (message) and `action` slots.
 
-- The variant is a status shape in an inset lens; the text is in `text`. A native dismiss button (localized "Dismiss") is always present.
+- The variant is a status shape in an inset lens and, as on the alert, its color as a bar on the start edge; the text is in `text`. A native dismiss button (localized "Dismiss") is always present.
 - **Duration:** unset means 5000ms for `info` and `success`, and none for `warning`, `danger`, or a toast with an action. `0` means none.
 - **Countdown** (`createToastTimer`): one timer at most, held by reason (`hover` by mouse or pen, not touch; `focus` inside; `hidden` document), resumed with the time left only when every hold is released. A hold that exists when the countdown is rebuilt is kept. A toast created while the document is hidden starts held. A held or finished toast has no timer, and the `visibilitychange` listener exists only while a countdown does.
 - **Dismissal:** `dismiss(reason)` (default `method`) sends `punk-dismiss`, which is cancelable so an application that owns the toast's lifetime can remove it itself. Unless cancelled the toast fades out, waits for its animations' `finished` (not a timer), and removes itself. Under reduced motion it goes at once.

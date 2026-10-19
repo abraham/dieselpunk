@@ -523,6 +523,13 @@ describe('appearance', () => {
     expect(getComputedStyle(part(toast, 'indicator')).borderTopStyle).toBe('solid');
   });
 
+  it('marks its variant with a bar on the start edge, as the alert does', async () => {
+    const info = getComputedStyle(part(await mount('variant="info"'), 'toast'));
+    const danger = getComputedStyle(part(await mount('variant="danger"'), 'toast'));
+    expect(info.borderInlineStartWidth).toBe('4px');
+    expect(info.borderInlineStartColor).not.toBe(danger.borderInlineStartColor);
+  });
+
   it('still draws the dismiss glyph under forced colors', async () => {
     await commands.setForcedColors('active');
     const button = dismissButton(await mount());
