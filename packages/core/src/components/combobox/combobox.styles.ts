@@ -59,11 +59,32 @@ export const comboboxStyles = css`
     position: relative;
     display: flex;
     align-items: center;
+    gap: ${token('space-2')};
     min-block-size: ${token('control-height-sm')};
     padding: 0 ${token('space-2')};
     border-radius: ${token('radius')};
     overflow-wrap: anywhere;
     cursor: pointer;
+  }
+
+  .text {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+
+  .start,
+  .end {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: ${token('space-1')};
+  }
+
+  .group-label {
+    padding: ${token('space-2')} ${token('space-2')} ${token('space-1')};
+    color: ${token('color-text-muted')};
+    font-size: 0.75rem;
+    font-weight: 700;
   }
 
   .option:hover,

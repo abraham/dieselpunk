@@ -293,7 +293,7 @@
     "path": "dist/components/combobox/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "8.75 kB"
+    "limit": "9.25 kB"
   },
   {
     "name": "punk-fieldset",

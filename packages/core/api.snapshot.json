@@ -309,6 +309,8 @@
       "parts": {
         "control": "",
         "field": "",
+        "group": "",
+        "group-label": "",
         "hint": "",
         "label": "",
         "listbox": "",

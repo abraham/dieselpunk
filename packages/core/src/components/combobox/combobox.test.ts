@@ -144,6 +144,121 @@ describe('typing and choosing', () => {
     expect(shownOptions(element)).toHaveLength(3);
   });
 
+  it('keeps the text when the application replaces the options on input', async () => {
+    const { element } = await mount('label="Search" filter="none" allow-custom', '');
+    element.addEventListener('input', () => {
+      const text = input(element).value;
+      element.replaceChildren(
+        ...[1, 2].map((n) =>
+          Object.assign(document.createElement('option'), {
+            value: `${text}${n}`,
+            text: `${text} ${n}`,
+          }),
+        ),
+      );
+    });
+    await userEvent.type(input(element), 'iron');
+    await element.updateComplete;
+    expect(input(element).value).toBe('iron');
+    expect(input(element).getAttribute('aria-expanded')).toBe('true');
+    expect(shownOptions(element)).toEqual(['iron 1', 'iron 2']);
+  });
+
+  it('keeps the text when options change before its own input handler runs', async () => {
+    const { element } = await mount('label="Search" filter="none" allow-custom');
+    await userEvent.type(input(element), 'i');
+    await element.updateComplete;
+    expect(input(element).getAttribute('aria-expanded')).toBe('true');
+    const replace = () => {
+      const text = input(element).value;
+      element.replaceChildren(
+        Object.assign(document.createElement('option'), { value: text, text: `${text} plate` }),
+      );
+    };
+    document.addEventListener('input', replace, { capture: true });
+    await userEvent.type(input(element), 'ron');
+    document.removeEventListener('input', replace, { capture: true });
+    await element.updateComplete;
+    expect(input(element).value).toBe('iron');
+    expect(element.value).toBe('iron');
+    expect(shownOptions(element)).toEqual(['iron plate']);
+  });
+
+  it('opens on options that arrive after typing, while the field has focus', async () => {
+    const { element } = await mount('label="Search" filter="none" allow-custom', '');
+    await userEvent.type(input(element), 'iron');
+    await element.updateComplete;
+    expect(input(element).getAttribute('aria-expanded')).toBe('false');
+    element.append(
+      Object.assign(document.createElement('option'), { value: 'fe', text: 'Iron plate' }),
+    );
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+    expect(input(element).value).toBe('iron');
+    expect(input(element).getAttribute('aria-expanded')).toBe('true');
+    expect(shownOptions(element)).toEqual(['Iron plate']);
+    await userEvent.tab();
+    element.append(
+      Object.assign(document.createElement('option'), { value: 'cu', text: 'Copper plate' }),
+    );
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+    expect(input(element).getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('groups options under their optgroup label, with start and end elements outside the label', async () => {
+    const { element } = await mount('label="Item"', '');
+    const option = (value: string, text: string, badge?: string) => {
+      const node = Object.assign(document.createElement('option'), { value });
+      const icon = Object.assign(document.createElement('span'), {
+        slot: 'start',
+        className: 'icon',
+      });
+      icon.setAttribute('aria-hidden', 'true');
+      node.append(icon, text);
+      if (badge)
+        node.append(
+          Object.assign(document.createElement('span'), { slot: 'end', textContent: badge }),
+        );
+      return node;
+    };
+    const items = Object.assign(document.createElement('optgroup'), { label: 'Items' });
+    items.append(option('fe', 'Iron plate'), option('sp', 'Space science pack', 'Space Age'));
+    const recipes = Object.assign(document.createElement('optgroup'), {
+      label: 'Recipes',
+      disabled: true,
+    });
+    recipes.append(option('gear', 'Iron gear'));
+    element.append(items, recipes);
+    input(element).focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await element.updateComplete;
+    const groups = [...(element.shadowRoot?.querySelectorAll('[role="group"]') ?? [])];
+    expect(groups.map((group) => group.getAttribute('aria-label'))).toEqual(['Items', 'Recipes']);
+    expect(groups.map((group) => group.querySelectorAll('[role="option"]').length)).toEqual([2, 1]);
+    const rows = [...(element.shadowRoot?.querySelectorAll('[role="option"]') ?? [])];
+    expect(rows.map((row) => row.querySelector('.text')?.textContent)).toEqual([
+      'Iron plate',
+      'Space science pack',
+      'Iron gear',
+    ]);
+    expect(rows[1]?.querySelector('.end')?.textContent).toBe('Space Age');
+    expect(rows.every((row) => row.querySelector('.start > .icon'))).toBe(true);
+    expect(rows[2]?.getAttribute('aria-disabled')).toBe('true');
+    await userEvent.keyboard('{Escape}');
+    await userEvent.fill(input(element), 'space');
+    await element.updateComplete;
+    expect(
+      [...(element.shadowRoot?.querySelectorAll('.option .text') ?? [])].map(
+        (label) => label.textContent,
+      ),
+    ).toEqual(['Space science pack']);
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await element.updateComplete;
+    expect(element.value).toBe('sp');
+    expect(input(element).value).toBe('Space science pack');
+  });
+
   it('holds listeners and an observer only while the list shows', async () => {
     const { element } = await mount();
     const add = vi.spyOn(window, 'addEventListener');
