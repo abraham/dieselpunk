@@ -40,14 +40,14 @@ Sizes are minified and gzip-compressed, with Lit (and, for the locales package, 
 
 **Observers.** An observer exists only where it carries state that cannot be derived another way:
 
-| Observer           | Who                          | When                                                     |
-| ------------------ | ---------------------------- | -------------------------------------------------------- |
-| `ResizeObserver`   | Toolbar without `wrap`       | While connected, one per toolbar                         |
-| `ResizeObserver`   | Table                        | While connected, one per table, for whether it overflows |
-| `ResizeObserver`   | Tooltip, popover             | While open, on the anchor                                |
-| `MutationObserver` | Select                       | While connected, to mirror its options                   |
-| `MutationObserver` | Combobox                     | While its list is open, to follow its options            |
-| `MutationObserver` | Tooltip anchored to a button | While connected, to keep the description current         |
+| Observer           | Who                          | When                                                                             |
+| ------------------ | ---------------------------- | -------------------------------------------------------------------------------- |
+| `ResizeObserver`   | Toolbar without `wrap`       | While connected, one per toolbar, on its strip (and its container when vertical) |
+| `ResizeObserver`   | Table                        | While connected, one per table, for whether it overflows                         |
+| `ResizeObserver`   | Tooltip, popover             | While open, on the anchor                                                        |
+| `MutationObserver` | Select                       | While connected, to mirror its options                                           |
+| `MutationObserver` | Combobox                     | While its list is open, or the user types with none shown, to follow its options |
+| `MutationObserver` | Tooltip anchored to a button | While connected, to keep the description current                                 |
 
 No `IntersectionObserver`, and no observer on `document`.
 

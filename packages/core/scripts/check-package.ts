@@ -72,7 +72,8 @@ const sentinels: Record<string, string> = {
   slider: '--_thumb',
   'text-field': '-webkit-search-cancel-button',
   'number-field': '-webkit-inner-spin-button',
-  select: 'optgroup',
+  // Not `optgroup`, which the combobox reads too.
+  select: 'selectedIndex',
   'radio-group': '"punk-radio"',
   textarea: 'field-sizing',
   combobox: 'aria-activedescendant',
@@ -140,6 +141,7 @@ for (const target of [
   'dist/hydrate.d.ts',
   'dist/css/tokens.css',
   'dist/css/themes.css',
+  'dist/css/surfaces.css',
 ]) {
   if (!existsSync(`${packageDir}${target}`)) fail(`Missing ${target}`);
 }

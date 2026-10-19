@@ -6,7 +6,7 @@ import { describe, it } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { buildCss } from '../scripts/build-css.ts';
 import { contrastRatio, evaluateContrast, formatFailures } from '../scripts/check-contrast.ts';
-import { renderThemesCss, renderTokensCss } from '../scripts/render-css.ts';
+import { renderSurfacesCss, renderThemesCss, renderTokensCss } from '../scripts/render-css.ts';
 import { baseTokens } from '../src/tokens/base.ts';
 import type { TokenMap } from '../src/tokens/base.ts';
 import { density, densityModes } from '../src/tokens/density.ts';
@@ -178,9 +178,26 @@ describe('emitted CSS', () => {
       await buildCss(outDir);
       assert.equal(await readFile(join(directory, 'tokens.css'), 'utf8'), renderTokensCss());
       assert.equal(await readFile(join(directory, 'themes.css'), 'utf8'), renderThemesCss());
+      assert.equal(await readFile(join(directory, 'surfaces.css'), 'utf8'), renderSurfacesCss());
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
+  });
+
+  it("emits the three surfaces as zero-specificity classes from the components' fragments", () => {
+    const rules = parseCss(renderSurfacesCss());
+    assert.deepEqual(
+      rules.map((rule) => rule.selector),
+      [':where(.punk-surface-raised)', ':where(.punk-surface-inset)', ':where(.punk-surface-flat)'],
+    );
+    for (const rule of rules) {
+      assert.deepEqual(Object.keys(rule.declarations).sort(), ['background', 'box-shadow']);
+      assert.match(
+        rule.declarations['box-shadow'] ?? '',
+        /var\(--punk-color-edge-dark, #[0-9a-f]{6}\)/,
+      );
+    }
+    assert.match(rules[1]?.declarations.background ?? '', /^var\(--punk-color-panel-inset, /);
   });
 });
 

@@ -21,7 +21,7 @@ const meta = preview.type<{ args: StoryArgs<PunkNumberField> }>().meta({
         component: `
 A field for a number, with a native \`<input type="number">\` in its shadow tree, so validity, rounding to \`step\`, and the spinbutton role are the platform's. It takes part in a form: it submits \`value\` under \`name\`, and a form reset puts \`value\` back to the attribute the markup had. \`rangeUnderflow\`, \`rangeOverflow\`, \`stepMismatch\`, \`badInput\`, and \`valueMissing\` are native's.
 
-**Value:** \`value\` is the text the user sees, and \`valueAsNumber\` the number, or \`NaN\` while the field is empty. The component does not format the number: parsing and display follow the engine and the user's locale, so a German user may type a comma. A \`min\` above \`max\`, or a \`step\` that is not above 0, is repaired with one warning.
+**Value:** \`value\` is the text the user sees, and \`valueAsNumber\` the number, or \`NaN\` while the field is empty. The component does not format the number: parsing and display follow the engine and the user's locale, so a German user may type a comma. A \`min\` above \`max\`, or a \`step\` that is neither above 0 nor \`any\`, is repaired with one warning. With \`step="any"\` any number is valid, and the steppers move by 1.
 
 **Keyboard:** Up and Down step, and typing works as in a native field.
 

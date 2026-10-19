@@ -4,6 +4,8 @@ import { serverValues } from './server-values.ts';
 /**
  * Tracks which slots have light-DOM content, so empty regions can be hidden.
  * The empty name `''` is the default slot, which also counts non-blank text.
+ * The server cannot see the children, so there it trusts the host's `data-punk-slots`, a list of
+ * filled slot names (`default` for the default slot).
  */
 export class SlotPresence implements ReactiveController {
   readonly #host: ReactiveControllerHost & HTMLElement;
@@ -21,7 +23,9 @@ export class SlotPresence implements ReactiveController {
   }
 
   has(name: string): boolean {
-    return !serverValues() && this.#present.has(name);
+    return serverValues()
+      ? ` ${this.#host.getAttribute('data-punk-slots')} `.includes(` ${name || 'default'} `)
+      : this.#present.has(name);
   }
 
   /** Bind to `@slotchange` on each tracked slot. */

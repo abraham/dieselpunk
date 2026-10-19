@@ -316,6 +316,57 @@ describe('overflow', () => {
   });
 });
 
+describe('vertical', () => {
+  const tall = (index: number) =>
+    `<button style="inline-size: 36px; block-size: 36px">${index}</button>`;
+
+  it('is a column with Up and Down, Home, and End, and ignores Left and Right', async () => {
+    const { toolbar, strip, items } = await mount({
+      attributes: 'orientation="vertical"',
+      items: [1, 2, 3].map(tall).join(''),
+    });
+    expect(strip.getAttribute('aria-orientation')).toBe('vertical');
+    const [a, b, c] = items.map((entry) => entry.getBoundingClientRect());
+    expect(b!.top).toBeGreaterThan(a!.bottom - 1);
+    expect(Math.abs(b!.left - a!.left)).toBeLessThanOrEqual(1);
+    expect(toolbar.getBoundingClientRect().width).toBeLessThan(80);
+    (items[0] as HTMLElement).focus();
+    await userEvent.keyboard('{ArrowRight}');
+    expect(document.activeElement).toBe(items[0]);
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(items[1]);
+    await userEvent.keyboard('{End}{ArrowDown}');
+    expect(document.activeElement).toBe(items[2]);
+    await userEvent.keyboard('{ArrowUp}{Home}');
+    expect(document.activeElement).toBe(items[0]);
+    expect(c!.top).toBeGreaterThan(b!.top);
+  });
+
+  it('hides the trailing items that do not fit the height of its container', async () => {
+    const wrapper = track(document.createElement('div'));
+    wrapper.style.blockSize = '170px';
+    wrapper.innerHTML = `<punk-toolbar aria-label="Map" orientation="vertical">${[1, 2, 3, 4, 5, 6].map(tall).join('')}<button slot="overflow" id="more" style="inline-size: 36px; block-size: 36px">+</button></punk-toolbar>`;
+    const toolbar = wrapper.querySelector('punk-toolbar') as PunkToolbar;
+    await toolbar.updateComplete;
+    await frames();
+    const items = [...toolbar.querySelectorAll<HTMLElement>(':scope > button:not([slot])')];
+    const flags = hiddenOf(items);
+    const visible = flags.filter((flag) => !flag).length;
+    expect(visible).toBeGreaterThan(0);
+    expect(visible).toBeLessThan(6);
+    expect(flags).toEqual(items.map((_, index) => index >= visible));
+    const more = wrapper.querySelector('#more') as HTMLElement;
+    for (const entry of items.slice(0, visible)) {
+      expect(entry.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        more.getBoundingClientRect().top + 1,
+      );
+    }
+    wrapper.style.blockSize = '600px';
+    await frames();
+    expect(hiddenOf(items).some(Boolean)).toBe(false);
+  });
+});
+
 describe('wrap', () => {
   it('lets the strip grow taller, with every item showing', async () => {
     const { strip, items } = await mount({

@@ -117,4 +117,37 @@ describe('punk-textarea', () => {
       '<punk-textarea> It has no accessible name. Set `label` or `aria-label`.',
     );
   });
+
+  it('sets monospace text without spell checking, breaking long words', async () => {
+    const plain = await mount('label="Log"');
+    const code = await mount('label="Blueprint" monospace readonly');
+    expect(getComputedStyle(control(code)).fontFamily).not.toBe(
+      getComputedStyle(control(plain)).fontFamily,
+    );
+    expect(getComputedStyle(control(code)).overflowWrap).toBe('anywhere');
+    expect(control(code).getAttribute('spellcheck')).toBe('false');
+    expect(control(plain).hasAttribute('spellcheck')).toBe(false);
+    expect(control(code).readOnly).toBe(true);
+  });
+
+  it('writes its first value as the textarea content, escaped, so a server render shows it', async () => {
+    const warn = vi.mocked(console.warn);
+    warn.mockClear();
+    const text = '\nkey: a & b </textarea><b>x</b>';
+    const element = document.createElement('punk-textarea');
+    element.label = 'YAML';
+    element.value = text;
+    track(element);
+    await element.updateComplete;
+    expect(control(element).defaultValue).toBe(text);
+    expect(control(element).value).toBe(text);
+    expect(element.shadowRoot?.querySelector('b')).toBeNull();
+    element.value = 'changed';
+    await element.updateComplete;
+    expect(control(element).value).toBe('changed');
+    expect(control(element).defaultValue).toBe(text);
+    const empty = await mount('label="Log"');
+    expect(control(empty).defaultValue).toBe('');
+    expect(warn.mock.calls.some(([message]) => /textarea/.test(String(message)))).toBe(false);
+  });
 });

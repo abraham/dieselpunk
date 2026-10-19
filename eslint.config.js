@@ -214,4 +214,15 @@ export default defineConfig(
     ignores: ['**/*.test.ts'],
     rules: { 'no-restricted-imports': ['error', { paths: sinkImports }] },
   },
+  {
+    // A consumer's unit tests in happy-dom; the guide shows these files, so globals live here.
+    files: ['packages/core/test/package/node-test/**/*.js'],
+    languageOptions: {
+      globals: {
+        document: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLTableSectionElement: 'readonly',
+      },
+    },
+  },
 );

@@ -1,3 +1,4 @@
+import { flatSurface, insetSurface, raisedSurface } from '../src/styles/surfaces.ts';
 import { baseTokens } from '../src/tokens/base.ts';
 import type { TokenMap } from '../src/tokens/base.ts';
 import { density, densityModes } from '../src/tokens/density.ts';
@@ -42,6 +43,27 @@ export function renderTokensCss(): string {
       rule(`[data-punk-density="${mode}"]`, declarations(density[mode], '  ')),
     ),
   ];
+  return `${HEADER}\n${blocks.join('\n\n')}\n`;
+}
+
+/**
+ * The components' raised, inset, and flat surfaces as zero-specificity classes, from the same
+ * fragments the components use, so an application's own cards and anchors match them.
+ */
+export function renderSurfacesCss(): string {
+  const surfaces = { raised: raisedSurface, inset: insetSurface, flat: flatSurface };
+  const blocks = Object.entries(surfaces).map(([name, surface]) => {
+    const body = surface.cssText
+      .replace(/\s+/g, ' ')
+      .replace(/\( /g, '(')
+      .replace(/ \)/g, ')')
+      .split(';')
+      .map((declaration) => declaration.trim())
+      .filter(Boolean)
+      .map((declaration) => `  ${declaration};`)
+      .join('\n');
+    return rule(`:where(.punk-surface-${name})`, body);
+  });
   return `${HEADER}\n${blocks.join('\n\n')}\n`;
 }
 

@@ -45,6 +45,7 @@ export function checksFor(theme: string): ContrastCheck[] {
   };
 
   add('text', ['canvas', 'panel', 'panel-raised', 'panel-inset'], text);
+  add('link', ['canvas', 'panel', 'panel-raised', 'panel-inset'], text);
   add('text-muted', ['canvas', 'panel', 'panel-inset'], text);
   add('accent-text', ['accent'], text);
   add('danger-text', ['danger'], text);

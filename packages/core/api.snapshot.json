@@ -5,6 +5,7 @@
     "./*/register.js",
     "./custom-elements.json",
     "./hydrate.js",
+    "./surfaces.css",
     "./themes.css",
     "./tokens.css"
   ],
@@ -154,6 +155,8 @@
     },
     "punk-button": {
       "attributes": {
+        "aria-controls": "string | null = null",
+        "aria-expanded": "string | null = null",
         "aria-label": "string | null = null",
         "arrow": "ButtonArrow | null = null",
         "disabled": "boolean = false",
@@ -163,6 +166,8 @@
         "variant": "ButtonVariant = 'default'"
       },
       "properties": {
+        "accessibleControls": "string | null = null",
+        "accessibleExpanded": "string | null = null",
         "accessibleLabel": "string | null = null",
         "arrow": "ButtonArrow | null = null",
         "disabled": "boolean = false",
@@ -309,6 +314,8 @@
       "parts": {
         "control": "",
         "field": "",
+        "group": "",
+        "group-label": "",
         "hint": "",
         "label": "",
         "listbox": "",
@@ -620,6 +627,8 @@
     },
     "punk-icon-button": {
       "attributes": {
+        "aria-controls": "string | null = null",
+        "aria-expanded": "string | null = null",
         "aria-label": "string | null = null",
         "disabled": "boolean = false",
         "label": "string = ''",
@@ -630,6 +639,8 @@
         "variant": "ButtonVariant = 'default'"
       },
       "properties": {
+        "accessibleControls": "string | null = null",
+        "accessibleExpanded": "string | null = null",
         "accessibleLabel": "string | null = null",
         "disabled": "boolean = false",
         "label": "string = ''",
@@ -904,7 +915,7 @@
         "placeholder": "string = ''",
         "readonly": "boolean = false",
         "required": "boolean = false",
-        "step": "number = 1",
+        "step": "number | 'any' = 1",
         "value": "string = ''"
       },
       "properties": {
@@ -921,7 +932,7 @@
         "placeholder": "string = ''",
         "readonly": "boolean = false",
         "required": "boolean = false",
-        "step": "number = 1",
+        "step": "number | 'any' = 1",
         "validationMessage": "string",
         "validity": "ValidityState",
         "value": "string = ''",
@@ -1823,6 +1834,7 @@
         "label": "string = ''",
         "maxlength": "number | null = null",
         "minlength": "number | null = null",
+        "monospace": "boolean = false",
         "name": "string = ''",
         "placeholder": "string = ''",
         "readonly": "boolean = false",
@@ -1842,6 +1854,7 @@
         "labels": "NodeList",
         "maxlength": "number | null = null",
         "minlength": "number | null = null",
+        "monospace": "boolean = false",
         "name": "string = ''",
         "placeholder": "string = ''",
         "readonly": "boolean = false",
@@ -2029,10 +2042,12 @@
     "punk-toolbar": {
       "attributes": {
         "aria-label": "string | null = null",
+        "orientation": "ToolbarOrientation = 'horizontal'",
         "wrap": "boolean = false"
       },
       "properties": {
         "accessibleLabel": "string | null = null",
+        "orientation": "ToolbarOrientation = 'horizontal'",
         "wrap": "boolean = false"
       },
       "methods": {},

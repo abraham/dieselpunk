@@ -65,6 +65,26 @@ body += await ssr(html`
   >
 `);
 
+// A textarea's text is its content, so it shows before scripts load, escaped.
+const textarea = await ssr(
+  html`<punk-textarea label="YAML" monospace readonly value="a &amp; &lt;b&gt;"></punk-textarea>`,
+);
+if (!/<textarea[^>]*>\na &amp; &lt;b><\/textarea>/.test(textarea)) {
+  problems.push(`punk-textarea did not render its value as escaped content: ${textarea}`);
+}
+
+// The server cannot see children, so `data-punk-slots` says which strips have content.
+const hinted = await ssr(
+  html`<punk-panel data-punk-slots="header"><span slot="header">Title</span>Body</punk-panel>`,
+);
+if (/class="header"[^>]*hidden/.test(hinted) || !/class="footer"[^>]*hidden/.test(hinted)) {
+  problems.push(`a panel with data-punk-slots="header" did not show only its header: ${hinted}`);
+}
+const unhinted = await ssr(html`<punk-panel><span slot="header">Title</span></punk-panel>`);
+if (!/class="header"[^>]*hidden/.test(unhinted)) {
+  problems.push(`a panel without data-punk-slots showed its header on the server: ${unhinted}`);
+}
+
 // Components with children, labels, and values. Each must end as a client render of its markup,
 // children included, so the page keeps the markup in a template for the browser to render.
 const composed = [
@@ -86,8 +106,10 @@ const composed = [
   '<label for="cl">Thrust</label><punk-number-field id="cl" value="3"></punk-number-field>',
   '<fieldset disabled><punk-checkbox checked>Agree</punk-checkbox><punk-button>Send</punk-button></fieldset>',
   '<punk-date-field label="Day" value="2025-01-31"></punk-date-field>',
+  '<punk-textarea label="Blueprint" monospace readonly value="0eNq &amp; &lt;x&gt;"></punk-textarea>',
   '<punk-production-stat label="Iron" value="1200" unit="/min"><svg slot="sparkline" viewBox="0 0 1 1"></svg></punk-production-stat>',
   '<punk-panel variant="inset"><span slot="header">Header</span>Body<span slot="footer">Footer</span></punk-panel>',
+  '<punk-panel data-punk-slots="header footer"><span slot="header">Header</span>Body<span slot="footer">Footer</span></punk-panel>',
 ];
 for (const [index, markup] of composed.entries()) {
   try {
@@ -109,6 +131,8 @@ const pages = {
   plain: imports,
   support: [support, ...imports],
   hydrate: [support, "import '@dieselpunk/core/hydrate.js';", ...imports],
+  // A bundler that evaluates `lit-element` before the support: it must replace, not hydrate.
+  late: ["import 'lit';", support, "import '@dieselpunk/core/hydrate.js';", ...imports],
 };
 for (const [name, lines] of Object.entries(pages)) {
   writeFileSync(join(out, `client-${name}.js`), lines.join('\n') + '\n');

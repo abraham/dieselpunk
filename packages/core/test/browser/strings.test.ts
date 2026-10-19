@@ -294,8 +294,9 @@ const exempt: Array<{
     applies: (host, word) => word.text === (host as HTMLInputElement).validationMessage,
   },
   {
-    reason: "the options of a select, which are the application's text",
-    applies: (_host, word) => word.where === '<option>',
+    reason: "the options of a select or combobox, which are the application's text",
+    applies: (host, word) =>
+      word.where === '<option>' || (host.localName === 'punk-combobox' && word.where === '<text>'),
   },
   {
     reason: "the name of a table's scroll area, which is the application's caption",

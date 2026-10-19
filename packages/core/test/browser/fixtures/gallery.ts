@@ -282,7 +282,7 @@ const builders: Record<ComponentName, Builder> = {
       )
       .join('')}
     ${row(`
-      <punk-icon-button label="${c.settings}" disabled>${gear}</punk-icon-button>
+      <punk-icon-button label="${c.settings}" disabled aria-expanded="false">${gear}</punk-icon-button>
       <punk-icon-button label="${c.settings}" loading>${gear}</punk-icon-button>
     `)}
   `,
@@ -872,7 +872,7 @@ const builders: Record<ComponentName, Builder> = {
         <punk-combobox label="${c.settings}" placeholder="${c.start}" allow-custom value="${c.body}">${options}</punk-combobox>
         <punk-combobox label="${c.settings}" value="a" disabled>${options}</punk-combobox>
         <punk-combobox label="${c.settings}" required data-touched>${options}</punk-combobox>
-        <punk-combobox aria-label="${c.settings}">${options}</punk-combobox>
+        <punk-combobox aria-label="${c.settings}"><optgroup label="${c.settings}">${options}</optgroup></punk-combobox>
       </div>
     `;
   },

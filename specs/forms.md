@@ -89,6 +89,7 @@ A native `<input>` of type `text`, `email`, `password`, `search`, `tel`, or `url
 - The value binding writes only when it differs from what the input holds (`live()`), so typing is never overwritten and the native "user edit" state that `minlength` and `maxlength` depend on survives.
 - `focus()` and `select()` reach the inner input.
 - Paste is never blocked, and `autocomplete` is passed through (SC 3.3.8).
+- **No `list`.** An input in a shadow root cannot reach a light-DOM `<datalist>` by ID, and a mirrored one would be the engine's unstyled popup beside the package's own. Free text with suggestions is `punk-combobox` with `allow-custom` ([§14](#14-combobox)): the text is the value, the options filter as the user types, and choosing one makes its `value` the value.
 
 ## 10. Number field
 
@@ -96,7 +97,8 @@ A native `<input type="number">` with `min`, `max`, `step`, `readonly`, `placeho
 
 - Keys are the native ones.
 - **Steppers** are native buttons in the shadow tree, `tabindex="-1"` and `aria-hidden`, since the arrow keys and typing serve everyone else. They call `stepUp()` and `stepDown()`, so rounding and bounds are the platform's. A press focuses the input, steps at once, and repeats after 400ms every 80ms until release, leave, cancel, blur, or disconnect; `input` is sent on each step and `change` when the press ends. Each is half the field's height, 28px wide, and 40px under a coarse pointer. `hide-steppers` removes them. The native spinner is hidden.
-- A `min` above `max`, or a `step` not above 0, is repaired and warns.
+- A `min` above `max`, or a `step` neither above 0 nor `any`, is repaired and warns.
+- **`step="any"`** is passed to the input, so any number is valid (no `stepMismatch`). `stepUp()` throws for it, so the steppers move by 1 from the value (0 when empty), keep the value's decimals, and stop at `min` and `max`. The arrow keys are the engine's.
 - Parsing and display follow the engine and the user's locale settings, which differ between engines; the component does not format the number, and the docs say so.
 
 ## 11. Select
@@ -129,13 +131,16 @@ A native `<select>` filled with copies of the host's light-DOM `<option>` and `<
 - The value binding writes only when it differs from what the textarea holds, as the text field's does.
 - The user can drag it taller. **`autogrow`** grows it with its text up to `--punk-textarea-max-height`, through `field-sizing: content`, where the engine supports it; elsewhere it keeps `rows` lines and scrolls. **Why** no script measurement: a keypress reads no layout ([performance.md §3](performance.md)).
 - **`show-count`** shows the number of characters, out of `maxlength` when it is set, inside the box at its end. The count joins the textarea's description.
+- **`monospace`** sets the text in `font-mono`, turns off spell checking, and breaks long words anywhere, so a long encoded string wraps. With `readonly` it is a selectable block of code or data.
+- **Server text.** Lit cannot render a binding inside `<textarea>`, and Lit SSR does not write a textarea's `.value`, so the first `value` is baked, escaped, into the element's own copy of the template as the textarea's content (its `defaultValue`), after one newline for the parser to drop. A server-rendered field shows its text before scripts load, and the server, hydrating, and client trees agree. Later values go through the `.value` binding. Lit caches templates in `WeakMap`s keyed on the strings, so the copy is freed with the element; an empty first value shares one copy.
 
 ## 14. Combobox
 
 `punk-combobox` is a field with a native `<input role="combobox" aria-autocomplete="list" aria-controls="listbox">` and a `role="listbox"` popup in its shadow tree, so `aria-activedescendant` refers inside one tree ([accessibility.md §4](accessibility.md)). The options are copies of the host's light-DOM `<option>` children, as in a select.
 
-- **Filtering.** Typing opens the list of options whose label contains the text, case-insensitively. With `filter="none"` every option shows, and the application filters by replacing the options on `input`.
-- **The list** is a `popover="manual"` surface below the field, as wide as it, positioned with `computePosition`. While it shows, and only then, it holds an Escape-stack entry, a frame-throttled `scroll` and a `resize` listener, and one `MutationObserver` on the host's options ([performance.md §3](performance.md)). Escape closes the list and leaves the text, and does not reach an overlay beneath.
+- **Filtering.** Typing opens the list of options whose label contains the text, case-insensitively. With `filter="none"` every option shows, and the application filters by replacing the options on `input`. The text is the user's: options that change before the combobox's own `input` handler runs do not put back the previous text. Options that arrive after a keystroke found none open the list, as long as the field keeps focus.
+- **Groups and rich options.** `<optgroup label>` puts its options in a `role="group"` named by the label, under a heading hidden from assistive technology; a disabled group disables its options. An element with `slot="start"` or `slot="end"` inside an `<option>` (an icon, a `punk-badge`) is copied once into the row, before or after the text, and is left out of the label that filtering, matching, and the field use. The copy lives in the shadow tree, so page classes do not reach it: it is styled inline, by custom properties, or through a `part` it carries.
+- **The list** is a `popover="manual"` surface below the field, as wide as it, positioned with `computePosition`. While it shows, and only then, it holds an Escape-stack entry, a frame-throttled `scroll` and a `resize` listener, and one `MutationObserver` on the host's options ([performance.md §3](performance.md)); the observer also runs while the user types with no option shown, until focus leaves. Escape closes the list and leaves the text, and does not reach an overlay beneath.
 - **Keys.** Down opens the list on the chosen option (or the first) and moves down; Alt+Down opens it without moving; Up opens it on the last option and moves up; Alt+Up closes it. Moves skip disabled options and do not wrap. Enter chooses the active option, or with none settles the text. Home and End are the text field's.
 - **Pointer.** A press on the list keeps focus in the field; a click chooses. The arrow button at the end opens and closes the list and is not a tab stop (`tabindex="-1"`, `aria-hidden`), since the keys serve everyone else.
 - **Value.** The chosen option's `value`. Leaving the field (or Enter with nothing active) settles the text: an option whose label matches it exactly is chosen, empty text clears the value, and other text goes back to the chosen option's label. With **`allow-custom`** the text is the value, as it is typed. It submits `value` under `name`, and the `value` attribute is the default a form reset restores.

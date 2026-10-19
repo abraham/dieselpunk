@@ -19,6 +19,7 @@ const rootPackage = JSON.parse(readFileSync(join(packageDir, '../../package.json
 };
 const corePackage = JSON.parse(readFileSync(join(packageDir, 'package.json'), 'utf8')) as {
   dependencies: Record<string, string>;
+  devDependencies: Record<string, string>;
 };
 const localesDir = join(packageDir, '../locales');
 const OLDEST_TYPESCRIPT = '5.0.4';
@@ -26,6 +27,7 @@ const NEWEST_TYPESCRIPT = rootPackage.devDependencies['typescript'] ?? '~6.0.3';
 // The latest releases of the Lit SSR majors that match core's Lit 3 (specs/ssr.md §1).
 const LIT_SSR = '^4.1.0';
 const LIT_SSR_CLIENT = '^1.1.8';
+const HAPPY_DOM = '^21.0.0';
 // specs/security.md §4.3: strict for scripts; style attributes and data: images cannot run any.
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
@@ -450,6 +452,16 @@ async function checkServerRendering(core: string): Promise<void> {
     metafile: true,
     logLevel: 'silent',
   });
+  // The misordered page runs development code, so its warning is checked too.
+  await build({
+    absWorkingDir: project,
+    entryPoints: { 'client-late.bundle': join(outDir, 'client-late.js') },
+    bundle: true,
+    format: 'esm',
+    outdir: outDir,
+    conditions: ['development'],
+    logLevel: 'silent',
+  });
   // The hydration support patches the LitElement it imports, which must be the components' own.
   const lits = new Set(
     Object.keys(built.metafile.inputs)
@@ -462,7 +474,7 @@ async function checkServerRendering(core: string): Promise<void> {
   const { server, port } = await serveStatic(outDir);
   const browser = await chromium.launch();
   try {
-    for (const name of ['plain', 'support', 'hydrate']) {
+    for (const name of ['plain', 'support', 'hydrate', 'late']) {
       const tab = await browser.newPage();
       const messages = watchPage(tab);
       await tab.goto(`http://localhost:${port}/${name}.html`);
@@ -471,12 +483,44 @@ async function checkServerRendering(core: string): Promise<void> {
       await tab.evaluate('window.upgrade()');
       const found = (await tab.evaluate(`window.checkUpgrade(${name === 'hydrate'})`)) as string[];
       problems.push(...found.map((problem) => `${name}.html: ${problem}`));
+      if (name === 'late') {
+        const late = messages.filter((message) =>
+          message.includes('hydration support loaded after'),
+        );
+        if (late.length !== 1)
+          problems.push(`late.html warned ${late.length} times about the order`);
+        // Its development build also warns about the empty cases, as any development page would.
+        const expected = (message: string) =>
+          late.includes(message) ||
+          message.startsWith('Lit is in dev mode') ||
+          /^<punk-[a-z-]+> /.test(message);
+        messages.splice(0, messages.length, ...messages.filter((message) => !expected(message)));
+      }
       if (messages.length > 0) problems.push(`${name}.html logged: ${messages.join(' | ')}`);
       await tab.close();
     }
   } finally {
     await browser.close();
     server.close();
+  }
+}
+
+// The Integration guide's setup for unit tests under Node: Vitest and happy-dom, with the browser
+// condition first so components render as in a browser, not as on a server.
+function checkNodeTests(core: string): void {
+  const project = join(work, 'node-test');
+  installProject(
+    project,
+    { '@dieselpunk/core': `file:${core}` },
+    { vitest: corePackage.devDependencies['vitest'] ?? '^5.0.5', 'happy-dom': HAPPY_DOM },
+  );
+  cpSync(join(fixtureDir, 'node-test'), project, { recursive: true });
+  try {
+    run(join(project, 'node_modules/.bin/vitest'), ['run'], project);
+    console.log('  passed under Node');
+  } catch (error) {
+    const { stdout = '', stderr = '' } = error as { stdout?: string; stderr?: string };
+    problems.push(`node tests failed:\n${stdout}${stderr}`);
   }
 }
 
@@ -546,6 +590,9 @@ try {
 
   console.log('Rendering on a server and upgrading in a browser:');
   await checkServerRendering(tarballs.core);
+
+  console.log('Running unit tests under Node with happy-dom:');
+  checkNodeTests(tarballs.core);
 
   console.log('Type-checking the consumer:');
   const oldest = join(work, 'oldest');

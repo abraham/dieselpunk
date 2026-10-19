@@ -1,6 +1,6 @@
 import { html } from 'lit';
 import { serverValues } from '../../internal/server-values.ts';
-import type { PropertyValues } from 'lit';
+import type { PropertyValues, TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -17,16 +17,37 @@ interface Choice {
   value: string;
   label: string;
   disabled: boolean;
+  group: HTMLOptGroupElement | null;
+  start: Node[];
+  end: Node[];
 }
 
 const MARGIN = 8;
+
+const isAffix = (node: Node): boolean =>
+  node instanceof Element && (node.slot === 'start' || node.slot === 'end');
+
+/** The `label` attribute, else the option's text without its start and end elements. */
+function labelOf(option: HTMLOptionElement): string {
+  if (option.hasAttribute('label')) return option.label;
+  let text = '';
+  for (const node of option.childNodes) {
+    if (node.nodeType !== Node.COMMENT_NODE && !isAffix(node)) text += node.textContent;
+  }
+  return text.replace(/\s+/g, ' ').trim();
+}
 
 /**
  * A text field with a list of suggestions to choose from: the APG combobox, with a native
  * `<input role="combobox">` in its shadow tree and a `listbox` of the host's `<option>` children in
  * the top layer below it. Write the options inside it, as in a select; they are read when the list
- * opens, and watched by one observer only while it is open, so an application can replace them as
- * results arrive.
+ * opens, and watched by one observer only while it is open or the user is typing, so an application
+ * can replace them as results arrive.
+ *
+ * `<optgroup label>` groups options under a heading. An element with `slot="start"` or
+ * `slot="end"` inside an option, such as an icon or a `punk-badge`, is copied into its row and is
+ * not part of its label; the copy is in the shadow tree, so style it inline, with custom
+ * properties, or through a `part` it carries.
  *
  * Typing opens the list of options whose label contains the text (with `filter="none"` the
  * application filters by changing the options on `input`). Down and Up open the list and move
@@ -48,6 +69,8 @@ const MARGIN = 8;
  * @csspart toggle - The button that opens and closes the list with a pointer.
  * @csspart listbox - The list of options.
  * @csspart option - Each option in the list.
+ * @csspart group - Each `<optgroup>`'s options.
+ * @csspart group-label - The heading of a group.
  * @csspart hint - The wrapper around the hint.
  * @csspart message - The validation message, while it shows.
  *
@@ -80,6 +103,9 @@ export class PunkCombobox extends PunkFieldBase {
   #observer: MutationObserver | undefined;
   #stopOpenWork: (() => void) | undefined;
   #warnedEmpty = false;
+  #copies = new WeakMap<Element, Node>();
+  /** The input's text after the last render, to tell typing the input handler has not seen yet. */
+  #rendered = '';
 
   constructor() {
     super();
@@ -89,11 +115,29 @@ export class PunkCombobox extends PunkFieldBase {
   // The server has no children (specs/ssr.md §3).
   get #choices(): Choice[] {
     if (serverValues()) return [];
-    return [...this.querySelectorAll('option')].map((option) => ({
-      value: option.value,
-      label: option.label,
-      disabled: option.disabled,
-    }));
+    return [...this.querySelectorAll('option')].map((option) => {
+      const group =
+        option.parentElement instanceof HTMLOptGroupElement ? option.parentElement : null;
+      return {
+        value: option.value,
+        label: labelOf(option),
+        disabled: option.disabled || !!group?.disabled,
+        group,
+        start: this.#copy(option, 'start'),
+        end: this.#copy(option, 'end'),
+      };
+    });
+  }
+
+  /** Copies of an option's `slot` elements, made once for each element. */
+  #copy(option: HTMLOptionElement, slot: string): Node[] {
+    return [...option.children]
+      .filter((child) => child.slot === slot)
+      .map((child) => {
+        let copy = this.#copies.get(child);
+        if (!copy) this.#copies.set(child, (copy = child.cloneNode(true)));
+        return copy;
+      });
   }
 
   /** The options the list shows for the current text. */
@@ -127,10 +171,21 @@ export class PunkCombobox extends PunkFieldBase {
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.#setExpanded(false);
+    this.#observer?.disconnect();
+  }
+
+  // A listener that runs before the input's own, and changes the options, renders before this one
+  // has taken the text. Without this, that render would put back the previous text. Before the
+  // first render the input is the server's, whose text is not typing.
+  protected override willUpdate(changed: PropertyValues): void {
+    super.willUpdate(changed);
+    const control = this.hasUpdated && this.renderRoot.querySelector<HTMLInputElement>('.control');
+    if (control && control.value !== this.#rendered) this.text = control.value;
   }
 
   protected override updated(changed: PropertyValues): void {
     super.updated(changed);
+    this.#rendered = this.renderRoot.querySelector<HTMLInputElement>('.control')?.value ?? '';
     if (changed.has('expanded') || (this.expanded && changed.has('text'))) this.#reposition();
     if (this.expanded && changed.has('active')) {
       this.renderRoot.querySelector('[data-active]')?.scrollIntoView({ block: 'nearest' });
@@ -178,6 +233,32 @@ export class PunkCombobox extends PunkFieldBase {
             : -1;
   }
 
+  #observe(): void {
+    (this.#observer ??= new MutationObserver(this.#onOptionsChange)).observe(this, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ['value', 'disabled', 'label', 'slot'],
+    });
+  }
+
+  /** While the user types and no option shows, waits for the options the application adds. */
+  #wait(): void {
+    if (!this.expanded && this.text !== null) this.#observe();
+  }
+
+  readonly #onOptionsChange = (): void => {
+    this.requestUpdate();
+    if (!this.expanded) {
+      if (this.text === null) this.#observer?.disconnect();
+      else this.#open('none');
+    } else if (this.#shown.length === 0) {
+      this.#setExpanded(false);
+      this.#wait();
+    }
+  };
+
   /** Work that exists only while the list shows: the Escape entry, the observer, and repositioning. */
   #startOpenWork(): void {
     const entry = { dismissible: true, close: () => this.#setExpanded(false) };
@@ -188,17 +269,7 @@ export class PunkCombobox extends PunkFieldBase {
         this.#reposition();
       });
     };
-    this.#observer ??= new MutationObserver(() => {
-      this.requestUpdate();
-      if (this.#shown.length === 0) this.#setExpanded(false);
-    });
-    this.#observer.observe(this, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: ['value', 'disabled', 'label'],
-    });
+    this.#observe();
     overlayStack.push(entry);
     window.addEventListener('scroll', schedule, { capture: true, passive: true });
     window.addEventListener('resize', schedule);
@@ -274,6 +345,7 @@ export class PunkCombobox extends PunkFieldBase {
       this.commit();
     }
     this.#open('none');
+    this.#wait();
   };
 
   readonly #onKeyDown = (event: KeyboardEvent): void => {
@@ -313,6 +385,7 @@ export class PunkCombobox extends PunkFieldBase {
     if (event.relatedTarget instanceof Node && this.shadowRoot?.contains(event.relatedTarget))
       return;
     this.#setExpanded(false);
+    this.#observer?.disconnect();
     this.#settle();
   };
 
@@ -326,9 +399,44 @@ export class PunkCombobox extends PunkFieldBase {
   // A press on the list keeps focus in the field, so it does not blur and close first.
   readonly #keepFocus = (event: Event): void => event.preventDefault();
 
+  #renderOption(choice: Choice, index: number): TemplateResult {
+    return html`<div
+      part="option"
+      class="option"
+      id="option-${index}"
+      role="option"
+      aria-selected=${String(choice.value === this.value)}
+      aria-disabled=${ifDefined(choice.disabled ? 'true' : undefined)}
+      ?data-active=${index === this.active}
+      @click=${() => this.#choose(index)}
+    >
+      ${choice.start.length ? html`<span class="start">${choice.start}</span>` : ''}
+      <span class="text">${choice.label}</span>
+      ${choice.end.length ? html`<span class="end">${choice.end}</span>` : ''}
+    </div>`;
+  }
+
+  /** The shown options, with each run of one `<optgroup>`'s options in a group under its label. */
+  #renderOptions(): unknown[] {
+    const runs: { group: HTMLOptGroupElement | null; rows: TemplateResult[] }[] = [];
+    this.#shown.forEach((choice, index) => {
+      const row = this.#renderOption(choice, index);
+      const last = runs.at(-1);
+      if (last && last.group === choice.group) last.rows.push(row);
+      else runs.push({ group: choice.group, rows: [row] });
+    });
+    return runs.map(({ group, rows }) =>
+      group
+        ? html`<div part="group" class="group" role="group" aria-label=${group.label}>
+            <div part="group-label" class="group-label" aria-hidden="true">${group.label}</div>
+            ${rows}
+          </div>`
+        : rows,
+    );
+  }
+
   protected override render() {
     const aria = this.ariaBindings();
-    const shown = this.#shown;
     const disabled = this.isDisabled;
     return this.renderField({
       affixes: false,
@@ -371,21 +479,7 @@ export class PunkCombobox extends PunkFieldBase {
           aria-label=${ifDefined(this.resolveName(this.label) ?? undefined)}
           @pointerdown=${this.#keepFocus}
         >
-          ${shown.map(
-            (choice, index) =>
-              html`<div
-                part="option"
-                class="option"
-                id="option-${index}"
-                role="option"
-                aria-selected=${String(choice.value === this.value)}
-                aria-disabled=${ifDefined(choice.disabled ? 'true' : undefined)}
-                ?data-active=${index === this.active}
-                @click=${() => this.#choose(index)}
-              >
-                ${choice.label}
-              </div>`,
-          )}
+          ${this.#renderOptions()}
         </div>`,
     });
   }

@@ -37,6 +37,8 @@ A strip of actions with one tab stop. Give it an \`aria-label\`.
 **Overflow:** when the items do not fit, the trailing ones get \`data-punk-overflow\` and are hidden, the \`overflow\` slot is shown, and \`punk-overflow-change\` reports \`{ hidden }\` so the application can fill a menu of its own. The toolbar builds no menu. Without \`overflow\` content nothing is hidden and the toolbar scrolls inside itself, with a warning in development builds. The toolbar measures when it is resized and when its children change, not when their content does. Toolbars are an accepted exception to reflow (WCAG 1.4.10).
 
 **Wrap:** \`wrap\` lets the strip grow taller instead, and creates no observer.
+
+**Vertical:** \`orientation="vertical"\` stacks the items in a column as wide as the widest, moved with Up and Down. It is at most as tall as its container, and hides trailing items into the \`overflow\` slot when that height is limited.
 `,
       },
     },
@@ -70,6 +72,14 @@ const toolbars = () => html`
       html`<div style="max-inline-size: 200px">
         <punk-toolbar aria-label="Machine tools" wrap>${actions}</punk-toolbar>
       </div>`,
+    )}
+    ${group(
+      'Vertical',
+      html`<punk-toolbar aria-label="Map controls" orientation="vertical">
+        <punk-icon-button label="Zoom in" tooltip-placement="end">${icon('plus')}</punk-icon-button>
+        <punk-icon-button label="Fit" tooltip-placement="end">${icon('gear')}</punk-icon-button>
+        <punk-icon-button label="Close" tooltip-placement="end">${icon('close')}</punk-icon-button>
+      </punk-toolbar>`,
     )}
   </div>
 `;

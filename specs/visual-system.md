@@ -65,6 +65,8 @@ A token name is `--punk-<name>`. Categories: `color-*` (semantic colors), `space
 
 `:where(:root)` has zero specificity, so a theme or density attribute wins in any stylesheet order, including on `<html>`. The explicit `compact` rule lets a compact subtree sit inside a low-density one. Each theme block sets `color-scheme`, so scrollbars and native form chrome match.
 
+A third optional stylesheet, `surfaces.css`, gives an application's own elements (cards, tags, anchors) the components' surfaces: `:where(.punk-surface-raised)`, `.punk-surface-inset`, and `.punk-surface-flat`, each a `background` and `box-shadow` rendered from the fragments of `styles/surfaces.ts` (§5), so they follow the same tokens and never drift from the components. They are classes and not tokens because a bevel is composed from the edge colors, which §1.4 forbids in a token. Zero specificity lets the application's own rules win.
+
 ### 1.4 Tokens never reference tokens
 
 A token's value is a literal. A custom property whose value uses `var()` is resolved where it is declared, so a derived token on `:root` would ignore an override of its inputs on a subtree. Derived values are composed where they are used: the focus ring from its two colors, the raised gradient from two panel colors and `surface-gradient-strength` with `color-mix()`.
@@ -101,6 +103,7 @@ Font sizes do not change with density. Density applies to a document or subtree 
 | Pair                                                                                   | Against                                  | Minimum                        |
 | -------------------------------------------------------------------------------------- | ---------------------------------------- | ------------------------------ |
 | `text`                                                                                 | canvas, panel, panel-raised, panel-inset | 4.5:1 (7:1 in `high-contrast`) |
+| `link`                                                                                 | canvas, panel, panel-raised, panel-inset | 4.5:1 (7:1 in `high-contrast`) |
 | `text-muted`                                                                           | canvas, panel, panel-inset               | 4.5:1 (7:1 in `high-contrast`) |
 | `accent-text` on `accent`, `danger-text` on `danger`, `success-text` on `success`      |                                          | 4.5:1 (7:1 in `high-contrast`) |
 | The same text on its fill mixed 25% and 45% toward `text` (a button's hover and press) |                                          | 4.5:1 (7:1 in `high-contrast`) |
@@ -118,6 +121,7 @@ The gate checks token pairs. These rules make sure components only draw pairs th
 - **Status fills sit on `panel-inset`.** `danger`, `success`, and `info` fall below 3:1 on `panel` and `panel-raised` in the dark palette, so every status fill is drawn in an inset trough or lens: meter and durability fills, progress fills, status shapes, and invalid frames.
 - **Button fills are identified by their label.** A `primary`, `danger`, or `confirm` button fills with `accent`, `danger`, or `success` on any surface, outlined in `edge-dark`. Its text is gated on the fill and on the fill's hover and press mixes (§4.1).
 - **Error and status text is `text`, never `danger`.** The state is carried by a shape, a frame, and a word ([accessibility.md §6](accessibility.md)).
+- **Text in the accent hue is `link`, never `accent` or `accent-strong`.** Those are gated as fills, and fall below 4.5:1 as text on some surfaces (the light theme's on `panel-inset`). `link` is close to `text` in luminance, so a link is also underlined or otherwise marked, not told apart by hue alone (SC 1.4.1).
 - **Readouts carry their own surface.** The production stat and connection row draw on an inset readout plate (`styles/readout.ts`), so their contrast does not depend on where the application puts them.
 - **Control boundaries.** A control with no visible text or icon of its own (an empty slot, an empty field, a checkbox box, a switch or slider track) draws its boundary in `control-edge`. A control identified by its label or icon needs no gated boundary, and disabled controls are exempt (WCAG 2.2 SC 1.4.11). The decorative bevel edges (`edge-light`, `edge-dark`) are not gated.
 

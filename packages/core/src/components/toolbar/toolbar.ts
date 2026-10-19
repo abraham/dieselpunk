@@ -22,17 +22,22 @@ const ITEM =
   'punk-button, punk-icon-button, punk-checkbox, punk-switch, button, a[href], [data-punk-toolbar-item]';
 const SEPARATOR = 'punk-divider, hr, [role="separator"]';
 
+export type ToolbarOrientation = 'horizontal' | 'vertical';
+
 /**
  * A strip of actions with one tab stop. Give it an `aria-label`. Items are direct children that
  * are a `punk-button`, `punk-icon-button`, `punk-checkbox`, `punk-switch`, `button`, `a[href]`, or
  * have `data-punk-toolbar-item`; dividers are skipped. Left and Right (swapped in right-to-left
- * languages), Home, and End move among them without wrapping. A select, text field, number field,
+ * languages), Home, and End move among them without wrapping. With `orientation="vertical"` the
+ * items are a column and Up and Down move instead. A select, text field, number field,
  * or slider uses the arrow keys itself, so it stays its own tab stop outside the group.
  *
  * When the items do not fit, the trailing ones get `data-punk-overflow` and are hidden, the
  * `overflow` slot shows, and `punk-overflow-change` lists them so the application can fill its own
  * menu. With no `overflow` content nothing is hidden: the toolbar scrolls inside itself. Items are
  * measured when the toolbar is resized and when its children change, not when their content does.
+ * A vertical toolbar is at most as tall as its container, so it hides items only when the
+ * container's height is limited.
  *
  * @tagname punk-toolbar
  *
@@ -49,12 +54,16 @@ export class PunkToolbar extends PunkElement {
   /** Lets the strip grow taller instead of hiding items. It creates no observer. */
   @property({ type: Boolean, reflect: true }) wrap = false;
 
+  /** `vertical` stacks the items in a column, moved with Up and Down. Unknown values use `horizontal`. */
+  @property({ reflect: true }) orientation: ToolbarOrientation = 'horizontal';
+
   /** Mirrors the host `aria-label`, which cannot reach the strip on its own. */
   @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
 
   readonly #roving = new RovingController({
     host: this,
     items: () => this.#items().filter((item) => !item.hasAttribute('data-punk-overflow')),
+    orientation: () => (this.#vertical ? 'vertical' : 'horizontal'),
   });
   #observer: ResizeObserver | null = null;
   #hidden: HTMLElement[] = [];
@@ -81,10 +90,20 @@ export class PunkToolbar extends PunkElement {
   }
 
   protected override updated(changed: PropertyValues<this>): void {
+    if (changed.get('orientation') !== undefined) {
+      this.#observer?.disconnect();
+      this.#observer = null;
+      this.#observe();
+      this.#measure();
+    }
     if (changed.has('wrap') && this.hasUpdated) {
       this.#observe();
       if (this.wrap) this.#apply([]);
     }
+  }
+
+  get #vertical(): boolean {
+    return this.orientation === 'vertical';
   }
 
   get #defaultSlot(): HTMLSlotElement | null {
@@ -116,6 +135,8 @@ export class PunkToolbar extends PunkElement {
     if (!strip) return;
     this.#observer = new ResizeObserver(() => this.#measure());
     this.#observer.observe(strip);
+    // A column is as tall as its items, so only its container's height can make room again.
+    if (this.#vertical && this.parentElement) this.#observer.observe(this.parentElement);
   }
 
   readonly #handleSlotChange = (): void => {
@@ -132,17 +153,27 @@ export class PunkToolbar extends PunkElement {
     const trigger = this.#overflowSlot?.assignedElements({ flatten: true })[0] as
       HTMLElement | undefined;
 
-    // Measure with everything showing, so a child that was hidden has a width.
+    // Measure with everything showing, so a child that was hidden has a size.
     const active = (this.getRootNode() as Document | ShadowRoot).activeElement;
     for (const child of children) child.removeAttribute('data-punk-overflow');
     const overflowBox = this.renderRoot.querySelector<HTMLElement>('.overflow');
     if (overflowBox) overflowBox.hidden = true;
 
-    const gap = parseFloat(getComputedStyle(strip).columnGap) || 0;
-    const available = strip.clientWidth - this.#padding(strip);
-    const widths = children.map((child) => child.getBoundingClientRect().width);
+    const vertical = this.#vertical;
+    const size = (element: Element): number => {
+      const box = element.getBoundingClientRect();
+      return vertical ? box.height : box.width;
+    };
+    const style = getComputedStyle(strip);
+    const gap = parseFloat(vertical ? style.rowGap : style.columnGap) || 0;
+    const available = vertical
+      ? strip.clientHeight - parseFloat(style.paddingBlockStart) - parseFloat(style.paddingBlockEnd)
+      : strip.clientWidth -
+        parseFloat(style.paddingInlineStart) -
+        parseFloat(style.paddingInlineEnd);
+    const lengths = children.map(size);
     const total =
-      widths.reduce((sum, width) => sum + width, 0) + gap * Math.max(0, widths.length - 1);
+      lengths.reduce((sum, length) => sum + length, 0) + gap * Math.max(0, lengths.length - 1);
 
     let hidden: HTMLElement[] = [];
     if (total > available) {
@@ -156,12 +187,12 @@ export class PunkToolbar extends PunkElement {
         }
       } else {
         if (overflowBox) overflowBox.hidden = false;
-        const reserve = trigger.getBoundingClientRect().width + gap;
+        const reserve = size(trigger) + gap;
         let used = reserve;
         let fits = 0;
-        for (const width of widths) {
-          if (used + width + (fits > 0 ? gap : 0) > available) break;
-          used += width + (fits > 0 ? gap : 0);
+        for (const length of lengths) {
+          if (used + length + (fits > 0 ? gap : 0) > available) break;
+          used += length + (fits > 0 ? gap : 0);
           fits++;
         }
         while (fits > 0 && children[fits - 1]?.matches(SEPARATOR)) fits--;
@@ -170,11 +201,6 @@ export class PunkToolbar extends PunkElement {
       }
     }
     this.#apply(hidden, trigger, active);
-  }
-
-  #padding(strip: HTMLElement): number {
-    const style = getComputedStyle(strip);
-    return parseFloat(style.paddingInlineStart) + parseFloat(style.paddingInlineEnd);
   }
 
   /** Records the hidden items, moves focus off one that went away, and reports a change. */
@@ -203,7 +229,7 @@ export class PunkToolbar extends PunkElement {
         part="toolbar"
         class="toolbar"
         role="toolbar"
-        aria-orientation="horizontal"
+        aria-orientation=${this.#vertical ? 'vertical' : 'horizontal'}
         aria-label=${ifDefined(this.accessibleLabel ?? undefined)}
       >
         <slot @slotchange=${this.#handleSlotChange}></slot>
