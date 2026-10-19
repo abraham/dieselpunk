@@ -8,9 +8,10 @@ import { statusLensStyles, statusShapeStyles } from './status-shape.ts';
 //   .field > .label, .box > (.prefix, .control, .suffix), .hint, .message
 //
 // The boundary is `control-edge`, which meets 3:1 on every surface, because an empty field has no
-// text to identify it (specs/visual-system.md §4.2). Invalid is a `danger` frame plus a dashed
-// boundary under forced colors, and the message is drawn in `text`: `danger` is below 3:1 on the
-// panel surfaces, so it is never used for text (specs/visual-system.md §4.2).
+// text to identify it (specs/visual-system.md §4.2). It is 1px, so the deeper inner bevel leads
+// and the field reads as a recessed well rather than an outlined input. Invalid is a `danger` frame
+// plus a dashed boundary under forced colors, and the message is drawn in `text`: `danger` is below
+// 3:1 on the panel surfaces, so it is never used for text (specs/visual-system.md §4.2).
 export const fieldStyles = css`
   :host {
     display: block;
@@ -42,14 +43,15 @@ export const fieldStyles = css`
     min-block-size: ${token('control-height-md')};
     padding-inline: ${token('space-2')};
     box-sizing: border-box;
-    border: ${token('border-width')} solid ${token('color-control-edge')};
+    border: 1px solid ${token('color-control-edge')};
     border-radius: ${token('radius')};
     background: ${token('color-panel-inset')};
     color: ${token('color-text')};
     box-shadow:
       var(--_frame),
-      inset 1px 1px 0 ${token('color-edge-dark')},
-      inset -1px -1px 0 ${token('color-edge-light')};
+      inset 0 2px 0 ${token('color-edge-dark')},
+      inset 1px 0 0 ${token('color-edge-dark')},
+      inset 0 -1px 0 ${token('color-edge-light')};
   }
 
   .field:not(.disabled) .box:hover {
@@ -126,7 +128,7 @@ export const fieldStyles = css`
   .box::after {
     content: '';
     position: absolute;
-    inset: calc(-1 * ${token('border-width')});
+    inset: -1px;
     border-radius: inherit;
     pointer-events: none;
   }

@@ -101,7 +101,7 @@ describe('fieldStyles', () => {
       expect(getComputedStyle(inner('.box')).borderTopColor, theme).toBe(
         rgb(themes[theme].tokens['color-control-edge'] as string),
       );
-      expect(getComputedStyle(inner('.box')).borderTopWidth).toBe('2px');
+      expect(getComputedStyle(inner('.box')).borderTopWidth).toBe('1px');
     }
   });
 

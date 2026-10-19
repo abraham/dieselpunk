@@ -80,7 +80,7 @@ A custom control with `role="slider"` on the host, `aria-orientation="horizontal
 - validity read from the native control, with the control as the anchor;
 - the re-dispatched `change`.
 
-**Look** (`styles/field.ts`): an inset field with a `control-edge` boundary, a hover edge that gains contrast, prefix and suffix inside the frame, placeholder in `text-muted` (which meets 4.5:1 on `panel-inset`), and states for focus, invalid, disabled, and read-only. Prefix and suffix are `flex: none` with at most half the width and wrap inside it; the control keeps at least `3ch`.
+**Look** (`styles/field.ts`): an inset field with a 1px `control-edge` boundary inside a deeper inner bevel (2px dark at the top), so it reads as a recessed well rather than an outlined input while still meeting 3:1, a hover edge that gains contrast, prefix and suffix inside the frame, placeholder in `text-muted` (which meets 4.5:1 on `panel-inset`), and states for focus, invalid, disabled, and read-only. Prefix and suffix are `flex: none` with at most half the width and wrap inside it; the control keeps at least `3ch`.
 
 ## 9. Text field
 
