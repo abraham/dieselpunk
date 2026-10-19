@@ -1,5 +1,6 @@
 import type { LitElement, PropertyDeclaration } from 'lit';
 import { setHydrating, setHydration } from './internal/server-values.ts';
+import { devWarn } from './utilities/warn.ts';
 
 // Hydration of server-rendered components (specs/ssr.md §5): import this entry after Lit's
 // hydration support (`@lit-labs/ssr-client/lit-element-hydrate-support.js`) and before the
@@ -7,10 +8,24 @@ import { setHydrating, setHydration } from './internal/server-values.ts';
 
 const always: PropertyDeclaration = { hasChanged: () => true };
 const claimed = new WeakSet<HTMLElement>();
+let warnedLate = false;
 
 setHydration({
   claim(element, root) {
     if (!('litElementHydrateSupport' in globalThis)) return false;
+    // Support that loads after `lit-element` never patches it, and unpatched Lit would render a
+    // second tree into the server's. The patch adds `defer-hydration` to observedAttributes.
+    const observed = (element.constructor as typeof LitElement).observedAttributes;
+    if (!observed.includes('defer-hydration')) {
+      if (!warnedLate) {
+        warnedLate = true;
+        devWarn(
+          element,
+          "Lit's hydration support loaded after `lit-element`, so components replace the server's tree instead of hydrating. Import it before anything that imports Lit.",
+        );
+      }
+      return false;
+    }
     claimed.add(element);
     root.querySelector('style')?.remove();
     return true;

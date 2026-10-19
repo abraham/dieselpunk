@@ -131,6 +131,8 @@ const pages = {
   plain: imports,
   support: [support, ...imports],
   hydrate: [support, "import '@dieselpunk/core/hydrate.js';", ...imports],
+  // A bundler that evaluates `lit-element` before the support: it must replace, not hydrate.
+  late: ["import 'lit';", support, "import '@dieselpunk/core/hydrate.js';", ...imports],
 };
 for (const [name, lines] of Object.entries(pages)) {
   writeFileSync(join(out, `client-${name}.js`), lines.join('\n') + '\n');

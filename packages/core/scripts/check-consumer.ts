@@ -450,6 +450,16 @@ async function checkServerRendering(core: string): Promise<void> {
     metafile: true,
     logLevel: 'silent',
   });
+  // The misordered page runs development code, so its warning is checked too.
+  await build({
+    absWorkingDir: project,
+    entryPoints: { 'client-late.bundle': join(outDir, 'client-late.js') },
+    bundle: true,
+    format: 'esm',
+    outdir: outDir,
+    conditions: ['development'],
+    logLevel: 'silent',
+  });
   // The hydration support patches the LitElement it imports, which must be the components' own.
   const lits = new Set(
     Object.keys(built.metafile.inputs)
@@ -462,7 +472,7 @@ async function checkServerRendering(core: string): Promise<void> {
   const { server, port } = await serveStatic(outDir);
   const browser = await chromium.launch();
   try {
-    for (const name of ['plain', 'support', 'hydrate']) {
+    for (const name of ['plain', 'support', 'hydrate', 'late']) {
       const tab = await browser.newPage();
       const messages = watchPage(tab);
       await tab.goto(`http://localhost:${port}/${name}.html`);
@@ -471,6 +481,19 @@ async function checkServerRendering(core: string): Promise<void> {
       await tab.evaluate('window.upgrade()');
       const found = (await tab.evaluate(`window.checkUpgrade(${name === 'hydrate'})`)) as string[];
       problems.push(...found.map((problem) => `${name}.html: ${problem}`));
+      if (name === 'late') {
+        const late = messages.filter((message) =>
+          message.includes('hydration support loaded after'),
+        );
+        if (late.length !== 1)
+          problems.push(`late.html warned ${late.length} times about the order`);
+        // Its development build also warns about the empty cases, as any development page would.
+        const expected = (message: string) =>
+          late.includes(message) ||
+          message.startsWith('Lit is in dev mode') ||
+          /^<punk-[a-z-]+> /.test(message);
+        messages.splice(0, messages.length, ...messages.filter((message) => !expected(message)));
+      }
       if (messages.length > 0) problems.push(`${name}.html logged: ${messages.join(' | ')}`);
       await tab.close();
     }
