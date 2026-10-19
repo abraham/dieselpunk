@@ -42,7 +42,7 @@ Sizes are minified and gzip-compressed, with Lit (and, for the locales package, 
 
 | Observer           | Who                          | When                                                                             |
 | ------------------ | ---------------------------- | -------------------------------------------------------------------------------- |
-| `ResizeObserver`   | Toolbar without `wrap`       | While connected, one per toolbar                                                 |
+| `ResizeObserver`   | Toolbar without `wrap`       | While connected, one per toolbar, on its strip (and its container when vertical) |
 | `ResizeObserver`   | Table                        | While connected, one per table, for whether it overflows                         |
 | `ResizeObserver`   | Tooltip, popover             | While open, on the anchor                                                        |
 | `MutationObserver` | Select                       | While connected, to mirror its options                                           |

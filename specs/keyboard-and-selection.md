@@ -126,13 +126,14 @@ The application names the grid with `aria-label`; a missing name warns.
 
 ## 8. Toolbar
 
-`punk-toolbar` is a fixed-height strip with a minimum height, `role="toolbar"`, `aria-orientation="horizontal"`, and the application's `aria-label`.
+`punk-toolbar` is a fixed-height strip with a minimum height, `role="toolbar"`, `aria-orientation` from `orientation`, and the application's `aria-label`.
 
 - **Items** are direct children that are a `punk-button`, `punk-icon-button`, `punk-checkbox`, `punk-switch`, `button`, or `a[href]`, or that have `data-punk-toolbar-item`. A `punk-divider`, `hr`, or `[role="separator"]` is a separator and is skipped. A select, text field, number field, or slider keeps its own tab stop outside the group, since each uses the arrow keys itself (APG). Anything else is ignored.
 - **Roving.** `RovingController` keeps one tab stop; `Left`, `Right` (swapped in `rtl`), `Home`, and `End` move without wrapping. Tab enters at the item that last had focus, else the first.
 - **Overflow.** With content in the `overflow` slot (the application's trigger) and without `wrap`, one `ResizeObserver` on the strip and a measurement on `slotchange` decide which trailing items do not fit. They get `data-punk-overflow`, are hidden and left out of the roving group, and the trigger shows. `punk-overflow-change` lists them in order so the application can fill its own menu; the toolbar builds none. A separator never ends the visible run and is never reported. Items never reorder. Focus on an item that overflows moves to the trigger. The measurement runs on resize and on child changes, not when an item's own content changes.
 - **Without an overflow slot** nothing is hidden, the strip scrolls inside itself, and it warns once.
 - **`wrap`** lets the strip grow taller and its items shrink, with no observer.
+- **`orientation="vertical"`** makes the strip a column as wide as its widest item, with `aria-orientation="vertical"`. `Up` and `Down` move instead of `Left` and `Right`; `Home` and `End` are the same. It is at most as tall as its container (`max-block-size: 100%`), and overflow measures heights against that: since a column is only as tall as its items, the one `ResizeObserver` also watches the container, so more room shows hidden items again. A separator in a vertical toolbar is a horizontal `punk-divider` or an `hr`.
 
 ## 9. Accordion
 

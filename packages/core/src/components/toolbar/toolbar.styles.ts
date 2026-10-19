@@ -51,5 +51,25 @@ export const toolbarStyles = css`
     display: none;
   }
 
+  /* A column as wide as its items; a flex host lets the strip shrink to a limited height. */
+  :host([orientation='vertical']) {
+    display: flex;
+    flex-direction: column;
+    inline-size: fit-content;
+    max-block-size: 100%;
+  }
+
+  :host([orientation='vertical']) .toolbar {
+    flex-direction: column;
+    min-block-size: 0;
+    min-inline-size: calc(${token('control-height-md')} + 2 * ${token('space-1')});
+    overflow: hidden auto;
+  }
+
+  :host([orientation='vertical']) .overflow {
+    margin-inline-start: 0;
+    margin-block-start: auto;
+  }
+
   ${forcedColorsSurface('.toolbar')}
 `;

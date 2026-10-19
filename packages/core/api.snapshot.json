@@ -2039,10 +2039,12 @@
     "punk-toolbar": {
       "attributes": {
         "aria-label": "string | null = null",
+        "orientation": "ToolbarOrientation = 'horizontal'",
         "wrap": "boolean = false"
       },
       "properties": {
         "accessibleLabel": "string | null = null",
+        "orientation": "ToolbarOrientation = 'horizontal'",
         "wrap": "boolean = false"
       },
       "methods": {},

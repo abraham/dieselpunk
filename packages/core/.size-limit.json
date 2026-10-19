@@ -195,7 +195,7 @@
     "path": "dist/components/toolbar/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "4.25 kB"
+    "limit": "4.75 kB"
   },
   {
     "name": "punk-window",
