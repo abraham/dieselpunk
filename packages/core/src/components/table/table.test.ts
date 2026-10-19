@@ -61,6 +61,14 @@ describe('semantics and look', () => {
     expect(getComputedStyle(header).position).toBe('sticky');
   });
 
+  it('tints the selection checkboxes with the accent, not the platform blue', async () => {
+    const element = await mount();
+    const probe = track(document.createElement('span'));
+    probe.style.color = 'var(--punk-color-accent, #f59b23)';
+    const box = element.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    expect(getComputedStyle(box).accentColor).toBe(getComputedStyle(probe).color);
+  });
+
   it('lets an application rule win over its own', async () => {
     const style = track(document.createElement('style'), document.head);
     style.textContent = 'td { padding-inline-start: 31px; }';

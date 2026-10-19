@@ -84,6 +84,11 @@ export const tableContentCss = css`
     box-shadow: inset 3px 0 0 ${token('color-accent')};
   }
 
+  /* The application's native checkboxes would otherwise be the platform's blue. */
+  :where(punk-table > table input[type='checkbox']) {
+    accent-color: ${token('color-accent')};
+  }
+
   :where(punk-table > table th[data-sort] button) {
     display: inline-flex;
     align-items: center;
