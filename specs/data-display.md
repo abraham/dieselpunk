@@ -29,7 +29,7 @@
 `punk-badge`: a small count or status label inside a tab, a button, a list item, or a cell. `variant` (`neutral`, the default, `info`, `success`, `warning`, `danger`).
 
 - It has no role and is never announced. Its text joins the name of the element that holds it ("Alerts 3").
-- `neutral` is text alone; the other variants add their status shape before the text, hidden from assistive technology, so the variants differ without color. The plate is `panel-inset`, and its text is `text`, so both are covered by the contrast gate.
+- `neutral` is text alone; the other variants add their status shape before the text, hidden from assistive technology, so the variants differ without color. The plate is the tag's inset `panel-inset` plate, whose light lower edge keeps it visible on the canvas, and its text is `text` at weight 600, so a count reads at a glance; both are covered by the contrast gate.
 - **Warning:** no text.
 
 ## 4. Spinner
