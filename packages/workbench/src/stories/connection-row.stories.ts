@@ -36,6 +36,7 @@ const meta = preview.type<{ args: StoryArgs<PunkConnectionRow> }>().meta({
     </punk-connection-row>
   `,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

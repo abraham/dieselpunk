@@ -25,6 +25,7 @@ const meta = preview.type<{ args: StoryArgs<PunkTabs> }>().meta({
   argTypes,
   render: (storyArgs) => html`<div style="max-inline-size: 480px">${template(storyArgs)}</div>`,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

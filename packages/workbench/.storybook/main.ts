@@ -37,6 +37,7 @@ export default defineMain({
     },
     resolvePackage('@storybook/addon-a11y'),
     resolvePackage('@storybook/addon-vitest'),
+    resolvePackage('@etchteam/storybook-addon-github-link'),
   ],
   stories: ['../src/stories/**/*.stories.ts', '../src/stories/**/*.mdx'],
   core: { disableTelemetry: true },

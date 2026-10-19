@@ -25,6 +25,7 @@ const meta = preview.type<{ args: StoryArgs<PunkDescriptionList> }>().meta({
     </punk-description-list>
   `,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

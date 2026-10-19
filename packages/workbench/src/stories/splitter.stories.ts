@@ -30,6 +30,7 @@ const meta = preview.type<{ args: StoryArgs<PunkSplitter> }>().meta({
       <div slot="end">${pane('Details of the chosen machine')}</div>
     </punk-splitter>`,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

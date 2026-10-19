@@ -24,6 +24,7 @@ const meta = preview.type<{ args: StoryArgs<PunkSelect> }>().meta({
       )}
     </div>`,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

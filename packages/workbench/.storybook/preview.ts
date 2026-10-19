@@ -101,6 +101,8 @@ export default definePreview({
       },
     },
     docs,
+    // Component metas set `auto`, which maps the title `Components/Icon Button` to `components/icon-button`.
+    githubLink: { baseURL: 'https://github.com/abraham/dieselpunk/tree/main/packages/core/src' },
     // specs/accessibility.md §13. The addon's default rules stop at WCAG 2.1.
     a11y: {
       test: 'error',

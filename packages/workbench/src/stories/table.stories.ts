@@ -57,6 +57,7 @@ const meta = preview.type<{ args: StoryArgs<PunkTable> }>().meta({
   argTypes,
   render: (storyArgs) => html`<div @punk-sort-change=${sort}>${template(storyArgs)}</div>`,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `

@@ -16,6 +16,7 @@ const meta = preview.type<{ args: StoryArgs<PunkNumberField> }>().meta({
   argTypes,
   render: (storyArgs) => html`<div style="max-inline-size: 420px">${template(storyArgs)}</div>`,
   parameters: {
+    githubLink: { auto: true },
     docs: {
       description: {
         component: `
