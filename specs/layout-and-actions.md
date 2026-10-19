@@ -104,7 +104,7 @@ A square, icon-only button: one icon in the default slot (inline SVG in `current
 - **Bounds.** `0` is before the first step, and a `current` past the last step means every step is completed, so neither needs a repair. A fraction is rounded down.
 - **A record, not navigation.** The steps are not links or buttons, and the application moves `current`. **Why:** a wizard decides which steps may be revisited, and its own Back and Next buttons already say so.
 - **Ownership.** The steps give each step its index and state through a symbol-keyed property ([component-model.md §8](component-model.md)), and clear it when the step leaves or the steps disconnect. A step writes `role` and `aria-current` only to its own host. A step outside a `punk-steps` has no number and no connector, and reads as not started.
-- Steps wrap onto more lines and never scroll sideways. Under forced colors the completed marker is filled with `CanvasText`, and the current one has a `Highlight` ring.
+- Steps wrap onto more lines and never scroll sideways. A connector is `control-edge`, which shows on every surface, and `accent` up to the current step. Under forced colors the completed marker is filled with `CanvasText`, and the current one has a `Highlight` ring.
 - **Warning:** a child that is not a step.
 
 ## 10. Splitter

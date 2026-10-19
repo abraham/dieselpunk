@@ -83,7 +83,11 @@ export class PunkStep extends PunkElement {
     const word = this.#word(state);
     return html`${
         place && place.index > 0
-          ? html`<span part="connector" class="connector" aria-hidden="true"></span>`
+          ? html`<span
+              part="connector"
+              class=${classMap({ connector: true, [state]: true })}
+              aria-hidden="true"
+            ></span>`
           : ''
       }<span part="marker" class=${classMap({ marker: true, [state]: true })} aria-hidden="true"
         >${state === 'complete' ? html`<span class="check"></span>` : number}</span
