@@ -25,6 +25,19 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          # Every branch's history, to find the tagged commit on main.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # main's ruleset requires ci-success, so a commit that was once main's tip has passed it. A
+      # commit merged in from a branch is reachable from main without having been its tip.
+      - name: Check that the tagged commit is on main
+        run: |
+          if ! git rev-list --first-parent origin/main | grep -qx "$GITHUB_SHA"; then
+            echo "::error::$GITHUB_REF_NAME ($GITHUB_SHA) was never the tip of main"
+            exit 1
+          fi
 
       # Not the shared setup action: a release installs from the lockfile with no cache.
       - uses: actions/setup-node@v7.1.0
