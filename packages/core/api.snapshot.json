@@ -154,6 +154,8 @@
     },
     "punk-button": {
       "attributes": {
+        "aria-controls": "string | null = null",
+        "aria-expanded": "string | null = null",
         "aria-label": "string | null = null",
         "arrow": "ButtonArrow | null = null",
         "disabled": "boolean = false",
@@ -163,6 +165,8 @@
         "variant": "ButtonVariant = 'default'"
       },
       "properties": {
+        "accessibleControls": "string | null = null",
+        "accessibleExpanded": "string | null = null",
         "accessibleLabel": "string | null = null",
         "arrow": "ButtonArrow | null = null",
         "disabled": "boolean = false",
@@ -622,6 +626,8 @@
     },
     "punk-icon-button": {
       "attributes": {
+        "aria-controls": "string | null = null",
+        "aria-expanded": "string | null = null",
         "aria-label": "string | null = null",
         "disabled": "boolean = false",
         "label": "string = ''",
@@ -632,6 +638,8 @@
         "variant": "ButtonVariant = 'default'"
       },
       "properties": {
+        "accessibleControls": "string | null = null",
+        "accessibleExpanded": "string | null = null",
         "accessibleLabel": "string | null = null",
         "disabled": "boolean = false",
         "label": "string = ''",

@@ -1,7 +1,7 @@
 import { msg } from './localize.ts';
 import { LocaleWatcher } from './locale-watch.ts';
 import { html, nothing } from 'lit';
-import type { TemplateResult } from 'lit';
+import type { PropertyValues, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -51,6 +51,12 @@ export abstract class PunkButtonBase extends PunkElement {
 
   /** Mirrors the host `aria-label`, which cannot reach the inner button on its own. */
   @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+
+  /** Mirrors the host `aria-expanded` onto the inner button, for a disclosure toggle. An anchored overlay's state wins. */
+  @property({ attribute: 'aria-expanded' }) accessibleExpanded: string | null = null;
+
+  /** Mirrors the host `aria-controls`: the IDs, in the host's tree, of what the button shows or hides. Read when it renders. */
+  @property({ attribute: 'aria-controls' }) accessibleControls: string | null = null;
 
   readonly #internals = this.attachInternals();
   #description: string | null = null;
@@ -153,10 +159,24 @@ export abstract class PunkButtonBase extends PunkElement {
     else if (this.type === 'reset') form?.reset();
   };
 
+  // An ID cannot reach out of the shadow tree, but an element reference can.
+  protected override updated(changed: PropertyValues<this>): void {
+    super.updated(changed);
+    const button = this.renderRoot.querySelector('button');
+    if (!button || (!this.accessibleControls && !button.ariaControlsElements)) return;
+    const root = this.getRootNode() as Document | ShadowRoot;
+    button.ariaControlsElements = this.accessibleControls
+      ? this.accessibleControls.split(/\s+/).flatMap((id) => (id && root.getElementById(id)) || [])
+      : null;
+  }
+
   protected override render() {
     const variant = variants.includes(this.variant) ? this.variant : 'default';
     const size = sizes.includes(this.size) ? this.size : 'md';
     const disabled = this.#disabled;
+    const expanded =
+      this.#expanded ??
+      (this.accessibleExpanded === null ? null : this.accessibleExpanded === 'true');
     const classes = {
       button: true,
       [`variant-${variant}`]: true,
@@ -177,7 +197,7 @@ export abstract class PunkButtonBase extends PunkElement {
         aria-busy=${ifDefined(this.loading ? 'true' : undefined)}
         aria-disabled=${ifDefined(this.loading && !disabled ? 'true' : undefined)}
         aria-describedby=${ifDefined(this.#description === null ? undefined : 'description')}
-        aria-expanded=${ifDefined(this.#expanded === null ? undefined : String(this.#expanded))}
+        aria-expanded=${ifDefined(expanded === null ? undefined : String(expanded))}
         aria-haspopup=${ifDefined(this.#haspopup ?? undefined)}
         tabindex=${ifDefined(
           this.#tabStop === null || serverValues() ? undefined : this.#tabStop ? '0' : '-1',

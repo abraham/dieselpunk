@@ -156,6 +156,47 @@ describe('accessible name (12.5.1)', () => {
   });
 });
 
+describe('disclosure', () => {
+  it('mirrors a host aria-expanded onto the inner button, and follows it', async () => {
+    const button = await mount({ label: 'Details' });
+    expect(inner(button).hasAttribute('aria-expanded')).toBe(false);
+    button.setAttribute('aria-expanded', 'false');
+    await button.updateComplete;
+    expect(page.getByRole('button', { name: 'Details', expanded: false }).query()).not.toBeNull();
+    button.setAttribute('aria-expanded', 'true');
+    await button.updateComplete;
+    expect(page.getByRole('button', { name: 'Details', expanded: true }).query()).not.toBeNull();
+    button.removeAttribute('aria-expanded');
+    await button.updateComplete;
+    expect(inner(button).hasAttribute('aria-expanded')).toBe(false);
+  });
+
+  it('lets an anchored overlay state win over the host aria-expanded', async () => {
+    const button = await mount({ label: 'Details' });
+    button.setAttribute('aria-expanded', 'false');
+    button[setExternalAria]({ expanded: true });
+    await button.updateComplete;
+    expect(inner(button).getAttribute('aria-expanded')).toBe('true');
+    button[setExternalAria]({ expanded: null });
+    await button.updateComplete;
+    expect(inner(button).getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('points aria-controls at the elements with those IDs in the host tree', async () => {
+    const parent = container();
+    const panel = Object.assign(document.createElement('div'), { id: 'details-panel' });
+    const other = Object.assign(document.createElement('div'), { id: 'planner-panel' });
+    parent.append(panel, other);
+    const button = await mount({ label: 'Details', parent });
+    button.setAttribute('aria-controls', 'details-panel missing planner-panel');
+    await button.updateComplete;
+    expect(inner(button).ariaControlsElements).toEqual([panel, other]);
+    button.removeAttribute('aria-controls');
+    await button.updateComplete;
+    expect(inner(button).ariaControlsElements).toBeNull();
+  });
+});
+
 describe('tooltip (12.5.2)', () => {
   it('shows the label on hover', async () => {
     const button = await mount({ label: 'Save document' });

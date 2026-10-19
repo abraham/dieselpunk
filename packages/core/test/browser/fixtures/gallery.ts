@@ -282,7 +282,7 @@ const builders: Record<ComponentName, Builder> = {
       )
       .join('')}
     ${row(`
-      <punk-icon-button label="${c.settings}" disabled>${gear}</punk-icon-button>
+      <punk-icon-button label="${c.settings}" disabled aria-expanded="false">${gear}</punk-icon-button>
       <punk-icon-button label="${c.settings}" loading>${gear}</punk-icon-button>
     `)}
   `,

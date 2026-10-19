@@ -35,6 +35,8 @@ A square, icon-only button. Its \`label\` is both the accessible name and the te
 | Escape | Closes the tooltip without moving focus |
 
 A missing \`label\` is an accessibility problem and warns in development builds.
+
+**Disclosure:** for a button that shows and hides a panel, set \`aria-expanded\` and \`aria-controls\` on the host. Both reach the inner button: the state is copied, and the IDs are looked up in the host's tree when it renders. Keep the \`label\` the same in both states.
 `,
       },
     },
