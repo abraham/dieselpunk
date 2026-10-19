@@ -48,7 +48,31 @@ jobs:
       - run: npm run check:lockfile
       - run: npm run build
       - run: npm run check:package
+      # Before publishing, so a release that cannot describe itself is not published.
+      - run: node scripts/sbom.ts sbom
 
       # Core first, since locales names it as a peer.
       - run: npm publish -w @dieselpunk/core
       - run: npm publish -w @dieselpunk/locales
+
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: sbom
+          path: sbom/
+          if-no-files-found: error
+
+  # The one job that may write to the repository, and it runs nothing from it.
+  sbom:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          name: sbom
+          path: sbom
+      - run: gh release upload "$GITHUB_REF_NAME" sbom/*.cdx.json --clobber --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}

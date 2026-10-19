@@ -1,7 +1,7 @@
 # Security
 
 **Scope:** what keeps the published packages, the release path, and the pages that use them safe: the threat model, rules for shipped code, checks on each change (code, dependencies, workflows), the provenance of a release, and how findings are handled. Known advisories in dependencies are Dependabot's (§5.1); this spec's checks run on changes and releases, never on a schedule.
-**Code:** `eslint.config.js`, `packages/testing/test/security-lint.test.ts`, `scripts/check-lockfile.ts`, `packages/testing/src/lockfile.ts`, `.install-scripts.json`, `packages/testing/test/workflows.test.ts`, `packages/core/test/package/csp/`, `.github/workflows/ci.yml` (the `security` job), `.github/workflows/publish.yml`, `.github/dependabot.yml`, `SECURITY.md`.
+**Code:** `eslint.config.js`, `packages/testing/test/security-lint.test.ts`, `scripts/check-lockfile.ts`, `packages/testing/src/lockfile.ts`, `scripts/sbom.ts`, `.install-scripts.json`, `packages/testing/test/workflows.test.ts`, `packages/core/test/package/csp/`, `.github/workflows/ci.yml` (the `security` job), `.github/workflows/publish.yml`, `.github/dependabot.yml`, `SECURITY.md`.
 
 ## 1. Goals
 
@@ -120,7 +120,7 @@ GitHub secret scanning and push protection are on: a push containing a recognize
 - runs in a GitHub environment, `npm`, that only release tags may deploy to, and npm's trusted publisher for each package names that workflow and environment, so no other workflow or branch can publish;
 - fails unless the tagged commit is on `main` and its `ci-success` check passed, read through the checks API with the job's token;
 - installs with `npm ci`, runs `check:lockfile`, builds, runs `check:package`, then publishes with provenance, which links each version to this workflow run and commit;
-- generates a CycloneDX SBOM for each package (`npm sbom --sbom-format cyclonedx --omit dev`) and attaches it to the GitHub release, so a consumer can see what a version was built with.
+- before publishing, writes a CycloneDX SBOM of each package with `scripts/sbom.ts`, which packs it, resolves the tarball on its own as a consumer would install it, and runs `npm sbom` with its peers left out (those versions are the consumer's). A second job, the only one with `contents: write`, attaches the SBOMs to the GitHub release, so a consumer can see what each version depends on. **Why** not `npm sbom -w`: in a workspace it describes the repository root, with every private workspace in it.
 
 ## 8. When each check runs
 
@@ -160,8 +160,8 @@ Every check runs in `ci.yml` or `publish.yml`; there is no separate security wor
 
 ## Gaps
 
-Most of this spec is not built yet. What exists: the rules of §4 and their checks, `check:lockfile`, `SECURITY.md`, the repository settings of §5.1, §6.3, and §9 (Dependabot security updates, secret scanning with push protection, and private vulnerability reporting, all on), Dependabot version updates, trusted publishing with provenance from the `npm` environment, which only `v*` tags may deploy to, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
+Most of this spec is not built yet. What exists: the rules of §4 and their checks, `check:lockfile`, `SECURITY.md`, the repository settings of §5.1, §6.3, and §9 (Dependabot security updates, secret scanning with push protection, and private vulnerability reporting, all on), Dependabot version updates, trusted publishing with provenance from the `npm` environment, which only `v*` tags may deploy to, SBOMs on each release, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
 
 - **No dependency review or CodeQL** (§5.2, §6.1): no `security` job in `ci.yml`.
 - **Workflows do not fully meet §6.2.** The actions are locked, but `static` does not run `gh actions-lock --verify`, there is no workflow test, `actions/checkout` keeps its credentials, `visual.yml` and `update-visual-baselines.yml` have no top-level `permissions:`, and `ci.yml` puts `${{ matrix.part }}` in a `run:` script. Closing it is the verify step and the test, then fixing what they report.
-- **The release lacks part of §7:** no check that the tagged commit is on `main` and passed `ci-success`, and no SBOM.
+- **The release lacks part of §7:** no check that the tagged commit is on `main` and passed `ci-success`.
