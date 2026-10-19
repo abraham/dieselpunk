@@ -36,6 +36,7 @@
     },
     "./tokens.css": "./dist/css/tokens.css",
     "./themes.css": "./dist/css/themes.css",
+    "./surfaces.css": "./dist/css/surfaces.css",
     "./custom-elements.json": "./custom-elements.json",
     "./hydrate.js": {
       "types": "./dist/hydrate.d.ts",
@@ -55,7 +56,7 @@
     "check:api": "node scripts/check-api.ts",
     "check:contrast": "node scripts/check-contrast.ts",
     "check:consumer": "node scripts/check-consumer.ts",
-    "check:package": "node scripts/check-package.ts && publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./tokens.css ./themes.css",
+    "check:package": "node scripts/check-package.ts && publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./tokens.css ./themes.css ./surfaces.css",
     "check:size": "node scripts/check-size-reasons.ts && size-limit",
     "test:visual": "node scripts/visual.ts check",
     "test:visual:update": "node scripts/visual.ts update",

@@ -80,6 +80,7 @@ export function evaluateContrast(
     };
 
     for (const surface of TEXT_SURFACES) check('text', 'text', surface, textRequired);
+    for (const surface of TEXT_SURFACES) check('link', 'link', surface, textRequired);
     for (const surface of MUTED_TEXT_SURFACES) {
       check('text-muted', 'text-muted', surface, textRequired);
     }

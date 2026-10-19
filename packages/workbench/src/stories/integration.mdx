@@ -50,7 +50,7 @@ import '@dieselpunk/core/panel/register.js';
 </punk-panel>
 ```
 
-The stylesheets are optional. Without them every component renders in the default dark, compact appearance. Import `tokens.css` to let ancestors override tokens, and `themes.css` to use themes other than the default.
+The stylesheets are optional. Without them every component renders in the default dark, compact appearance. Import `tokens.css` to let ancestors override tokens, and `themes.css` to use themes other than the default. `surfaces.css` adds `punk-surface-raised`, `punk-surface-inset`, and `punk-surface-flat` classes, so your own cards and tags share the components' bevels. For text in the accent hue, such as links, use `--punk-color-link`, which meets 4.5:1 on every surface; underline links too.
 
 ## Without a build step
 

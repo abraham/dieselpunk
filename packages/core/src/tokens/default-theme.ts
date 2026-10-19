@@ -15,6 +15,7 @@ export const darkTokens = {
   'color-accent': '#f59b23',
   'color-accent-strong': '#ffb52e',
   'color-accent-text': '#1d1e1c',
+  'color-link': '#ffc766',
   'color-warning': '#f2cf44',
   'color-danger': '#d9573f',
   'color-danger-text': '#0e0d0b',

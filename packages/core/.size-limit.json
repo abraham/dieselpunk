@@ -97,7 +97,7 @@
     "path": "dist/components/progress-bar/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "4 kB"
+    "limit": "4.05 kB"
   },
   {
     "name": "punk-slot",
@@ -146,7 +146,7 @@
     "path": "dist/components/production-stat/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.2 kB"
+    "limit": "5.25 kB"
   },
   {
     "name": "punk-connection-row",
@@ -188,7 +188,7 @@
     "path": "dist/components/tabs/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.75 kB"
+    "limit": "5.8 kB"
   },
   {
     "name": "punk-toolbar",
@@ -244,7 +244,7 @@
     "path": "dist/components/slider/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.6 kB"
+    "limit": "5.65 kB"
   },
   {
     "name": "punk-text-field",
@@ -391,7 +391,7 @@
     "path": "dist/components/tag/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "3.75 kB"
+    "limit": "3.8 kB"
   },
   {
     "name": "punk-steps (both tags)",
@@ -419,7 +419,7 @@
     "path": "dist/components/file-field/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.9 kB"
+    "limit": "6.95 kB"
   },
   {
     "name": "punk-splitter",
@@ -433,7 +433,7 @@
     "path": "dist/components/range-slider/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.25 kB"
+    "limit": "6.3 kB"
   },
   {
     "name": "punk-menubar (includes the menu)",
