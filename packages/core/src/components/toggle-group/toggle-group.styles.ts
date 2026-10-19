@@ -1,10 +1,15 @@
 import { css } from 'lit';
-import { insetShadow, raisedShadow, raisedHoverShadow } from '../../styles/surfaces.ts';
+import {
+  insetShadow,
+  raisedShadow,
+  raisedHoverShadow,
+  selectedShadow,
+} from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
 // The buttons are the application's light-DOM `<button>` elements, styled through `::slotted`. A
-// pressed button is set into the strip (the inset bevel) with an `accent` bar along its foot, so it
-// differs from a raised one by shape as well as color.
+// pressed button is set into the strip (the inset bevel) with a warm outline, the same marker as
+// the current page and a selected slot, so it differs from a raised one by shape as well as color.
 export const toggleGroupStyles = css`
   :host {
     display: inline-block;
@@ -53,10 +58,10 @@ export const toggleGroupStyles = css`
   ::slotted(button[aria-pressed='true']),
   ::slotted(button[aria-checked='true']) {
     background: ${token('color-panel-inset')};
-    box-shadow:
-      inset 0 -3px 0 ${token('color-accent')},
-      ${insetShadow};
+    box-shadow: ${selectedShadow};
     font-weight: 600;
+    /* The outline is wider than the 2px gap, so it paints over the neighbors' edges. */
+    z-index: 1;
   }
 
   ::slotted(button:focus-visible) {

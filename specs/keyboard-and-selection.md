@@ -183,7 +183,7 @@ The application names the grid with `aria-label`; a missing name warns.
 - **Values.** `values` reads and assigns the pressed values (copies). Before anything is assigned, buttons the markup marked `aria-pressed="true"` or `aria-checked="true"` start pressed. `punk-selection-change` carries `{ values, items }` once per user change.
 - **Ownership.** The group owns each button's `role`, `aria-checked`, `aria-pressed`, and `tabindex`, and restores the author's values when a button leaves or the group disconnects. `disabled` disables the buttons that were enabled, and enables exactly those again.
 - The group is named by the host's `aria-label`, copied to the inner group.
-- **Look.** A pressed button is set into the strip with the inset bevel and an `accent` bar along its foot; under forced colors it is `Highlight` with a double border.
+- **Look.** A pressed button is set into the strip with the inset bevel and a warm `accent` outline, the selection marker of [visual-system.md §5](visual-system.md); under forced colors it is `Highlight` with a double border.
 - **Warnings:** no name; a child that is not a `<button>`.
 
 ## 12. List

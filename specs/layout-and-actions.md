@@ -94,7 +94,7 @@ A square, icon-only button: one icon in the default slot (inline SVG in `current
 - **Which pages** (`page-window.ts`, pure): the first and last, the current one with `siblings` on each side, and a gap (an ellipsis hidden from assistive technology) for each run left out; a gap never stands for a single page, which is shown instead.
 - **Changes.** A click sets `page` and sends `punk-page-change` with `{ page }`. Focus stays on the pressed button, or moves to the current page when that button is gone or disabled. Setting `page` from script sends nothing.
 - **Repairs.** `pages` below 1 or not a number is 1, and a `page` outside 1 to `pages` is clamped; each warns once per occurrence.
-- **Look.** Raised buttons; the current page is set in with the inset bevel and an `accent` bar along its foot, and under forced colors a double border.
+- **Look.** Raised buttons; the current page is set in with the inset bevel and a warm `accent` outline, the selection marker of [visual-system.md §5](visual-system.md), and under forced colors a double border.
 
 ## 9. Steps
 

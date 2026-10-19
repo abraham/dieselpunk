@@ -143,4 +143,15 @@ describe('look', () => {
       expect(look(current)).not.toBe(look(other));
     }
   });
+
+  it('outlines the current page in the accent, and keeps it while hovered', async () => {
+    const element = await mount();
+    const current = element.shadowRoot?.querySelector('[aria-current]') as HTMLElement;
+    const probe = track(document.createElement('span'));
+    probe.style.color = 'var(--punk-color-accent, #f59b23)';
+    const accent = getComputedStyle(probe).color;
+    expect(getComputedStyle(current).boxShadow).toContain(`${accent} 0px 0px 0px 3px`);
+    await userEvent.hover(current);
+    expect(getComputedStyle(current).boxShadow).toContain(`${accent} 0px 0px 0px 3px`);
+  });
 });
