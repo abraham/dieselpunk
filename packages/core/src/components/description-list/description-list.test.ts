@@ -109,6 +109,26 @@ describe('appearance', () => {
       expect(value.marginInlineStart).toBe('0px');
     }
   });
+
+  it('has no surface by default, and an inset well with rules between rows as inset', async () => {
+    const plain = await mount();
+    const list = (element: PunkDescriptionList) =>
+      getComputedStyle(element.shadowRoot?.querySelector('[part="list"]') as Element);
+    expect(list(plain).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+
+    const element = await mount();
+    element.variant = 'inset';
+    await element.updateComplete;
+    expect(list(element).backgroundColor).toBe('rgb(41, 43, 40)');
+    const rule = (selector: string) =>
+      getComputedStyle(element.querySelector(selector) as Element).borderTopWidth;
+    expect([rule('dt:nth-of-type(1)'), rule('dd:nth-of-type(1)')]).toEqual(['0px', '0px']);
+    expect([rule('dt:nth-of-type(2)'), rule('dd:nth-of-type(2)')]).toEqual(['1px', '1px']);
+    expect(box(element, 'dt:nth-of-type(2)').top).toBeCloseTo(
+      box(element, 'dd:nth-of-type(2)').top,
+      0,
+    );
+  });
 });
 
 describe('warnings', () => {

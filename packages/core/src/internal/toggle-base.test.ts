@@ -84,6 +84,13 @@ describe.each([
       expect(element.getAttribute('tabindex')).toBe('0');
     });
 
+    it('marks a required one for sight, hidden from assistive technology', async () => {
+      const mark = (element: Toggle) =>
+        element.shadowRoot?.querySelector('[part="label"] .required-mark') ?? null;
+      expect(mark(await mount(tag))).toBeNull();
+      expect(mark(await mount(tag, 'required'))?.getAttribute('aria-hidden')).toBe('true');
+    });
+
     it('has them before it renders, so tools see what users get at once', async () => {
       const element = track(document.createElement(tag)) as Toggle;
       expect(element.getAttribute('role')).toBe(role);

@@ -85,7 +85,7 @@ export abstract class PunkDateTimeFieldBase extends PunkFieldBase {
       readonly: this.readonly,
       control: html`<input
         part="control"
-        class="control"
+        class="control ${this.value ? '' : 'empty'}"
         id="control"
         type=${this.inputType}
         .value=${live(this.value)}

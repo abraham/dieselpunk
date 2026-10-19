@@ -5,6 +5,7 @@ import { PunkFormControl } from './form-control.ts';
 import type { FormValue, Validation } from './form-control.ts';
 import { focusItem, itemDisabled, setTabStop } from './roving.ts';
 import { SlotPresence } from './slot-presence.ts';
+import { requiredMark } from '../styles/required-mark.ts';
 
 // What the engine says about an unchecked required checkbox, in the user's language.
 let requiredProbe: HTMLInputElement | undefined;
@@ -182,7 +183,7 @@ export abstract class PunkToggleBase extends PunkFormControl {
   /** The label, hidden while there is no text so an empty one takes no room. */
   protected renderLabel() {
     return html`<span part="label" class="label" ?hidden=${!this.slots.has('')}
-      ><slot @slotchange=${this.slots.handleSlotChange}></slot
-    ></span>`;
+      ><slot @slotchange=${this.slots.handleSlotChange}></slot>${requiredMark(this.required)}</span
+    >`;
   }
 }

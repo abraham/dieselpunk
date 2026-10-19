@@ -1,6 +1,6 @@
 import { css } from 'lit';
 import { forcedColorsSurface } from '../../styles/forced-colors.ts';
-import { raisedSurface } from '../../styles/surfaces.ts';
+import { flatSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
 export const popoverStyles = css`
@@ -26,7 +26,7 @@ export const popoverStyles = css`
     overflow-wrap: break-word;
     border-radius: ${token('radius')};
     color: ${token('color-text')};
-    ${raisedSurface}
+    ${flatSurface}
   }
 
   .surface.open {

@@ -420,13 +420,14 @@ describe('variants, sizes, and states', () => {
     }
   });
 
-  it('lights the default button with the accent on hover', async () => {
+  it('keeps the default fill on hover, so it never looks like an idle primary button', async () => {
     const button = await mount();
+    const idle = getComputedStyle(inner(button)).backgroundImage;
     await userEvent.hover(button);
     const hovered = getComputedStyle(inner(button));
-    expect(hovered.backgroundColor).toBe(rgb(dark['color-accent']));
-    expect(hovered.backgroundImage).toBe('none');
-    expect(hovered.color).toBe(rgb(dark['color-accent-text']));
+    expect(hovered.backgroundImage).toBe(idle);
+    expect(hovered.backgroundImage).not.toBe('none');
+    expect(hovered.color).toBe(rgb(dark['color-text']));
   });
 
   it('mixes a filled fill a quarter toward the text on hover', async () => {
@@ -468,8 +469,9 @@ describe('variants, sizes, and states', () => {
     const pressed = getComputedStyle(inner(button));
     const content = getComputedStyle(part(button, 'label').parentElement as HTMLElement);
     expect(pressed.boxShadow.startsWith(rgb(dark['color-edge-dark']))).toBe(true);
-    expect(pressed.backgroundColor).toBe(towardText(dark['color-accent'], 45));
-    expect(pressed.color).toBe(rgb(dark['color-accent-text']));
+    expect(pressed.backgroundColor).toBe(rgb(dark['color-panel-inset']));
+    expect(pressed.backgroundImage).toBe('none');
+    expect(pressed.color).toBe(rgb(dark['color-text']));
     expect(content.top).toBe('1px');
     expect(content.left).toBe('1px');
   });

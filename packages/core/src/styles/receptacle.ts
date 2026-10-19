@@ -92,10 +92,15 @@ export const receptacleStyles = css`
     inset-inline-end: ${token('space-1')};
   }
 
-  /* Slotted overlay content inherits this, so it never blocks a click on the slot. */
+  /* Slotted overlay content inherits this, so it never blocks a click on the slot. It is centered
+     over the item, as the item is, and clipped to the slot. */
   .overlay {
     position: absolute;
     inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: inherit;
     pointer-events: none;
   }
 
@@ -137,6 +142,12 @@ export const receptacleStyles = css`
   :host([disabled]) .slot {
     --_bevel: 0 0 0 0 transparent;
     background: ${token('color-disabled-fill')};
+  }
+
+  /* Disabled controls are exempt from the boundary rule, so an empty one is no brighter than its
+     filled neighbors. */
+  :host([disabled]:not([selected])) .slot.empty {
+    --_ring: ${token('color-edge-dark')};
   }
 
   :host([disabled]) .content {

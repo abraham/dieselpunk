@@ -58,6 +58,16 @@ describe('punk-date-field', () => {
     expect(input(element).labels?.[0]?.textContent).toBe('Delivery');
   });
 
+  it('shows the empty format in muted text, and a value in the text color', async () => {
+    const empty = getComputedStyle(input(await mount())).color;
+    const element = await mount('label="Delivery" value="2025-03-14"');
+    const filled = getComputedStyle(input(element)).color;
+    expect(empty).not.toBe(filled);
+    choose(element, '');
+    await element.updateComplete;
+    expect(getComputedStyle(input(element)).color).toBe(empty);
+  });
+
   it('shows the value attribute and the value property in the native input', async () => {
     const element = await mount('label="Delivery" value="2025-03-14"');
     expect(input(element).value).toBe('2025-03-14');

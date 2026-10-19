@@ -55,6 +55,12 @@ describe('variants', () => {
     expect(getComputedStyle(part(await mount(), 'badge')).borderTopStyle).toBe('solid');
   });
 
+  it('is a bold count on the inset plate', async () => {
+    const style = getComputedStyle(part(await mount(), 'badge'));
+    expect(style.fontWeight).toBe('600');
+    expect(style.boxShadow).toContain('inset');
+  });
+
   it('renders an unknown variant as neutral, and follows the attribute both ways', async () => {
     const element = await mount('variant="broken"');
     expect(silhouette(element)).toBe('none');

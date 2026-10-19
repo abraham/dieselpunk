@@ -24,7 +24,7 @@ import { dialogStyles } from './dialog.styles.ts';
  * @csspart body - The content, a focusable scroll region while it overflows.
  * @csspart footer - The actions.
  *
- * @cssprop [--punk-dialog-max-width=480px] - The widest the dialog gets.
+ * @cssprop [--punk-dialog-max-width=560px] - The widest the dialog gets. It is wider than the footer's 480px stacking width, so a confirmation's actions sit in a row unless the screen is narrow.
  *
  * @fires punk-open - It opened.
  * @fires punk-close - It closed. `detail` is `{ reason, returnValue }`.

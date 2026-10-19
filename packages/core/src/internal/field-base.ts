@@ -8,6 +8,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { PunkFormControl } from './form-control.ts';
 import type { Validation } from './form-control.ts';
 import { SlotPresence } from './slot-presence.ts';
+import { requiredMark } from '../styles/required-mark.ts';
 
 export type FieldControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -112,7 +113,9 @@ export abstract class PunkFieldBase extends PunkFormControl {
           readonly: Boolean(readonly),
         })}
       >
-        <label part="label" class="label" for="control" ?hidden=${!this.label}>${this.label}</label>
+        <label part="label" class="label" for="control" ?hidden=${!this.label}
+          >${this.label}${requiredMark(this.required)}</label
+        >
         <div class="box">
           ${
             affixes

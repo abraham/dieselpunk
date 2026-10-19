@@ -20,20 +20,20 @@
 
 ### 1.2 Receptacles
 
-`PunkReceptacleBase` adds the square receptacle used by the slot and item stack: `size` (`sm`, `md`, `lg` at 0.8, 1, and 1.2 times `--punk-slot-size`), `highlighted`, `invalid`, and the `badge` and `overlay` slots. Overlay content takes no pointer events, so it never blocks activation. A receptacle with no accessible name warns.
+`PunkReceptacleBase` adds the square receptacle used by the slot and item stack: `size` (`sm`, `md`, `lg` at 0.8, 1, and 1.2 times `--punk-slot-size`), `highlighted`, `invalid`, and the `badge` and `overlay` slots. Overlay content takes no pointer events, so it never blocks activation, and is centered over the item and clipped to the receptacle, so a glyph never straddles its edge. A receptacle with no accessible name warns.
 
 Each state owns one visual channel, so states combine and stay apart without color:
 
-| State         | Treatment                                                                                                                                                 |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Idle          | Inset receptacle; when empty, a `control-edge` boundary, since nothing else identifies it                                                                 |
-| Hover         | Brighter edges                                                                                                                                            |
-| Focus-visible | The two-tone ring on the host                                                                                                                             |
-| Active        | Content moves 1px down and toward the inline end                                                                                                          |
-| Selected      | A 3px `accent` ring and a darker inset                                                                                                                    |
-| Highlighted   | A dotted 2px `warning` outline, clear of the ring                                                                                                         |
-| Invalid       | An inner 2px `danger` frame and a hatched corner, and the word "invalid" in the name (not `aria-invalid`, which ARIA deprecates on `option` and `button`) |
-| Disabled      | Flat and desaturated; name unchanged                                                                                                                      |
+| State         | Treatment                                                                                                                                                        |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Idle          | Inset receptacle; when empty, a `control-edge` boundary, since nothing else identifies it                                                                        |
+| Hover         | Brighter edges                                                                                                                                                   |
+| Focus-visible | The two-tone ring on the host                                                                                                                                    |
+| Active        | Content moves 1px down and toward the inline end                                                                                                                 |
+| Selected      | A 3px `accent` ring and a darker inset                                                                                                                           |
+| Highlighted   | A dotted 2px `warning` outline, clear of the ring                                                                                                                |
+| Invalid       | An inner 2px `danger` frame and a hatched corner, and the word "invalid" in the name (not `aria-invalid`, which ARIA deprecates on `option` and `button`)        |
+| Disabled      | Flat and desaturated, and an empty one drops the `control-edge` boundary (disabled controls are exempt), so it is no brighter than its neighbors; name unchanged |
 
 Under forced colors, selected is a 3px `Highlight` outline, highlighted dotted, invalid dashed.
 

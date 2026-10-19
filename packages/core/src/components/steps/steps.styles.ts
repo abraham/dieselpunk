@@ -32,12 +32,18 @@ export const stepStyles = css`
 
   ${visuallyHidden}
 
+  /* control-edge shows on every surface; the path already travelled is the accent. */
   .connector {
     flex: none;
     inline-size: ${token('space-4')};
     block-size: 2px;
     margin-inline: ${token('space-2')};
-    background: ${token('color-edge-dark')};
+    background: ${token('color-control-edge')};
+  }
+
+  .connector.current,
+  .connector.complete {
+    background: ${token('color-accent')};
   }
 
   .marker {

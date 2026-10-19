@@ -46,7 +46,7 @@ A missing \`label\` is an accessibility problem and warns in development builds.
 
 export const Playground = meta.story();
 
-const iconNames: IconName[] = ['gear', 'plus', 'close', 'check', 'info', 'warning'];
+const iconNames: IconName[] = ['gear', 'plus', 'close', 'check', 'info', 'warning', 'more', 'fit'];
 
 const cluster = (props: { variant?: string; disabled?: boolean; loading?: boolean }) =>
   html`${sizes.map(

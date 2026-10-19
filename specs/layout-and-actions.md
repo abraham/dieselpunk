@@ -8,7 +8,7 @@
 A structural metal surface: `variant` (`raised`, `inset`, `flat`; unknown is `raised`) and `density` (`compact`, `low`, or unset to inherit), with the default, `header`, and `footer` slots.
 
 - The host is `display: block` and imposes no width or height. Padding is `--punk-panel-padding`.
-- Header and footer are strips on `panel-inset` (so their text is covered by the contrast gate), with an etched edge toward the body. Each is rendered `hidden` while its slot is empty, through `SlotPresence`, and appears when content arrives.
+- Header and footer are strips on `panel-inset` (so their text is covered by the contrast gate), with an etched edge toward the body. The header's text is 700, like the window's, dialog's, and drawer's titles. Each is rendered `hidden` while its slot is empty, through `SlotPresence`, and appears when content arrives.
 - `raised` and `flat` carry the texture; `inset` does not.
 - `density` applies the density token set to the panel's subtree, overriding an ancestor's `data-punk-density` in either direction ([visual-system.md §3](visual-system.md)).
 - No role. An application adds `role="region"` and a label where the panel is a landmark.
@@ -40,12 +40,12 @@ Layout primitives with no decoration, no role, and no parts.
 - **Variants.** `default` (raised panel), `primary` (accent fill with `accent-text`), `danger` (danger fill with `danger-text`), `confirm` (success fill with `success-text`, for an action that commits or approves). Under forced colors, `primary` has a 4px border, `danger` a dashed one, and `confirm` a 4px double one, so each keeps its cue.
 - **States.** Idle raised; hover adds the hover ring; active presses in (the inset shadow, and the content shifts 1px down and toward the inline end); focus-visible shows the ring; disabled is flat with the disabled colors and a readable label. Hover and press apply only while neither disabled nor loading. Fills by state:
 
-  | Variant          | Hover                            | Press                            | Disabled                                                               |
-  | ---------------- | -------------------------------- | -------------------------------- | ---------------------------------------------------------------------- |
-  | `default`        | `accent` with `accent-text`      | `accent` mixed 45% toward `text` | `disabled-fill` with `disabled-text`                                   |
-  | The filled three | Its fill mixed 25% toward `text` | Its fill mixed 45% toward `text` | Its fill mixed 30% into `disabled-fill`, text 45% into `disabled-text` |
+  | Variant          | Hover                             | Press                            | Disabled                                                               |
+  | ---------------- | --------------------------------- | -------------------------------- | ---------------------------------------------------------------------- |
+  | `default`        | Its own fill, with the hover ring | `panel-inset`, with `text`       | `disabled-fill` with `disabled-text`                                   |
+  | The filled three | Its fill mixed 25% toward `text`  | Its fill mixed 45% toward `text` | Its fill mixed 30% into `disabled-fill`, text 45% into `disabled-text` |
 
-  Mixing toward `text` lightens a fill on dark themes and darkens it on light ones; the contrast gate checks each fill's text on both mixes ([visual-system.md §4.1](visual-system.md)). A disabled filled button keeps a trace of its fill so its kind still shows; under forced colors every disabled button is `GrayText`.
+  Mixing toward `text` lightens a fill on dark themes and darkens it on light ones; the contrast gate checks each fill's text on both mixes ([visual-system.md §4.1](visual-system.md)). A disabled filled button keeps a trace of its fill so its kind still shows; under forced colors every disabled button is `GrayText`. **Why** a default button keeps its fill on hover: filled with `accent`, a hovered default button looked exactly like an idle primary one, and hover is meant to brighten edges, not change kind ([product.md §4](product.md)).
 
 - **Disabled.** Sets the inner button's `disabled`. A capturing click listener on the host stops clicks in the host's padding from reaching any listener or form action. A disabled `<fieldset>` ancestor disables the button outside its first `<legend>`, read on every render.
 - **Loading.** `aria-disabled="true"` and `aria-busy="true"` on the inner button, without `disabled`, so focus stays. Clicks are suppressed. The label is kept at `opacity: 0`, so the width and the accessible name do not change, and a CSS gear spinner sits over it (static under reduced motion). A visually hidden `role="status"` beside the inner button says "Loading".
@@ -94,7 +94,7 @@ A square, icon-only button: one icon in the default slot (inline SVG in `current
 - **Which pages** (`page-window.ts`, pure): the first and last, the current one with `siblings` on each side, and a gap (an ellipsis hidden from assistive technology) for each run left out; a gap never stands for a single page, which is shown instead.
 - **Changes.** A click sets `page` and sends `punk-page-change` with `{ page }`. Focus stays on the pressed button, or moves to the current page when that button is gone or disabled. Setting `page` from script sends nothing.
 - **Repairs.** `pages` below 1 or not a number is 1, and a `page` outside 1 to `pages` is clamped; each warns once per occurrence.
-- **Look.** Raised buttons; the current page is set in with the inset bevel and an `accent` bar along its foot, and under forced colors a double border.
+- **Look.** Raised buttons; the current page is set in with the inset bevel and a warm `accent` outline, the selection marker of [visual-system.md §5](visual-system.md), and under forced colors a double border.
 
 ## 9. Steps
 
@@ -104,7 +104,7 @@ A square, icon-only button: one icon in the default slot (inline SVG in `current
 - **Bounds.** `0` is before the first step, and a `current` past the last step means every step is completed, so neither needs a repair. A fraction is rounded down.
 - **A record, not navigation.** The steps are not links or buttons, and the application moves `current`. **Why:** a wizard decides which steps may be revisited, and its own Back and Next buttons already say so.
 - **Ownership.** The steps give each step its index and state through a symbol-keyed property ([component-model.md §8](component-model.md)), and clear it when the step leaves or the steps disconnect. A step writes `role` and `aria-current` only to its own host. A step outside a `punk-steps` has no number and no connector, and reads as not started.
-- Steps wrap onto more lines and never scroll sideways. Under forced colors the completed marker is filled with `CanvasText`, and the current one has a `Highlight` ring.
+- Steps wrap onto more lines and never scroll sideways. A connector is `control-edge`, which shows on every surface, and `accent` up to the current step. Under forced colors the completed marker is filled with `CanvasText`, and the current one has a `Highlight` ring.
 - **Warning:** a child that is not a step.
 
 ## 10. Splitter

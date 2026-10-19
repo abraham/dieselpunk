@@ -60,7 +60,7 @@ One module-level stack of open overlays per page (`createOverlayStack(target)`, 
 - The `<dialog>` is labeled by `heading`, or by the host's `aria-label`. A surface with neither warns.
 - The body becomes a focusable scroll region (`tabindex="0"`) when its content is taller than the surface allows, checked on open and on resize while open.
 - A modal surface is at most the viewport height less twice `--punk-space-4`, so it fits at 200% zoom.
-- The footer stacks its actions, full width and in order, by a container query at 480px and below.
+- The footer stacks its actions, full width and in order, by a container query at 480px and below. Each surface's default width is wider than that (the dialog's 560px, the window's 640px), so actions sit in a row unless the space is really narrow.
 - Opening a second modal while one is open is allowed; the top layer stacks them.
 
 ## 7. Window
@@ -71,7 +71,7 @@ A titled application window: `heading`, `open`, `modal`, `movable`, `dismissible
 - **`dismissible`** adds a native close button (localized "Close") and makes the stack entry dismissible. Without it, Escape does nothing and does not reach a window beneath.
 - **Titlebar** wraps: the title has a basis of `9ch`, and where the buttons cannot share its row they go below it at the end, so a title never breaks inside a word to make room for them.
 - **Dragging** (`movable`) starts on the titlebar with pointer capture and `touch-action: none`, never from a `button`, `a`, `input`, `select`, `textarea`, `[tabindex]`, `[contenteditable]`, or `[data-punk-no-drag]` descendant. The window moves by `translate`, clamped each step so its rectangle stays in the viewport; on an axis where it is larger than the viewport, its start edge is pinned so the titlebar stays reachable. Rectangles are read once when the drag starts.
-- **Move mode** (SC 2.5.7): the `move-button` part (localized "Move window", `aria-pressed`) starts it and announces the instructions through a visually hidden status. Arrow keys move 8px (32px with Shift); a click anywhere moves the titlebar's center to the pointer, is not passed to what was under it, and ends the mode; Enter or the move button ends it; Escape returns the window to where it was.
+- **Move mode** (SC 2.5.7): the `move-button` part (localized "Move window", `aria-pressed`, drawn as a four-way arrow, since a plus reads as "add") starts it and announces the instructions through a visually hidden status. Arrow keys move 8px (32px with Shift); a click anywhere moves the titlebar's center to the pointer, is not passed to what was under it, and ends the mode; Enter or the move button ends it; Escape returns the window to where it was.
 - `punk-move-start` and `punk-move-end` carry `{ x, y }`, the translation from the layout position, for drags and for move mode; a cancelled move reports where it went back to. `resetPosition()` clears the translation.
 - A `resize` listener exists only while the window has a nonzero offset, and re-clamps it.
 - A focused movable window is raised above its siblings with `z-index`. Any other window management is the application's.
@@ -114,7 +114,7 @@ An interactive anchored surface: `for`, `placement` (default `bottom`), `mode` (
 
 `punk-toast`: `variant`, `duration`, `heading`, with the default (message) and `action` slots.
 
-- The variant is a status shape in an inset lens; the text is in `text`. A native dismiss button (localized "Dismiss") is always present.
+- The variant is a status shape in an inset lens and, as on the alert, its color as a bar on the start edge; the text is in `text`. A native dismiss button (localized "Dismiss") is always present.
 - **Duration:** unset means 5000ms for `info` and `success`, and none for `warning`, `danger`, or a toast with an action. `0` means none.
 - **Countdown** (`createToastTimer`): one timer at most, held by reason (`hover` by mouse or pen, not touch; `focus` inside; `hidden` document), resumed with the time left only when every hold is released. A hold that exists when the countdown is rebuilt is kept. A toast created while the document is hidden starts held. A held or finished toast has no timer, and the `visibilitychange` listener exists only while a countdown does.
 - **Dismissal:** `dismiss(reason)` (default `method`) sends `punk-dismiss`, which is cancelable so an application that owns the toast's lifetime can remove it itself. Unless cancelled the toast fades out, waits for its animations' `finished` (not a timer), and removes itself. Under reduced motion it goes at once.

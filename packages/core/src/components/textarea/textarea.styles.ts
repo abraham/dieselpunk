@@ -17,6 +17,19 @@ export const textareaStyles = css`
     line-height: 1.4;
   }
 
+  /* Two etched grooves in the library's color where the engine lets the grip be drawn (Chromium,
+     WebKit); Firefox keeps its own. */
+  .control::-webkit-resizer {
+    background: linear-gradient(
+      135deg,
+      transparent 0 50%,
+      ${token('color-control-edge')} 50% 58%,
+      transparent 58% 70%,
+      ${token('color-control-edge')} 70% 78%,
+      transparent 78%
+    );
+  }
+
   :host([autogrow]) .control {
     field-sizing: content;
     max-block-size: var(--punk-textarea-max-height, 20lh);

@@ -102,6 +102,13 @@ export const listItemStyles = css`
     font-size: 0.875em;
   }
 
+  /* After the muted parts, so a disabled row dims all of its text, not only its name. */
+  :host([disabled]) .start,
+  :host([disabled]) .end,
+  :host([disabled]) .description {
+    color: ${token('color-disabled-text')};
+  }
+
   .check {
     flex: none;
     inline-size: 12px;

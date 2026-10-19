@@ -492,11 +492,42 @@ describe('warnings', () => {
 });
 
 describe('appearance', () => {
-  const bar = (tab: PunkTab) =>
-    getComputedStyle(tab.shadowRoot?.querySelector('.tab') as Element, '::before').display;
+  const face = (tab: PunkTab) => tab.shadowRoot?.querySelector('.tab') as Element;
+  const bar = (tab: PunkTab) => getComputedStyle(face(tab), '::before').display;
+  const panels = (tabs: PunkTabs) =>
+    tabs.shadowRoot?.querySelector('[part="panels"]') as HTMLElement;
 
-  it('marks the selected tab with a bar the others do not have', async () => {
+  it('joins the selected tab to the surface of panels inside the tabs', async () => {
     const { tabs, tab } = await mount();
+    const surface = getComputedStyle(panels(tabs));
+    expect(panels(tabs).hidden).toBe(false);
+    expect(getComputedStyle(face(tab[0] as PunkTab)).backgroundColor).toBe(surface.backgroundColor);
+    expect(getComputedStyle(face(tab[0] as PunkTab)).boxShadow).toMatch(
+      /^rgb\([^)]*\) 0px 2px 0px/,
+    );
+    expect(getComputedStyle(face(tab[1] as PunkTab)).backgroundColor).not.toBe(
+      surface.backgroundColor,
+    );
+    expect(tab.map(bar)).toEqual(['none', 'none', 'none']);
+    tabs.value = 'p2';
+    await settle(tabs);
+    expect(getComputedStyle(face(tab[1] as PunkTab)).backgroundColor).toBe(surface.backgroundColor);
+  });
+
+  it('joins a vertical tab at the inline end, in both directions', async () => {
+    const ltr = await mount({ attributes: 'orientation="vertical"' });
+    expect(getComputedStyle(face(ltr.tab[0] as PunkTab)).boxShadow).toMatch(
+      /^rgb\([^)]*\) 2px 0px 0px/,
+    );
+    const rtl = await mount({ attributes: 'orientation="vertical"', dir: 'rtl' });
+    expect(getComputedStyle(face(rtl.tab[0] as PunkTab)).boxShadow).toMatch(
+      /^rgb\([^)]*\) -2px 0px 0px/,
+    );
+  });
+
+  it('marks the selected tab with a bar the others do not have when the panels are elsewhere', async () => {
+    const { tabs, tab } = await mount({ panels: 'beside' });
+    expect(panels(tabs).hidden).toBe(true);
     expect(tab.map(bar)).toEqual(['block', 'none', 'none']);
     tabs.value = 'p2';
     await settle(tabs);
@@ -504,17 +535,11 @@ describe('appearance', () => {
   });
 
   it('puts the bar on the edge that faces the panel', async () => {
-    const { tab } = await mount();
-    const horizontal = getComputedStyle(
-      tab[0]?.shadowRoot?.querySelector('.tab') as Element,
-      '::before',
-    );
+    const { tab } = await mount({ panels: 'beside' });
+    const horizontal = getComputedStyle(face(tab[0] as PunkTab), '::before');
     expect(parseFloat(horizontal.blockSize)).toBe(3);
-    const vertical = await mount({ attributes: 'orientation="vertical"' });
-    const side = getComputedStyle(
-      vertical.tab[0]?.shadowRoot?.querySelector('.tab') as Element,
-      '::before',
-    );
+    const vertical = await mount({ attributes: 'orientation="vertical"', panels: 'beside' });
+    const side = getComputedStyle(face(vertical.tab[0] as PunkTab), '::before');
     expect(parseFloat(side.inlineSize)).toBe(3);
   });
 

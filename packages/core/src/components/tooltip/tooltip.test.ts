@@ -695,12 +695,13 @@ describe('appearance', () => {
     expect(anchor.getBoundingClientRect().width).toBeGreaterThan(0);
   });
 
-  it('uses a raised surface with light text on the default dark theme', async () => {
+  it('uses the flat surface, not a control face, with light text on the default dark theme', async () => {
     const { tooltip } = await mount();
     tooltip.show();
     await tooltip.updateComplete;
     const style = getComputedStyle(surface(tooltip));
-    expect(style.backgroundImage).toContain('linear-gradient');
+    expect(style.backgroundImage).toBe('none');
+    expect(style.backgroundColor).toBe('rgb(65, 67, 63)');
     expect(style.color).toBe('rgb(240, 234, 216)');
   });
 

@@ -1,5 +1,6 @@
 import { css } from 'lit';
 import { hostFocusRing } from '../styles/focus.ts';
+import { requiredMarkStyles } from '../styles/required-mark.ts';
 import { token } from '../tokens/token.ts';
 
 // What a checkbox and a switch share: the host, the row of control and label, the focus ring, the
@@ -16,6 +17,8 @@ export const toggleBaseStyles = css`
   :host([hidden]) {
     display: none;
   }
+
+  ${requiredMarkStyles}
 
   [hidden] {
     display: none !important;

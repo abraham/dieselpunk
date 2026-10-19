@@ -1,11 +1,12 @@
 import { css } from 'lit';
 import { focusRing } from '../../styles/focus.ts';
 import { forcedColorsSurface } from '../../styles/forced-colors.ts';
-import { insetShadow, raisedHoverShadow, raisedSurface } from '../../styles/surfaces.ts';
+import { selectedShadow } from '../../styles/selected.ts';
+import { raisedHoverShadow, raisedSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
-// The current page is set into the strip (the inset bevel) with an `accent` bar along its foot, so
-// it differs from the raised buttons by shape as well as color.
+// The current page is set into the strip (the inset bevel) with a warm outline, the same marker as
+// a pressed toggle and a selected slot, so it differs from the raised buttons by shape and color.
 export const paginationStyles = css`
   :host {
     display: block;
@@ -38,15 +39,13 @@ export const paginationStyles = css`
     cursor: pointer;
   }
 
-  .button:hover:not(:disabled) {
+  .button:hover:not(:disabled, [aria-current='page']) {
     box-shadow: ${raisedHoverShadow};
   }
 
   .button[aria-current='page'] {
     background: ${token('color-panel-inset')};
-    box-shadow:
-      inset 0 -3px 0 ${token('color-accent')},
-      ${insetShadow};
+    box-shadow: ${selectedShadow};
     font-weight: 700;
   }
 

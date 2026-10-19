@@ -25,7 +25,8 @@ export const accordionStyles = css`
 `;
 
 // Expanded is the pressed-in bevel and a minus; collapsed is raised and a plus, so the state is a
-// shape and not only a surface.
+// shape and not only a surface. An open item's header and content meet with no gap, as a panel's
+// header strip meets its body, so they read as one section.
 export const accordionItemStyles = css`
   :host {
     display: block;
@@ -68,6 +69,11 @@ export const accordionItemStyles = css`
   :host([expanded]) .trigger:not(:disabled) {
     background: ${token('color-panel-inset')};
     box-shadow: ${insetShadow};
+  }
+
+  :host([expanded]) .trigger {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
   }
 
   .trigger:disabled {
@@ -116,9 +122,8 @@ export const accordionItemStyles = css`
   .panel {
     ${flatSurface}
     min-inline-size: 0;
-    margin-block-start: ${token('space-1')};
     padding: ${token('space-3')};
-    border-radius: ${token('radius')};
+    border-radius: 0 0 ${token('radius')} ${token('radius')};
     overflow-wrap: break-word;
   }
 

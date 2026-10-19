@@ -238,6 +238,17 @@ describe('punk-accordion-item appearance', () => {
     expect(wrapper.scrollWidth).toBeLessThanOrEqual(187);
   });
 
+  it('joins an open header to its content, with no gap between them', async () => {
+    const element = await item();
+    element.expanded = true;
+    await element.updateComplete;
+    const header = trigger(element).getBoundingClientRect();
+    const content = part(element, 'panel').getBoundingClientRect();
+    expect(content.top).toBeCloseTo(header.bottom, 0);
+    expect(getComputedStyle(trigger(element)).borderBottomLeftRadius).toBe('0px');
+    expect(getComputedStyle(part(element, 'panel')).borderTopLeftRadius).toBe('0px');
+  });
+
   it('draws a plus when collapsed and a minus when expanded, so state is a shape', async () => {
     const element = await item();
     const bar = () => getComputedStyle(part(element, 'indicator'), '::after').display;

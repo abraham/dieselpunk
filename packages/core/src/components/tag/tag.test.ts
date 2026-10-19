@@ -116,6 +116,15 @@ describe('removing', () => {
       getComputedStyle(part(live, 'label')).color,
     );
   });
+
+  it('draws a disabled remove button flat and dimmed, with no pointer', async () => {
+    const live = getComputedStyle(button(await mount('removable')));
+    const style = getComputedStyle(button(await mount('removable disabled')));
+    expect(style.backgroundImage).toBe('none');
+    expect(style.color).not.toBe(live.color);
+    expect(style.boxShadow).not.toBe(live.boxShadow);
+    expect(style.cursor).toBe('not-allowed');
+  });
 });
 
 describe('appearance', () => {

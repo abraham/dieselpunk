@@ -1,9 +1,12 @@
 import { css } from 'lit';
+import { forcedColorsSurface } from '../../styles/forced-colors.ts';
 import { statusShapeStyles } from '../../styles/status-shape.ts';
+import { insetSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
 // The plate is `panel-inset`, so its text is covered by the contrast gate, and the shapes use the
-// same colors on the same surface as a status light's lens.
+// same colors on the same surface as a status light's lens. It is the tag's inset plate, whose light
+// lower lip keeps it visible on the canvas, and its text is bold so a count reads at a glance.
 export const badgeStyles = css`
   :host {
     display: inline-flex;
@@ -27,12 +30,12 @@ export const badgeStyles = css`
     padding: 0 ${token('space-1')};
     box-sizing: border-box;
     justify-content: center;
-    border: 1px solid ${token('color-edge-dark')};
     border-radius: ${token('radius')};
-    background: ${token('color-panel-inset')};
+    ${insetSurface}
     color: ${token('color-text')};
     font-family: ${token('font-mono')};
     font-size: 0.75rem;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
     line-height: 1.2;
   }
@@ -49,9 +52,5 @@ export const badgeStyles = css`
     overflow-wrap: anywhere;
   }
 
-  @media (forced-colors: active) {
-    .badge {
-      border-color: CanvasText;
-    }
-  }
+  ${forcedColorsSurface('.badge')}
 `;

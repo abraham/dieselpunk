@@ -431,8 +431,12 @@
       "cssProperties": {}
     },
     "punk-description-list": {
-      "attributes": {},
-      "properties": {},
+      "attributes": {
+        "variant": "DescriptionListVariant = 'plain'"
+      },
+      "properties": {
+        "variant": "DescriptionListVariant = 'plain'"
+      },
       "methods": {},
       "events": {},
       "slots": {
@@ -479,7 +483,7 @@
         "title": ""
       },
       "cssProperties": {
-        "--punk-dialog-max-width": "= 480px"
+        "--punk-dialog-max-width": "= 560px"
       }
     },
     "punk-divider": {
@@ -1725,9 +1729,12 @@
         "tab": ""
       },
       "parts": {
+        "panels": "",
         "tablist": ""
       },
-      "cssProperties": {}
+      "cssProperties": {
+        "--punk-tabs-padding": "= var(--punk-space-3)"
+      }
     },
     "punk-tag": {
       "attributes": {

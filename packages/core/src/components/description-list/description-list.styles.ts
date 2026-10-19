@@ -1,8 +1,11 @@
 import { css } from 'lit';
+import { forcedColorsSurface } from '../../styles/forced-colors.ts';
+import { insetSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
 // The slot is `display: contents`, so the slotted terms and values are the grid's items. Terms
-// are `text-muted` and values `text`, pairs the contrast gate covers on every surface but raised.
+// are `text-muted` and values `text`, pairs the contrast gate covers on every surface but raised,
+// and on the inset variant's own `panel-inset` well.
 export const descriptionListStyles = css`
   :host {
     display: block;
@@ -37,6 +40,32 @@ export const descriptionListStyles = css`
     overflow-wrap: anywhere;
   }
 
+  /* Items stretch so the rules on a term and its value line up; padding stands in for the gap. */
+  :host([variant='inset']) dl {
+    ${insetSurface}
+    align-items: stretch;
+    gap: 0;
+    padding: ${token('space-1')} ${token('space-3')};
+    border-radius: ${token('radius')};
+  }
+
+  :host([variant='inset']) ::slotted(dt) {
+    padding-inline-end: ${token('space-4')};
+  }
+
+  :host([variant='inset']) ::slotted(dt),
+  :host([variant='inset']) ::slotted(dd) {
+    padding-block: ${token('space-1')};
+    border-block-start: 1px solid ${token('color-edge-dark')};
+  }
+
+  :host([variant='inset']) ::slotted(:first-child),
+  :host([variant='inset']) ::slotted(dd:nth-child(2)) {
+    border-block-start: 0;
+  }
+
+  ${forcedColorsSurface(":host([variant='inset']) dl")}
+
   @container (inline-size < 320px) {
     dl {
       grid-template-columns: minmax(0, 1fr);
@@ -53,6 +82,15 @@ export const descriptionListStyles = css`
 
     ::slotted(dd) {
       grid-column: 1;
+    }
+
+    /* A term sits above its value here, so only the rule above each term stays. */
+    :host([variant='inset']) ::slotted(dd) {
+      border-block-start: 0;
+    }
+
+    :host([variant='inset']) ::slotted(dt) {
+      margin-block-start: 0;
     }
   }
 `;

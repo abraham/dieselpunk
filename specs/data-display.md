@@ -12,7 +12,7 @@
 - **Sticky header.** `--punk-table-max-height` limits the height; the header row then stays in view while the body scrolls under it.
 - **Styles for the light DOM.** A shadow tree's styles cannot reach a slotted table's cells, so the element adopts one shared stylesheet into the table's root node (the document or a shadow root), once per root, and never removes it. Every selector is inside `:where()` and scoped to `punk-table > table`, so it has no specificity and any rule of the application's wins. This is the one stylesheet the library adds outside its own shadow roots ([component-model.md §7](component-model.md)).
 - **Sorting.** Sorting is the application's. A header cell with `data-sort="key"` and a `<button>` inside is sortable. A click on the button sets `aria-sort` on that cell (`ascending` first, then alternating) and `none` on the other sortable cells, and sends `punk-sort-change` with `{ key, direction }`; the application reorders the rows. `sort-key` and `sort-direction` set the state from script without an event. The table owns `aria-sort` on sortable cells and restores the author's value when a cell leaves or it disconnects. The button shows a triangle for the direction and a pair of triangles when unsorted.
-- **Selection.** Selection is by checkboxes the application places and names: one with `data-punk-select` in a body row (`<tr data-value>`) selects that row, and one with `data-punk-select-all` in the header selects every enabled row and shows `checked` or `indeterminate` for all or some. Selected rows get `data-selected` (an `accent` bar on the first cell). `values` reads the selected rows' values and checks rows by value when assigned. `punk-selection-change` carries `{ values, items }` once per change the user makes. **Why** checkboxes and not `aria-selected`: rows of a `table` do not take `aria-selected`, and a checkbox gives every row a named, focusable control.
+- **Selection.** Selection is by checkboxes the application places and names: one with `data-punk-select` in a body row (`<tr data-value>`) selects that row, and one with `data-punk-select-all` in the header selects every enabled row and shows `checked` or `indeterminate` for all or some. Selected rows get `data-selected` (an `accent` bar on the first cell), and the checkboxes take `accent` as their `accent-color`, so the platform's blue never appears. `values` reads the selected rows' values and checks rows by value when assigned. `punk-selection-change` carries `{ values, items }` once per change the user makes. **Why** checkboxes and not `aria-selected`: rows of a `table` do not take `aria-selected`, and a checkbox gives every row a named, focusable control.
 - **Warnings:** no `<table>` child; a table with no name.
 
 ## 2. Alert
@@ -29,7 +29,7 @@
 `punk-badge`: a small count or status label inside a tab, a button, a list item, or a cell. `variant` (`neutral`, the default, `info`, `success`, `warning`, `danger`).
 
 - It has no role and is never announced. Its text joins the name of the element that holds it ("Alerts 3").
-- `neutral` is text alone; the other variants add their status shape before the text, hidden from assistive technology, so the variants differ without color. The plate is `panel-inset`, and its text is `text`, so both are covered by the contrast gate.
+- `neutral` is text alone; the other variants add their status shape before the text, hidden from assistive technology, so the variants differ without color. The plate is the tag's inset `panel-inset` plate, whose light lower edge keeps it visible on the canvas, and its text is `text` at weight 600, so a count reads at a glance; both are covered by the contrast gate.
 - **Warning:** no text.
 
 ## 4. Spinner
@@ -59,15 +59,16 @@
 - **Layout.** A two-column grid: each term at the start, its values beside it on the same text baseline. A term may have several values, each on its own row in the value column, and several terms may share the values that follow them. The term column is at most 40% of the width.
 - **Narrow.** Below 320px of its own width (a container query on the host) each term sits above its values.
 - Terms are `text-muted` and values `text`, in tabular figures so numbers line up. Long words break rather than overflow.
+- **`variant`.** `plain` (the default) has no surface, for a list inside a panel that already has one. `inset` sets the pairs in a recessed `panel-inset` well with an `edge-dark` rule between rows, as the table's body is, so a details sheet on its own reads as part of the material. Unknown values are `plain`.
 - **Warnings:** a child that is not a `<dt>` or a `<dd>`; a first child that is a `<dd>`.
 
 ## 7. Tag
 
 `punk-tag`: a chip for a filter, a chosen value, or a label. `removable`, `remove-label`, `disabled`, `value`, with the default slot for its text.
 
-- Its text on a `panel-inset` plate in `text`, as the badge's. The host has no role, and the text is read where it stands.
+- Its text, at weight 600, on an inset `panel-inset` plate in `text`, as the badge's. The inset bevel's light lower edge keeps the chip visible on the canvas, where a plain `panel-inset` plate nearly disappears. The host has no role, and the text is read where it stands.
 - **Removal.** `removable` adds the shared native close button at the inline end, named by `remove-label` or the localized "Remove" and the tag's text ("Remove Copper"). The text is read when the tag connects and on `slotchange`, never in a render. The button sends `punk-remove` with `{ value, item }`, the connection row's event, and cannot be canceled. The tag does not remove itself: the application removes it and moves focus, since the focused button goes with it; the docs show focus moving to the next tag.
-- `disabled` disables the button and leaves the text as readable as it was.
+- `disabled` disables the button and leaves the text as readable as it was. The disabled button is drawn as every disabled control is: flat, in `disabled-fill` and `disabled-text`, with a `not-allowed` cursor, so it never looks pressable.
 - The button is smaller than the window's to sit in the plate, and keeps the 40px target for a coarse pointer. A long text wraps; the button stays inside the container.
 - **Warning:** no text.
 

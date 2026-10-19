@@ -105,3 +105,12 @@ describe('disabled', () => {
     expect((second as HTMLInputElement).disabled).toBe(false);
   });
 });
+
+describe('look', () => {
+  it('sets the legend on an opaque plate, so the frame never runs through it', async () => {
+    const element = await mount('label="Power" disabled', controls);
+    const legend = getComputedStyle(part(element, 'legend'));
+    expect(legend.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+    expect(legend.boxShadow).toContain('inset');
+  });
+});

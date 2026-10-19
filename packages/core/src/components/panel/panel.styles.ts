@@ -69,6 +69,7 @@ export const panelStyles = css`
     border-start-end-radius: ${token('radius')};
     border-block-end: 1px solid ${token('color-edge-dark')};
     box-shadow: 0 1px 0 ${token('color-edge-light')};
+    font-weight: 700;
   }
 
   .footer {

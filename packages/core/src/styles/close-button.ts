@@ -3,7 +3,7 @@ import type { TemplateResult } from 'lit';
 import { token } from '../tokens/token.ts';
 import { focusRing } from './focus.ts';
 import { forcedColorsSurface } from './forced-colors.ts';
-import { raisedHoverShadow, raisedSurface } from './surfaces.ts';
+import { outlineShadow, raisedHoverShadow, raisedSurface } from './surfaces.ts';
 
 // Native `<button>` with a drawn X, for a window or a toast. The shared styles keep both entries
 // independent of `punk-icon-button` (specs/component-model.md §9).
@@ -24,12 +24,19 @@ export const closeButtonStyles = css`
     cursor: pointer;
   }
 
-  .close-button:hover {
+  .close-button:hover:not(:disabled) {
     box-shadow: ${raisedHoverShadow};
   }
 
-  .close-button:active {
+  .close-button:active:not(:disabled) {
     background: ${token('color-panel-inset')};
+  }
+
+  .close-button:disabled {
+    background: ${token('color-disabled-fill')};
+    box-shadow: ${outlineShadow};
+    color: ${token('color-disabled-text')};
+    cursor: not-allowed;
   }
 
   .close-button .glyph {
@@ -68,6 +75,14 @@ export const closeButtonStyles = css`
   @media (forced-colors: active) {
     .close-button .glyph {
       background: ButtonText;
+    }
+
+    .close-button:disabled {
+      color: GrayText;
+    }
+
+    .close-button:disabled .glyph {
+      background: GrayText;
     }
   }
 `;

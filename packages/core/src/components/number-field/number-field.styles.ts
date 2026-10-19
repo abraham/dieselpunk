@@ -26,7 +26,7 @@ export const numberFieldStyles = css`
     display: flex;
     flex-direction: column;
     margin-inline-end: calc(-1 * ${token('space-2')});
-    border-inline-start: ${token('border-width')} solid ${token('color-control-edge')};
+    border-inline-start: 1px solid ${token('color-control-edge')};
   }
 
   .steppers[hidden] {
@@ -48,7 +48,7 @@ export const numberFieldStyles = css`
   }
 
   .stepper + .stepper {
-    border-block-start: ${token('border-width')} solid ${token('color-control-edge')};
+    border-block-start: 1px solid ${token('color-control-edge')};
   }
 
   .stepper:hover {

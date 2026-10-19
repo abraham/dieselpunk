@@ -101,7 +101,7 @@ test.describe('interaction states', { tag: everyProject }, () => {
       await open(page, { theme: defaultThemeName, density: 'compact', component: 'button' });
     });
 
-    // Primary keeps the unsuffixed baselines. Default hover takes the accent fill, and an arrow
+    // Primary keeps the unsuffixed baselines. Default hover keeps its fill, and an arrow
     // button's tip follows its fill and its focus ring.
     const targets = [
       ['', 'punk-button[variant="primary"]:not([disabled]):not([loading])'],

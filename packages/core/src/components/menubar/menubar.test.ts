@@ -138,6 +138,18 @@ describe('the row', () => {
     },
   );
 
+  it('keeps the item of the open menu highlighted after focus moves into the menu', async () => {
+    const menubar = await mount();
+    const look = (entry: Element) =>
+      getComputedStyle(entry.shadowRoot?.querySelector('[part="item"]') as Element).backgroundColor;
+    const closed = look(named(menubar, 'Help'));
+    named(menubar, 'File').focus();
+    await press(menubar, '{Enter}');
+    expect(document.activeElement).toBe(item(menubar, 'new'));
+    expect(look(named(menubar, 'File'))).not.toBe(closed);
+    expect(look(named(menubar, 'Edit'))).toBe(closed);
+  });
+
   it('opens the menu on its last item with Up, and toggles it with a click', async () => {
     const menubar = await mount();
     named(menubar, 'Edit').focus();

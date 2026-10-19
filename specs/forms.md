@@ -39,6 +39,7 @@ As in native controls, **the attribute is the default and the property is the li
 - A slider copies `label` to its host's `aria-label`.
 - An external `<label for>` populates `labels` and focuses the control when clicked.
 - A hint (the `hint` slot) is the inner control's description, with the message when it shows.
+- **Required.** A `required` control shows a bold `*` after its rendered label (a field's, a checkbox's or switch's text, a radio group's label), so a sighted user sees it before submitting (SC 3.3.2). The mark is an `aria-hidden` element, since `aria-required` already tells assistive technology, so the name stays the label alone. **Why** not generated content with an empty alternative: browsers honor that, but test tools that compute names themselves read the alternative syntax as text. An application that labels its controls another way says it in its own text.
 - A control with no name warns.
 
 ## 5. Events
@@ -80,7 +81,7 @@ A custom control with `role="slider"` on the host, `aria-orientation="horizontal
 - validity read from the native control, with the control as the anchor;
 - the re-dispatched `change`.
 
-**Look** (`styles/field.ts`): an inset field with a `control-edge` boundary, a hover edge that gains contrast, prefix and suffix inside the frame, placeholder in `text-muted` (which meets 4.5:1 on `panel-inset`), and states for focus, invalid, disabled, and read-only. Prefix and suffix are `flex: none` with at most half the width and wrap inside it; the control keeps at least `3ch`.
+**Look** (`styles/field.ts`): an inset field with a 1px `control-edge` boundary inside a deeper inner bevel (2px dark at the top), so it reads as a recessed well rather than an outlined input while still meeting 3:1, a hover edge that gains contrast, prefix and suffix inside the frame, placeholder in `text-muted` (which meets 4.5:1 on `panel-inset`), and states for focus, invalid, disabled, and read-only. Prefix and suffix are `flex: none` with at most half the width and wrap inside it; the control keeps at least `3ch`.
 
 ## 9. Text field
 
@@ -129,7 +130,7 @@ A native `<select>` filled with copies of the host's light-DOM `<option>` and `<
 `punk-textarea` is a field ([§8](#8-field-base)) with a native `<textarea>`: `value`, `placeholder`, `readonly`, `minlength`, `maxlength`, `rows` (below 1 is 1), and `autocomplete`, with the `hint` slot and no affixes.
 
 - The value binding writes only when it differs from what the textarea holds, as the text field's does.
-- The user can drag it taller. **`autogrow`** grows it with its text up to `--punk-textarea-max-height`, through `field-sizing: content`, where the engine supports it; elsewhere it keeps `rows` lines and scrolls. **Why** no script measurement: a keypress reads no layout ([performance.md §3](performance.md)).
+- The user can drag it taller, by a grip drawn as two `control-edge` grooves where the engine lets it be styled (Chromium and WebKit, through `::-webkit-resizer`); Firefox keeps its own. **`autogrow`** grows it with its text up to `--punk-textarea-max-height`, through `field-sizing: content`, where the engine supports it; elsewhere it keeps `rows` lines and scrolls. **Why** no script measurement: a keypress reads no layout ([performance.md §3](performance.md)).
 - **`show-count`** shows the number of characters, out of `maxlength` when it is set, inside the box at its end. The count joins the textarea's description.
 - **`monospace`** sets the text in `font-mono`, turns off spell checking, and breaks long words anywhere, so a long encoded string wraps. With `readonly` it is a selectable block of code or data.
 - **Server text.** Lit cannot render a binding inside `<textarea>`, and Lit SSR does not write a textarea's `.value`, so the first `value` is baked, escaped, into the element's own copy of the template as the textarea's content (its `defaultValue`), after one newline for the parser to drop. A server-rendered field shows its text before scripts load, and the server, hydrating, and client trees agree. Later values go through the `.value` binding. Lit caches templates in `WeakMap`s keyed on the strings, so the copy is freed with the element; an empty first value shares one copy.
@@ -154,7 +155,7 @@ A native `<select>` filled with copies of the host's light-DOM `<option>` and `<
 
 - **Description.** The `hint` slot and the `error` slot (an error summary the application writes, shown with the warning triangle) describe the group while they have content.
 - **Disabled.** A shadow fieldset does not disable light-DOM controls, so `disabled` does what a native fieldset would by writing: it sets `disabled` on every native control (`button`, `input`, `select`, `textarea`, `fieldset`) and form-associated custom element inside it, except inside the `legend` slot, remembers which it changed, and enables exactly those again when it is enabled, when they leave, or when it disconnects ([component-model.md §8](component-model.md)). Unlike a native fieldset, the controls' own `disabled` reads `true` meanwhile. Controls added deeper inside while it is disabled are found when its own children change.
-- **Look.** An etched frame with the legend set into its top edge.
+- **Look.** An etched frame with the legend on an inset nameplate set into its top edge. **Why** a plate: the native legend cuts the frame's border but not its inner light line, which otherwise ran through the legend and read as a strikethrough on a disabled group.
 - **Warning:** no legend.
 
 ## 16. Date and time fields
@@ -164,7 +165,7 @@ A native `<select>` filled with copies of the host's light-DOM `<option>` and `<
 - **The picker is the platform's.** How the value is shown and typed, the calendar or clock that opens, and a 12- or 24-hour display are the engine's, in the browser's language. **Why:** they are accessible in every engine, and a calendar grid of the library's own is a large accessibility surface ([components.md §5](components.md)).
 - **Values** are the input's formats, whatever the display: `YYYY-MM-DD` for a date, `HH:MM` or `HH:MM:SS` for a time. Before each render a detached input of the same type parses an assigned value: one it cannot parse is cleared and warns once, and one it normalizes is taken as normalized, so the field never disagrees with its input. `step` is in days for a date and seconds for a time; below 60 a time takes seconds.
 - **Form and validity** as the text field: `value` under `name`, the `value` attribute as the reset default, and `valueMissing`, `rangeUnderflow`, `rangeOverflow`, `stepMismatch`, and `badInput` (a value the user left incomplete) from the input.
-- **Look.** The field's frame. Chromium's picker button is an image in a fixed color, so it is redrawn as a mask filled with the text color (a calendar or a clock), and with `ButtonText` under forced colors. The other engines draw their own, which follows the theme's `color-scheme`.
+- **Look.** The field's frame. While there is no value, the platform's format segments ("mm/dd/yyyy") are `text-muted`, as a placeholder is, so an empty field does not read as filled. Chromium's picker button is an image in a fixed color, so it is redrawn as a mask filled with the text color (a calendar or a clock), and with `ButtonText` under forced colors. The other engines draw their own, which follows the theme's `color-scheme`.
 
 ## 17. File field
 
@@ -172,7 +173,7 @@ A native `<select>` filled with copies of the host's light-DOM `<option>` and `<
 
 - **Choosing.** The input's own button opens the platform's chooser, so the keyboard and every pointer can always choose. Its text and "No file chosen" are the browser's; the button is drawn raised through `::file-selector-button`.
 - **The list.** The chosen files' names and sizes, as a list below the input inside the box. Sizes are in the largest unit that keeps them at 1 or more, formatted for the nearest `lang` (`file-kinds.ts`, pure).
-- **Drop zone.** With `drop-zone` the box is taller and dashed, says the localized "or drop files here", and turns solid `accent` while files are dragged over it. A drop takes the files `accept` names (extensions, MIME types, or `type/*`), only the first unless `multiple`, into the input through a `DataTransfer`, and sends `input` and `change` as a choice does. A drop it takes nothing from is still stopped, so the browser does not open the file in place of the page. It is an enhancement, never the only way ([accessibility.md](accessibility.md)). A disabled field takes no drops.
+- **Drop zone.** With `drop-zone` the box is taller, says the localized "or drop files here", and takes an `accent` frame while files are dragged over it. **Why** not a dashed boundary: in every other field a dashed boundary means read-only, and one cue should not have two meanings. A drop takes the files `accept` names (extensions, MIME types, or `type/*`), only the first unless `multiple`, into the input through a `DataTransfer`, and sends `input` and `change` as a choice does. A drop it takes nothing from is still stopped, so the browser does not open the file in place of the page. It is an enhancement, never the only way ([accessibility.md](accessibility.md)). A disabled field takes no drops, draws its choose button as every disabled control is (flat, `disabled-fill`, `disabled-text`), and keeps its zone in the well's `panel-inset`, since the lighter disabled fill over that much area made it look more active than an enabled one.
 - **Form.** Each chosen file is submitted under `name` (a `File`, or a `FormData` for several), and nothing when none is chosen or there is no name. **Why** nothing rather than the empty file a native input submits: a form-associated element has no way to submit an entry with an empty filename that servers read as "no file". A reset clears the choice; the browser keeps no files across navigation, so there is no state to restore. `required` with no file is `valueMissing`.
 - The field base reads validity only while the control is being validated, since a disabled file input still reports `valueMissing` with no message.
 

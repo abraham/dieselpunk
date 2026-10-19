@@ -1,7 +1,7 @@
 import { css } from 'lit';
 import { forcedColorsSurface } from '../../styles/forced-colors.ts';
 import { hostFocusRing } from '../../styles/focus.ts';
-import { raisedSurface } from '../../styles/surfaces.ts';
+import { flatSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
 export const menuStyles = css`
@@ -27,7 +27,7 @@ export const menuStyles = css`
     overflow: auto;
     border-radius: ${token('radius')};
     color: ${token('color-text')};
-    ${raisedSurface}
+    ${flatSurface}
   }
 
   :host([open]) .surface {
@@ -76,8 +76,10 @@ export const menuItemStyles = css`
     color: ${token('color-text')};
   }
 
+  /* An item whose menu is open keeps the look, so the menubar shows which menu that is. */
   :host(:hover:not([disabled])) .item,
-  :host(:focus) .item {
+  :host(:focus) .item,
+  :host([aria-expanded='true']) .item {
     background: ${token('color-panel-inset')};
   }
 
@@ -156,7 +158,8 @@ export const menuItemStyles = css`
   ${hostFocusRing('.item')}
 
   @media (forced-colors: active) {
-    :host(:focus) .item {
+    :host(:focus) .item,
+    :host([aria-expanded='true']) .item {
       background: Highlight;
       color: HighlightText;
     }

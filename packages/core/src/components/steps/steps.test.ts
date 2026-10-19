@@ -158,6 +158,22 @@ describe('appearance', () => {
     expect(part(alone, 'connector')).toBeNull();
   });
 
+  it('draws connectors in control-edge, and the travelled path in the accent', async () => {
+    addStylesheets();
+    const element = await mount('current="2"');
+    const probe = (token: string) => {
+      const span = track(document.createElement('span'));
+      span.style.color = `var(--punk-color-${token})`;
+      return getComputedStyle(span).color;
+    };
+    const [, second, third] = steps(element).map(
+      (step) =>
+        part(step, 'connector') && getComputedStyle(part(step, 'connector')).backgroundColor,
+    );
+    expect(second).toBe(probe('accent'));
+    expect(third).toBe(probe('control-edge'));
+  });
+
   it('wraps onto more lines inside a narrow container, in every theme', async () => {
     addStylesheets();
     for (const theme of themeNames) {

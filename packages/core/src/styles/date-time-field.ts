@@ -21,6 +21,11 @@ export const dateTimeFieldStyles = css`
     min-inline-size: 8ch;
   }
 
+  /* The platform's format segments ("mm/dd/yyyy") are a placeholder until there is a value. */
+  .field:not(.disabled) .control.empty {
+    color: ${token('color-text-muted')};
+  }
+
   .control::-webkit-calendar-picker-indicator {
     inline-size: ${token('icon-size-sm')};
     block-size: ${token('icon-size-sm')};

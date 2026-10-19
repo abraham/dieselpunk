@@ -76,6 +76,15 @@ describe.each(tags)('%s as a field', (tag) => {
     expect(part(element, 'label').hidden).toBe(true);
   });
 
+  it('marks a required field for sight, hidden from assistive technology', async () => {
+    const optional = await mount(tag);
+    expect(part(optional, 'label').querySelector('.required-mark')).toBeNull();
+    const element = await mount(tag, 'label="Callsign" required');
+    const mark = part(element, 'label').querySelector('.required-mark') as HTMLElement;
+    expect(mark.textContent?.trim()).toBe('*');
+    expect(mark.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('names the control with the rendered label', async () => {
     const element = await mount(tag);
     expect(control(element).labels?.[0]).toBe(part(element, 'label'));

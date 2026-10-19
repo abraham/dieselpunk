@@ -120,13 +120,13 @@ The application names the grid with `aria-label`; a missing name warns.
 
 - The first enabled tab is selected when none is. Removing the selected tab selects the nearest enabled one, forward first. `value` (the selected tab's `panel`) can be read and assigned; assigned before tabs exist, it applies when they arrive.
 - `punk-tab-change` carries `{ value, tab, panel }` for user changes.
-- **Look.** The tab list wraps onto more rows and never scrolls sideways. The selected tab is inset with a 3px `accent` bar on the edge facing the panel; others have none.
+- **Look.** The tabs sit edge to edge, and the tab list wraps onto more rows and never scrolls sideways. When the panels are inside the tabs, they sit on one flat surface (`part="panels"`, padded by `--punk-tabs-padding`), and the selected tab takes that surface's fill and covers the seam below it, so it joins its panel: a cue of shape, not color. The other tabs recede to the `panel-inset` fill. When the panels are elsewhere the surface is hidden, and the selected tab is inset with a 3px `accent` bar on the edge facing the panel. Under forced colors the selected tab always has the bar, in `Highlight`. **Why** a join and not the selection outline of [visual-system.md §5](visual-system.md): an outline would draw a line between the tab and the panel it opens.
 - **Panels that are parsed late.** A panel after the tabs in the markup may not exist yet; a missing panel is not reported while `document.readyState` is `loading`, and the tabs look again on `DOMContentLoaded`.
 - **Warnings:** no name; a tab naming a missing panel; two tabs naming one panel.
 
 ## 8. Toolbar
 
-`punk-toolbar` is a fixed-height strip with a minimum height, `role="toolbar"`, `aria-orientation` from `orientation`, and the application's `aria-label`.
+`punk-toolbar` is a fixed-height strip with a minimum height, `role="toolbar"`, `aria-orientation` from `orientation`, and the application's `aria-label`. The strip is the inset surface, darker than a panel, so the raised controls on it stand out by value as well as by bevel.
 
 - **Items** are direct children that are a `punk-button`, `punk-icon-button`, `punk-checkbox`, `punk-switch`, `button`, or `a[href]`, or that have `data-punk-toolbar-item`. A `punk-divider`, `hr`, or `[role="separator"]` is a separator and is skipped. A select, text field, number field, or slider keeps its own tab stop outside the group, since each uses the arrow keys itself (APG). Anything else is ignored.
 - **Roving.** `RovingController` keeps one tab stop; `Left`, `Right` (swapped in `rtl`), `Home`, and `End` move without wrapping. Tab enters at the item that last had focus, else the first.
@@ -143,6 +143,7 @@ The application names the grid with `aria-label`; a missing name warns.
 - **Single mode** (default): expanding an item collapses the others, whether the user, a property, or an attribute expanded it. The open item can be collapsed, so none may be open. Several expanded at connection keep the first and warn once. **`multiple`** allows any number.
 - **Every enabled header is a tab stop**, as in the APG accordion; there is no roving. `Up` and `Down` move between enabled headers without wrapping, and `Home` and `End` go to the first and last; the keys act only when they come from a header, so arrows in a field inside a panel are left alone. Enter and Space are the native button's.
 - The indicator is a plus when collapsed and a minus when expanded.
+- **Look.** A collapsed header is raised; an expanded one is pressed in, and its content meets it with no gap and square inner corners, as a panel's header strip meets its body, so an open item reads as one framed section.
 - `punk-toggle` carries `{ expanded }` for user changes.
 - An out-of-range `level` is clamped and warns.
 
@@ -183,7 +184,7 @@ The application names the grid with `aria-label`; a missing name warns.
 - **Values.** `values` reads and assigns the pressed values (copies). Before anything is assigned, buttons the markup marked `aria-pressed="true"` or `aria-checked="true"` start pressed. `punk-selection-change` carries `{ values, items }` once per user change.
 - **Ownership.** The group owns each button's `role`, `aria-checked`, `aria-pressed`, and `tabindex`, and restores the author's values when a button leaves or the group disconnects. `disabled` disables the buttons that were enabled, and enables exactly those again.
 - The group is named by the host's `aria-label`, copied to the inner group.
-- **Look.** A pressed button is set into the strip with the inset bevel and an `accent` bar along its foot; under forced colors it is `Highlight` with a double border.
+- **Look.** A pressed button is set into the strip with the inset bevel and a warm `accent` outline, the selection marker of [visual-system.md §5](visual-system.md); under forced colors it is `Highlight` with a double border.
 - **Warnings:** no name; a child that is not a `<button>`.
 
 ## 12. List
@@ -200,7 +201,7 @@ The application names the grid with `aria-label`; a missing name warns.
 - **Pointer.** A click selects or toggles, Shift-click extends, and both also activate; the list handles clicks and Space in the capture phase, as the grid does ([§3](#3-activation)).
 - **Tab stop.** The item last focused, else the first selected, else the first enabled.
 - **Values.** Items are identified by `value`. `values` reads and assigns (copies); assigned before items exist, it applies when they arrive; before anything is assigned, items marked `selected` start selected. `punk-selection-change` carries `{ values, items }` once per user change.
-- **Rows.** A start slot, the text, a description below it, and an end slot. All of the row's text is its name. A selected row shows a check and an `accent` bar on its start edge.
+- **Rows.** A start slot, the text, a description below it, and an end slot. All of the row's text is its name. A selected row shows a check and an `accent` bar on its start edge. A disabled row dims all of its text, the description and slots included, not only its name.
 - **Warnings:** no name; a child that is not an item; items without distinct, non-empty values in a selecting list.
 
 ## 13. Menubar
@@ -211,7 +212,7 @@ The application names the grid with `aria-label`; a missing name warns.
 - **The row** is one tab stop through `RovingController`: `Left` and `Right` (swapped in `rtl`) move among the items, skipping disabled ones, without wrapping ([§1](#1-keyboard-model)), and `Home` and `End` go to the ends. `Enter`, `Space`, `Down`, or a click opens an item's menu on its first item, and `Up` on its last; a click on an open item's trigger closes it.
 - **An open menu.** `Left` and `Right` close it and open the previous or next enabled item's menu on its first item, stopping at the ends. A submenu's own keys come first: `Right` on an item with a submenu opens it, and `Left` in a submenu closes it. `Escape` closes the menu and returns to its item, an action closes it and returns to its item, and `Tab` closes it and leaves the row. These are the menu's own behaviors.
 - **No opening on hover**, as for menus.
-- **Look.** The toolbar's flat strip, wrapping rather than scrolling, with the menu items' own hover and focus.
+- **Look.** A flat strip, wrapping rather than scrolling, with the menu items' own hover and focus. An item whose menu is open keeps that highlight while focus is in the menu, so the bar shows which menu is open; a submenu's parent item in a menu does the same.
 - **Warnings:** no name; no items.
 
 ## 14. Tree
@@ -220,7 +221,7 @@ The application names the grid with `aria-label`; a missing name warns.
 
 - **Semantics.** The host is `role="tree"` (with `aria-multiselectable` in `multiple`), named by its `aria-label`. Each item host is a `treeitem` named by its `label` (copied to `aria-label`, so its children's text never joins its name), with `aria-level` from its nesting, `aria-expanded` while it has child items, and `aria-disabled`; its children sit in a `role="group"` in its shadow tree, shown only while it is `expanded`. The tree writes `aria-selected` in a selecting tree, and `tabindex`. A parent draws a triangle that turns toward its children while they show.
 - **Keys.** One tab stop: the item last focused, else the first selected one that shows, else the first. `Up` and `Down` move among the enabled items that show, without wrapping; `Home` and `End` go to the first and last. `Right` (`Left` in `rtl`) expands a closed parent and moves into an open one; `Left` collapses an open parent or moves to the item's parent. `*` expands every sibling of the item. A letter moves to the next item whose label starts with it. `Enter` sends `punk-activate` (`{ value, item }`) from the item; in a tree that does not select, so does `Space`.
-- **Selection.** `Space` and a click select (`single`) or toggle (`multiple`) through `SelectionModel` ([§4](#4-selection-model)), and `Ctrl+A` or `Cmd+A` selects every enabled item in `multiple`, hidden ones included. A click also activates. `punk-selection-change` carries `{ values, items }` once per change the user makes, never for `values` from code. Before anything is assigned, items marked `selected` start selected. A selected row shows a check and an `accent` bar on its start edge, a border under forced colors.
+- **Selection.** `Space` and a click select (`single`) or toggle (`multiple`) through `SelectionModel` ([§4](#4-selection-model)), and `Ctrl+A` or `Cmd+A` selects every enabled item in `multiple`, hidden ones included. A click also activates. `punk-selection-change` carries `{ values, items }` once per change the user makes, never for `values` from code. Before anything is assigned, items marked `selected` start selected. The tree is the list's inset well, and a selected row is raised out of it as a list's is, with a check and an `accent` bar on its start edge, a border under forced colors.
 - **Expanding.** A click on a parent's triangle, the keys, or `*` expand and collapse, and send `punk-toggle` (`{ expanded }`) from the item; setting `expanded` from code sends nothing. Collapsing an item that holds focus deeper inside moves focus to it.
 - **Ownership.** The tree owns every item, nested ones included, through the owner protocol ([component-model.md §8](component-model.md)); an item reports changes to its value, state, and children, and is let go when it leaves.
 - **Warnings:** no name; a child that is not an item; items without distinct, non-empty values in a selecting tree.

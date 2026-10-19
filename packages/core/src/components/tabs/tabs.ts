@@ -7,6 +7,7 @@ import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import type { RovingOrientation } from '../../internal/roving-keys.ts';
 import { focusItem, setTabStop } from '../../internal/roving.ts';
+import { SlotPresence } from '../../internal/slot-presence.ts';
 import { navigateTabs, resolveSelection } from '../../internal/tab-navigation.ts';
 import type { TabActivation } from '../../internal/tab-navigation.ts';
 import { devWarn } from '../../utilities/warn.ts';
@@ -60,6 +61,9 @@ const TABBABLE = [
  * @slot - Panels, if they are inside the tabs.
  *
  * @csspart tablist - The tab list.
+ * @csspart panels - The surface around panels inside the tabs, which the selected tab joins. It is hidden when the panels are elsewhere.
+ *
+ * @cssprop [--punk-tabs-padding=var(--punk-space-3)] - Padding of the surface around panels inside the tabs.
  *
  * @fires punk-tab-change - The user selected a tab. `detail` is `{ value, tab, panel }`. It is not sent when the application changes the selection.
  */
@@ -91,6 +95,7 @@ export class PunkTabs extends PunkElement implements Owner<PunkTab> {
   #lastIndex = 0;
   #requested: string | null = null;
   readonly #panels = new Ledger();
+  readonly #slots = new SlotPresence(this, ['']);
   #warned = new Set<string>();
   #waitingForParse = false;
 
@@ -324,17 +329,20 @@ export class PunkTabs extends PunkElement implements Owner<PunkTab> {
   };
 
   protected override render() {
+    const joined = this.#slots.has('');
     return html`
       <div
         part="tablist"
-        class="tablist"
+        class="tablist ${joined ? 'joined' : ''}"
         role="tablist"
         aria-orientation=${this.#orientation}
         aria-label=${ifDefined(this.accessibleLabel ?? undefined)}
       >
         <slot name="tab" @slotchange=${this.#handleSlotChange}></slot>
       </div>
-      <slot></slot>
+      <div part="panels" class="panels" ?hidden=${!joined}>
+        <slot @slotchange=${this.#slots.handleSlotChange}></slot>
+      </div>
     `;
   }
 }
