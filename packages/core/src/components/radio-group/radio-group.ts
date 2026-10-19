@@ -11,6 +11,7 @@ import { childChanged, owner, release } from '../../internal/owner.ts';
 import { nextRovingIndex } from '../../internal/roving-keys.ts';
 import { itemDisabled, setTabStop } from '../../internal/roving.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
+import { requiredMark } from '../../styles/required-mark.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { PunkRadio } from './radio.ts';
 import type { RadioOwner } from './radio.ts';
@@ -286,7 +287,9 @@ export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
       .join(' ');
     const orientation = this.orientation === 'horizontal' ? 'horizontal' : 'vertical';
     return html`
-      <div part="label" class="label" id="label" ?hidden=${!this.label}>${this.label}</div>
+      <div part="label" class="label" id="label" ?hidden=${!this.label}>
+        ${this.label}${requiredMark(this.required)}
+      </div>
       <div part="hint" class="hint" id="hint" ?hidden=${!this.#slots.has('hint')}>
         <slot name="hint" @slotchange=${this.#slots.handleSlotChange}></slot>
       </div>

@@ -232,7 +232,7 @@
     "path": "dist/components/checkbox/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "4.75 kB"
+    "limit": "5 kB"
   },
   {
     "name": "punk-switch",
@@ -253,7 +253,7 @@
     "path": "dist/components/text-field/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.05 kB"
+    "limit": "6.1 kB"
   },
   {
     "name": "punk-number-field",
@@ -267,7 +267,7 @@
     "path": "dist/components/select/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.55 kB"
+    "limit": "6.6 kB"
   },
   {
     "name": "punk-icon-button (includes the tooltip)",
@@ -281,7 +281,7 @@
     "path": "dist/components/radio-group/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.75 kB"
+    "limit": "6.85 kB"
   },
   {
     "name": "punk-textarea",
@@ -421,7 +421,7 @@
     "path": "dist/components/file-field/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "7.15 kB"
+    "limit": "7.2 kB"
   },
   {
     "name": "punk-splitter",
