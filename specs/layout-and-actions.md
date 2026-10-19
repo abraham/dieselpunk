@@ -8,7 +8,7 @@
 A structural metal surface: `variant` (`raised`, `inset`, `flat`; unknown is `raised`) and `density` (`compact`, `low`, or unset to inherit), with the default, `header`, and `footer` slots.
 
 - The host is `display: block` and imposes no width or height. Padding is `--punk-panel-padding`.
-- Header and footer are strips on `panel-inset` (so their text is covered by the contrast gate), with an etched edge toward the body. Each is rendered `hidden` while its slot is empty, through `SlotPresence`, and appears when content arrives.
+- Header and footer are strips on `panel-inset` (so their text is covered by the contrast gate), with an etched edge toward the body. The header's text is 700, like the window's, dialog's, and drawer's titles. Each is rendered `hidden` while its slot is empty, through `SlotPresence`, and appears when content arrives.
 - `raised` and `flat` carry the texture; `inset` does not.
 - `density` applies the density token set to the panel's subtree, overriding an ancestor's `data-punk-density` in either direction ([visual-system.md §3](visual-system.md)).
 - No role. An application adds `role="region"` and a label where the panel is a landmark.

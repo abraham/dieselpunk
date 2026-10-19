@@ -203,6 +203,12 @@ describe('header and footer', () => {
     expect(header.borderBottomWidth).toBe('1px');
     expect(getComputedStyle(part(panel, 'footer')).borderTopWidth).toBe('1px');
   });
+
+  it('set the header as a title, bolder than the footer', async () => {
+    const panel = await mount({ header: true, footer: true });
+    expect(getComputedStyle(part(panel, 'header')).fontWeight).toBe('700');
+    expect(getComputedStyle(part(panel, 'footer')).fontWeight).toBe('400');
+  });
 });
 
 describe('density', () => {
