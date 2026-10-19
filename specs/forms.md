@@ -131,6 +131,8 @@ A native `<select>` filled with copies of the host's light-DOM `<option>` and `<
 - The value binding writes only when it differs from what the textarea holds, as the text field's does.
 - The user can drag it taller. **`autogrow`** grows it with its text up to `--punk-textarea-max-height`, through `field-sizing: content`, where the engine supports it; elsewhere it keeps `rows` lines and scrolls. **Why** no script measurement: a keypress reads no layout ([performance.md §3](performance.md)).
 - **`show-count`** shows the number of characters, out of `maxlength` when it is set, inside the box at its end. The count joins the textarea's description.
+- **`monospace`** sets the text in `font-mono`, turns off spell checking, and breaks long words anywhere, so a long encoded string wraps. With `readonly` it is a selectable block of code or data.
+- **Server text.** Lit cannot render a binding inside `<textarea>`, and Lit SSR does not write a textarea's `.value`, so the first `value` is baked, escaped, into the element's own copy of the template as the textarea's content (its `defaultValue`), after one newline for the parser to drop. A server-rendered field shows its text before scripts load, and the server, hydrating, and client trees agree. Later values go through the `.value` binding. Lit caches templates in `WeakMap`s keyed on the strings, so the copy is freed with the element; an empty first value shares one copy.
 
 ## 14. Combobox
 

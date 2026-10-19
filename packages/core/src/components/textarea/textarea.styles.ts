@@ -23,6 +23,11 @@ export const textareaStyles = css`
     resize: none;
   }
 
+  :host([monospace]) .control {
+    font-family: ${token('font-mono')};
+    overflow-wrap: anywhere;
+  }
+
   .count {
     flex: none;
     align-self: flex-end;

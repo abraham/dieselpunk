@@ -29,6 +29,8 @@ A field for several lines of text, with a native \`<textarea>\` in its shadow tr
 
 **Count:** \`show-count\` shows how many characters there are, out of \`maxlength\` when it is set, and the count describes the field.
 
+**Monospace:** \`monospace\` sets the text in the monospace font, without spell checking, and breaks long words anywhere. With \`readonly\` it is a selectable block of code or data, such as an encoded string to copy. A server-rendered textarea shows its first \`value\` before scripts load.
+
 **Name:** \`label\`, else \`aria-label\`, else a \`<label for>\` pointing at the host. A field with no name warns in development.
 `,
       },
@@ -66,6 +68,16 @@ const fields = () => html`
         <punk-textarea label="Log" value="Reactor stable." readonly></punk-textarea>
         <punk-textarea label="Log" value="Reactor stable." disabled></punk-textarea>
       </div>`,
+    )}
+    ${group(
+      'Monospace, read-only',
+      html`<punk-textarea
+        label="Blueprint string"
+        monospace
+        readonly
+        rows="4"
+        value="0eNqVkt1qwzAMhV/F6Lob0zQ/LTyMsYuxP5iGb6p6k6O4c5W/lFKWUt494j7NKbnVL/mGmlHn1Xn1RRUunFLjgprcy7pxYK7VBgLR1TmZ2VYxL4dfaTzbFvrZgxsyb7RLyqH4Wq3s6v5O8Vas4GmmEfXI2YHN8LsL0Fz1V"
+      ></punk-textarea>`,
     )}
   </div>
 `;

@@ -65,6 +65,14 @@ body += await ssr(html`
   >
 `);
 
+// A textarea's text is its content, so it shows before scripts load, escaped.
+const textarea = await ssr(
+  html`<punk-textarea label="YAML" monospace readonly value="a &amp; &lt;b&gt;"></punk-textarea>`,
+);
+if (!/<textarea[^>]*>\na &amp; &lt;b><\/textarea>/.test(textarea)) {
+  problems.push(`punk-textarea did not render its value as escaped content: ${textarea}`);
+}
+
 // Components with children, labels, and values. Each must end as a client render of its markup,
 // children included, so the page keeps the markup in a template for the browser to render.
 const composed = [
@@ -86,6 +94,7 @@ const composed = [
   '<label for="cl">Thrust</label><punk-number-field id="cl" value="3"></punk-number-field>',
   '<fieldset disabled><punk-checkbox checked>Agree</punk-checkbox><punk-button>Send</punk-button></fieldset>',
   '<punk-date-field label="Day" value="2025-01-31"></punk-date-field>',
+  '<punk-textarea label="Blueprint" monospace readonly value="0eNq &amp; &lt;x&gt;"></punk-textarea>',
   '<punk-production-stat label="Iron" value="1200" unit="/min"><svg slot="sparkline" viewBox="0 0 1 1"></svg></punk-production-stat>',
   '<punk-panel variant="inset"><span slot="header">Header</span>Body<span slot="footer">Footer</span></punk-panel>',
 ];
