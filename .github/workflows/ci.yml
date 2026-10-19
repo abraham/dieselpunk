@@ -138,10 +138,45 @@ jobs:
       mode: check
       matrix: ${{ needs.plan.outputs.visual }}
 
+  # Dependency review on pull requests, CodeQL on both (specs/security.md §5.2, §6.1). The
+  # analysis of main is the baseline that code scanning compares a pull request with.
+  security:
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      # Licenses are checked by check:lockfile, for the published packages' runtime trees only.
+      - if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v5.0.0
+        with:
+          fail-on-severity: high
+          fail-on-scopes: runtime, development, unknown
+          license-check: false
+      - uses: github/codeql-action/init@v4.39.0
+        with:
+          languages: javascript-typescript, actions
+          build-mode: none
+          config-file: ./.github/codeql/codeql-config.yml
+      - uses: github/codeql-action/analyze@v4.39.0
+        with:
+          output: codeql-results
+      # After the analysis, so the installed packages are not in the tree it reads.
+      - if: github.event_name == 'pull_request'
+        uses: $/.github/actions/setup
+      - if: github.event_name == 'pull_request'
+        run: node scripts/check-codeql.ts codeql-results
+
   # The one check to require in branch protection: it passes only when every job above passed.
   ci-success:
     if: always()
-    needs: [plan, static, integration, smoke, browser, visual]
+    needs: [plan, static, integration, smoke, browser, visual, security]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

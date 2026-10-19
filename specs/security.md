@@ -1,7 +1,7 @@
 # Security
 
 **Scope:** what keeps the published packages, the release path, and the pages that use them safe: the threat model, rules for shipped code, checks on each change (code, dependencies, workflows), the provenance of a release, and how findings are handled. Known advisories in dependencies are Dependabot's (§5.1); this spec's checks run on changes and releases, never on a schedule.
-**Code:** `eslint.config.js`, `packages/testing/test/security-lint.test.ts`, `scripts/check-lockfile.ts`, `packages/testing/src/lockfile.ts`, `scripts/sbom.ts`, `.install-scripts.json`, `packages/testing/src/workflows.ts`, `packages/testing/test/workflows.test.ts`, `packages/core/test/package/csp/`, `.github/workflows/ci.yml` (the `security` job), `.github/workflows/publish.yml`, `.github/dependabot.yml`, `SECURITY.md`.
+**Code:** `eslint.config.js`, `packages/testing/test/security-lint.test.ts`, `scripts/check-lockfile.ts`, `packages/testing/src/lockfile.ts`, `scripts/sbom.ts`, `scripts/check-codeql.ts`, `packages/testing/src/sarif.ts`, `.github/codeql/codeql-config.yml`, `.install-scripts.json`, `packages/testing/src/workflows.ts`, `packages/testing/test/workflows.test.ts`, `packages/core/test/package/csp/`, `.github/workflows/ci.yml` (the `security` job), `.github/workflows/publish.yml`, `.github/dependabot.yml`, `SECURITY.md`.
 
 ## 1. Goals
 
@@ -82,7 +82,8 @@ The packages held back from version updates (TypeScript, Playwright, `@types/nod
 
 A pull request that changes the lockfile is a code change, and is checked as one:
 
-- **Dependency review.** `actions/dependency-review-action` fails on an added or upgraded package with a high or critical advisory, and on a new runtime dependency of a published package whose license is not MIT, ISC, BSD-2-Clause, BSD-3-Clause, or Apache-2.0. Core takes no new runtime dependency without a change to [product.md §2](product.md) anyway; this makes the check automatic.
+- **Dependency review.** `actions/dependency-review-action` fails on an added or upgraded package, of any scope, with a high or critical advisory.
+- **Runtime licenses.** `check:lockfile` fails when a published package's runtime tree (its dependencies and optional dependencies, and theirs, as resolved in the lockfile; not its peers) has a package whose license is not MIT, ISC, BSD-2-Clause, BSD-3-Clause, or Apache-2.0. Core takes no new runtime dependency without a change to [product.md §2](product.md) anyway; this makes the check automatic. **Why** not dependency review's license check: it covers every changed package, development tools included, which the rule does not.
 - **`npm run check:lockfile`** (`scripts/check-lockfile.ts`) fails when a lockfile entry resolves from anywhere but `https://registry.npmjs.org/` or lacks an `integrity` hash, and when `npm audit signatures` reports an installed package with an invalid registry signature or provenance attestation. `npm ci` is the only install in CI, so the lockfile is what runs.
 
 ### 5.3 Install scripts
@@ -93,7 +94,7 @@ The lockfile marks every package that runs a lifecycle script on install (`hasIn
 
 ### 6.1 Code
 
-CodeQL analyzes `javascript-typescript` with the `security-extended` suite, and `actions` (the workflow files), on every pull request and every push to `main`. Alerts appear in GitHub code scanning. A pull request that adds a high or critical alert fails its `security` job (§8). **Why** `main` too: code scanning finds a pull request's new alerts by comparing with the last analysis of its base branch. A dismissed alert carries the dismissal reason and a comment; a false positive that recurs gets a query filter in the CodeQL configuration, with the reason, instead of repeated dismissals.
+CodeQL analyzes `javascript-typescript` with the `security-extended` suite, and `actions` (the workflow files), on every pull request and every push to `main`, configured by `.github/codeql/codeql-config.yml`. Alerts appear in GitHub code scanning. On a pull request, `scripts/check-codeql.ts` reads the analysis's SARIF and fails the `security` job on any unsuppressed result whose security severity is 7.0 or more (high or critical). It counts every such result, not only new ones: the gate keeps `main` at none, so the two agree, and when a CodeQL update finds one in unchanged code, the next pull request fixes it or filters it with its reason. **Why** `main` too: code scanning finds a pull request's new alerts by comparing with the last analysis of its base branch. A dismissed alert carries the dismissal reason and a comment; a false positive that recurs gets a query filter in the CodeQL configuration, with the reason, instead of repeated dismissals.
 
 ### 6.2 Workflows
 
@@ -124,16 +125,16 @@ GitHub secret scanning and push protection are on: a push containing a recognize
 
 ## 8. When each check runs
 
-| Check                                           | Pull request                    | Push to `main`   | Release |
-| ----------------------------------------------- | ------------------------------- | ---------------- | ------- |
-| Code rules (§4.1, §4.2, §4.4), through `lint`   | Gate (`static`)                 | Gate             |         |
-| Workflow invariants (§6.2), through `test:node` | Gate (`static`)                 | Gate             |         |
-| `check:lockfile` (§5.2, §5.3)                   | Gate (`static`)                 | Gate             | Gate    |
-| CSP fixture (§4.3), through `check:consumer`    | Gate (`integration`)            | Gate             |         |
-| Dependency review (§5.2)                        | Gate (`security`)               |                  |         |
-| CodeQL (§6.1)                                   | Gate on new alerts (`security`) | Baseline         |         |
-| Secret scanning and push protection (§6.3)      | Refuses the push                | Refuses the push |         |
-| Provenance checks (§7)                          |                                 |                  | Gate    |
+| Check                                           | Pull request                                  | Push to `main`   | Release |
+| ----------------------------------------------- | --------------------------------------------- | ---------------- | ------- |
+| Code rules (§4.1, §4.2, §4.4), through `lint`   | Gate (`static`)                               | Gate             |         |
+| Workflow invariants (§6.2), through `test:node` | Gate (`static`)                               | Gate             |         |
+| `check:lockfile` (§5.2, §5.3)                   | Gate (`static`)                               | Gate             | Gate    |
+| CSP fixture (§4.3), through `check:consumer`    | Gate (`integration`)                          | Gate             |         |
+| Dependency review (§5.2)                        | Gate (`security`)                             |                  |         |
+| CodeQL (§6.1)                                   | Gate on high or critical results (`security`) | Baseline         |         |
+| Secret scanning and push protection (§6.3)      | Refuses the push                              | Refuses the push |         |
+| Provenance checks (§7)                          |                                               |                  | Gate    |
 
 Every check runs in `ci.yml` or `publish.yml`; there is no separate security workflow. The `security` job (dependency review on pull requests, CodeQL on both) is in `ci.yml`, and `ci-success` needs it, so branch protection still requires one check ([ci.md §1](ci.md)). It runs whenever `plan` runs everything, has a target of 4 minutes and a timeout of 15, and is the only job with `security-events: write`.
 
@@ -153,13 +154,12 @@ Every check runs in `ci.yml` or `publish.yml`; there is no separate security wor
 - `lint` fails on each sink of §4.1 and §4.4 and an unguarded URL binding of §4.2. `packages/testing/test/security-lint.test.ts` lints a sample of each through the real configuration, as shipped source (it must fail), as a test (it must pass), and as styles (only `unsafeCSS` passes).
 - `test/safe-url.test.ts` covers the schemes `safeUrl()` keeps and drops, including disguised and unparseable ones. The breadcrumb item's browser tests cover the guard in place: an unsafe `href` renders text and warns once per occurrence; `http:`, `https:`, `mailto:`, and relative URLs render links.
 - `check:consumer` serves the gallery, built against the packed package, with the policy of §4.3 as a header. It fails on a violation, on anything logged, on an undefined tag, or if a probe write to an HTML sink is not blocked, which would mean the policy is not in force. With `style-src-attr` or `require-trusted-types-for` removed from the policy, it fails.
-- `packages/testing/test/lockfile.test.ts` covers §5.2 and §5.3 on recorded lockfiles: registry and integrity checks, and the install-script list, including an unlisted script, an entry without a reason, and one that matches nothing; it also checks the repository's own lockfile. Removing a package from `.install-scripts.json` fails `check:lockfile`.
+- `packages/testing/test/lockfile.test.ts` covers §5.2 and §5.3 on recorded lockfiles: registry and integrity checks; the install-script list, including an unlisted script, an entry without a reason, and one that matches nothing; and runtime licenses, direct, nested, and optional, ignoring development and peer dependencies. It also checks the repository's own lockfile. Removing a package from `.install-scripts.json` fails `check:lockfile`.
+- `packages/testing/test/sarif.test.ts` covers which CodeQL results fail a pull request: high and critical ones, found by rule id or index, and not medium, unscored, or suppressed ones. `check-codeql.ts` fails on a recorded critical result and passes a medium one.
 - `packages/testing/test/workflows.test.ts` covers each rule of §6.2 on broken examples, then checks every workflow and composite action in the repository. With an expression put back into a `run:` script, it fails.
 - Each of these gates has been made to fail once against a deliberately broken input ([testing.md §7](testing.md)).
 - Not checked by any gate: the policy for server-rendered pages ([ssr.md §7](ssr.md)), whose fixture drives its pages with inline scripts; and the repository settings (secret scanning, push protection, private vulnerability reporting, Dependabot security updates, the `npm` environment's rules, `main`'s ruleset) and npm's trusted publisher configuration, which need administrator access that a workflow token does not have, and are checked by hand before each release.
 
 ## Gaps
 
-All of this spec is built except the gap below. What exists: the rules of §4 and their checks, `check:lockfile`, `SECURITY.md`, the repository settings of §5.1, §6.3, and §9 (Dependabot security updates, secret scanning with push protection, and private vulnerability reporting, all on), Dependabot version updates, trusted publishing with provenance from the `npm` environment, which only `v*` tags may deploy to, SBOMs on each release, a release only from a commit that was `main`'s tip, the actions lockfile and the workflow rules of §6.2, and no long-lived secrets.
-
-- **No dependency review or CodeQL** (§5.2, §6.1): no `security` job in `ci.yml`.
+None.

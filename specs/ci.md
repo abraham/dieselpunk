@@ -25,13 +25,14 @@
 
 ```mermaid
 flowchart LR
-  plan[plan] --> static & integration & smoke & browser & visual
+  plan[plan] --> static & integration & smoke & browser & visual & security
   static[static]
   integration[integration]
   smoke[smoke x n]
   browser[browser: engine x part]
   visual[visual: project x groups]
-  static & integration & smoke & browser & visual --> ok[ci-success]
+  security[security]
+  static & integration & smoke & browser & visual & security --> ok[ci-success]
 ```
 
 | Job           | Needs  | Runs                                                                                                                                                                                                                                        | Installs      |
@@ -42,6 +43,7 @@ flowchart LR
 | `smoke`       | `plan` | `build`, then `test:smoke` and `test:stories` for its part of the workbench entries                                                                                                                                                         | Chromium      |
 | `browser`     | `plan` | `test:browser` for one engine and one part (§5)                                                                                                                                                                                             | That engine   |
 | `visual`      | `plan` | `test:visual` for one project and a set of groups, in the pinned Playwright image                                                                                                                                                           | The container |
+| `security`    | `plan` | Dependency review on a pull request, CodeQL, and `scripts/check-codeql.ts` on a pull request's results ([security.md §8](security.md))                                                                                                      | Node only     |
 | `ci-success`  | all    | Fails if any job failed or was cancelled, or was skipped when `plan` said it should run                                                                                                                                                     | None          |
 
 - `static` does not wait for `plan`, so the fastest feedback starts at once. It runs `build` before `typecheck`, and no typecheck script builds anything itself.
@@ -122,6 +124,7 @@ A Node test covers the packing. The browser parts are packed the same way, from 
 | `integration`, each `smoke` part | 3 minutes               | 10 minutes |
 | each `browser` part              | 4 minutes               | 15 minutes |
 | each `visual` job                | 4 minutes               | 15 minutes |
+| `security`                       | 4 minutes               | 15 minutes |
 | the whole run                    | 5 minutes               |            |
 
 The packing cap of §6 is set so a packed job meets its target. The `plan` job writes the slowest jobs of the last successful run on `main` to its summary, against their targets, so a job creeping toward its target is seen before it misses it. A job that misses its target is split by the matrix, or its suite is made cheaper; the target stays. Jobs outside this table (`ci-success`, the baseline merge, the docs jobs) have a timeout of 5 or 10 minutes.

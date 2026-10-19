@@ -15,7 +15,8 @@
     "./pseudo": "./src/pseudo.ts",
     "./size": "./src/size.ts",
     "./ci": "./src/ci.ts",
-    "./lockfile": "./src/lockfile.ts"
+    "./lockfile": "./src/lockfile.ts",
+    "./sarif": "./src/sarif.ts"
   },
   "scripts": {
     "test": "npm run test:node",
