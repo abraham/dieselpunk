@@ -31,6 +31,7 @@ jobs:
         with:
           # The merge commit and its base, to list what the pull request changes.
           fetch-depth: 2
+          persist-credentials: false
       - uses: $/.github/actions/setup
       - id: matrix
         env:
@@ -42,6 +43,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      # The runner enforces actions.lock; this also fails on an action the lock does not list.
+      - name: Verify the actions lockfile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh extension install github/gh-actions-lock --pin v0.2.0
+          gh actions-lock --verify --no-interactive
       - uses: $/.github/actions/setup
       - run: npm run check:toolchain
       - run: npm run check:lockfile
@@ -64,6 +74,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
       - uses: $/.github/actions/setup
         with:
           browsers: chromium
@@ -85,12 +97,14 @@ jobs:
       PUNK_SMOKE_PART: ${{ matrix.part }}
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
       - uses: $/.github/actions/setup
         with:
           browsers: chromium
           build: true
       - run: npm run test:smoke
-      - run: npm run test:stories -w @dieselpunk/workbench -- --shard=${{ matrix.part }}
+      - run: npm run test:stories -w @dieselpunk/workbench -- --shard="$PUNK_SMOKE_PART"
 
   browser:
     name: browser (${{ matrix.name }})
@@ -109,6 +123,8 @@ jobs:
       PUNK_GALLERY_THEMES: ${{ matrix.themes }}
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
       - uses: $/.github/actions/setup
         with:
           browsers: ${{ matrix.engine }}

@@ -1,7 +1,7 @@
 # Security
 
 **Scope:** what keeps the published packages, the release path, and the pages that use them safe: the threat model, rules for shipped code, checks on each change (code, dependencies, workflows), the provenance of a release, and how findings are handled. Known advisories in dependencies are Dependabot's (§5.1); this spec's checks run on changes and releases, never on a schedule.
-**Code:** `eslint.config.js`, `packages/testing/test/security-lint.test.ts`, `scripts/check-lockfile.ts`, `packages/testing/src/lockfile.ts`, `scripts/sbom.ts`, `.install-scripts.json`, `packages/testing/test/workflows.test.ts`, `packages/core/test/package/csp/`, `.github/workflows/ci.yml` (the `security` job), `.github/workflows/publish.yml`, `.github/dependabot.yml`, `SECURITY.md`.
+**Code:** `eslint.config.js`, `packages/testing/test/security-lint.test.ts`, `scripts/check-lockfile.ts`, `packages/testing/src/lockfile.ts`, `scripts/sbom.ts`, `.install-scripts.json`, `packages/testing/src/workflows.ts`, `packages/testing/test/workflows.test.ts`, `packages/core/test/package/csp/`, `.github/workflows/ci.yml` (the `security` job), `.github/workflows/publish.yml`, `.github/dependabot.yml`, `SECURITY.md`.
 
 ## 1. Goals
 
@@ -97,11 +97,11 @@ CodeQL analyzes `javascript-typescript` with the `security-extended` suite, and 
 
 ### 6.2 Workflows
 
-Every action a workflow runs is locked in `.github/workflows/actions.lock`, written by `gh actions-lock` ([github/gh-actions-lock](https://github.com/github/gh-actions-lock)). The lockfile pins each action, and each action it uses in turn, to a commit; the runner refuses an action whose tag no longer resolves to its locked commit. Workflows name outside actions by full version tag (`actions/checkout@v7.0.1`), and the repository's own actions as `$/.github/actions/…`, which is pinned to the workflow's own commit. A Dependabot pull request that bumps an action's tag is re-locked with `gh actions-lock` before it merges. **Why** a lockfile rather than commit hashes in each `uses:`: transitive actions are pinned too, and a moved tag is caught before the action runs, not only after someone notices a hash.
+Every action a workflow runs is locked in `.github/workflows/actions.lock`, written by `gh actions-lock` ([github/gh-actions-lock](https://github.com/github/gh-actions-lock)). The lockfile pins each action, and each action it uses in turn, to a commit; the runner refuses an action whose tag no longer resolves to its locked commit. Workflows name outside actions by full version tag (`actions/checkout@v7.0.1`), and the repository's own actions as `$/.github/actions/…`, which is pinned to the workflow's own commit; a reusable workflow of this repository is called as `./.github/workflows/…`, which is pinned the same way. A Dependabot pull request that bumps an action's tag is re-locked with `gh actions-lock` before it merges. **Why** a lockfile rather than commit hashes in each `uses:`: transitive actions are pinned too, and a moved tag is caught before the action runs, not only after someone notices a hash.
 
-`static` runs `gh actions-lock --verify`, which fails when a workflow uses an action the lockfile lacks or a locked tag has moved. `packages/testing/test/workflows.test.ts`, part of `test:node`, reads every file under `.github/` and fails when:
+`static` installs `gh actions-lock` at a pinned release and runs `gh actions-lock --verify`, which fails when a workflow uses an action the lockfile lacks or a locked tag has moved. `packages/testing/test/workflows.test.ts`, part of `test:node`, parses every workflow and composite action under `.github/` with the rules of `packages/testing/src/workflows.ts`, and fails when:
 
-- a `uses:` of an action outside this repository is not a full `vX.Y.Z` tag, or one inside it does not use `$/`;
+- a `uses:` of an action outside this repository is not a full `vX.Y.Z` tag, or a step's action inside it does not use `$/`;
 - a workflow has no top-level `permissions:`, or its top-level permissions grant more than `contents: read` (and `actions: read` in `ci.yml`); a job that needs more asks for it in its own `permissions:`;
 - a workflow triggers on `pull_request_target` or `workflow_run`;
 - `actions/checkout` runs without `persist-credentials: false`, except in a job that pushes;
@@ -154,13 +154,12 @@ Every check runs in `ci.yml` or `publish.yml`; there is no separate security wor
 - `test/safe-url.test.ts` covers the schemes `safeUrl()` keeps and drops, including disguised and unparseable ones. The breadcrumb item's browser tests cover the guard in place: an unsafe `href` renders text and warns once per occurrence; `http:`, `https:`, `mailto:`, and relative URLs render links.
 - `check:consumer` serves the gallery, built against the packed package, with the policy of §4.3 as a header. It fails on a violation, on anything logged, on an undefined tag, or if a probe write to an HTML sink is not blocked, which would mean the policy is not in force. With `style-src-attr` or `require-trusted-types-for` removed from the policy, it fails.
 - `packages/testing/test/lockfile.test.ts` covers §5.2 and §5.3 on recorded lockfiles: registry and integrity checks, and the install-script list, including an unlisted script, an entry without a reason, and one that matches nothing; it also checks the repository's own lockfile. Removing a package from `.install-scripts.json` fails `check:lockfile`.
-- `packages/testing/test/workflows.test.ts` covers §6.2.
+- `packages/testing/test/workflows.test.ts` covers each rule of §6.2 on broken examples, then checks every workflow and composite action in the repository. With an expression put back into a `run:` script, it fails.
 - Each of these gates has been made to fail once against a deliberately broken input ([testing.md §7](testing.md)).
 - Not checked by any gate: the policy for server-rendered pages ([ssr.md §7](ssr.md)), whose fixture drives its pages with inline scripts; and the repository settings (secret scanning, push protection, private vulnerability reporting, Dependabot security updates, the `npm` environment's rules, `main`'s ruleset) and npm's trusted publisher configuration, which need administrator access that a workflow token does not have, and are checked by hand before each release.
 
 ## Gaps
 
-Most of this spec is not built yet. What exists: the rules of §4 and their checks, `check:lockfile`, `SECURITY.md`, the repository settings of §5.1, §6.3, and §9 (Dependabot security updates, secret scanning with push protection, and private vulnerability reporting, all on), Dependabot version updates, trusted publishing with provenance from the `npm` environment, which only `v*` tags may deploy to, SBOMs on each release, a release only from a commit that was `main`'s tip, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
+All of this spec is built except the gap below. What exists: the rules of §4 and their checks, `check:lockfile`, `SECURITY.md`, the repository settings of §5.1, §6.3, and §9 (Dependabot security updates, secret scanning with push protection, and private vulnerability reporting, all on), Dependabot version updates, trusted publishing with provenance from the `npm` environment, which only `v*` tags may deploy to, SBOMs on each release, a release only from a commit that was `main`'s tip, the actions lockfile and the workflow rules of §6.2, and no long-lived secrets.
 
 - **No dependency review or CodeQL** (§5.2, §6.1): no `security` job in `ci.yml`.
-- **Workflows do not fully meet §6.2.** The actions are locked, but `static` does not run `gh actions-lock --verify`, there is no workflow test, `actions/checkout` keeps its credentials, `visual.yml` and `update-visual-baselines.yml` have no top-level `permissions:`, and `ci.yml` puts `${{ matrix.part }}` in a `run:` script. Closing it is the verify step and the test, then fixing what they report.
