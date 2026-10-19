@@ -37,6 +37,11 @@ export const Inventory = meta.story({
           assembler is built from the inventory components: slots, item stacks, a keyboard-navigable
           grid, a recipe, meters, and status lights.
         </p>
+        <p>
+          The source code and issue tracker are on
+          <!-- GitHub refuses to load in a frame, so leave Storybook's preview iframe. -->
+          <a href="https://github.com/abraham/dieselpunk" target="_top">GitHub</a>.
+        </p>
       </div>
 
       <punk-panel role="region" aria-label="Assembling machine">
