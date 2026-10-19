@@ -24,11 +24,13 @@ const group = (params.get('group') ?? 'foundation') as GalleryGroup;
 const theme = params.get('theme') ?? 'dark';
 const density = params.get('density') ?? 'compact';
 const content = (params.get('content') ?? 'short') as ContentVariant;
-const only = params.get('component') as ComponentName | null;
+const component = params.get('component');
+// The name comes from the list, never the URL, so no query string reaches the gallery's markup.
+const only = componentNames.find((name) => name === component) ?? null;
 
 if (!(group in galleryGroups)) throw new Error(`Unknown group "${group}"`);
 if (!contentVariants.includes(content)) throw new Error(`Unknown content variant "${content}"`);
-if (only && !componentNames.includes(only)) throw new Error(`Unknown component "${only}"`);
+if (component && !only) throw new Error(`Unknown component "${component}"`);
 const names: readonly ComponentName[] = only ? [only] : galleryGroups[group];
 
 const style = document.createElement('style');
