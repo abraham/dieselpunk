@@ -175,10 +175,11 @@ export class PunkCombobox extends PunkFieldBase {
   }
 
   // A listener that runs before the input's own, and changes the options, renders before this one
-  // has taken the text. Without this, that render would put back the previous text.
+  // has taken the text. Without this, that render would put back the previous text. Before the
+  // first render the input is the server's, whose text is not typing.
   protected override willUpdate(changed: PropertyValues): void {
     super.willUpdate(changed);
-    const control = this.renderRoot?.querySelector<HTMLInputElement>('.control');
+    const control = this.hasUpdated && this.renderRoot.querySelector<HTMLInputElement>('.control');
     if (control && control.value !== this.#rendered) this.text = control.value;
   }
 
