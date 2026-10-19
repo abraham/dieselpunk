@@ -63,6 +63,8 @@ const TABBABLE = [
  * @csspart tablist - The tab list.
  * @csspart panels - The surface around panels inside the tabs, which the selected tab joins. It is hidden when the panels are elsewhere.
  *
+ * @cssprop [--punk-tabs-padding=var(--punk-space-3)] - Padding of the surface around panels inside the tabs.
+ *
  * @fires punk-tab-change - The user selected a tab. `detail` is `{ value, tab, panel }`. It is not sent when the application changes the selection.
  */
 export class PunkTabs extends PunkElement implements Owner<PunkTab> {

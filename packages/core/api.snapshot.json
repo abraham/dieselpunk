@@ -1732,7 +1732,9 @@
         "panels": "",
         "tablist": ""
       },
-      "cssProperties": {}
+      "cssProperties": {
+        "--punk-tabs-padding": "= var(--punk-space-3)"
+      }
     },
     "punk-tag": {
       "attributes": {
