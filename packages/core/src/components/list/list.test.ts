@@ -145,6 +145,20 @@ describe('look and warnings', () => {
     }
   });
 
+  it('dims all of a disabled row, its description and slots included', async () => {
+    const { items } = await mount(
+      'aria-label="Items" selection="single"',
+      '<punk-list-item value="a">A<span slot="description">On</span></punk-list-item>' +
+        '<punk-list-item value="b" disabled>B<span slot="description">Off</span><span slot="end">3</span></punk-list-item>',
+    );
+    const color = (item: PunkListItem, name: string) =>
+      getComputedStyle(item.shadowRoot?.querySelector(`[part="${name}"]`) as HTMLElement).color;
+    const off = items[1] as PunkListItem;
+    expect(color(off, 'description')).toBe(color(off, 'item'));
+    expect(color(off, 'end')).toBe(color(off, 'item'));
+    expect(color(items[0] as PunkListItem, 'description')).not.toBe(color(off, 'description'));
+  });
+
   it('warns about a missing name, a stray child, and missing values', async () => {
     const warn = vi.mocked(console.warn);
     warn.mockClear();

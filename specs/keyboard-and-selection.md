@@ -201,7 +201,7 @@ The application names the grid with `aria-label`; a missing name warns.
 - **Pointer.** A click selects or toggles, Shift-click extends, and both also activate; the list handles clicks and Space in the capture phase, as the grid does ([§3](#3-activation)).
 - **Tab stop.** The item last focused, else the first selected, else the first enabled.
 - **Values.** Items are identified by `value`. `values` reads and assigns (copies); assigned before items exist, it applies when they arrive; before anything is assigned, items marked `selected` start selected. `punk-selection-change` carries `{ values, items }` once per user change.
-- **Rows.** A start slot, the text, a description below it, and an end slot. All of the row's text is its name. A selected row shows a check and an `accent` bar on its start edge.
+- **Rows.** A start slot, the text, a description below it, and an end slot. All of the row's text is its name. A selected row shows a check and an `accent` bar on its start edge. A disabled row dims all of its text, the description and slots included, not only its name.
 - **Warnings:** no name; a child that is not an item; items without distinct, non-empty values in a selecting list.
 
 ## 13. Menubar
