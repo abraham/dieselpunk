@@ -18,6 +18,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Only `v*` tags may deploy to it, and npm's trusted publisher accepts only this environment.
+    environment: npm
     permissions:
       contents: read
       id-token: write

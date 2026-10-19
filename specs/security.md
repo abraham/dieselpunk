@@ -160,8 +160,8 @@ Every check runs in `ci.yml` or `publish.yml`; there is no separate security wor
 
 ## Gaps
 
-Most of this spec is not built yet. What exists: the rules of §4 and their checks, `check:lockfile`, `SECURITY.md`, the repository settings of §5.1, §6.3, and §9 (Dependabot security updates, secret scanning with push protection, and private vulnerability reporting, all on), Dependabot version updates, trusted publishing with provenance, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
+Most of this spec is not built yet. What exists: the rules of §4 and their checks, `check:lockfile`, `SECURITY.md`, the repository settings of §5.1, §6.3, and §9 (Dependabot security updates, secret scanning with push protection, and private vulnerability reporting, all on), Dependabot version updates, trusted publishing with provenance from the `npm` environment, which only `v*` tags may deploy to, the actions lockfile, read-only top-level permissions in `ci.yml`, `docs.yml`, and `publish.yml`, and no long-lived secrets.
 
 - **No dependency review or CodeQL** (§5.2, §6.1): no `security` job in `ci.yml`.
 - **Workflows do not fully meet §6.2.** The actions are locked, but `static` does not run `gh actions-lock --verify`, there is no workflow test, `actions/checkout` keeps its credentials, `visual.yml` and `update-visual-baselines.yml` have no top-level `permissions:`, and `ci.yml` puts `${{ matrix.part }}` in a `run:` script. Closing it is the verify step and the test, then fixing what they report.
-- **The release lacks §7:** no `npm` environment, no check that the tagged commit passed `ci-success`, and no SBOM.
+- **The release lacks part of §7:** no check that the tagged commit is on `main` and passed `ci-success`, and no SBOM.
