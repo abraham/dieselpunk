@@ -137,15 +137,9 @@ export const buttonBaseStyles = css`
     box-shadow: ${insetShadow};
   }
 
-  /* Hover lights the default button with the accent; press mixes the fill toward the text. */
-  .variant-default.interactive:hover {
-    --_bg: ${token('color-accent')};
-    color: ${token('color-accent-text')};
-  }
-
+  /* Default hover keeps its fill, so it never looks like an idle primary button; press sinks it. */
   .variant-default.interactive:active {
-    --_bg: color-mix(in srgb, ${token('color-accent')}, ${token('color-text')} 45%);
-    color: ${token('color-accent-text')};
+    --_bg: ${token('color-panel-inset')};
   }
 
   /* The contrast gate checks each fill's text on these two mixes (visual-system.md §4.1). */
