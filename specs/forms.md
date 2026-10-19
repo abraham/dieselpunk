@@ -155,7 +155,7 @@ A native `<select>` filled with copies of the host's light-DOM `<option>` and `<
 
 - **Description.** The `hint` slot and the `error` slot (an error summary the application writes, shown with the warning triangle) describe the group while they have content.
 - **Disabled.** A shadow fieldset does not disable light-DOM controls, so `disabled` does what a native fieldset would by writing: it sets `disabled` on every native control (`button`, `input`, `select`, `textarea`, `fieldset`) and form-associated custom element inside it, except inside the `legend` slot, remembers which it changed, and enables exactly those again when it is enabled, when they leave, or when it disconnects ([component-model.md §8](component-model.md)). Unlike a native fieldset, the controls' own `disabled` reads `true` meanwhile. Controls added deeper inside while it is disabled are found when its own children change.
-- **Look.** An etched frame with the legend set into its top edge.
+- **Look.** An etched frame with the legend on an inset nameplate set into its top edge. **Why** a plate: the native legend cuts the frame's border but not its inner light line, which otherwise ran through the legend and read as a strikethrough on a disabled group.
 - **Warning:** no legend.
 
 ## 16. Date and time fields

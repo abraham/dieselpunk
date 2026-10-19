@@ -1,8 +1,10 @@
 import { css } from 'lit';
 import { statusLensStyles, statusShapeStyles } from '../../styles/status-shape.ts';
+import { insetSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
-// An etched frame like a divider's line, with the legend set into its top edge.
+// An etched frame like a divider's line, with the legend on a nameplate set into its top edge. The
+// native legend cuts the border but not the inner light line, so the plate is opaque to cover it.
 export const fieldsetStyles = css`
   :host {
     display: block;
@@ -29,7 +31,9 @@ export const fieldsetStyles = css`
   }
 
   .legend {
-    padding-inline: ${token('space-1')};
+    ${insetSurface}
+    padding-inline: ${token('space-2')};
+    border-radius: ${token('radius')};
     font-weight: 600;
     overflow-wrap: break-word;
   }
@@ -60,6 +64,11 @@ export const fieldsetStyles = css`
   @media (forced-colors: active) {
     .fieldset {
       border-color: CanvasText;
+      box-shadow: none;
+    }
+
+    .legend {
+      background: Canvas;
       box-shadow: none;
     }
 
