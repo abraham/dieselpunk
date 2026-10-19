@@ -60,7 +60,7 @@ One module-level stack of open overlays per page (`createOverlayStack(target)`, 
 - The `<dialog>` is labeled by `heading`, or by the host's `aria-label`. A surface with neither warns.
 - The body becomes a focusable scroll region (`tabindex="0"`) when its content is taller than the surface allows, checked on open and on resize while open.
 - A modal surface is at most the viewport height less twice `--punk-space-4`, so it fits at 200% zoom.
-- The footer stacks its actions, full width and in order, by a container query at 480px and below.
+- The footer stacks its actions, full width and in order, by a container query at 480px and below. Each surface's default width is wider than that (the dialog's 560px, the window's 640px), so actions sit in a row unless the space is really narrow.
 - Opening a second modal while one is open is allowed; the top layer stacks them.
 
 ## 7. Window

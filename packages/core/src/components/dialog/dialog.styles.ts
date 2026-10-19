@@ -3,7 +3,7 @@ import { token } from '../../tokens/token.ts';
 import { modalSurfaceStyles } from '../../styles/modal-surface.ts';
 
 export const dialogStyles = css`
-  ${modalSurfaceStyles('--punk-dialog-max-width', '480px')}
+  ${modalSurfaceStyles('--punk-dialog-max-width', '560px')}
 
   .header {
     flex: none;

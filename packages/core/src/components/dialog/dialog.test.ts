@@ -1,4 +1,4 @@
-import { commands, userEvent } from 'vitest/browser';
+import { commands, page, userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from 'vitest';
 import { addStylesheets, cleanup, track } from '../../../test/browser/helpers.ts';
@@ -344,6 +344,22 @@ describe('layout', () => {
     );
     expect(one?.width).toBe(two?.width);
     expect(two?.top).toBeGreaterThan(one?.top ?? 0);
+  });
+
+  it('lays the actions in a row at its default width on a wide screen', async () => {
+    await page.viewport(1024, 768);
+    try {
+      const footer = '<button slot="footer">One</button><button slot="footer">Two</button>';
+      const element = await open('heading="x"', body + footer);
+      await flush();
+      expect(dialogOf(element).getBoundingClientRect().width).toBe(560);
+      const direction = getComputedStyle(
+        element.shadowRoot?.querySelector('[part="footer"]') as Element,
+      ).flexDirection;
+      expect(direction).toBe('row');
+    } finally {
+      await page.viewport(414, 896);
+    }
   });
 
   it('is a focusable scroll region only while its content overflows', async () => {
