@@ -59,6 +59,7 @@
 - **Layout.** A two-column grid: each term at the start, its values beside it on the same text baseline. A term may have several values, each on its own row in the value column, and several terms may share the values that follow them. The term column is at most 40% of the width.
 - **Narrow.** Below 320px of its own width (a container query on the host) each term sits above its values.
 - Terms are `text-muted` and values `text`, in tabular figures so numbers line up. Long words break rather than overflow.
+- **`variant`.** `plain` (the default) has no surface, for a list inside a panel that already has one. `inset` sets the pairs in a recessed `panel-inset` well with an `edge-dark` rule between rows, as the table's body is, so a details sheet on its own reads as part of the material. Unknown values are `plain`.
 - **Warnings:** a child that is not a `<dt>` or a `<dd>`; a first child that is a `<dd>`.
 
 ## 7. Tag

@@ -431,8 +431,12 @@
       "cssProperties": {}
     },
     "punk-description-list": {
-      "attributes": {},
-      "properties": {},
+      "attributes": {
+        "variant": "DescriptionListVariant = 'plain'"
+      },
+      "properties": {
+        "variant": "DescriptionListVariant = 'plain'"
+      },
       "methods": {},
       "events": {},
       "slots": {

@@ -1,14 +1,18 @@
 import { html } from 'lit';
+import { property } from 'lit/decorators.js';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { descriptionListStyles } from './description-list.styles.ts';
+
+export type DescriptionListVariant = 'plain' | 'inset';
 
 /**
  * Label and value pairs, for details and specification sheets. The application writes native
  * `<dt>` and `<dd>` elements as its children, and the element puts them in a `<dl>` in its
  * shadow tree, so they keep their term and definition semantics. Each term sits beside its
  * values, which are in tabular figures, and above them when the element is narrow. A term may
- * have several values, and several terms may share one.
+ * have several values, and several terms may share one. `variant="inset"` sets the pairs in a
+ * recessed well with a rule between rows, as a table's are.
  *
  * @tagname punk-description-list
  *
@@ -19,6 +23,9 @@ import { descriptionListStyles } from './description-list.styles.ts';
  */
 export class PunkDescriptionList extends PunkElement {
   static override styles = descriptionListStyles;
+
+  /** `plain` has no surface; `inset` is a recessed well with rules between rows. Unknown values use `plain`. */
+  @property({ reflect: true }) variant: DescriptionListVariant = 'plain';
 
   #warned = '';
 
