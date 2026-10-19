@@ -34,6 +34,8 @@ A field for a line of text, with a native \`<input>\` in its shadow tree that ta
 
 **Paste and autofill:** paste is never blocked. \`autocomplete\` is passed through, though a password manager may not fill a field inside a shadow root.
 
+**Suggestions:** there is no \`list\`, since an input in a shadow root cannot reach a \`<datalist>\` in the page. For free text with suggestions, use \`punk-combobox\` with \`allow-custom\` (see Components/Combobox, Free text).
+
 **Look:** the boundary is \`control-edge\`, which meets 3:1 on every surface, since an empty field has no text to identify it. A read-only field has a dashed boundary, and under forced colors a dotted one; an invalid one is dashed there.
 `,
       },

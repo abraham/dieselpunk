@@ -133,6 +133,19 @@ describe('typing and choosing', () => {
     expect(element.value).toBe('Tin plate');
   });
 
+  it('suggests with allow-custom, as a datalist does: a chosen option sets its value', async () => {
+    const { element } = await mount('label="Item" allow-custom');
+    await userEvent.type(input(element), 'iron');
+    await element.updateComplete;
+    expect(shownOptions(element)).toEqual(['Iron plate', 'Iron gear']);
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+    await element.updateComplete;
+    expect(element.value).toBe('gear');
+    await userEvent.fill(input(element), 'Iron ore');
+    await userEvent.tab();
+    expect(element.value).toBe('Iron ore');
+  });
+
   it('shows every option with filter="none", and follows options the application changes', async () => {
     const { element } = await mount('label="Item" filter="none"');
     await userEvent.type(input(element), 'zzz');

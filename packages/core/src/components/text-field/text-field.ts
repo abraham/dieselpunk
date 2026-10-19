@@ -23,6 +23,9 @@ const types: readonly string[] = ['text', 'email', 'password', 'search', 'tel', 
  * danger color is below 3:1 on the panel surfaces. Paste is never blocked, and `autocomplete` is
  * passed through, though a password manager may not fill a field inside a shadow root.
  *
+ * It has no `list`: an input in a shadow root cannot reach a `<datalist>` in the page. For free
+ * text with suggestions, use `punk-combobox` with `allow-custom`.
+ *
  * @tagname punk-text-field
  *
  * @slot prefix - Inside the field before the text, such as an icon.

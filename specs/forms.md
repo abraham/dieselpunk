@@ -89,6 +89,7 @@ A native `<input>` of type `text`, `email`, `password`, `search`, `tel`, or `url
 - The value binding writes only when it differs from what the input holds (`live()`), so typing is never overwritten and the native "user edit" state that `minlength` and `maxlength` depend on survives.
 - `focus()` and `select()` reach the inner input.
 - Paste is never blocked, and `autocomplete` is passed through (SC 3.3.8).
+- **No `list`.** An input in a shadow root cannot reach a light-DOM `<datalist>` by ID, and a mirrored one would be the engine's unstyled popup beside the package's own. Free text with suggestions is `punk-combobox` with `allow-custom` ([§14](#14-combobox)): the text is the value, the options filter as the user types, and choosing one makes its `value` the value.
 
 ## 10. Number field
 
