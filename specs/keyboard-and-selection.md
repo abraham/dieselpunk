@@ -212,7 +212,7 @@ The application names the grid with `aria-label`; a missing name warns.
 - **The row** is one tab stop through `RovingController`: `Left` and `Right` (swapped in `rtl`) move among the items, skipping disabled ones, without wrapping ([§1](#1-keyboard-model)), and `Home` and `End` go to the ends. `Enter`, `Space`, `Down`, or a click opens an item's menu on its first item, and `Up` on its last; a click on an open item's trigger closes it.
 - **An open menu.** `Left` and `Right` close it and open the previous or next enabled item's menu on its first item, stopping at the ends. A submenu's own keys come first: `Right` on an item with a submenu opens it, and `Left` in a submenu closes it. `Escape` closes the menu and returns to its item, an action closes it and returns to its item, and `Tab` closes it and leaves the row. These are the menu's own behaviors.
 - **No opening on hover**, as for menus.
-- **Look.** The toolbar's flat strip, wrapping rather than scrolling, with the menu items' own hover and focus.
+- **Look.** A flat strip, wrapping rather than scrolling, with the menu items' own hover and focus. An item whose menu is open keeps that highlight while focus is in the menu, so the bar shows which menu is open; a submenu's parent item in a menu does the same.
 - **Warnings:** no name; no items.
 
 ## 14. Tree
