@@ -70,7 +70,7 @@ const items = () => html`
       'Icon, rich heading and level',
       html`<punk-accordion>
         <punk-accordion-item level="2" expanded>
-          <span slot="icon" aria-hidden="true">${icon('check')}</span>
+          <span slot="icon" aria-hidden="true">${icon('gear')}</span>
           <span slot="heading">Settings <b>(2)</b></span>
           <p>The heading is level 2.</p>
         </punk-accordion-item>

@@ -52,7 +52,7 @@ const actions = html`
   <punk-button>Start</punk-button>
   <punk-button>Pause</punk-button>
   <punk-divider orientation="vertical"></punk-divider>
-  <punk-icon-button label="Settings">${icon('check')}</punk-icon-button>
+  <punk-icon-button label="Settings">${icon('gear')}</punk-icon-button>
   <punk-button variant="danger">Stop</punk-button>
 `;
 
@@ -64,7 +64,7 @@ const toolbars = () => html`
       html`<div style="max-inline-size: 180px">
         <punk-toolbar aria-label="Machine tools">
           ${actions}
-          <punk-icon-button slot="overflow" label="More">${icon('check')}</punk-icon-button>
+          <punk-icon-button slot="overflow" label="More">${icon('more')}</punk-icon-button>
         </punk-toolbar>
       </div>`,
     )}
@@ -78,7 +78,7 @@ const toolbars = () => html`
       'Vertical',
       html`<punk-toolbar aria-label="Map controls" orientation="vertical">
         <punk-icon-button label="Zoom in" tooltip-placement="end">${icon('plus')}</punk-icon-button>
-        <punk-icon-button label="Fit" tooltip-placement="end">${icon('gear')}</punk-icon-button>
+        <punk-icon-button label="Fit" tooltip-placement="end">${icon('fit')}</punk-icon-button>
         <punk-icon-button label="Close" tooltip-placement="end">${icon('close')}</punk-icon-button>
       </punk-toolbar>`,
     )}

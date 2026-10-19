@@ -26,6 +26,8 @@ export const iconSvg = {
     `<path fill-rule="evenodd" d="M12 3 21 12 12 21 3 12zM11 10.5h2V17h-2zM11 7h2v2h-2z"/>`,
   ),
   warning: svg(`<path fill-rule="evenodd" d="M12 3 22 20H2zM11 9h2v6h-2zM11 16.5h2v2h-2z"/>`),
+  more: svg(`<path d="M3 10h4v4H3zM10 10h4v4h-4zM17 10h4v4h-4z"/>`),
+  fit: svg(`<path d="M3 3h7v2H5v5H3zM14 3h7v7h-2V5h-5zM3 14h2v5h5v2H3zM19 14h2v7h-7v-2h5z"/>`),
 } as const;
 
 export type IconName = keyof typeof iconSvg;
