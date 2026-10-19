@@ -20,7 +20,7 @@
 
 ### 1.2 Receptacles
 
-`PunkReceptacleBase` adds the square receptacle used by the slot and item stack: `size` (`sm`, `md`, `lg` at 0.8, 1, and 1.2 times `--punk-slot-size`), `highlighted`, `invalid`, and the `badge` and `overlay` slots. Overlay content takes no pointer events, so it never blocks activation. A receptacle with no accessible name warns.
+`PunkReceptacleBase` adds the square receptacle used by the slot and item stack: `size` (`sm`, `md`, `lg` at 0.8, 1, and 1.2 times `--punk-slot-size`), `highlighted`, `invalid`, and the `badge` and `overlay` slots. Overlay content takes no pointer events, so it never blocks activation, and is centered over the item and clipped to the receptacle, so a glyph never straddles its edge. A receptacle with no accessible name warns.
 
 Each state owns one visual channel, so states combine and stay apart without color:
 

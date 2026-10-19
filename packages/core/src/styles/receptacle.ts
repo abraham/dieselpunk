@@ -92,10 +92,15 @@ export const receptacleStyles = css`
     inset-inline-end: ${token('space-1')};
   }
 
-  /* Slotted overlay content inherits this, so it never blocks a click on the slot. */
+  /* Slotted overlay content inherits this, so it never blocks a click on the slot. It is centered
+     over the item, as the item is, and clipped to the slot. */
   .overlay {
     position: absolute;
     inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: inherit;
     pointer-events: none;
   }
 
