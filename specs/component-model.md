@@ -79,12 +79,12 @@ All other components extend `PunkElement` directly.
 
 Reusable behavior that is not an "is a" relation is a Lit reactive controller:
 
-| Controller         | Does                                                                                                     | Used by                                                                            |
-| ------------------ | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `SlotPresence`     | Whether a named or default slot has content (non-blank text counts), checked on connect and `slotchange` | panel, divider, recipe, and others with optional strips                            |
-| `LocaleWatcher`    | Re-renders its host once when the message locale changes                                                 | every component whose render calls `msg()` ([localization.md §3](localization.md)) |
-| `RovingController` | One tab stop and arrow-key focus among items                                                             | toolbar ([keyboard-and-selection.md §2](keyboard-and-selection.md))                |
-| `ModalController`  | Opening a `<dialog>`, initial focus, focus return, scroll lock, Escape                                   | window, dialog ([overlays.md §3](overlays.md))                                     |
+| Controller         | Does                                                                                                                                                                                                  | Used by                                                                            |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `SlotPresence`     | Whether a named or default slot has content (non-blank text counts), checked on connect and `slotchange`; on the server and while hydrating, the host's `data-punk-slots` names ([ssr.md §3](ssr.md)) | panel, divider, recipe, and others with optional strips                            |
+| `LocaleWatcher`    | Re-renders its host once when the message locale changes                                                                                                                                              | every component whose render calls `msg()` ([localization.md §3](localization.md)) |
+| `RovingController` | One tab stop and arrow-key focus among items                                                                                                                                                          | toolbar ([keyboard-and-selection.md §2](keyboard-and-selection.md))                |
+| `ModalController`  | Opening a `<dialog>`, initial focus, focus return, scroll lock, Escape                                                                                                                                | window, dialog ([overlays.md §3](overlays.md))                                     |
 
 A controller adds and removes its listeners in `hostConnected` and `hostDisconnected`. A field that holds a controller only so it is constructed may be otherwise unused.
 

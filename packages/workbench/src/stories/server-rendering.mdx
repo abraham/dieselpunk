@@ -36,7 +36,7 @@ const page = html`<!doctype html>
       <script type="module" src="/client.js"></script>
     </head>
     <body>
-      <punk-panel>
+      <punk-panel data-punk-slots="header">
         <span slot="header">Assembler</span>
         <punk-button>Craft</punk-button>
       </punk-panel>
@@ -88,12 +88,14 @@ The server has no page around each component, so the first paint can differ from
 | Language for numbers                        | The component's own `lang`, else English      | The nearest `lang`           |
 | Direction read in script                    | The component's own `dir`, else left to right | The element's direction      |
 | Children: options, items, counts            | None. Slotted content still shows             | Read from the children       |
-| Optional strips, such as a panel's header   | Hidden                                        | Shown when they have content |
+| Optional strips, such as a panel's header   | Hidden, unless named in `data-punk-slots`     | Shown when they have content |
 | Roles and states written on the host        | Not written                                   | Written                      |
 | Overlays with `open`                        | Closed                                        | Open                         |
 | Sizes, a toolbar's overflow, a menu's place | Before layout                                 | Measured                     |
 
 Layout from CSS, including `:dir()` and logical properties, is right from the start. To make the first paint match where the page's language or direction is not English and left to right, set `lang` and `dir` on the components themselves.
+
+The server cannot see a component's children either, so a panel, divider, or any component with optional strips hides them until the upgrade. Name the slots you fill in `data-punk-slots`, such as `<punk-panel data-punk-slots="header footer">`, and use `default` for content without a `slot`. The server and the hydrating render trust it; after the upgrade the real children decide.
 
 ## Before the definitions load
 
