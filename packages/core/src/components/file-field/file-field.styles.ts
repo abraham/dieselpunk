@@ -4,8 +4,9 @@ import { outlineShadow, raisedHoverShadow, raisedSurface } from '../../styles/su
 import { token } from '../../tokens/token.ts';
 
 // The input's own button is drawn as a raised button; its text and "No file chosen" are the
-// browser's. A drop zone is the field's box, taller, with a dashed boundary that turns solid
-// `accent` while files are dragged over it.
+// browser's. A drop zone is the field's box, taller, with its words; it turns an `accent` frame
+// while files are dragged over it. A dashed boundary means read-only in every field, so the zone
+// does not use one.
 export const fileFieldStyles = css`
   ${fieldStyles}
 
@@ -63,11 +64,9 @@ export const fileFieldStyles = css`
 
   .zone .box {
     min-block-size: calc(2 * ${token('control-height-md')});
-    border-style: dashed;
   }
 
   .zone.dragging .box {
-    border-style: solid;
     --_frame: inset 0 0 0 2px ${token('color-accent')};
   }
 
