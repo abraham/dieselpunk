@@ -96,7 +96,8 @@ A native `<input type="number">` with `min`, `max`, `step`, `readonly`, `placeho
 
 - Keys are the native ones.
 - **Steppers** are native buttons in the shadow tree, `tabindex="-1"` and `aria-hidden`, since the arrow keys and typing serve everyone else. They call `stepUp()` and `stepDown()`, so rounding and bounds are the platform's. A press focuses the input, steps at once, and repeats after 400ms every 80ms until release, leave, cancel, blur, or disconnect; `input` is sent on each step and `change` when the press ends. Each is half the field's height, 28px wide, and 40px under a coarse pointer. `hide-steppers` removes them. The native spinner is hidden.
-- A `min` above `max`, or a `step` not above 0, is repaired and warns.
+- A `min` above `max`, or a `step` neither above 0 nor `any`, is repaired and warns.
+- **`step="any"`** is passed to the input, so any number is valid (no `stepMismatch`). `stepUp()` throws for it, so the steppers move by 1 from the value (0 when empty), keep the value's decimals, and stop at `min` and `max`. The arrow keys are the engine's.
 - Parsing and display follow the engine and the user's locale settings, which differ between engines; the component does not format the number, and the docs say so.
 
 ## 11. Select

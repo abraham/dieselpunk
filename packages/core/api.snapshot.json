@@ -906,7 +906,7 @@
         "placeholder": "string = ''",
         "readonly": "boolean = false",
         "required": "boolean = false",
-        "step": "number = 1",
+        "step": "number | 'any' = 1",
         "value": "string = ''"
       },
       "properties": {
@@ -923,7 +923,7 @@
         "placeholder": "string = ''",
         "readonly": "boolean = false",
         "required": "boolean = false",
-        "step": "number = 1",
+        "step": "number | 'any' = 1",
         "validationMessage": "string",
         "validity": "ValidityState",
         "value": "string = ''",

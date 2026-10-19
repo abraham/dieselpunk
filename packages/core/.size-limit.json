@@ -258,7 +258,7 @@
     "path": "dist/components/number-field/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "6.85 kB"
+    "limit": "7.05 kB"
   },
   {
     "name": "punk-select",

@@ -147,6 +147,27 @@ describe('punk-number-field', () => {
     expect(element.value).toBe('0.3');
   });
 
+  it('takes any number with step="any", and steps by 1 within the bounds', async () => {
+    const element = await mount('label="Rate" value="-0.7" min="-1" max="1.5" step="any"');
+    expect(element.step).toBe('any');
+    expect(input(element).step).toBe('any');
+    expect(warn).not.toHaveBeenCalled();
+    await userEvent.fill(input(element), '0.125');
+    expect(element.validity.stepMismatch).toBe(false);
+    element.value = '-0.7';
+    await element.updateComplete;
+    await press(element, 'up');
+    expect(element.value).toBe('0.3');
+    await press(element, 'up');
+    expect(element.value).toBe('1.3');
+    await press(element, 'up');
+    expect(element.value).toBe('1.5');
+    element.value = '';
+    await element.updateComplete;
+    await press(element, 'down');
+    expect(element.value).toBe('-1');
+  });
+
   it('repeats while a stepper is held, and sends change once when it is let go', async () => {
     const element = await mount('label="Thrust" value="0"');
     const events: string[] = [];
@@ -234,7 +255,7 @@ describe('punk-number-field', () => {
     expect(readonly.value).toBe('3');
   });
 
-  it('repairs a min above max and a step that is not above 0, and warns once', async () => {
+  it('repairs a min above max and a step neither above 0 nor any, and warns once', async () => {
     const element = await mount('label="Thrust" min="10" max="0" step="0" value="3"');
     expect(input(element).hasAttribute('min')).toBe(false);
     expect(input(element).hasAttribute('max')).toBe(false);

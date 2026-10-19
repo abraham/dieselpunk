@@ -12,6 +12,11 @@ import { numberFieldStyles } from './number-field.styles.ts';
 const REPEAT_DELAY = 400;
 const REPEAT_EVERY = 80;
 
+const stepConverter = {
+  fromAttribute: (value: string | null): number | 'any' | null =>
+    value === null ? null : value.trim().toLowerCase() === 'any' ? 'any' : Number(value),
+};
+
 /**
  * A field for a number, with a native `<input type="number">` in its shadow tree, so validity,
  * rounding to `step`, and the spinbutton role are the platform's. It takes part in a form: it
@@ -24,7 +29,8 @@ const REPEAT_EVERY = 80;
  * formatted by the component: parsing and display follow the engine and the user's locale.
  *
  * `label` is the name, then `aria-label`, then the text of a `<label for>` pointing at the host. A
- * `min` above `max`, or a `step` that is not above 0, is repaired and warns once.
+ * `min` above `max`, or a `step` that is neither above 0 nor `any`, is repaired and warns once.
+ * With `step="any"` any number is valid, and the steppers move by 1 within `min` and `max`.
  *
  * @tagname punk-number-field
  *
@@ -59,8 +65,8 @@ export class PunkNumberField extends PunkFieldBase {
   /** The largest value. */
   @property({ type: Number, reflect: true }) max: number | null = null;
 
-  /** The distance between values, above 0. */
-  @property({ type: Number, reflect: true }) step = 1;
+  /** The distance between values, above 0, or `any` for any number. */
+  @property({ converter: stepConverter, reflect: true }) step: number | 'any' = 1;
 
   /** The number can be selected and copied, and not changed. */
   @property({ type: Boolean, reflect: true }) readonly = false;
@@ -86,7 +92,9 @@ export class PunkNumberField extends PunkFieldBase {
       !Number.isFinite(this.max)
         ? true
         : this.min <= this.max;
-    const stepUsable = Number.isFinite(this.step) && this.step > 0;
+    const stepUsable =
+      this.step === 'any' ||
+      (typeof this.step === 'number' && Number.isFinite(this.step) && this.step > 0);
     return {
       min: ordered && this.min !== null && Number.isFinite(this.min) ? this.min : undefined,
       max: ordered && this.max !== null && Number.isFinite(this.max) ? this.max : undefined,
@@ -116,7 +124,10 @@ export class PunkNumberField extends PunkFieldBase {
     super.willUpdate(changed);
     if (this.#range.repaired && !this.#warned) {
       this.#warned = true;
-      devWarn(this, '`min` is above `max`, or `step` is not above 0, so they are repaired.');
+      devWarn(
+        this,
+        '`min` is above `max`, or `step` is neither above 0 nor `any`, so they are repaired.',
+      );
     }
   }
 
@@ -129,7 +140,14 @@ export class PunkNumberField extends PunkFieldBase {
   #step(direction: 1 | -1): void {
     const input = this.control as HTMLInputElement | null;
     if (!input || this.isDisabled || this.readonly) return;
-    if (direction === 1) input.stepUp();
+    const { min, max, step } = this.#range;
+    if (step === 'any') {
+      // `stepUp()` throws for `any`; keeping the value's decimals makes -0.7 + 1 exactly 0.3.
+      const from = Number.isNaN(input.valueAsNumber) ? 0 : input.valueAsNumber;
+      const decimals = /\.(\d+)$/.exec(input.value)?.[1]?.length ?? 0;
+      const next = Number((from + direction).toFixed(decimals));
+      input.valueAsNumber = Math.min(max ?? Infinity, Math.max(min ?? -Infinity, next));
+    } else if (direction === 1) input.stepUp();
     else input.stepDown();
     this.value = input.value;
     this.#stepped = true;
