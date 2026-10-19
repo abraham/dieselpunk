@@ -1,6 +1,6 @@
 import { css } from 'lit';
 import { forcedColorsSurface } from '../../styles/forced-colors.ts';
-import { raisedSurface } from '../../styles/surfaces.ts';
+import { flatSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
 export const tooltipStyles = css`
@@ -29,7 +29,7 @@ export const tooltipStyles = css`
     border-radius: ${token('radius')};
     color: ${token('color-text')};
     font-size: 0.875em;
-    ${raisedSurface}
+    ${flatSurface}
   }
 
   .surface.open {

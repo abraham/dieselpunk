@@ -1,7 +1,7 @@
 import { css } from 'lit';
 import { forcedColorsSurface } from '../../styles/forced-colors.ts';
 import { hostFocusRing } from '../../styles/focus.ts';
-import { raisedSurface } from '../../styles/surfaces.ts';
+import { flatSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
 export const menuStyles = css`
@@ -27,7 +27,7 @@ export const menuStyles = css`
     overflow: auto;
     border-radius: ${token('radius')};
     color: ${token('color-text')};
-    ${raisedSurface}
+    ${flatSurface}
   }
 
   :host([open]) .surface {

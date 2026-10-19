@@ -1,7 +1,7 @@
 import { css } from 'lit';
 import { fieldStyles } from '../../styles/field.ts';
 import { forcedColorsSurface } from '../../styles/forced-colors.ts';
-import { raisedSurface } from '../../styles/surfaces.ts';
+import { flatSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
 // The active option is inset with an `accent` bar on its start edge, and the chosen one is bold
@@ -48,7 +48,7 @@ export const comboboxStyles = css`
     overflow: auto;
     border-radius: ${token('radius')};
     color: ${token('color-text')};
-    ${raisedSurface}
+    ${flatSurface}
   }
 
   .listbox.open {

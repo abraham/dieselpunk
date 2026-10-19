@@ -136,6 +136,7 @@ If a theme fails a rule, the theme's token changes. The rule does not.
 | `flat`   | `panel`                                                                                              | Outline only                                                                                                |
 
 - `styles/surfaces.ts` exports the three fragments and the shadow lists (`raisedShadow`, `raisedHoverShadow`, `insetShadow`, `outlineShadow`), so a control swaps bevels on hover and press without restating its surface. Hover adds a half-strength second ring, which raises edge contrast in every theme without a new color.
+- **Raised is for controls and the plates that hold work** (panels, windows, dialogs, drawers, toasts). An anchored surface that floats over content without being a control (the tooltip, the popover, the menu, the combobox's list) is `flat`. **Why:** with the control's gradient and bevel, an open tooltip or menu looked like another button above its anchor.
 - Corners are at most 4px (`radius`). No glass, glow, pill shapes, blur, or soft shadows.
 - **Texture** is one original 128px tiled SVG noise (feTurbulence) as a data URI, on a `pointer-events: none` pseudo-element at `texture-opacity`. Only panels carry it; controls use gradients alone, which keeps paint cheap in dense screens. `reduced-texture` and `high-contrast` set the opacity and gradient strength to zero.
 
