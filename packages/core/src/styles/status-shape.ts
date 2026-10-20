@@ -24,13 +24,36 @@ export const statusLensStyles = css`
   }
 `;
 
-export const statusShapeStyles = css`
+/** The warning shape alone: a form control's message shows no other. */
+export const warningShapeStyles = css`
   .shape {
     inline-size: 10px;
     block-size: 10px;
     box-sizing: border-box;
     background: currentColor;
   }
+
+  .variant-warning {
+    --_c: ${token('color-warning')};
+  }
+
+  .variant-warning .shape {
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+
+  @media (forced-colors: active) {
+    .shape {
+      forced-color-adjust: none;
+    }
+
+    .variant-warning .shape {
+      background: CanvasText;
+    }
+  }
+`;
+
+export const statusShapeStyles = css`
+  ${warningShapeStyles}
 
   .variant-neutral {
     --_c: ${token('color-text')};
@@ -42,10 +65,6 @@ export const statusShapeStyles = css`
 
   .variant-success {
     --_c: ${token('color-success')};
-  }
-
-  .variant-warning {
-    --_c: ${token('color-warning')};
   }
 
   .variant-danger {
@@ -66,22 +85,13 @@ export const statusShapeStyles = css`
     border-radius: 50%;
   }
 
-  .variant-warning .shape {
-    clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  }
-
   @media (forced-colors: active) {
-    .shape {
-      forced-color-adjust: none;
-    }
-
     .variant-neutral .shape {
       border-color: CanvasText;
     }
 
     .variant-info .shape,
     .variant-success .shape,
-    .variant-warning .shape,
     .variant-danger .shape {
       background: CanvasText;
     }

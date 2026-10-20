@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { serverValues } from '../../internal/server-values.ts';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { nextIndex, stepIndex } from '../../internal/grid-navigation.ts';
@@ -11,7 +10,7 @@ import { PunkElement } from '../../internal/punk-element.ts';
 import type { PunkSelectableBase } from '../../internal/selectable-base.ts';
 import { SelectionModel } from '../../internal/selection-model.ts';
 import type { SelectionMode } from '../../internal/selection-model.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { slotGridStyles } from './slot-grid.styles.ts';
 
 export type GridSelection = SelectionMode;
@@ -68,14 +67,20 @@ function setAttribute(element: Element, name: string, value: string | null): voi
 export class PunkSlotGrid extends PunkElement implements Owner<Item> {
   static override styles = slotGridStyles;
 
+  static override properties: PropertyDeclarations = {
+    columns: { converter: optionalNumber, reflect: true },
+    selection: { reflect: true },
+    disabled: { type: Boolean, reflect: true },
+  };
+
   /** The most columns to use. A narrower container uses fewer, and slots never shrink. */
-  @property({ converter: optionalNumber, reflect: true }) columns: number | undefined;
+  columns: number | undefined;
 
   /** `none` only activates items. Unknown values behave as `none`. */
-  @property({ reflect: true }) selection: GridSelection = 'none';
+  selection: GridSelection = 'none';
 
   /** Disables every item, and removes the tab stop. Items that were already disabled stay so. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /**
    * The `value` of each selected item, in item order. Assign it to select by value, before or
@@ -103,7 +108,6 @@ export class PunkSlotGrid extends PunkElement implements Owner<Item> {
   #requested: string[] | undefined;
   #built = false;
   #scheduled = false;
-  #structural: string[] = [];
   #reported = new Set<string>();
 
   constructor() {
@@ -130,7 +134,7 @@ export class PunkSlotGrid extends PunkElement implements Owner<Item> {
   }
 
   protected override updated(): void {
-    this.#report();
+    this.#warnProblems();
   }
 
   /** @internal */
@@ -175,13 +179,10 @@ export class PunkSlotGrid extends PunkElement implements Owner<Item> {
     this.#built = true;
     const mode = this.#mode;
     const found: Item[] = [];
-    const problems: string[] = [];
     for (const child of this.children) {
       if (child.hasAttribute('slot')) continue;
       if (isItem(child)) found.push(child);
       else if (isPending(child)) this.#waitFor(child.localName);
-      else
-        problems.push(`It contains <${child.localName}>, which is not an item, so it is ignored.`);
     }
 
     const current = new Set(found);
@@ -194,7 +195,6 @@ export class PunkSlotGrid extends PunkElement implements Owner<Item> {
 
     const taken = new Set<string>();
     const keys = new Map<Item, string>();
-    let valueless = false;
     for (const item of found) {
       const value = item.value;
       if (value !== '' && !taken.has(value)) {
@@ -202,20 +202,12 @@ export class PunkSlotGrid extends PunkElement implements Owner<Item> {
         keys.set(item, value);
         continue;
       }
-      if (value === '') valueless = true;
-      else
-        problems.push(
-          `Two items have the value "${value}", and only the first can be selected by it.`,
-        );
       let key = this.#anonymous.get(item);
       if (key === undefined) {
         key = `${ANONYMOUS}${this.#anonymousCount++}`;
         this.#anonymous.set(item, key);
       }
       keys.set(item, key);
-    }
-    if (valueless && mode !== 'none') {
-      problems.push('An item has no `value`, so it is left out of `values`.');
     }
 
     this.#items = found;
@@ -234,8 +226,7 @@ export class PunkSlotGrid extends PunkElement implements Owner<Item> {
       setAttribute(item, 'aria-selected', mode === 'none' ? null : String(selected));
     }
     this.#placeTabStop();
-    this.#structural = problems;
-    this.#report();
+    this.#warnProblems();
   }
 
   #waitFor(tag: string): void {
@@ -263,15 +254,29 @@ export class PunkSlotGrid extends PunkElement implements Owner<Item> {
     }
   }
 
-  #report(): void {
-    const named = this.hasAttribute('aria-label') || this.hasAttribute('aria-labelledby');
-    const current = new Set(
-      named
-        ? this.#structural
-        : ['It has no accessible name. Set `aria-label`.', ...this.#structural],
-    );
-    for (const problem of current) if (!this.#reported.has(problem)) devWarn(this, problem);
-    this.#reported = current;
+  #warnProblems(): void {
+    this.#reported = warnNew(this, this.#reported, () => {
+      const strays = [...this.children].filter(
+        (child) => !child.hasAttribute('slot') && !isItem(child) && !isPending(child),
+      );
+      const values = this.#items.map((item) => item.value).filter((value) => value !== '');
+      const repeated = values.filter((value, index) => values.indexOf(value) !== index);
+      return [
+        !this.hasAttribute('aria-label') &&
+          !this.hasAttribute('aria-labelledby') &&
+          'It has no accessible name. Set `aria-label`.',
+        ...strays.map(
+          (child) => `It contains <${child.localName}>, which is not an item, so it is ignored.`,
+        ),
+        ...repeated.map(
+          (value) =>
+            `Two items have the value "${value}", and only the first can be selected by it.`,
+        ),
+        this.#mode !== 'none' &&
+          this.#items.some((item) => item.value === '') &&
+          'An item has no `value`, so it is left out of `values`.',
+      ];
+    });
   }
 
   /** The item an event came from, found by walking up to the grid's direct child. */

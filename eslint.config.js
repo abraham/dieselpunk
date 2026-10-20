@@ -102,6 +102,44 @@ const urlBindings = {
   },
 };
 
+// specs/package-contract.md §6: the production build removes each statement that warns, so a
+// warning is a call of its own, maybe assigned, to `devWarn`, `warnNew`, or a `this.warn…` method.
+const devWarnings = {
+  meta: {
+    type: 'problem',
+    schema: [],
+    messages: {
+      statement:
+        'A dev warning must be a statement of its own, so the production build removes it.',
+    },
+  },
+  create(context) {
+    const warnMethod = /^#?warn[A-Z]/;
+    const isWarner = (node) =>
+      (node.type === 'Identifier' && ['devWarn', 'warnNew'].includes(node.name)) ||
+      (node.type === 'MemberExpression' &&
+        node.object.type === 'ThisExpression' &&
+        warnMethod.test(
+          node.property.type === 'PrivateIdentifier'
+            ? `#${node.property.name}`
+            : node.property.name,
+        ));
+    const report = (node) => context.report({ node, messageId: 'statement' });
+    return {
+      CallExpression(node) {
+        if (!isWarner(node.callee)) return;
+        let parent = node.parent;
+        if (parent.type === 'AssignmentExpression' && parent.right === node) parent = parent.parent;
+        if (parent.type !== 'ExpressionStatement') report(node);
+      },
+      // A `warn…` method is removed too, so it may only be called.
+      MemberExpression(node) {
+        if (isWarner(node) && node.parent.callee !== node) report(node);
+      },
+    };
+  },
+};
+
 // specs/security.md §4.1 and §4.4: shipped source has no markup or script sinks, and makes no
 // requests, reads no storage, and posts no messages.
 const shippedSource = ['packages/core/src/**/*.ts', 'packages/locales/src/**/*.ts'];
@@ -177,8 +215,14 @@ const shippedRules = {
         'CallExpression[callee.name=/^set(Timeout|Interval)$/] > :matches(Literal, TemplateLiteral).arguments:first-child, CallExpression[callee.property.name=/^set(Timeout|Interval)$/] > :matches(Literal, TemplateLiteral).arguments:first-child',
       message: `A string passed to setTimeout or setInterval ${sink}`,
     },
+    {
+      selector: 'Decorator',
+      message:
+        'Declare reactive properties in `static properties`; a decorator adds a helper to every module (specs/component-model.md).',
+    },
   ],
   'local/url-bindings': 'error',
+  'local/dev-warnings': 'error',
 };
 
 export default defineConfig(
@@ -193,7 +237,13 @@ export default defineConfig(
   tseslint.configs.recommended,
   {
     plugins: {
-      local: { rules: { 'workspace-imports': workspaceImports, 'url-bindings': urlBindings } },
+      local: {
+        rules: {
+          'workspace-imports': workspaceImports,
+          'url-bindings': urlBindings,
+          'dev-warnings': devWarnings,
+        },
+      },
     },
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',

@@ -1,5 +1,5 @@
 import { html, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { PunkButtonBase } from '../../internal/button-base.ts';
 import { buttonBaseStyles } from '../../internal/button-base.styles.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
@@ -27,12 +27,16 @@ export type ButtonArrow = 'start' | 'end';
 export class PunkButton extends PunkButtonBase {
   static override styles = [buttonBaseStyles, buttonStyles];
 
+  static override properties: PropertyDeclarations = {
+    arrow: { reflect: true },
+  };
+
   /**
    * Points the button with an arrow tip on its inline `end` or `start`, for an action that moves
    * on or back. The tip is part of the button and mirrors in right-to-left text. Unknown values
    * render no tip.
    */
-  @property({ reflect: true }) arrow: ButtonArrow | null = null;
+  arrow: ButtonArrow | null = null;
 
   readonly #slots = new SlotPresence(this, ['icon-start', 'icon-end']);
 

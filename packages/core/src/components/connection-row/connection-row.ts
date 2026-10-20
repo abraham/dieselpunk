@@ -1,12 +1,12 @@
 import { html, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { msg, str } from '../../internal/localize.ts';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { renderCloseButton } from '../../styles/close-button.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { connectionRowStyles } from './connection-row.styles.ts';
 
 export type ConnectionDirection = 'forward' | 'backward' | 'both';
@@ -57,25 +57,34 @@ const statuses: readonly string[] = ['neutral', 'info', 'success', 'warning', 'd
 export class PunkConnectionRow extends PunkElement {
   static override styles = connectionRowStyles;
 
+  static override properties: PropertyDeclarations = {
+    direction: { reflect: true },
+    status: { reflect: true },
+    removable: { type: Boolean, reflect: true },
+    removeLabel: { attribute: 'remove-label', reflect: true },
+    disabled: { type: Boolean, reflect: true },
+    value: { reflect: true },
+  };
+
   readonly #localeWatcher = new LocaleWatcher(this);
 
   /** `forward` points from the source to the destination, `backward` the other way, and `both` has two heads. It flips in right-to-left. Unknown values use `forward`. */
-  @property({ reflect: true }) direction: ConnectionDirection = 'forward';
+  direction: ConnectionDirection = 'forward';
 
   /** A shape beside the `status` text: a ring for `neutral`, a diamond for `info`, a circle for `success`, a triangle for `warning`, a square for `danger`. Unknown values use `neutral`. */
-  @property({ reflect: true }) status: ConnectionStatus = 'neutral';
+  status: ConnectionStatus = 'neutral';
 
   /** Draws the remove button. */
-  @property({ type: Boolean, reflect: true }) removable = false;
+  removable = false;
 
   /** The name of the remove button. Unset, it is made from the text of the source and the destination. */
-  @property({ attribute: 'remove-label', reflect: true }) removeLabel = '';
+  removeLabel = '';
 
   /** Disables the remove button. Every word stays readable. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /** Identifies the row in `punk-remove`. */
-  @property({ reflect: true }) value = '';
+  value = '';
 
   readonly #presence = new SlotPresence(this, ['source', 'destination', '', 'status']);
   #problems = new Set<string>();
@@ -144,20 +153,16 @@ export class PunkConnectionRow extends PunkElement {
   }
 
   protected override updated(): void {
-    const found = new Set<string>();
-    const named = this.#presence.has('source') || this.#presence.has('destination');
-    if (!named && !this.removeLabel) {
-      found.add('It has no `source` or `destination`, so nothing says what it connects.');
-    }
-    if (
+    this.#problems = warnNew(this, this.#problems, () => [
+      !this.#presence.has('source') &&
+        !this.#presence.has('destination') &&
+        !this.removeLabel &&
+        'It has no `source` or `destination`, so nothing says what it connects.',
       this.status !== 'neutral' &&
-      statuses.includes(this.status) &&
-      !this.#presence.has('status')
-    ) {
-      found.add('A `status` other than `neutral` has no text in the `status` slot.');
-    }
-    for (const problem of found) if (!this.#problems.has(problem)) devWarn(this, problem);
-    this.#problems = found;
+        statuses.includes(this.status) &&
+        !this.#presence.has('status') &&
+        'A `status` other than `neutral` has no text in the `status` slot.',
+    ]);
   }
 
   protected override render() {

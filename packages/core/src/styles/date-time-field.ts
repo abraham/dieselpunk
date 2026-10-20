@@ -1,6 +1,6 @@
 import { css, unsafeCSS } from 'lit';
 import { token } from '../tokens/token.ts';
-import { fieldStyles } from './field.ts';
+import { fieldAffixStyles, fieldStyles } from './field.ts';
 
 const icon = (path: string) =>
   unsafeCSS(
@@ -16,6 +16,7 @@ const clock = icon(
 // a mask filled with the text color, which follows the theme and forced colors.
 export const dateTimeFieldStyles = css`
   ${fieldStyles}
+  ${fieldAffixStyles}
 
   .control {
     min-inline-size: 8ch;

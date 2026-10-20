@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { RovingController } from '../../internal/roving.ts';
@@ -51,14 +50,20 @@ export type ToolbarOrientation = 'horizontal' | 'vertical';
 export class PunkToolbar extends PunkElement {
   static override styles = toolbarStyles;
 
+  static override properties: PropertyDeclarations = {
+    wrap: { type: Boolean, reflect: true },
+    orientation: { reflect: true },
+    accessibleLabel: { attribute: 'aria-label' },
+  };
+
   /** Lets the strip grow taller instead of hiding items. It creates no observer. */
-  @property({ type: Boolean, reflect: true }) wrap = false;
+  wrap = false;
 
   /** `vertical` stacks the items in a column, moved with Up and Down. Unknown values use `horizontal`. */
-  @property({ reflect: true }) orientation: ToolbarOrientation = 'horizontal';
+  orientation: ToolbarOrientation = 'horizontal';
 
   /** Mirrors the host `aria-label`, which cannot reach the strip on its own. */
-  @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+  accessibleLabel: string | null = null;
 
   readonly #roving = new RovingController({
     host: this,

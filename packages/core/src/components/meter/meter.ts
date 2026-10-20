@@ -1,13 +1,13 @@
 import { msg } from '../../internal/localize.ts';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { formatPercent, resolveLang } from '../../utilities/locale.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { DEFAULT_SEGMENTS, resolveMeter } from './meter-state.ts';
 import type { MeterProblem, ResolvedMeter } from './meter-state.ts';
 import { meterStyles } from './meter.styles.ts';
@@ -35,41 +35,56 @@ export class PunkMeter extends PunkElement {
 
   static override styles = meterStyles;
 
+  static override properties: PropertyDeclarations = {
+    value: { type: Number, reflect: true },
+    min: { type: Number, reflect: true },
+    max: { type: Number, reflect: true },
+    low: { converter: optionalNumber, reflect: true },
+    high: { converter: optionalNumber, reflect: true },
+    optimum: { converter: optionalNumber, reflect: true },
+    segments: { type: Number, reflect: true },
+    orientation: { reflect: true },
+    label: { reflect: true },
+    labelHidden: { type: Boolean, attribute: 'label-hidden', reflect: true },
+    showValue: { type: Boolean, attribute: 'show-value', reflect: true },
+    accessibleLabel: { attribute: 'aria-label' },
+  };
+
   /** The current value, from `min` to `max`. Values outside it are clamped. */
-  @property({ type: Number, reflect: true }) value = 0;
+  value = 0;
 
   /** The lowest value. Must be below `max`, or the range is 0 to 100. */
-  @property({ type: Number, reflect: true }) min = 0;
+  min = 0;
 
   /** The highest value. */
-  @property({ type: Number, reflect: true }) max = 100;
+  max = 100;
 
   /** Where the low region ends. Below it is the low region. */
-  @property({ converter: optionalNumber, reflect: true }) low: number | undefined;
+  low: number | undefined;
 
   /** Where the high region starts. Above it is the high region. */
-  @property({ converter: optionalNumber, reflect: true }) high: number | undefined;
+  high: number | undefined;
 
   /** A value in the best region. Without it, the best region is the middle one. */
-  @property({ converter: optionalNumber, reflect: true }) optimum: number | undefined;
+  optimum: number | undefined;
 
   /** How many segments the meter is cut into, from 2 to 100. */
-  @property({ type: Number, reflect: true }) segments = DEFAULT_SEGMENTS;
+  segments = 10;
 
   /** Unknown values render as `horizontal`. */
-  @property({ reflect: true }) orientation: MeterOrientation = 'horizontal';
+  orientation: MeterOrientation = 'horizontal';
 
   /** The accessible name, and the visible text above the meter unless `label-hidden` is set. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   /** Keeps the label as the accessible name but does not show it. */
-  @property({ type: Boolean, attribute: 'label-hidden', reflect: true }) labelHidden = false;
+  labelHidden = false;
 
   /** Shows the percentage and state as text. Assistive technology always gets them. */
-  @property({ type: Boolean, attribute: 'show-value', reflect: true }) showValue = false;
+  showValue = false;
 
   /** Names the meter when there is no `label`; the host `aria-label` cannot reach the track. */
-  @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+  accessibleLabel: string | null = null;
 
   #problems = new Set<string>();
 
@@ -87,26 +102,24 @@ export class PunkMeter extends PunkElement {
   }
 
   protected override updated(): void {
-    const found = this.#resolve().problems.map((problem) => this.#messages[problem]);
-    if (!this.label && !this.accessibleLabel) {
-      found.push('A meter needs a `label` or an `aria-label` to have an accessible name.');
-    }
-    const current = new Set(found as string[]);
-    for (const problem of current) if (!this.#problems.has(problem)) devWarn(this, problem);
-    this.#problems = current;
-  }
-
-  get #messages(): Record<MeterProblem, string> {
-    return {
-      range: `\`min\` ${this.min} and \`max\` ${this.max} are not a range, so 0 to 100 is used. \`max\` must be above \`min\`.`,
-      value: `\`value\` is ${this.value}, which is not a finite number; using \`min\`.`,
-      'value-range': `\`value\` ${this.value} is outside ${this.min} to ${this.max}; it is clamped.`,
-      low: `\`low\` is ${this.low}, which is not a number inside the range; it is clamped or ignored.`,
-      high: `\`high\` is ${this.high}, which is not a number inside the range; it is clamped or ignored.`,
-      optimum: `\`optimum\` is ${this.optimum}, which is not a number inside the range; it is clamped or ignored.`,
-      bounds: `\`high\` ${this.high} is below \`low\` ${this.low}; \`high\` is raised to \`low\`.`,
-      segments: `\`segments\` is ${this.segments}; using a whole number from 2 to 100.`,
-    };
+    this.#problems = warnNew(this, this.#problems, () => {
+      const messages: Record<MeterProblem, string> = {
+        range: `\`min\` ${this.min} and \`max\` ${this.max} are not a range, so 0 to 100 is used. \`max\` must be above \`min\`.`,
+        value: `\`value\` is ${this.value}, which is not a finite number; using \`min\`.`,
+        'value-range': `\`value\` ${this.value} is outside ${this.min} to ${this.max}; it is clamped.`,
+        low: `\`low\` is ${this.low}, which is not a number inside the range; it is clamped or ignored.`,
+        high: `\`high\` is ${this.high}, which is not a number inside the range; it is clamped or ignored.`,
+        optimum: `\`optimum\` is ${this.optimum}, which is not a number inside the range; it is clamped or ignored.`,
+        bounds: `\`high\` ${this.high} is below \`low\` ${this.low}; \`high\` is raised to \`low\`.`,
+        segments: `\`segments\` is ${this.segments}; using a whole number from 2 to 100.`,
+      };
+      return [
+        ...this.#resolve().problems.map((problem) => messages[problem]),
+        !this.label &&
+          !this.accessibleLabel &&
+          'A meter needs a `label` or an `aria-label` to have an accessible name.',
+      ];
+    });
   }
 
   protected override render() {

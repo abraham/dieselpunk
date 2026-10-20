@@ -1,13 +1,12 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { childChanged, owner, release } from '../../internal/owner.ts';
 import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { nextRovingIndex } from '../../internal/roving-keys.ts';
 import { SelectionModel } from '../../internal/selection-model.ts';
 import type { SelectionMode } from '../../internal/selection-model.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import type { PunkSelectionChangeDetail } from '../slot-grid/slot-grid.ts';
 import { PunkListItem } from './list-item.ts';
 import { listStyles } from './list.styles.ts';
@@ -45,8 +44,12 @@ function write(element: Element, name: string, value: string | null): void {
 export class PunkList extends PunkElement implements Owner<PunkListItem> {
   static override styles = listStyles;
 
+  static override properties: PropertyDeclarations = {
+    selection: { reflect: true },
+  };
+
   /** `none` is a plain list. Unknown values behave as `none`. */
-  @property({ reflect: true }) selection: ListSelection = 'none';
+  selection: ListSelection = 'none';
 
   /**
    * The `value` of each selected item, in order. Assign it to select by value, before or after the
@@ -66,7 +69,7 @@ export class PunkList extends PunkElement implements Owner<PunkListItem> {
   #last: PunkListItem | undefined;
   #built = false;
   #scheduled = false;
-  #reported = '';
+  #reported = new Set<string>();
 
   constructor() {
     super();
@@ -125,20 +128,19 @@ export class PunkList extends PunkElement implements Owner<PunkListItem> {
   #sync(): void {
     const children = [...this.children].filter((child) => !child.slot);
     const found = children.filter((child): child is PunkListItem => child instanceof PunkListItem);
-    const problems: string[] = [];
-    if (found.length !== children.length) {
-      problems.push('It contains elements that are not `punk-list-item`, so they are ignored.');
-    }
-    if (!this.hasAttribute('aria-label') && !this.hasAttribute('aria-labelledby')) {
-      problems.push('It has no accessible name. Set `aria-label`.');
-    }
-    const values = found.map((item) => item.value);
-    if (this.#mode !== 'none' && (values.includes('') || new Set(values).size < values.length)) {
-      problems.push('Its items need distinct, non-empty `value`s to be selected.');
-    }
-    const report = problems.join('\n');
-    if (report && report !== this.#reported) for (const problem of problems) devWarn(this, problem);
-    this.#reported = report;
+    this.#reported = warnNew(this, this.#reported, () => {
+      const values = found.map((item) => item.value);
+      return [
+        found.length !== children.length &&
+          'It contains elements that are not `punk-list-item`, so they are ignored.',
+        !this.hasAttribute('aria-label') &&
+          !this.hasAttribute('aria-labelledby') &&
+          'It has no accessible name. Set `aria-label`.',
+        this.#mode !== 'none' &&
+          (values.includes('') || new Set(values).size < values.length) &&
+          'Its items need distinct, non-empty `value`s to be selected.',
+      ];
+    });
 
     for (const item of this.#items) if (!found.includes(item)) this[release](item);
     for (const item of found) if (item[owner] !== this) item[owner] = this;

@@ -1,12 +1,11 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Ledger } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { nextRovingIndex } from '../../internal/roving-keys.ts';
 import { SelectionModel } from '../../internal/selection-model.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import type { PunkSelectionChangeDetail } from '../slot-grid/slot-grid.ts';
 import { toggleGroupStyles } from './toggle-group.styles.ts';
 
@@ -37,14 +36,20 @@ export type ToggleGroupSelection = 'single' | 'multiple';
 export class PunkToggleGroup extends PunkElement {
   static override styles = toggleGroupStyles;
 
+  static override properties: PropertyDeclarations = {
+    selection: { reflect: true },
+    disabled: { type: Boolean, reflect: true },
+    accessibleLabel: { attribute: 'aria-label' },
+  };
+
   /** `single` keeps one button pressed; `multiple` lets any number be. Unknown values use `single`. */
-  @property({ reflect: true }) selection: ToggleGroupSelection = 'single';
+  selection: ToggleGroupSelection = 'single';
 
   /** Disables every button. Buttons that were already disabled stay so. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /** Mirrors the host `aria-label`, which cannot reach the group on its own. */
-  @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+  accessibleLabel: string | null = null;
 
   /**
    * The `value` of each pressed button, in order. Assign it to press buttons by value, before or
@@ -64,7 +69,7 @@ export class PunkToggleGroup extends PunkElement {
   #requested: string[] | undefined;
   #last: HTMLButtonElement | undefined;
   #built = false;
-  #reported = '';
+  #reported = new Set<string>();
 
   constructor() {
     super();
@@ -98,16 +103,13 @@ export class PunkToggleGroup extends PunkElement {
     const found = children.filter(
       (child): child is HTMLButtonElement => child.localName === 'button',
     );
-    const problems: string[] = [];
-    if (found.length !== children.length) {
-      problems.push('It contains elements that are not `<button>`, so they are ignored.');
-    }
-    if (!this.accessibleLabel && !this.hasAttribute('aria-labelledby')) {
-      problems.push('It has no accessible name. Set `aria-label`.');
-    }
-    const report = problems.join('\n');
-    if (report && report !== this.#reported) for (const problem of problems) devWarn(this, problem);
-    this.#reported = report;
+    this.#reported = warnNew(this, this.#reported, () => [
+      found.length !== children.length &&
+        'It contains elements that are not `<button>`, so they are ignored.',
+      !this.accessibleLabel &&
+        !this.hasAttribute('aria-labelledby') &&
+        'It has no accessible name. Set `aria-label`.',
+    ]);
 
     for (const button of this.#buttons) if (!found.includes(button)) this.#release(button);
     for (const button of found) {

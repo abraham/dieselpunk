@@ -75,9 +75,9 @@ import '@dieselpunk/core/panel/register.js';
 import '@dieselpunk/core/button/register.js';
 ```
 
-Hydration keeps the nodes the user already sees, so nothing is rebuilt and focus stays where it is. Each component first renders exactly what the server rendered, then updates once for what the server could not know (below). `hydrate.js` is about 0.55 kB, and only pages that import it pay for it.
+Hydration keeps the nodes the user already sees, so nothing is rebuilt and focus stays where it is. Each component first renders exactly what the server rendered, then updates once for what the server could not know (below). `hydrate.js` is about 0.6 kB, and only pages that import it pay for it.
 
-**The support must evaluate before Lit.** Import order is not evaluation order once a bundler moves modules: a Rolldown or Vite `codeSplitting` group, for example, can place `lit-element` ahead of the support. Lit is then never patched, and `hydrate.js` falls back to replacing, with a warning in development, rather than letting each component render a second tree into the server's. To keep the order, load the support as its own `<script type="module">` before the app bundle, or as the first module of an entry no other chunk imports Lit before, or turn on Rolldown's `strictExecutionOrder` (about 3 kB).
+**The support must evaluate before Lit.** This is a requirement of hydrating, and nothing warns when it is missed. Import order is not evaluation order once a bundler moves modules: a Rolldown or Vite `codeSplitting` group, for example, can place `lit-element` ahead of the support. Lit is then never patched, and `hydrate.js` silently falls back to replacing, rather than letting each component render a second tree into the server's. To keep the order, load the support as its own `<script type="module">` before the app bundle, or as the first module of an entry no other chunk imports Lit before, or turn on Rolldown's `strictExecutionOrder` (about 3 kB).
 
 Built-in text hydrates correctly when the page uses the server's locale at that moment. If it does not, the server's words stay until the locale changes.
 

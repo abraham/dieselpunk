@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { PunkToggleBase } from '../../internal/toggle-base.ts';
 import { checkboxStyles } from './checkbox.styles.ts';
@@ -28,8 +28,12 @@ import { checkboxStyles } from './checkbox.styles.ts';
 export class PunkCheckbox extends PunkToggleBase {
   static override styles = checkboxStyles;
 
+  static override properties: PropertyDeclarations = {
+    indeterminate: { type: Boolean, reflect: true },
+  };
+
   /** Neither on nor off, for a group that is partly checked. Shown as a dash, and `aria-checked="mixed"`. */
-  @property({ type: Boolean, reflect: true }) indeterminate = false;
+  indeterminate = false;
 
   protected readonly toggleRole = 'checkbox';
 

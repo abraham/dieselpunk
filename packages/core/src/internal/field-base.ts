@@ -1,8 +1,7 @@
 import { msg } from './localize.ts';
 import { LocaleWatcher } from './locale-watch.ts';
 import { LitElement, html, nothing } from 'lit';
-import type { PropertyValues, TemplateResult } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues, TemplateResult } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { PunkFormControl } from './form-control.ts';
@@ -18,8 +17,9 @@ export interface FieldParts {
   control: TemplateResult;
   /** Rendered inside the box after the control, such as an arrow or the steppers. */
   after?: TemplateResult | typeof nothing;
-  /** Whether the `prefix` and `suffix` slots exist. */
-  affixes: boolean;
+  /** The `prefix` and `suffix` slots, for the fields that have them (`fieldAffix`). */
+  prefix?: TemplateResult;
+  suffix?: TemplateResult;
   readonly?: boolean;
 }
 
@@ -30,12 +30,16 @@ export interface FieldParts {
  * one the control takes `aria-label`, or the text of a `<label>` that points at the host.
  */
 export abstract class PunkFieldBase extends PunkFormControl {
+  static override properties: PropertyDeclarations = {
+    label: { reflect: true },
+  };
+
   readonly #localeWatcher = new LocaleWatcher(this);
 
   static override shadowRootOptions = { ...LitElement.shadowRootOptions, delegatesFocus: true };
 
   /** The name of the field, and the text above it. Without it, use `aria-label`. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   protected readonly presence = new SlotPresence(this, ['prefix', 'suffix', 'hint']);
   #messageShown = false;
@@ -101,7 +105,7 @@ export abstract class PunkFieldBase extends PunkFormControl {
     }
   }
 
-  protected renderField({ control, after, affixes, readonly }: FieldParts): TemplateResult {
+  protected renderField({ control, after, prefix, suffix, readonly }: FieldParts): TemplateResult {
     const shown = this.messageVisible;
     return html`
       <div
@@ -117,22 +121,7 @@ export abstract class PunkFieldBase extends PunkFormControl {
           >${this.label}${requiredMark(this.required)}</label
         >
         <div class="box">
-          ${
-            affixes
-              ? html`<span part="prefix" class="prefix" ?hidden=${!this.presence.has('prefix')}
-                  ><slot name="prefix" @slotchange=${this.presence.handleSlotChange}></slot
-                ></span>`
-              : nothing
-          }
-          ${control}
-          ${
-            affixes
-              ? html`<span part="suffix" class="suffix" ?hidden=${!this.presence.has('suffix')}
-                  ><slot name="suffix" @slotchange=${this.presence.handleSlotChange}></slot
-                ></span>`
-              : nothing
-          }
-          ${after ?? nothing}
+          ${prefix ?? nothing} ${control} ${suffix ?? nothing} ${after ?? nothing}
         </div>
         <div part="hint" class="hint" id="hint" ?hidden=${!this.presence.has('hint')}>
           <slot name="hint" @slotchange=${this.presence.handleSlotChange}></slot>

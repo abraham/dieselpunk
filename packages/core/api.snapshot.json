@@ -875,7 +875,7 @@
         "min": "number = 0",
         "optimum": "number | undefined",
         "orientation": "MeterOrientation = 'horizontal'",
-        "segments": "= DEFAULT_SEGMENTS",
+        "segments": "number = 10",
         "show-value": "boolean = false",
         "value": "number = 0"
       },
@@ -889,7 +889,7 @@
         "min": "number = 0",
         "optimum": "number | undefined",
         "orientation": "MeterOrientation = 'horizontal'",
-        "segments": "= DEFAULT_SEGMENTS",
+        "segments": "number = 10",
         "showValue": "boolean = false",
         "value": "number = 0"
       },
@@ -1113,7 +1113,7 @@
         "aria-label": "string | null = null",
         "label": "string = ''",
         "label-hidden": "boolean = false",
-        "max": "= DEFAULT_MAX",
+        "max": "number = 100",
         "show-value": "boolean = false",
         "value": "number | undefined",
         "variant": "ProgressVariant = 'default'"
@@ -2000,7 +2000,7 @@
     "punk-toast-stack": {
       "attributes": {
         "label": "string = ''",
-        "limit": "= DEFAULT_LIMIT",
+        "limit": "number = 5",
         "placement": "ToastPlacement = 'bottom-end'"
       },
       "properties": {

@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
@@ -57,23 +56,32 @@ interface Drag {
 export class PunkSplitter extends PunkElement {
   static override styles = splitterStyles;
 
+  static override properties: PropertyDeclarations = {
+    value: { type: Number, reflect: true },
+    min: { type: Number, reflect: true },
+    max: { type: Number, reflect: true },
+    step: { type: Number, reflect: true },
+    orientation: { reflect: true },
+    label: { reflect: true },
+  };
+
   /** The share of the space, from `min` to `max`, that the start pane takes. */
-  @property({ type: Number, reflect: true }) value = 50;
+  value = 50;
 
   /** The smallest share the start pane can have. */
-  @property({ type: Number, reflect: true }) min = 0;
+  min = 0;
 
   /** The largest share the start pane can have. */
-  @property({ type: Number, reflect: true }) max = 100;
+  max = 100;
 
   /** How far one arrow key moves the divider. */
-  @property({ type: Number, reflect: true }) step = 5;
+  step = 5;
 
   /** `horizontal` puts the panes side by side, and `vertical` stacks them. Unknown values are `horizontal`. */
-  @property({ reflect: true }) orientation: SplitterOrientation = 'horizontal';
+  orientation: SplitterOrientation = 'horizontal';
 
   /** The name of the divider. Without it, the localized "Resize". */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   readonly #localeWatcher = new LocaleWatcher(this);
   #drag: Drag | null = null;

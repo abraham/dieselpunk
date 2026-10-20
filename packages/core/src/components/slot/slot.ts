@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { PunkReceptacleBase } from '../../internal/receptacle-base.ts';
 import { receptacleStyles } from '../../styles/receptacle.ts';
 
@@ -28,8 +28,12 @@ import { receptacleStyles } from '../../styles/receptacle.ts';
 export class PunkSlot extends PunkReceptacleBase {
   static override styles = receptacleStyles;
 
+  static override properties: PropertyDeclarations = {
+    label: { reflect: true },
+  };
+
   /** The accessible name, read by assistive technology but not shown. Slotted text names the slot too. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   protected get hasName(): boolean {
     return this.label !== '';

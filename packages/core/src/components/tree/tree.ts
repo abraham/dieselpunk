@@ -1,13 +1,12 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { childChanged, owner, release } from '../../internal/owner.ts';
 import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import type { PunkActivateDetail } from '../../internal/selectable-base.ts';
 import { SelectionModel } from '../../internal/selection-model.ts';
 import type { SelectionMode } from '../../internal/selection-model.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import type { PunkToggleDetail } from '../accordion/accordion-item.ts';
 import type { PunkSelectionChangeDetail } from '../slot-grid/slot-grid.ts';
 import { PunkTreeItem } from './tree-item.ts';
@@ -45,8 +44,12 @@ function write(element: Element, name: string, value: string | null): void {
 export class PunkTree extends PunkElement implements Owner<PunkTreeItem> {
   static override styles = treeStyles;
 
+  static override properties: PropertyDeclarations = {
+    selection: { reflect: true },
+  };
+
   /** `none` is for navigation only. Unknown values behave as `none`. */
-  @property({ reflect: true }) selection: TreeSelection = 'none';
+  selection: TreeSelection = 'none';
 
   /**
    * The `value` of each selected item, in document order. Assign it to select by value, before or
@@ -66,7 +69,7 @@ export class PunkTree extends PunkElement implements Owner<PunkTreeItem> {
   #last: PunkTreeItem | undefined;
   #built = false;
   #scheduled = false;
-  #reported = '';
+  #reported = new Set<string>();
 
   constructor() {
     super();
@@ -140,20 +143,17 @@ export class PunkTree extends PunkElement implements Owner<PunkTreeItem> {
 
   #sync(): void {
     const found = this.#collect();
-    const stray = [...this.children].some((child) => !(child instanceof PunkTreeItem));
-    const problems: string[] = [];
-    if (stray)
-      problems.push('It contains elements that are not `punk-tree-item`, so they are ignored.');
-    if (!this.hasAttribute('aria-label') && !this.hasAttribute('aria-labelledby')) {
-      problems.push('It has no accessible name. Set `aria-label`.');
-    }
     const values = found.map((item) => item.value);
-    if (this.#mode !== 'none' && (values.includes('') || new Set(values).size < values.length)) {
-      problems.push('Its items need distinct, non-empty `value`s to be selected.');
-    }
-    const report = problems.join('\n');
-    if (report && report !== this.#reported) for (const problem of problems) devWarn(this, problem);
-    this.#reported = report;
+    this.#reported = warnNew(this, this.#reported, () => [
+      [...this.children].some((child) => !(child instanceof PunkTreeItem)) &&
+        'It contains elements that are not `punk-tree-item`, so they are ignored.',
+      !this.hasAttribute('aria-label') &&
+        !this.hasAttribute('aria-labelledby') &&
+        'It has no accessible name. Set `aria-label`.',
+      this.#mode !== 'none' &&
+        (values.includes('') || new Set(values).size < values.length) &&
+        'Its items need distinct, non-empty `value`s to be selected.',
+    ]);
 
     for (const item of this.#items) if (!found.includes(item)) this[release](item);
     for (const item of found) if (item[owner] !== this) item[owner] = this;

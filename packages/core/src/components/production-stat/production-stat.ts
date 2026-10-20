@@ -1,6 +1,5 @@
 import { html, nothing } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { msg } from '../../internal/localize.ts';
@@ -10,7 +9,7 @@ import { SlotPresence } from '../../internal/slot-presence.ts';
 import { resolveStat } from '../../internal/stat-format.ts';
 import type { ProductionTrend, ResolvedStat } from '../../internal/stat-format.ts';
 import { resolveLang } from '../../utilities/locale.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { productionStatStyles } from './production-stat.styles.ts';
 
 export type ProductionStatLayout = 'stacked' | 'inline';
@@ -52,37 +51,50 @@ function unnamedGraphic(element: Element): boolean {
 export class PunkProductionStat extends PunkElement {
   static override styles = productionStatStyles;
 
+  static override properties: PropertyDeclarations = {
+    label: { reflect: true },
+    value: { converter: optionalNumber, reflect: true },
+    unit: { reflect: true },
+    decimals: { converter: optionalNumber, reflect: true },
+    compact: { type: Boolean, reflect: true },
+    trend: { reflect: true },
+    delta: { converter: optionalNumber, reflect: true },
+    deltaPercent: { type: Boolean, attribute: 'delta-percent', reflect: true },
+    layout: { reflect: true },
+    announce: { type: Boolean, reflect: true },
+  };
+
   readonly #localeWatcher = new LocaleWatcher(this);
 
   /** What is measured. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   /** The measurement, formatted for the page's language. Leave it unset while there is none. */
-  @property({ converter: optionalNumber, reflect: true }) value: number | undefined;
+  value: number | undefined;
 
   /** The unit, as text. It is never formatted or translated. */
-  @property({ reflect: true }) unit = '';
+  unit = '';
 
   /** A fixed number of fraction digits, from 0 to 6. Unset uses the language's own. */
-  @property({ converter: optionalNumber, reflect: true }) decimals: number | undefined;
+  decimals: number | undefined;
 
   /** Abbreviates what is shown (`1.2K`). The accessible text always has the full number. */
-  @property({ type: Boolean, reflect: true }) compact = false;
+  compact = false;
 
   /** The direction of change. When unset it follows the sign of `delta`. */
-  @property({ reflect: true }) trend: ProductionTrend | undefined;
+  trend: ProductionTrend | undefined;
 
   /** The change, shown with its sign. A plain number, or a ratio with `delta-percent`. */
-  @property({ converter: optionalNumber, reflect: true }) delta: number | undefined;
+  delta: number | undefined;
 
   /** Treats `delta` as a ratio and shows it as a percentage (`0.12` is `+12%`). */
-  @property({ type: Boolean, attribute: 'delta-percent', reflect: true }) deltaPercent = false;
+  deltaPercent = false;
 
   /** `stacked` puts the label above the value. `inline` puts them on one row where there is room. */
-  @property({ reflect: true }) layout: ProductionStatLayout = 'stacked';
+  layout: ProductionStatLayout = 'stacked';
 
   /** Makes the host a polite live region, for a stat that changes while the user is elsewhere. */
-  @property({ type: Boolean, reflect: true }) announce = false;
+  announce = false;
 
   readonly #presence = new SlotPresence(this, ['icon', 'sparkline']);
   #problems = new Set<string>();
@@ -116,13 +128,12 @@ export class PunkProductionStat extends PunkElement {
   }
 
   protected override updated(): void {
-    const found = new Set(this.#resolve().repairs);
-    if (!this.label) found.add('It has no `label`, so it has no name.');
-    if ([...this.children].some((child) => child.slot === 'sparkline' && unnamedGraphic(child))) {
-      found.add('A graphic in `sparkline` has no `aria-hidden="true"` or text alternative.');
-    }
-    for (const problem of found) if (!this.#problems.has(problem)) devWarn(this, problem);
-    this.#problems = found;
+    this.#problems = warnNew(this, this.#problems, () => [
+      ...this.#resolve().repairs,
+      !this.label && 'It has no `label`, so it has no name.',
+      [...this.children].some((child) => child.slot === 'sparkline' && unnamedGraphic(child)) &&
+        'A graphic in `sparkline` has no `aria-hidden="true"` or text alternative.',
+    ]);
   }
 
   #word(trend: ProductionTrend): string {

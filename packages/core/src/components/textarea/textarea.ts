@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { PunkFieldBase } from '../../internal/field-base.ts';
@@ -53,35 +53,48 @@ function bake(strings: TemplateStringsArray, text: string): TemplateStringsArray
 export class PunkTextarea extends PunkFieldBase {
   static override styles = textareaStyles;
 
+  static override properties: PropertyDeclarations = {
+    value: {},
+    placeholder: { reflect: true },
+    readonly: { type: Boolean, reflect: true },
+    minlength: { type: Number, reflect: true },
+    maxlength: { type: Number, reflect: true },
+    rows: { type: Number, reflect: true },
+    autogrow: { type: Boolean, reflect: true },
+    showCount: { type: Boolean, reflect: true, attribute: 'show-count' },
+    autocomplete: { reflect: true },
+    monospace: { type: Boolean, reflect: true },
+  };
+
   /** The text. The `value` attribute is the default a form reset goes back to. */
-  @property() value = '';
+  value = '';
 
   /** Shown while the field is empty. It is not a name. */
-  @property({ reflect: true }) placeholder = '';
+  placeholder = '';
 
   /** The text can be selected and copied, and not changed. */
-  @property({ type: Boolean, reflect: true }) readonly = false;
+  readonly = false;
 
   /** The fewest characters the user may leave. */
-  @property({ type: Number, reflect: true }) minlength: number | null = null;
+  minlength: number | null = null;
 
   /** The most characters the user may type. */
-  @property({ type: Number, reflect: true }) maxlength: number | null = null;
+  maxlength: number | null = null;
 
   /** How many lines tall it is, and the least an `autogrow` field shrinks to. Below 1 is 1. */
-  @property({ type: Number, reflect: true }) rows = 3;
+  rows = 3;
 
   /** Grows with the text, up to `--punk-textarea-max-height`, where the browser supports it. */
-  @property({ type: Boolean, reflect: true }) autogrow = false;
+  autogrow = false;
 
   /** Shows the number of characters, out of `maxlength` when it is set. */
-  @property({ type: Boolean, reflect: true, attribute: 'show-count' }) showCount = false;
+  showCount = false;
 
   /** What a password manager or the browser may fill in, as the native attribute. */
-  @property({ reflect: true }) autocomplete: string | null = null;
+  autocomplete: string | null = null;
 
   /** Monospaced text, without spell checking, that breaks long words anywhere. */
-  @property({ type: Boolean, reflect: true }) monospace = false;
+  monospace = false;
 
   // A textarea's content can be neither a binding nor, on the server, a property, so the first
   // value is baked into this element's own strings. Lit caches templates in WeakMaps keyed on them.
@@ -143,7 +156,6 @@ ${''}</textarea>`;
       ? bake(control.strings, this.value)
       : (emptyStrings ??= bake(control.strings, ''));
     return this.renderField({
-      affixes: false,
       readonly: this.readonly,
       control: { ...control, strings: this.#strings, values: control.values.slice(0, -1) },
       after: html`<span part="count" class="count" id="count" ?hidden=${!this.showCount}

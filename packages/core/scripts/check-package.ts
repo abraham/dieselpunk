@@ -57,7 +57,7 @@ const sentinels: Record<string, string> = {
   'production-stat': '--punk-stat-value-min',
   'connection-row': 'removeConnection',
   meter: '--punk-meter-length',
-  'status-light': 'The text carries the meaning',
+  'status-light': '"punk-status-light"',
   stack: '--punk-stack-gap',
   cluster: '--punk-cluster-gap',
   accordion: '"punk-accordion-item"',
@@ -77,9 +77,9 @@ const sentinels: Record<string, string> = {
   'radio-group': '"punk-radio"',
   textarea: 'field-sizing',
   combobox: 'aria-activedescendant',
-  fieldset: 'It has no legend',
+  fieldset: '"punk-fieldset"',
   menu: '"punk-menu-item"',
-  'toggle-group': 'not `<button>`',
+  'toggle-group': '"punk-toggle-group"',
   list: '"punk-list-item"',
   table: 'data-punk-select-all',
   alert: 'part="actions"',
@@ -152,6 +152,18 @@ for (const entry of ['hydrate.js', 'ssr.js']) {
     fail(`${name}/${entry} does not resolve to dist/${entry}`);
   }
 }
+// The `development` condition picks the same module with its warnings (§6).
+for (const [entry, target] of Object.entries(pkg.exports)) {
+  if (typeof target !== 'object' || target === null) continue;
+  const { development, default: production } = target as Record<string, string>;
+  if (development !== production?.replace('./dist/', './dist/development/')) {
+    fail(`"${entry}" has no "development" target beside its default`);
+  }
+}
+for (const file of listFiles(distDir).filter((file) => file.endsWith('.js'))) {
+  if (file.startsWith('development/')) continue;
+  if (!existsSync(`${distDir}/development/${file}`)) fail(`dist/development/${file} is missing`);
+}
 if (!existsSync(`${packageDir}custom-elements.json`)) fail('Missing custom-elements.json');
 
 // 2. `sideEffects` covers exactly the register entries, the stylesheets, and the hydration entry.
@@ -168,9 +180,9 @@ const distFiles = listFiles(distDir).map((file) => `dist/${file}`);
 const flagged = distFiles.filter((file) => patterns.some((pattern) => pattern.test(file)));
 const expectedFlagged = distFiles.filter(
   (file) =>
-    /^dist\/components\/[^/]+\/register\.js$/.test(file) ||
+    /^dist\/(development\/)?components\/[^/]+\/register\.js$/.test(file) ||
     /^dist\/css\/[^/]+\.css$/.test(file) ||
-    file === 'dist/hydrate.js',
+    /^dist\/(development\/)?hydrate\.js$/.test(file),
 );
 for (const file of expectedFlagged.filter((file) => !flagged.includes(file))) {
   fail(`${file} has side effects but "sideEffects" does not list it`);
@@ -181,9 +193,10 @@ for (const file of flagged.filter((file) => !expectedFlagged.includes(file))) {
 
 // 3. Nothing but register entries may register an element.
 for (const file of distFiles.filter((file) => file.endsWith('.js'))) {
-  if (/\/register\.js$/.test(file) || file === 'dist/utilities/register-element.js') continue;
+  const module = file.replace(/^dist\/(development\/)?/, '');
+  if (/\/register\.js$/.test(module) || module === 'utilities/register-element.js') continue;
   // Its script for the page defines `punk-styles` there; importing it registers nothing.
-  if (file === 'dist/ssr.js') continue;
+  if (module === 'ssr.js') continue;
   const source = readFileSync(`${packageDir}${file}`, 'utf8');
   if (/customElements\.define|register-element\.js/.test(source)) {
     fail(`${file} registers an element, but only register.js entries may`);

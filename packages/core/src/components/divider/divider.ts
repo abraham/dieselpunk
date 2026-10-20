@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { devWarn } from '../../utilities/warn.ts';
@@ -24,11 +23,16 @@ export type DividerOrientation = 'horizontal' | 'vertical';
 export class PunkDivider extends PunkElement {
   static override styles = dividerStyles;
 
+  static override properties: PropertyDeclarations = {
+    orientation: { reflect: true },
+    decorative: { type: Boolean, reflect: true },
+  };
+
   /** Unknown values behave as `horizontal`. */
-  @property({ reflect: true }) orientation: DividerOrientation = 'horizontal';
+  orientation: DividerOrientation = 'horizontal';
 
   /** Removes the separator semantics when the divider is purely visual. */
-  @property({ type: Boolean, reflect: true }) decorative = false;
+  decorative = false;
 
   readonly #slots = new SlotPresence(this, ['']);
   #warnedAboutLabel = false;

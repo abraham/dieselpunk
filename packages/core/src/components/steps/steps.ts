@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { serverValues } from '../../internal/server-values.ts';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg } from '../../internal/localize.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
@@ -28,11 +27,16 @@ import { stepsStyles } from './steps.styles.ts';
 export class PunkSteps extends PunkElement {
   static override styles = stepsStyles;
 
+  static override properties: PropertyDeclarations = {
+    label: { reflect: true },
+    current: { type: Number, reflect: true },
+  };
+
   /** The name of the list. Without it, the localized "Steps". */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   /** The 1-based number of the current step. `0` is before the first, and past the last is done. */
-  @property({ type: Number, reflect: true }) current = 1;
+  current = 1;
 
   readonly #localeWatcher = new LocaleWatcher(this);
   #steps: PunkStep[] = [];

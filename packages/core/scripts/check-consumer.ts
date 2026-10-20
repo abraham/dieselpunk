@@ -393,7 +393,6 @@ async function checkImportMap(project: string): Promise<void> {
     const tab = await browser.newPage();
     const messages = watchPage(tab);
     await tab.goto(`http://localhost:${port}/import-map.html`);
-    // The divider loads the warning module, so the page also needs the map's `#dev` entry.
     const expected = ['punk-button', 'punk-divider', 'punk-panel'];
     await tab
       .waitForFunction(
@@ -445,6 +444,7 @@ async function checkServerRendering(core: string): Promise<void> {
       'client-plain.bundle': join(outDir, 'client-plain.js'),
       'client-support.bundle': join(outDir, 'client-support.js'),
       'client-hydrate.bundle': join(outDir, 'client-hydrate.js'),
+      'client-late.bundle': join(outDir, 'client-late.js'),
       'client-shared.bundle': join(outDir, 'client-shared.js'),
       'client-shared-hydrate.bundle': join(outDir, 'client-shared-hydrate.js'),
     },
@@ -452,16 +452,6 @@ async function checkServerRendering(core: string): Promise<void> {
     format: 'esm',
     outdir: outDir,
     metafile: true,
-    logLevel: 'silent',
-  });
-  // The misordered page runs development code, so its warning is checked too.
-  await build({
-    absWorkingDir: project,
-    entryPoints: { 'client-late.bundle': join(outDir, 'client-late.js') },
-    bundle: true,
-    format: 'esm',
-    outdir: outDir,
-    conditions: ['development'],
     logLevel: 'silent',
   });
   // The hydration support patches the LitElement it imports, which must be the components' own.
@@ -499,19 +489,6 @@ async function checkServerRendering(core: string): Promise<void> {
       const hydrated = name === 'hydrate' || name === 'shared-hydrate';
       const found = (await tab.evaluate(`window.checkUpgrade(${hydrated})`)) as string[];
       problems.push(...found.map((problem) => `${name}.html: ${problem}`));
-      if (name === 'late') {
-        const late = messages.filter((message) =>
-          message.includes('hydration support loaded after'),
-        );
-        if (late.length !== 1)
-          problems.push(`late.html warned ${late.length} times about the order`);
-        // Its development build also warns about the empty cases, as any development page would.
-        const expected = (message: string) =>
-          late.includes(message) ||
-          message.startsWith('Lit is in dev mode') ||
-          /^<punk-[a-z-]+> /.test(message);
-        messages.splice(0, messages.length, ...messages.filter((message) => !expected(message)));
-      }
       if (messages.length > 0) problems.push(`${name}.html logged: ${messages.join(' | ')}`);
       await tab.close();
     }

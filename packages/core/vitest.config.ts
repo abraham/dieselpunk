@@ -29,15 +29,6 @@ const readManifest = defineBrowserCommand<[]>(async () => {
 });
 
 export default defineConfig({
-  // Tests always run with development warnings, and need no built dist/ to resolve #dev.
-  resolve: {
-    alias: [
-      {
-        find: /^#dev$/,
-        replacement: fileURLToPath(new URL('./src/utilities/dev.dev.ts', import.meta.url)),
-      },
-    ],
-  },
   optimizeDeps: { include: preBundled },
   test: {
     include: run.include,

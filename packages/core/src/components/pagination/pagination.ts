@@ -1,12 +1,11 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg, str } from '../../internal/localize.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { formatNumber, resolveLang } from '../../utilities/locale.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { pageWindow } from './page-window.ts';
 import { paginationStyles } from './pagination.styles.ts';
 
@@ -44,20 +43,27 @@ declare global {
 export class PunkPagination extends PunkElement {
   static override styles = paginationStyles;
 
+  static override properties: PropertyDeclarations = {
+    page: { type: Number, reflect: true },
+    pages: { type: Number, reflect: true },
+    siblings: { type: Number, reflect: true },
+    label: { reflect: true },
+  };
+
   /** The current page, from 1. A page out of range is clamped and warns. */
-  @property({ type: Number, reflect: true }) page = 1;
+  page = 1;
 
   /** How many pages there are. Below 1, or not a number, is 1 and warns. */
-  @property({ type: Number, reflect: true }) pages = 1;
+  pages = 1;
 
   /** How many pages to show on each side of the current one. */
-  @property({ type: Number, reflect: true }) siblings = 1;
+  siblings = 1;
 
   /** The name of the landmark. Without it, the localized "Pagination". */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   readonly #localeWatcher = new LocaleWatcher(this);
-  #warned = '';
+  #warned = new Set<string>();
   #refocus: string | undefined;
 
   get #pages(): number {
@@ -71,14 +77,12 @@ export class PunkPagination extends PunkElement {
 
   protected override willUpdate(changed: PropertyValues<this>): void {
     if (!changed.has('page') && !changed.has('pages')) return;
-    const problem =
+    this.#warned = warnNew(this, this.#warned, () => [
       !Number.isFinite(this.pages) || this.pages < 1
         ? `\`pages\` is ${this.pages}, so it is 1.`
-        : this.#page !== this.page
-          ? `\`page\` ${this.page} is outside 1 to ${this.#pages}, so it is ${this.#page}.`
-          : '';
-    if (problem && problem !== this.#warned) devWarn(this, problem);
-    this.#warned = problem;
+        : this.#page !== this.page &&
+          `\`page\` ${this.page} is outside 1 to ${this.#pages}, so it is ${this.#page}.`,
+    ]);
   }
 
   protected override updated(): void {

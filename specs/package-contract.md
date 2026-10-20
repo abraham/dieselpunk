@@ -10,20 +10,42 @@
 ```json
 {
   "type": "module",
-  "sideEffects": ["./dist/components/*/register.js", "./dist/css/*.css", "./dist/hydrate.js"],
+  "sideEffects": [
+    "./dist/components/*/register.js",
+    "./dist/development/components/*/register.js",
+    "./dist/css/*.css",
+    "./dist/hydrate.js",
+    "./dist/development/hydrate.js"
+  ],
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./dist/development/index.js",
+      "default": "./dist/index.js"
+    },
     "./tokens.css": "./dist/css/tokens.css",
     "./themes.css": "./dist/css/themes.css",
     "./surfaces.css": "./dist/css/surfaces.css",
     "./custom-elements.json": "./custom-elements.json",
-    "./hydrate.js": { "types": "./dist/hydrate.d.ts", "default": "./dist/hydrate.js" },
-    "./ssr.js": { "types": "./dist/ssr.d.ts", "default": "./dist/ssr.js" },
-    "./*/register.js": "./dist/components/*/register.js",
-    "./*": { "types": "./dist/components/*/index.d.ts", "default": "./dist/components/*/index.js" }
-  },
-  "imports": {
-    "#dev": { "development": "./dist/utilities/dev.dev.js", "default": "./dist/utilities/dev.js" }
+    "./hydrate.js": {
+      "types": "./dist/hydrate.d.ts",
+      "development": "./dist/development/hydrate.js",
+      "default": "./dist/hydrate.js"
+    },
+    "./ssr.js": {
+      "types": "./dist/ssr.d.ts",
+      "development": "./dist/development/ssr.js",
+      "default": "./dist/ssr.js"
+    },
+    "./*/register.js": {
+      "development": "./dist/development/components/*/register.js",
+      "default": "./dist/components/*/register.js"
+    },
+    "./*": {
+      "types": "./dist/components/*/index.d.ts",
+      "development": "./dist/development/components/*/index.js",
+      "default": "./dist/components/*/index.js"
+    }
   }
 }
 ```
@@ -104,17 +126,17 @@ Open and close events report every change of `open`, whoever made it, because an
 
 ## 6. Development warnings
 
-- `#dev` exports `PUNK_DEV`. Under the `development` export condition it is `true`; otherwise `false`, and bundlers drop guarded code.
-- All warnings go through `devWarn(element, message)`, which prefixes the tag name.
+- **Two builds.** `dist/development/` holds every module with its warnings, and the `development` export condition selects it. `dist/` holds the same modules with the warnings removed by `scripts/strip-warnings.ts`, and is what every other condition gets. Types come from `dist/` for both. **Why:** a guard in the source cannot make every bundler drop a warning's text (esbuild keeps a guarded loop or declaration and every argument of a call it cannot see is empty), and building without the warnings removes them for every bundler with no guard in the source.
+- All warnings go through `devWarn(element, message)`, which prefixes the tag name, or `warnNew(element, previous, check)`, which warns for each problem `check` gives that it did not give last time.
+- **A warning is a statement of its own:** a call to `devWarn` or `warnNew`, maybe assigned, or a call to a method named `warn` and a capital letter (`warnIfUnnamed`, `#warnOnce`). The production build removes those statements, the `if`s they leave empty, those methods, and the imports; it fails on any other use, and so does lint (`local/dev-warnings`). Checks that gather several messages compute them inside the `check` function, so their text goes too. A field that remembers a warning (`#warned…`) stays, as a few bytes.
 - A component warns once per occurrence of a problem: it records the warning, and clears the record when the problem goes away, so the warning comes back if the problem does.
 - Warnings are for misuse that still renders: a missing accessible name, an inconsistent range, a child that is not an item, a tab naming a missing panel. Each component's spec lists its warnings.
 
-| Context       | `#dev` resolves to                                                 |
-| ------------- | ------------------------------------------------------------------ |
-| Consumers     | `imports` in `package.json`, by export condition                   |
-| Type checking | `paths` in `tsconfig.json`, to `src/utilities/dev.ts`              |
-| Tests         | A Vite alias to `dev.dev.ts`, so tests always run with warnings on |
-| Workbench     | The `development` condition, so stories show misuse                |
+| Context   | Warnings                                                                        |
+| --------- | ------------------------------------------------------------------------------- |
+| Consumers | On under the `development` condition (Vite's dev server, Node's `--conditions`) |
+| Tests     | On: they run the source                                                         |
+| Workbench | On: it resolves the `development` condition, so stories show misuse             |
 
 ## 7. The Custom Elements Manifest
 

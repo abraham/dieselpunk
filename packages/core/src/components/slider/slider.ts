@@ -1,6 +1,5 @@
 import { html, nothing } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { PunkFormControl } from '../../internal/form-control.ts';
 import type { FormValue } from '../../internal/form-control.ts';
@@ -58,23 +57,33 @@ interface Drag {
 export class PunkSlider extends PunkFormControl {
   static override styles = sliderStyles;
 
+  static override properties: PropertyDeclarations = {
+    min: { type: Number, reflect: true },
+    max: { type: Number, reflect: true },
+    step: { type: Number, reflect: true },
+    showValue: { type: Boolean, reflect: true, attribute: 'show-value' },
+    ticks: { type: Boolean, reflect: true },
+    label: { reflect: true },
+    value: { type: Number, noAccessor: true },
+  };
+
   /** The smallest value. */
-  @property({ type: Number, reflect: true }) min = 0;
+  min = 0;
 
   /** The largest value. A `max` that is not a whole number of steps from `min` is never reached. */
-  @property({ type: Number, reflect: true }) max = 100;
+  max = 100;
 
   /** The distance between values, above 0. */
-  @property({ type: Number, reflect: true }) step = 1;
+  step = 1;
 
   /** Shows the value beside the label. */
-  @property({ type: Boolean, reflect: true, attribute: 'show-value' }) showValue = false;
+  showValue = false;
 
   /** Draws a mark at every step, or at every few steps when there are more than 20. */
-  @property({ type: Boolean, reflect: true }) ticks = false;
+  ticks = false;
 
   /** The name of the slider, and the text above it. Without it, use `aria-label`. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   #value = Number.NaN;
   #drag: Drag | null = null;
@@ -87,7 +96,6 @@ export class PunkSlider extends PunkFormControl {
   }
 
   /** The number, inside the range and on a step. The `value` attribute is the default a form reset goes back to. Without one it is `min`. */
-  @property({ type: Number, noAccessor: true })
   get value(): number {
     const range = this.#range;
     return Number.isNaN(this.#value) ? range.min : snapValue(this.#value, range);

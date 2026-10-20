@@ -2,7 +2,7 @@ import { css } from 'lit';
 import { token } from '../tokens/token.ts';
 import { forcedColorsSurface } from './forced-colors.ts';
 import { requiredMarkStyles } from './required-mark.ts';
-import { statusLensStyles, statusShapeStyles } from './status-shape.ts';
+import { statusLensStyles, warningShapeStyles } from './status-shape.ts';
 
 // The shape of a text, number, or select field:
 //
@@ -78,18 +78,6 @@ export const fieldStyles = css`
     opacity: 1;
   }
 
-  /* An affix takes at most half the box and wraps within it, rather than push the box wider. */
-  .prefix,
-  .suffix {
-    flex: none;
-    display: flex;
-    align-items: center;
-    max-inline-size: 50%;
-    min-inline-size: 0;
-    overflow-wrap: anywhere;
-    color: ${token('color-text-muted')};
-  }
-
   .hint {
     color: ${token('color-text-muted')};
     font-size: 0.875em;
@@ -149,7 +137,7 @@ export const fieldStyles = css`
   }
 
   ${statusLensStyles}
-  ${statusShapeStyles}
+  ${warningShapeStyles}
   ${forcedColorsSurface('.box', { face: 'Field', text: 'FieldText' })}
 
   @media (forced-colors: active) {
@@ -179,5 +167,20 @@ export const fieldStyles = css`
     .control::placeholder {
       color: GrayText;
     }
+  }
+`;
+
+/** For the fields with `prefix` and `suffix` slots (`fieldAffix`). */
+export const fieldAffixStyles = css`
+  /* An affix takes at most half the box and wraps within it, rather than push the box wider. */
+  .prefix,
+  .suffix {
+    flex: none;
+    display: flex;
+    align-items: center;
+    max-inline-size: 50%;
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+    color: ${token('color-text-muted')};
   }
 `;

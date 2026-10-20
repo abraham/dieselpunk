@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg } from '../../internal/localize.ts';
@@ -45,17 +44,24 @@ const variants: readonly string[] = ['info', 'success', 'warning', 'danger'];
 export class PunkAlert extends PunkElement {
   static override styles = alertStyles;
 
+  static override properties: PropertyDeclarations = {
+    variant: { reflect: true },
+    heading: { reflect: true },
+    dismissible: { type: Boolean, reflect: true },
+    announce: { type: Boolean, reflect: true },
+  };
+
   /** A shape and a color: a diamond for `info`, a circle for `success`, a triangle for `warning`, a square for `danger`. Unknown values use `info`. */
-  @property({ reflect: true }) variant: AlertVariant = 'info';
+  variant: AlertVariant = 'info';
 
   /** A line above the message. */
-  @property({ reflect: true }) heading = '';
+  heading = '';
 
   /** Adds a dismiss button. */
-  @property({ type: Boolean, reflect: true }) dismissible = false;
+  dismissible = false;
 
   /** Makes the host a live region: `alert` for `warning` and `danger`, `status` otherwise. */
-  @property({ type: Boolean, reflect: true }) announce = false;
+  announce = false;
 
   readonly #localeWatcher = new LocaleWatcher(this);
   readonly #slots = new SlotPresence(this, ['', 'actions']);

@@ -112,7 +112,7 @@ Logic that can be stated without the DOM is a pure module with no DOM types, tes
 
 ## 6. Properties and attributes
 
-- Properties are declared with `@property` (public) or `@state` (private). Public ones follow [package-contract.md §4](package-contract.md).
+- Properties are declared in each class's `static properties`, typed `PropertyDeclarations`, with `{ attribute: false }` for private ones (the manifest analyzer does not read `state: true`); the class field keeps the type, the default, and the description. Public ones follow [package-contract.md §4](package-contract.md). **Why:** TypeScript's legacy decorators emit a `__decorate` helper into every module that uses them and a call per property, about 0.19 kB of each entry ([performance.md §2](performance.md)); shipped source has no decorators, which lint enforces.
 - **Order does not matter.** A property set before the element is defined, before it connects, or after; and an attribute added, changed, or removed: each yields the same result.
 - **Repair, do not throw.** An invalid value is repaired and rendered: an unknown enumerated value is the default, a number out of range is clamped, a non-finite number is the default or "none" as the component says, an inconsistent range is replaced by a valid one. Each repair warns once per occurrence in development ([package-contract.md §6](package-contract.md)). Removing an attribute restores the default silently.
 - **Accessors where "set" matters.** When behavior depends on whether a property was ever set (a slot's `selected`, which turns on `aria-pressed`) or on other properties at read time (a slider's `value`, which is clamped to the current range when read), the property is an accessor over a stored raw value.

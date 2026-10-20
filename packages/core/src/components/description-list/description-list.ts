@@ -1,7 +1,7 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { PunkElement } from '../../internal/punk-element.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { descriptionListStyles } from './description-list.styles.ts';
 
 export type DescriptionListVariant = 'plain' | 'inset';
@@ -24,21 +24,25 @@ export type DescriptionListVariant = 'plain' | 'inset';
 export class PunkDescriptionList extends PunkElement {
   static override styles = descriptionListStyles;
 
-  /** `plain` has no surface; `inset` is a recessed well with rules between rows. Unknown values use `plain`. */
-  @property({ reflect: true }) variant: DescriptionListVariant = 'plain';
+  static override properties: PropertyDeclarations = {
+    variant: { reflect: true },
+  };
 
-  #warned = '';
+  /** `plain` has no surface; `inset` is a recessed well with rules between rows. Unknown values use `plain`. */
+  variant: DescriptionListVariant = 'plain';
+
+  #warned = new Set<string>();
 
   #check(): void {
-    const children = [...this.children];
-    const stray = children.find((child) => child.localName !== 'dt' && child.localName !== 'dd');
-    const problem = stray
-      ? `Its children must be <dt> and <dd> elements, and a <${stray.localName}> is not.`
-      : children[0]?.localName === 'dd'
-        ? 'It starts with a <dd>, which has no term.'
-        : '';
-    if (problem && problem !== this.#warned) devWarn(this, problem);
-    this.#warned = problem;
+    this.#warned = warnNew(this, this.#warned, () => {
+      const children = [...this.children];
+      const stray = children.find((child) => child.localName !== 'dt' && child.localName !== 'dd');
+      return [
+        stray
+          ? `Its children must be <dt> and <dd> elements, and a <${stray.localName}> is not.`
+          : children[0]?.localName === 'dd' && 'It starts with a <dd>, which has no term.',
+      ];
+    });
   }
 
   protected override render() {

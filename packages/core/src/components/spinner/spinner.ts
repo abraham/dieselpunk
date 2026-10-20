@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg } from '../../internal/localize.ts';
@@ -27,8 +27,12 @@ const sizes: readonly string[] = ['sm', 'md', 'lg'];
 export class PunkSpinner extends PunkElement {
   static override styles = spinnerStyles;
 
+  static override properties: PropertyDeclarations = {
+    size: { reflect: true },
+  };
+
   /** The size of the ring, from the icon sizes. Unknown values use `md`. */
-  @property({ reflect: true }) size: SpinnerSize = 'md';
+  size: SpinnerSize = 'md';
 
   readonly #localeWatcher = new LocaleWatcher(this);
   readonly #presence = new SlotPresence(this, ['']);

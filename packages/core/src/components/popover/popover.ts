@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { serverValues } from '../../internal/server-values.ts';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { resolveAnchor, wireAnchorState } from '../../internal/anchor.ts';
@@ -54,17 +53,24 @@ const activeIn = (root: Node): Element | null => (root as Document | ShadowRoot)
 export class PunkPopover extends PunkElement {
   static override styles = popoverStyles;
 
+  static override properties: PropertyDeclarations = {
+    for: { attribute: 'for' },
+    placement: { reflect: true },
+    mode: { reflect: true },
+    open: { type: Boolean, reflect: true },
+  };
+
   /** Id of the trigger in this element's root. Without it, the previous sibling is the trigger. */
-  @property({ attribute: 'for' }) for = '';
+  for = '';
 
   /** Which side of the trigger. `start` and `end` follow the writing direction. Unknown values use `bottom`. */
-  @property({ reflect: true }) placement: PopoverPlacement = 'bottom';
+  placement: PopoverPlacement = 'bottom';
 
   /** `menu` makes the host a menu of `menuitem` elements. Unknown values use `content`. */
-  @property({ reflect: true }) mode: PopoverMode = 'content';
+  mode: PopoverMode = 'content';
 
   /** Whether it is showing. */
-  @property({ type: Boolean, reflect: true }) open = false;
+  open = false;
 
   #trigger: HTMLElement | null = null;
   #state: AnchorState | undefined;

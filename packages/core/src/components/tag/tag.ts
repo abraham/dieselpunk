@@ -1,5 +1,5 @@
 import { html, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { msg, str } from '../../internal/localize.ts';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
@@ -29,19 +29,26 @@ import { tagStyles } from './tag.styles.ts';
 export class PunkTag extends PunkElement {
   static override styles = tagStyles;
 
+  static override properties: PropertyDeclarations = {
+    removable: { type: Boolean, reflect: true },
+    removeLabel: { attribute: 'remove-label', reflect: true },
+    disabled: { type: Boolean, reflect: true },
+    value: { reflect: true },
+  };
+
   readonly #localeWatcher = new LocaleWatcher(this);
 
   /** Draws the remove button. */
-  @property({ type: Boolean, reflect: true }) removable = false;
+  removable = false;
 
   /** The name of the remove button. Unset, it is "Remove" and the tag's text. */
-  @property({ attribute: 'remove-label', reflect: true }) removeLabel = '';
+  removeLabel = '';
 
   /** Disables the remove button. The text stays readable. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /** Identifies the tag in `punk-remove`. */
-  @property({ reflect: true }) value = '';
+  value = '';
 
   // The tag's text, read when it connects and on `slotchange`, so a render reads none.
   #text = '';

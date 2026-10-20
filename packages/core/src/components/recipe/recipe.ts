@@ -1,13 +1,13 @@
 import { msg, str } from '../../internal/localize.ts';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { PunkSelectableBase } from '../../internal/selectable-base.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { formatNumber, resolveLang } from '../../utilities/locale.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { recipeStyles } from './recipe.styles.ts';
 
 /**
@@ -40,17 +40,24 @@ export class PunkRecipe extends PunkSelectableBase {
 
   static override styles = recipeStyles;
 
+  static override properties: PropertyDeclarations = {
+    name: { reflect: true },
+    duration: { converter: optionalNumber, reflect: true },
+    available: { type: Boolean, reflect: true },
+    craftableCount: { type: Number, attribute: 'craftable-count', reflect: true },
+  };
+
   /** The recipe's name, shown as the tile's title. */
-  @property({ reflect: true }) name = '';
+  name = '';
 
   /** How long one craft takes, in seconds. Leave it unset to show no time. */
-  @property({ converter: optionalNumber, reflect: true }) duration: number | undefined;
+  duration: number | undefined;
 
   /** Whether the recipe can be made now. A recipe that cannot says so in words. */
-  @property({ type: Boolean, reflect: true }) available = false;
+  available = false;
 
   /** How many times it can be made with what is on hand. Shown while the recipe is available. */
-  @property({ type: Number, attribute: 'craftable-count', reflect: true }) craftableCount = 0;
+  craftableCount = 0;
 
   readonly #presence = new SlotPresence(this, ['icon', 'ingredients', 'products']);
   #problems = new Set<string>();
@@ -69,25 +76,22 @@ export class PunkRecipe extends PunkSelectableBase {
   }
 
   protected override updated(): void {
-    const { count, rawCount, duration, rawDuration } = this.#resolve();
-    const found: string[] = [];
-    const named =
-      this.name !== '' ||
-      this.hasAttribute('aria-label') ||
-      this.hasAttribute('aria-labelledby') ||
-      ['icon', 'ingredients', 'products'].some((slot) => this.#presence.has(slot));
-    if (!named) found.push('It has no accessible name. Set `name`, `aria-label`, or add content.');
-    if (rawDuration !== undefined && duration !== rawDuration) {
-      found.push(
-        `\`duration\` is ${rawDuration}; ${duration === undefined ? 'showing no time, because it is not a number' : `using ${duration}, because it must be 0 or more`}.`,
-      );
-    }
-    if (count !== rawCount) {
-      found.push(`\`craftable-count\` is ${rawCount}; using ${count}, a whole number from 0.`);
-    }
-    const current = new Set(found);
-    for (const problem of current) if (!this.#problems.has(problem)) devWarn(this, problem);
-    this.#problems = current;
+    this.#problems = warnNew(this, this.#problems, () => {
+      const { count, rawCount, duration, rawDuration } = this.#resolve();
+      const named =
+        this.name !== '' ||
+        this.hasAttribute('aria-label') ||
+        this.hasAttribute('aria-labelledby') ||
+        ['icon', 'ingredients', 'products'].some((slot) => this.#presence.has(slot));
+      return [
+        !named && 'It has no accessible name. Set `name`, `aria-label`, or add content.',
+        rawDuration !== undefined &&
+          duration !== rawDuration &&
+          `\`duration\` is ${rawDuration}; ${duration === undefined ? 'showing no time, because it is not a number' : `using ${duration}, because it must be 0 or more`}.`,
+        count !== rawCount &&
+          `\`craftable-count\` is ${rawCount}; using ${count}, a whole number from 0.`,
+      ];
+    });
   }
 
   /** Words, not color, say whether it can be made: nothing is added for a recipe that can be. */

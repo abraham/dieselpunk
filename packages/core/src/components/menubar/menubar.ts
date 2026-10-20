@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { RovingController } from '../../internal/roving.ts';
@@ -26,8 +26,12 @@ import { menubarStyles } from './menubar.styles.ts';
 export class PunkMenubar extends PunkElement {
   static override styles = menubarStyles;
 
+  static override properties: PropertyDeclarations = {
+    accessibleLabel: { attribute: 'aria-label' },
+  };
+
   /** Mirrors the host `aria-label`, which cannot reach the row on its own. */
-  @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+  accessibleLabel: string | null = null;
 
   readonly #roving = new RovingController({ host: this, items: () => this.#items() });
 
@@ -47,7 +51,9 @@ export class PunkMenubar extends PunkElement {
     if (!this.accessibleLabel && !this.hasAttribute('aria-labelledby')) {
       devWarn(this, 'It has no accessible name. Set `aria-label`.');
     }
-    if (this.#items().length === 0) devWarn(this, 'It has no `punk-menu-item` children.');
+    if (this.#items().length === 0) {
+      devWarn(this, 'It has no `punk-menu-item` children.');
+    }
   }
 
   #items(): HTMLElement[] {

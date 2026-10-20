@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { resolveAnchor, wireAnchorState } from '../../internal/anchor.ts';
 import type { AnchorState } from '../../internal/anchor.ts';
 import type { PunkCloseDetail, PunkCloseReason } from '../../internal/modal-surface.ts';
@@ -55,17 +54,24 @@ const activeIn = (root: Node): Element | null => (root as Document | ShadowRoot)
 export class PunkMenu extends PunkElement {
   static override styles = menuStyles;
 
+  static override properties: PropertyDeclarations = {
+    for: { attribute: 'for' },
+    placement: { reflect: true },
+    open: { type: Boolean, reflect: true },
+    context: { type: Boolean, reflect: true },
+  };
+
   /** Id of the trigger in this element's root. Without it, the previous sibling is the trigger. */
-  @property({ attribute: 'for' }) for = '';
+  for = '';
 
   /** Which side of the trigger. A submenu defaults to `end`. Unknown values use `bottom`. */
-  @property({ reflect: true }) placement: MenuPlacement | '' = '';
+  placement: MenuPlacement | '' = '';
 
   /** Whether it is showing. */
-  @property({ type: Boolean, reflect: true }) open = false;
+  open = false;
 
   /** Opens at the pointer on a right click in the trigger, which is an area, not a button. */
-  @property({ type: Boolean, reflect: true }) context = false;
+  context = false;
 
   #trigger: HTMLElement | null = null;
   #state: AnchorState | undefined;

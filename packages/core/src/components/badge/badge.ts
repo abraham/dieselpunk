@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
@@ -26,15 +26,21 @@ const variants: readonly string[] = ['neutral', 'info', 'success', 'warning', 'd
 export class PunkBadge extends PunkElement {
   static override styles = badgeStyles;
 
+  static override properties: PropertyDeclarations = {
+    variant: { reflect: true },
+  };
+
   /** `neutral` is text alone; `info`, `success`, `warning`, and `danger` add their shape. Unknown values render as `neutral`. */
-  @property({ reflect: true }) variant: BadgeVariant = 'neutral';
+  variant: BadgeVariant = 'neutral';
 
   readonly #presence = new SlotPresence(this, ['']);
   #hasText = true;
 
   protected override updated(): void {
     const hasText = this.#presence.has('');
-    if (!hasText && this.#hasText) devWarn(this, 'It has no text, and its text is all it says.');
+    if (!hasText && this.#hasText) {
+      devWarn(this, 'It has no text, and its text is all it says.');
+    }
     this.#hasText = hasText;
   }
 

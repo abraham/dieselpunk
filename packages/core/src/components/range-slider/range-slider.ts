@@ -1,6 +1,5 @@
 import { LitElement, html, nothing } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { PunkFormControl } from '../../internal/form-control.ts';
@@ -59,22 +58,32 @@ interface Drag {
 export class PunkRangeSlider extends PunkFormControl {
   static override styles = rangeSliderStyles;
 
+  static override properties: PropertyDeclarations = {
+    min: { type: Number, reflect: true },
+    max: { type: Number, reflect: true },
+    step: { type: Number, reflect: true },
+    showValue: { type: Boolean, reflect: true, attribute: 'show-value' },
+    label: { reflect: true },
+    low: { type: Number, noAccessor: true },
+    high: { type: Number, noAccessor: true },
+  };
+
   static override shadowRootOptions = { ...LitElement.shadowRootOptions, delegatesFocus: true };
 
   /** The smallest value. */
-  @property({ type: Number, reflect: true }) min = 0;
+  min = 0;
 
   /** The largest value. A `max` that is not a whole number of steps from `min` is never reached. */
-  @property({ type: Number, reflect: true }) max = 100;
+  max = 100;
 
   /** The distance between values, above 0. */
-  @property({ type: Number, reflect: true }) step = 1;
+  step = 1;
 
   /** Shows both values beside the label. */
-  @property({ type: Boolean, reflect: true, attribute: 'show-value' }) showValue = false;
+  showValue = false;
 
   /** The name of the group, and the text above it. Without it, use `aria-label`. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   readonly #localeWatcher = new LocaleWatcher(this);
   #low = Number.NaN;
@@ -87,7 +96,6 @@ export class PunkRangeSlider extends PunkFormControl {
   }
 
   /** The low value, on a step and no higher than `high`. The `low` attribute is the default a form reset goes back to. Without one it is `min`. */
-  @property({ type: Number, noAccessor: true })
   get low(): number {
     const range = this.#range;
     const low = Number.isNaN(this.#low) ? range.min : snapValue(this.#low, range);
@@ -101,7 +109,6 @@ export class PunkRangeSlider extends PunkFormControl {
   }
 
   /** The high value, on a step and no lower than `low`. The `high` attribute is the default a form reset goes back to. Without one it is `max`, or the last step below it. */
-  @property({ type: Number, noAccessor: true })
   get high(): number {
     return this.#highOf(this.#range);
   }

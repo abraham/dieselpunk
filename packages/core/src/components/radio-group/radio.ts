@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { childChanged, owner } from '../../internal/owner.ts';
 import type { Owned, Owner } from '../../internal/owner.ts';
@@ -34,14 +33,20 @@ export interface RadioOwner extends Owner<PunkRadio> {
 export class PunkRadio extends PunkElement implements Owned<PunkRadio>, RovingItem {
   static override styles = radioStyles;
 
+  static override properties: PropertyDeclarations = {
+    value: { reflect: true },
+    checked: { type: Boolean },
+    disabled: { type: Boolean, reflect: true },
+  };
+
   /** What the group submits while this radio is checked. */
-  @property({ reflect: true }) value = '';
+  value = '';
 
   /** Whether it is the chosen one. The `checked` attribute is the default a form reset goes back to. */
-  @property({ type: Boolean }) checked = false;
+  checked = false;
 
   /** Leaves it out of the arrow keys, and stops it being chosen. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /**
    * The group that owns this radio, set by the group.

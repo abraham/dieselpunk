@@ -15,23 +15,20 @@
   "type": "module",
   "sideEffects": [
     "./dist/components/*/register.js",
+    "./dist/development/components/*/register.js",
     "./dist/css/*.css",
-    "./dist/hydrate.js"
+    "./dist/hydrate.js",
+    "./dist/development/hydrate.js"
   ],
   "files": [
     "dist",
     "custom-elements.json"
   ],
   "customElements": "custom-elements.json",
-  "imports": {
-    "#dev": {
-      "development": "./dist/utilities/dev.dev.js",
-      "default": "./dist/utilities/dev.js"
-    }
-  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "development": "./dist/development/index.js",
       "default": "./dist/index.js"
     },
     "./tokens.css": "./dist/css/tokens.css",
@@ -40,20 +37,26 @@
     "./custom-elements.json": "./custom-elements.json",
     "./hydrate.js": {
       "types": "./dist/hydrate.d.ts",
+      "development": "./dist/development/hydrate.js",
       "default": "./dist/hydrate.js"
     },
     "./ssr.js": {
       "types": "./dist/ssr.d.ts",
+      "development": "./dist/development/ssr.js",
       "default": "./dist/ssr.js"
     },
-    "./*/register.js": "./dist/components/*/register.js",
+    "./*/register.js": {
+      "development": "./dist/development/components/*/register.js",
+      "default": "./dist/components/*/register.js"
+    },
     "./*": {
       "types": "./dist/components/*/index.d.ts",
+      "development": "./dist/development/components/*/index.js",
       "default": "./dist/components/*/index.js"
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && node scripts/build-css.ts && npm run build:manifest",
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.build.json && node scripts/inline-tokens.ts && node scripts/minify-css.ts && node scripts/pure-styles.ts && node scripts/drop-descriptions.ts && node scripts/strip-warnings.ts && node scripts/build-css.ts && npm run build:manifest",
     "build:css": "node scripts/build-css.ts",
     "build:manifest": "cem analyze --config custom-elements-manifest.config.mjs && node scripts/compact-manifest.ts",
     "build:pseudo": "node scripts/build-pseudo.ts",

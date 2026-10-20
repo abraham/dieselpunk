@@ -23,6 +23,8 @@ A token name is `--punk-<name>`. Categories: `color-*` (semantic colors), `space
 
 `token(name)` returns `var(--punk-<name>, <compact, dark default>)`, with the default inlined from the source. An unthemed page therefore renders every component correctly, and any ancestor can override any token. Components never declare token values in `:host`, which would shadow values inherited from ancestors.
 
+Component styles call it only as `${token('name')}` inside a template. The build (`scripts/inline-tokens.ts`) writes each such call in `dist/` as the text it returns and drops the import, so a published entry carries the defaults it uses, not the whole table ([performance.md §2](performance.md)); the build fails on an unknown name or any other call.
+
 ### 1.3 Emitted CSS
 
 `build-css.ts` writes two optional stylesheets:

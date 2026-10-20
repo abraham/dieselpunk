@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { PunkElement } from '../../internal/punk-element.ts';
 import type { LayoutGap } from '../../styles/gap.ts';
 import { stackStyles } from './stack.styles.ts';
@@ -21,11 +21,16 @@ export type { LayoutGap as StackGap } from '../../styles/gap.ts';
 export class PunkStack extends PunkElement {
   static override styles = stackStyles;
 
+  static override properties: PropertyDeclarations = {
+    gap: { reflect: true },
+    align: { reflect: true },
+  };
+
   /** `0` for none, or `1` to `5` for a spacing token, which follows density. Unknown values use `2`. */
-  @property({ reflect: true }) gap: LayoutGap = '2';
+  gap: LayoutGap = '2';
 
   /** Where children sit across the column. Unknown values use `stretch`. */
-  @property({ reflect: true }) align: StackAlign = 'stretch';
+  align: StackAlign = 'stretch';
 
   protected override render() {
     return html`<slot></slot>`;

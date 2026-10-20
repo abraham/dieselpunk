@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { serverValues } from '../../internal/server-values.ts';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { describeAnchor, resolveAnchor } from '../../internal/anchor.ts';
@@ -48,21 +47,28 @@ export function resetTooltipWarmup(): void {
 export class PunkTooltip extends PunkElement {
   static override styles = tooltipStyles;
 
+  static override properties: PropertyDeclarations = {
+    for: { attribute: 'for' },
+    placement: { reflect: true },
+    delay: { type: Number },
+    describe: { converter: { fromAttribute: (value: string | null) => value !== 'false' } },
+    open: { type: Boolean, reflect: true },
+  };
+
   /** Id of the anchor in this element's root. Without it, the previous sibling is the anchor. */
-  @property({ attribute: 'for' }) for = '';
+  for = '';
 
   /** `start` and `end` follow the writing direction. Unknown values behave as `top`. */
-  @property({ reflect: true }) placement: TooltipPlacement = 'top';
+  placement: TooltipPlacement = 'top';
 
   /** Milliseconds a pointer must rest on the anchor before the tooltip opens. */
-  @property({ type: Number }) delay = 400;
+  delay = 400;
 
   /** Describe the anchor with this tooltip's text. `describe="false"` turns it off. */
-  @property({ converter: { fromAttribute: (value: string | null) => value !== 'false' } })
   describe = true;
 
   /** Whether the tooltip is showing. Use `show()` and `hide()` rather than setting it. */
-  @property({ type: Boolean, reflect: true }) open = false;
+  open = false;
 
   #anchor: HTMLElement | null = null;
   #showTimer: number | undefined;

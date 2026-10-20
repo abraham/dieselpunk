@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues, TemplateResult } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues, TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { devWarn } from '../utilities/warn.ts';
 import { ModalController } from './modal.ts';
@@ -27,17 +26,24 @@ declare global {
  * region when it overflows, and a footer that is there only when it has content.
  */
 export abstract class PunkModalSurface extends PunkElement {
+  static override properties: PropertyDeclarations = {
+    heading: { reflect: true },
+    open: { type: Boolean, reflect: true },
+    accessibleLabel: { attribute: 'aria-label' },
+    scrollable: { attribute: false },
+  };
+
   /** The title, and the name of the dialog. Without it, give the element an `aria-label`. */
-  @property({ reflect: true }) heading = '';
+  heading = '';
 
   /** Whether it is showing. Setting it from code or an attribute opens and closes it. */
-  @property({ type: Boolean, reflect: true }) open = false;
+  open = false;
 
   /** Mirrors the host `aria-label`, which cannot reach the dialog on its own. */
-  @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+  accessibleLabel: string | null = null;
 
   /** Whether the body overflows, which makes it a focusable scroll region. */
-  @state() protected scrollable = false;
+  protected scrollable = false;
 
   protected abstract readonly isModal: boolean;
   protected abstract readonly isDismissible: boolean;
@@ -104,9 +110,10 @@ export abstract class PunkModalSurface extends PunkElement {
   }
 
   #warnName(): void {
-    if (this.heading || this.accessibleLabel || this.#warnedName) return;
-    this.#warnedName = true;
-    devWarn(this, 'It has no name. Set `heading`, or `aria-label`.');
+    if (!this.heading && !this.accessibleLabel && !this.#warnedName) {
+      this.#warnedName = true;
+      devWarn(this, 'It has no name. Set `heading`, or `aria-label`.');
+    }
   }
 
   readonly #onResize = (): void => this.syncScrollable();

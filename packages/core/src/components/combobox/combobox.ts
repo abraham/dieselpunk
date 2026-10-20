@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { serverValues } from '../../internal/server-values.ts';
-import type { PropertyValues, TemplateResult } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues, TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { PunkFieldBase } from '../../internal/field-base.ts';
@@ -82,23 +81,33 @@ function labelOf(option: HTMLOptionElement): string {
 export class PunkCombobox extends PunkFieldBase {
   static override styles = comboboxStyles;
 
+  static override properties: PropertyDeclarations = {
+    value: {},
+    placeholder: { reflect: true },
+    allowCustom: { type: Boolean, reflect: true, attribute: 'allow-custom' },
+    filter: { reflect: true },
+    expanded: { attribute: false },
+    text: { attribute: false },
+    active: { attribute: false },
+  };
+
   /** The chosen option's value, or the text with `allow-custom`. The attribute is the default a form reset goes back to. */
-  @property() value = '';
+  value = '';
 
   /** Shown while the field is empty. It is not a name. */
-  @property({ reflect: true }) placeholder = '';
+  placeholder = '';
 
   /** Lets the value be any text, not only an option's value. */
-  @property({ type: Boolean, reflect: true, attribute: 'allow-custom' }) allowCustom = false;
+  allowCustom = false;
 
   /** `contains` shows the options whose label contains the text; `none` shows them all, for an application that filters. Unknown values use `contains`. */
-  @property({ reflect: true }) filter: ComboboxFilter = 'contains';
+  filter: ComboboxFilter = 'contains';
 
   /** Whether the list is showing. */
-  @state() protected expanded = false;
+  protected expanded = false;
 
-  @state() private text: string | null = null;
-  @state() private active = -1;
+  private text: string | null = null;
+  private active = -1;
 
   #observer: MutationObserver | undefined;
   #stopOpenWork: (() => void) | undefined;
@@ -439,7 +448,6 @@ export class PunkCombobox extends PunkFieldBase {
     const aria = this.ariaBindings();
     const disabled = this.isDisabled;
     return this.renderField({
-      affixes: false,
       control: html`<input
         part="control"
         class="control"

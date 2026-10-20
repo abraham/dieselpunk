@@ -1,5 +1,4 @@
-import type { PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { devWarn } from '../utilities/warn.ts';
 import { isFieldsetDisabled } from './fieldset.ts';
 import { PunkElement } from './punk-element.ts';
@@ -24,24 +23,33 @@ export interface Validation {
  * reflected attribute would turn it into the current value.
  */
 export abstract class PunkFormControl extends PunkElement {
+  static override properties: PropertyDeclarations = {
+    name: { reflect: true },
+    disabled: { type: Boolean, reflect: true },
+    required: { type: Boolean, reflect: true },
+    accessibleLabel: { attribute: 'aria-label' },
+    touched: { attribute: false },
+    labelsText: { attribute: false },
+  };
+
   static formAssociated = true;
 
   /** Submitted with the value. A control with no name adds nothing to the form. */
-  @property({ reflect: true }) name = '';
+  name = '';
 
   /** Also true while a disabled `<fieldset>` ancestor disables the control (see `isDisabled`). */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /** Marks the control as one the form needs a value from. */
-  @property({ type: Boolean, reflect: true }) required = false;
+  required = false;
 
   /** Mirrors the host `aria-label`, which cannot reach a control in the shadow tree on its own. */
-  @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+  accessibleLabel: string | null = null;
 
   /** Set when the user leaves the control, or when validity is reported, so a message waits for it. */
-  @state() protected touched = false;
+  protected touched = false;
 
-  @state() private labelsText = '';
+  private labelsText = '';
 
   protected readonly internals = this.attachInternals();
   #custom = '';
@@ -152,9 +160,10 @@ export abstract class PunkFormControl extends PunkElement {
 
   /** Warns once when a control has no name, since a screen reader user would meet it unlabeled. */
   protected warnIfUnnamed(name: string | null): void {
-    if (name || this.#warnedName) return;
-    this.#warnedName = true;
-    devWarn(this, 'It has no accessible name. Set `label` or `aria-label`.');
+    if (!name && !this.#warnedName) {
+      this.#warnedName = true;
+      devWarn(this, 'It has no accessible name. Set `label` or `aria-label`.');
+    }
   }
 
   /** Called by the browser when the form is reset: restores the value the author wrote. */

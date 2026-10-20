@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { firstTabbable } from '../../internal/modal.ts';
 import { PunkModalSurface } from '../../internal/modal-surface.ts';
@@ -32,14 +32,20 @@ import { dialogStyles } from './dialog.styles.ts';
 export class PunkDialog extends PunkModalSurface {
   static override styles = dialogStyles;
 
+  static override properties: PropertyDeclarations = {
+    persistent: { type: Boolean, reflect: true },
+    alert: { type: Boolean, reflect: true },
+    returnValue: { attribute: false },
+  };
+
   /** Escape does not close it, and does not reach anything beneath it. */
-  @property({ type: Boolean, reflect: true }) persistent = false;
+  persistent = false;
 
   /** Makes it an `alertdialog` described by its content. */
-  @property({ type: Boolean, reflect: true }) alert = false;
+  alert = false;
 
   /** What it was closed with: the `data-punk-close` value, or the argument to `close()`. */
-  @property({ attribute: false }) returnValue = '';
+  returnValue = '';
 
   protected readonly isModal = true;
 
@@ -65,12 +71,13 @@ export class PunkDialog extends PunkModalSurface {
   }
 
   protected override opened(): void {
-    if (this.persistent || this.#warnedFocus || firstTabbable([...this.children])) return;
-    this.#warnedFocus = true;
-    devWarn(
-      this,
-      'It has nothing to focus, and is not `persistent`, so a touch user cannot close it.',
-    );
+    if (!this.persistent && !this.#warnedFocus && !firstTabbable([...this.children])) {
+      this.#warnedFocus = true;
+      devWarn(
+        this,
+        'It has nothing to focus, and is not `persistent`, so a touch user cannot close it.',
+      );
+    }
   }
 
   readonly #handleClick = (event: Event): void => {

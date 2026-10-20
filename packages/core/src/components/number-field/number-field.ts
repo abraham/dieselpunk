@@ -1,9 +1,9 @@
 import { msg } from '../../internal/localize.ts';
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { fieldAffix } from '../../internal/field-affix.ts';
 import { PunkFieldBase } from '../../internal/field-base.ts';
 import type { FormValue } from '../../internal/form-control.ts';
 import { devWarn } from '../../utilities/warn.ts';
@@ -53,26 +53,36 @@ const stepConverter = {
 export class PunkNumberField extends PunkFieldBase {
   static override styles = numberFieldStyles;
 
+  static override properties: PropertyDeclarations = {
+    value: {},
+    placeholder: { reflect: true },
+    min: { type: Number, reflect: true },
+    max: { type: Number, reflect: true },
+    step: { converter: stepConverter, reflect: true },
+    readonly: { type: Boolean, reflect: true },
+    hideSteppers: { type: Boolean, reflect: true, attribute: 'hide-steppers' },
+  };
+
   /** The number, as the text the user sees. The `value` attribute is the default a form reset goes back to. */
-  @property() value = '';
+  value = '';
 
   /** Shown while the field is empty. It is not a name. */
-  @property({ reflect: true }) placeholder = '';
+  placeholder = '';
 
   /** The smallest value. */
-  @property({ type: Number, reflect: true }) min: number | null = null;
+  min: number | null = null;
 
   /** The largest value. */
-  @property({ type: Number, reflect: true }) max: number | null = null;
+  max: number | null = null;
 
   /** The distance between values, above 0, or `any` for any number. */
-  @property({ converter: stepConverter, reflect: true }) step: number | 'any' = 1;
+  step: number | 'any' = 1;
 
   /** The number can be selected and copied, and not changed. */
-  @property({ type: Boolean, reflect: true }) readonly = false;
+  readonly = false;
 
   /** Removes the two stepper buttons. */
-  @property({ type: Boolean, reflect: true, attribute: 'hide-steppers' }) hideSteppers = false;
+  hideSteppers = false;
 
   #delay: ReturnType<typeof setTimeout> | undefined;
   #repeat: ReturnType<typeof setInterval> | undefined;
@@ -202,7 +212,8 @@ export class PunkNumberField extends PunkFieldBase {
     const aria = this.ariaBindings();
     const range = this.#range;
     return this.renderField({
-      affixes: true,
+      prefix: fieldAffix(this.presence, 'prefix'),
+      suffix: fieldAffix(this.presence, 'suffix'),
       readonly: this.readonly,
       // `live` compares with what the input holds, so typing is never written back: a script-set
       // value would end the native user-edit state that `minlength` and `maxlength` depend on.
