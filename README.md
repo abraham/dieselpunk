@@ -37,7 +37,7 @@ npm run build      # build every package
 npm test           # run the test suites
 ```
 
-How the library is meant to work is written down in [specs/](specs/README.md).
+How the library is meant to work is written down in [specs](specs/README.md).
 
 ## License
 
