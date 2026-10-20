@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { serverValues } from './server-values.ts';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { devWarn } from '../utilities/warn.ts';
@@ -14,6 +13,15 @@ import type { FormValue } from './form-control.ts';
  * formats.
  */
 export abstract class PunkDateTimeFieldBase extends PunkFieldBase {
+  static override properties: PropertyDeclarations = {
+    value: {},
+    min: { reflect: true },
+    max: { reflect: true },
+    step: { reflect: true },
+    readonly: { type: Boolean, reflect: true },
+    autocomplete: { reflect: true },
+  };
+
   /** The native input type. */
   protected abstract readonly inputType: 'date' | 'time';
 
@@ -21,22 +29,22 @@ export abstract class PunkDateTimeFieldBase extends PunkFieldBase {
   protected abstract readonly valueFormat: string;
 
   /** The value in the input's format. The `value` attribute is the default a form reset goes back to. */
-  @property() value = '';
+  value = '';
 
   /** The earliest value the user may choose, in the same format as `value`. */
-  @property({ reflect: true }) min: string | null = null;
+  min: string | null = null;
 
   /** The latest value the user may choose, in the same format as `value`. */
-  @property({ reflect: true }) max: string | null = null;
+  max: string | null = null;
 
   /** The granularity, as the native attribute: days for a date, seconds for a time. */
-  @property({ reflect: true }) step: string | null = null;
+  step: string | null = null;
 
   /** The value can be read and copied, and not changed. */
-  @property({ type: Boolean, reflect: true }) readonly = false;
+  readonly = false;
 
   /** What the browser may fill in, as the native attribute. */
-  @property({ reflect: true }) autocomplete: string | null = null;
+  autocomplete: string | null = null;
 
   #warned = '';
   #probe: HTMLInputElement | undefined;

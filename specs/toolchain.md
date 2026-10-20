@@ -69,11 +69,11 @@ There is no `tsx`, `ts-node`, or script build step: every script runs as `node <
 
 ## 4. Builds
 
-| Workspace | `npm run build`                                                                                                                                                                 |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Workspace | `npm run build`                                                                                                                                                                                                                                                                                                            |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | core      | `tsc -p tsconfig.build.json` (emits `dist/` from `src/`, no tests), then `scripts/inline-tokens.ts` (token defaults written into `dist/`), then `scripts/minify-css.ts` (`css` templates in `dist/` minified), then `scripts/build-css.ts` (`tokens.css`, `themes.css`, `surfaces.css`), then the Custom Elements Manifest |
-| locales   | `lit-localize build` (generated runtime modules from the XLIFF), then `tsc`, then `check:locales`                                                                               |
-| workbench | Builds the workbench against the built packages                                                                                                                                 |
+| locales   | `lit-localize build` (generated runtime modules from the XLIFF), then `tsc`, then `check:locales`                                                                                                                                                                                                                          |
+| workbench | Builds the workbench against the built packages                                                                                                                                                                                                                                                                            |
 
 The root `build` runs every workspace in dependency order. Generated files (`dist/`, `custom-elements.json`, `packages/locales/src/generated/`, the test pseudo-locale) are not committed. Scripts that read generated sources make them first (`pretest:browser`, and `typecheck` for the locale modules and pseudo-locale). No typecheck builds `dist/`, so the workbench's `typecheck` runs after `build`.
 

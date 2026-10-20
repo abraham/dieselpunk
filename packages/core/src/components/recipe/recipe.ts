@@ -1,7 +1,7 @@
 import { msg, str } from '../../internal/localize.ts';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { PunkSelectableBase } from '../../internal/selectable-base.ts';
@@ -40,17 +40,24 @@ export class PunkRecipe extends PunkSelectableBase {
 
   static override styles = recipeStyles;
 
+  static override properties: PropertyDeclarations = {
+    name: { reflect: true },
+    duration: { converter: optionalNumber, reflect: true },
+    available: { type: Boolean, reflect: true },
+    craftableCount: { type: Number, attribute: 'craftable-count', reflect: true },
+  };
+
   /** The recipe's name, shown as the tile's title. */
-  @property({ reflect: true }) name = '';
+  name = '';
 
   /** How long one craft takes, in seconds. Leave it unset to show no time. */
-  @property({ converter: optionalNumber, reflect: true }) duration: number | undefined;
+  duration: number | undefined;
 
   /** Whether the recipe can be made now. A recipe that cannot says so in words. */
-  @property({ type: Boolean, reflect: true }) available = false;
+  available = false;
 
   /** How many times it can be made with what is on hand. Shown while the recipe is available. */
-  @property({ type: Number, attribute: 'craftable-count', reflect: true }) craftableCount = 0;
+  craftableCount = 0;
 
   readonly #presence = new SlotPresence(this, ['icon', 'ingredients', 'products']);
   #problems = new Set<string>();

@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
@@ -27,11 +26,16 @@ const variants: readonly string[] = ['neutral', 'info', 'success', 'warning', 'd
 export class PunkStatusLight extends PunkElement {
   static override styles = statusLightStyles;
 
+  static override properties: PropertyDeclarations = {
+    variant: { reflect: true },
+    announce: { type: Boolean, reflect: true },
+  };
+
   /** A ring for `neutral`, a diamond for `info`, a circle for `success`, a triangle for `warning`, a square for `danger`. Unknown values render as `neutral`. */
-  @property({ reflect: true }) variant: StatusVariant = 'neutral';
+  variant: StatusVariant = 'neutral';
 
   /** Makes the host a polite live region, for a light whose text changes while the user is elsewhere. */
-  @property({ type: Boolean, reflect: true }) announce = false;
+  announce = false;
 
   readonly #presence = new SlotPresence(this, ['']);
   #hasText = true;

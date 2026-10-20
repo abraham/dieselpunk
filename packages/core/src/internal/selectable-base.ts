@@ -1,5 +1,4 @@
-import type { CSSResultGroup, CSSResultOrNative, PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { CSSResultGroup, CSSResultOrNative, PropertyDeclarations, PropertyValues } from 'lit';
 import { childChanged, owner } from './owner.ts';
 import type { Owned, Owner } from './owner.ts';
 import { PunkElement } from './punk-element.ts';
@@ -25,21 +24,26 @@ declare global {
  * default-prevented are ignored, which is how a grid claims the keys it handles.
  */
 export abstract class PunkSelectableBase extends PunkElement implements Owned<PunkSelectableBase> {
+  static override properties: PropertyDeclarations = {
+    disabled: { type: Boolean, reflect: true },
+    value: { reflect: true },
+    selected: { type: Boolean, reflect: true },
+  };
+
   protected static override finalizeStyles(styles?: CSSResultGroup): CSSResultOrNative[] {
     return super.finalizeStyles([selectableStyles, styles ?? []]);
   }
 
   /** Blocks activation and focus. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /** Identifies the item in `punk-activate` and in a grid's `values`. */
-  @property({ reflect: true }) value = '';
+  value = '';
 
   /**
    * Outside a grid this exposes `aria-pressed`, from the first time it is set, true or false. A
    * grid sets it from its selection and exposes `aria-selected` instead.
    */
-  @property({ type: Boolean, reflect: true })
   get selected(): boolean {
     return this.#selected ?? false;
   }

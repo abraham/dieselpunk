@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg, str } from '../../internal/localize.ts';
@@ -44,17 +43,24 @@ declare global {
 export class PunkPagination extends PunkElement {
   static override styles = paginationStyles;
 
+  static override properties: PropertyDeclarations = {
+    page: { type: Number, reflect: true },
+    pages: { type: Number, reflect: true },
+    siblings: { type: Number, reflect: true },
+    label: { reflect: true },
+  };
+
   /** The current page, from 1. A page out of range is clamped and warns. */
-  @property({ type: Number, reflect: true }) page = 1;
+  page = 1;
 
   /** How many pages there are. Below 1, or not a number, is 1 and warns. */
-  @property({ type: Number, reflect: true }) pages = 1;
+  pages = 1;
 
   /** How many pages to show on each side of the current one. */
-  @property({ type: Number, reflect: true }) siblings = 1;
+  siblings = 1;
 
   /** The name of the landmark. Without it, the localized "Pagination". */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   readonly #localeWatcher = new LocaleWatcher(this);
   #warned = '';

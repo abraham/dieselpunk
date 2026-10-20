@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { PunkFormControl } from '../../internal/form-control.ts';
@@ -58,18 +57,23 @@ const ARROWS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 export class PunkRadioGroup extends PunkFormControl implements RadioOwner {
   static override styles = radioGroupStyles;
 
+  static override properties: PropertyDeclarations = {
+    label: { reflect: true },
+    orientation: { reflect: true },
+    value: {},
+  };
+
   /** The name of the group, and the text above it. Without it, use `aria-label`. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   /** How the radios are laid out. The arrow keys work in both directions either way. Unknown values use `vertical`. */
-  @property({ reflect: true }) orientation: RadioGroupOrientation = 'vertical';
+  orientation: RadioGroupOrientation = 'vertical';
 
   /**
    * The chosen radio's `value`, or an empty string. Assigned before a matching radio exists, it is
    * kept until one arrives. The host's `value` attribute sets the first choice; a form reset goes
    * back to the radios marked `checked`.
    */
-  @property()
   get value(): string {
     return this.#checked()?.value ?? this.#requested ?? '';
   }

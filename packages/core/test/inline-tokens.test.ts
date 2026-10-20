@@ -19,7 +19,10 @@ describe('inlineTokens', () => {
   });
 
   it('rejects an unknown token', () => {
-    assert.throws(() => inlineTokens(`${tokenImport}css \`\${token('space-9')}\``), /Unknown token "space-9"/);
+    assert.throws(
+      () => inlineTokens(`${tokenImport}css \`\${token('space-9')}\``),
+      /Unknown token "space-9"/,
+    );
   });
 
   it('rejects a call outside a template interpolation', () => {

@@ -13,7 +13,9 @@ import {
 import { token } from '../../tokens/token.ts';
 
 const none = css`0`;
-const edge = css`${token('border-width')}`;
+const edge = css`
+  ${token('border-width')}
+`;
 
 // A shadow in the panels' fill, offset toward them, covers the seam under the selected tab.
 const join = (x: CSSResult, y: CSSResult) => css`

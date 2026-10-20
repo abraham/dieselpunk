@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { PunkElement } from '../../internal/punk-element.ts';
 import type { LayoutGap } from '../../styles/gap.ts';
 import { clusterStyles } from './cluster.styles.ts';
@@ -22,14 +22,20 @@ export type { LayoutGap as ClusterGap } from '../../styles/gap.ts';
 export class PunkCluster extends PunkElement {
   static override styles = clusterStyles;
 
+  static override properties: PropertyDeclarations = {
+    gap: { reflect: true },
+    justify: { reflect: true },
+    align: { reflect: true },
+  };
+
   /** `0` for none, or `1` to `5` for a spacing token, which follows density. Unknown values use `2`. */
-  @property({ reflect: true }) gap: LayoutGap = '2';
+  gap: LayoutGap = '2';
 
   /** How a row is spread along the line. Unknown values use `start`. */
-  @property({ reflect: true }) justify: ClusterJustify = 'start';
+  justify: ClusterJustify = 'start';
 
   /** How children line up across the line. Unknown values use `center`. */
-  @property({ reflect: true }) align: ClusterAlign = 'center';
+  align: ClusterAlign = 'center';
 
   protected override render() {
     return html`<slot></slot>`;

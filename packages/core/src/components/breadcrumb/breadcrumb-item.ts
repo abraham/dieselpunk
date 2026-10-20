@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { safeUrl } from '../../internal/safe-url.ts';
@@ -22,14 +21,19 @@ import { breadcrumbItemStyles } from './breadcrumb.styles.ts';
 export class PunkBreadcrumbItem extends PunkElement {
   static override styles = breadcrumbItemStyles;
 
+  static override properties: PropertyDeclarations = {
+    href: { reflect: true },
+    current: { type: Boolean, reflect: true },
+  };
+
   /**
    * Where the link goes. Without it the item is text, and so is an `href` that could run script:
    * only `http:`, `https:`, `mailto:`, and relative URLs make a link.
    */
-  @property({ reflect: true }) href = '';
+  href = '';
 
   /** Marks the item as the current page. */
-  @property({ type: Boolean, reflect: true }) current = false;
+  current = false;
 
   #warnedUnsafe = false;
 

@@ -20,7 +20,9 @@ describe('minifyCss', () => {
 `;
     assert.equal(
       minifyCss(wrap(body)),
-      wrap(":host{display:flex;gap:var(--a,8px)}:host([x='y']) .line,.b > .c{border:1px solid red}"),
+      wrap(
+        ":host{display:flex;gap:var(--a,8px)}:host([x='y']) .line,.b > .c{border:1px solid red}",
+      ),
     );
   });
 
@@ -29,7 +31,10 @@ describe('minifyCss', () => {
   });
 
   it('keeps strings as they are', () => {
-    assert.equal(minifyCss(wrap(`a { content: '  /* x */  '; b: "a ; }" }`)), wrap(`a{content:'  /* x */  ';b:"a ; }"}`));
+    assert.equal(
+      minifyCss(wrap(`a { content: '  /* x */  '; b: "a ; }" }`)),
+      wrap(`a{content:'  /* x */  ';b:"a ; }"}`),
+    );
   });
 
   it('keeps one space beside a placeholder where it may separate tokens', () => {
@@ -39,7 +44,10 @@ describe('minifyCss', () => {
 
   it('minifies nested templates and leaves other tags alone', () => {
     const code = 'const s = css `a { b: ${f(css` c `)} }`; const h = html` <p> x </p> `;';
-    assert.equal(minifyCss(code), 'const s = css `a{b:${f(css`c`)}}`; const h = html` <p> x </p> `;');
+    assert.equal(
+      minifyCss(code),
+      'const s = css `a{b:${f(css`c`)}}`; const h = html` <p> x </p> `;',
+    );
   });
 
   it('rejects a comment that spans a placeholder', () => {

@@ -1,8 +1,7 @@
 import { msg } from '../../internal/localize.ts';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { childChanged, owner, release } from '../../internal/owner.ts';
 import type { Owned, Owner } from '../../internal/owner.ts';
@@ -64,14 +63,21 @@ export class PunkToast extends PunkElement implements Owned<PunkToast> {
 
   static override styles = toastStyles;
 
+  static override properties: PropertyDeclarations = {
+    variant: { reflect: true },
+    duration: { type: Number, reflect: true },
+    heading: { reflect: true },
+    leaving: { attribute: false },
+  };
+
   /** A shape and a color. `warning` and `danger` are announced at once, `info` and `success` politely. Unknown values use `info`. */
-  @property({ reflect: true }) variant: ToastVariant = 'info';
+  variant: ToastVariant = 'info';
 
   /** Milliseconds before it dismisses itself. Unset is 5000 for `info` and `success`, and none for `warning`, `danger`, or a toast with an `action`. `0` means none. */
-  @property({ type: Number, reflect: true }) duration: number | null = null;
+  duration: number | null = null;
 
   /** A line above the message. */
-  @property({ reflect: true }) heading = '';
+  heading = '';
 
   /**
    * The stack that manages this toast, which places it in the right live region.
@@ -83,7 +89,7 @@ export class PunkToast extends PunkElement implements Owned<PunkToast> {
     this.createProperty(owner, { attribute: false });
   }
 
-  @state() protected leaving = false;
+  protected leaving = false;
 
   readonly #slots = new SlotPresence(this, ['', 'action']);
   #timer: ToastTimer | undefined;

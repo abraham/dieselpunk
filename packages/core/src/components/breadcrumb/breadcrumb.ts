@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { serverValues } from '../../internal/server-values.ts';
-import type { PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { optionalNumber } from '../../internal/converters.ts';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg } from '../../internal/localize.ts';
@@ -33,14 +32,19 @@ import { breadcrumbStyles } from './breadcrumb.styles.ts';
 export class PunkBreadcrumb extends PunkElement {
   static override styles = breadcrumbStyles;
 
+  static override properties: PropertyDeclarations = {
+    label: { reflect: true },
+    maxItems: { attribute: 'max-items', converter: optionalNumber, reflect: true },
+    expanded: { attribute: false },
+  };
+
   /** The name of the landmark. Without it, the localized "Breadcrumb". */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   /** The most items to show before the middle ones collapse. Below 2, or unset, shows all. */
-  @property({ attribute: 'max-items', converter: optionalNumber, reflect: true })
   maxItems: number | undefined;
 
-  @state() private expanded = false;
+  private expanded = false;
 
   readonly #localeWatcher = new LocaleWatcher(this);
   #items: PunkBreadcrumbItem[] = [];

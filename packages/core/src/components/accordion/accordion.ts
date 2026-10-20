@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { childChanged, owner, release } from '../../internal/owner.ts';
 import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
@@ -24,8 +23,12 @@ import { accordionStyles } from './accordion.styles.ts';
 export class PunkAccordion extends PunkElement implements Owner<PunkAccordionItem> {
   static override styles = accordionStyles;
 
+  static override properties: PropertyDeclarations = {
+    multiple: { type: Boolean, reflect: true },
+  };
+
   /** Lets several items be expanded at once. */
-  @property({ type: Boolean, reflect: true }) multiple = false;
+  multiple = false;
 
   #items: PunkAccordionItem[] = [];
   #warned = false;

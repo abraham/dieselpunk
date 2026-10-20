@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Ledger, childChanged, owner, release } from '../../internal/owner.ts';
 import type { Owner } from '../../internal/owner.ts';
@@ -70,14 +69,20 @@ const TABBABLE = [
 export class PunkTabs extends PunkElement implements Owner<PunkTab> {
   static override styles = tabsStyles;
 
+  static override properties: PropertyDeclarations = {
+    orientation: { reflect: true },
+    activation: { reflect: true },
+    accessibleLabel: { attribute: 'aria-label' },
+  };
+
   /** Which way the tabs are laid out. Unknown values use `horizontal`. */
-  @property({ reflect: true }) orientation: TabsOrientation = 'horizontal';
+  orientation: TabsOrientation = 'horizontal';
 
   /** `auto` selects a tab when the arrow keys reach it. Unknown values use `auto`. */
-  @property({ reflect: true }) activation: TabActivation = 'auto';
+  activation: TabActivation = 'auto';
 
   /** Mirrors the host `aria-label`, which cannot reach the tab list on its own. */
-  @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+  accessibleLabel: string | null = null;
 
   /** The selected tab's `panel`. Assigning selects the tab with that panel. */
   get value(): string {

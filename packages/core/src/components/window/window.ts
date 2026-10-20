@@ -1,7 +1,7 @@
 import { msg } from '../../internal/localize.ts';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { html, nothing } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { PunkModalSurface } from '../../internal/modal-surface.ts';
 import { overlayStack } from '../../internal/overlays.ts';
@@ -69,16 +69,23 @@ export class PunkWindow extends PunkModalSurface {
 
   static override styles = windowStyles;
 
+  static override properties: PropertyDeclarations = {
+    modal: { type: Boolean, reflect: true },
+    movable: { type: Boolean, reflect: true },
+    dismissible: { type: Boolean, reflect: true },
+    moving: { attribute: false },
+  };
+
   /** Makes the rest of the page inert while it is open. */
-  @property({ type: Boolean, reflect: true }) modal = false;
+  modal = false;
 
   /** Adds dragging by the titlebar, and the move button. */
-  @property({ type: Boolean, reflect: true }) movable = false;
+  movable = false;
 
   /** Adds the close button, and lets Escape close it. */
-  @property({ type: Boolean, reflect: true }) dismissible = false;
+  dismissible = false;
 
-  @state() protected moving = false;
+  protected moving = false;
 
   protected get isModal(): boolean {
     return this.modal;

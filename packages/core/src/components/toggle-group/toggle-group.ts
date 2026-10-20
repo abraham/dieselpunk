@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Ledger } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
@@ -37,14 +36,20 @@ export type ToggleGroupSelection = 'single' | 'multiple';
 export class PunkToggleGroup extends PunkElement {
   static override styles = toggleGroupStyles;
 
+  static override properties: PropertyDeclarations = {
+    selection: { reflect: true },
+    disabled: { type: Boolean, reflect: true },
+    accessibleLabel: { attribute: 'aria-label' },
+  };
+
   /** `single` keeps one button pressed; `multiple` lets any number be. Unknown values use `single`. */
-  @property({ reflect: true }) selection: ToggleGroupSelection = 'single';
+  selection: ToggleGroupSelection = 'single';
 
   /** Disables every button. Buttons that were already disabled stay so. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /** Mirrors the host `aria-label`, which cannot reach the group on its own. */
-  @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+  accessibleLabel: string | null = null;
 
   /**
    * The `value` of each pressed button, in order. Assign it to press buttons by value, before or

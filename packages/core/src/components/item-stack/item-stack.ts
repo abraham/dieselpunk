@@ -1,6 +1,6 @@
 import { msg, str } from '../../internal/localize.ts';
 import { html, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { PunkReceptacleBase } from '../../internal/receptacle-base.ts';
@@ -57,23 +57,32 @@ const qualityText = (level: string) =>
 export class PunkItemStack extends PunkReceptacleBase {
   static override styles = [receptacleStyles, itemStackStyles];
 
+  static override properties: PropertyDeclarations = {
+    name: { reflect: true },
+    count: { type: Number, reflect: true },
+    capacity: { converter: optionalNumber, reflect: true },
+    durability: { converter: optionalNumber, reflect: true },
+    quality: { type: Number, reflect: true },
+    compactCount: { type: Boolean, attribute: 'compact-count', reflect: true },
+  };
+
   /** The item's name, read by assistive technology but not shown. */
-  @property({ reflect: true }) name = '';
+  name = '';
 
   /** How many. Shown on the item unless it is exactly 1, and never below 0. */
-  @property({ type: Number, reflect: true }) count = 1;
+  count = 1;
 
   /** The most the stack holds. When set, the count is shown as `count/capacity`. */
-  @property({ converter: optionalNumber, reflect: true }) capacity: number | undefined;
+  capacity: number | undefined;
 
   /** Remaining durability from 0 to 1. Leave it unset for an item that does not wear. */
-  @property({ converter: optionalNumber, reflect: true }) durability: number | undefined;
+  durability: number | undefined;
 
   /** A whole number from 0 to 5, shown as that many diamonds. */
-  @property({ type: Number, reflect: true }) quality = 0;
+  quality = 0;
 
   /** Abbreviates the shown count, such as 1.2K. The accessible text is never abbreviated. */
-  @property({ type: Boolean, attribute: 'compact-count', reflect: true }) compactCount = false;
+  compactCount = false;
 
   /** Effective values after clamping, shared by rendering, the name, and the warnings. */
   #resolve() {

@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { devWarn } from '../../utilities/warn.ts';
 import { descriptionListStyles } from './description-list.styles.ts';
@@ -24,8 +24,12 @@ export type DescriptionListVariant = 'plain' | 'inset';
 export class PunkDescriptionList extends PunkElement {
   static override styles = descriptionListStyles;
 
+  static override properties: PropertyDeclarations = {
+    variant: { reflect: true },
+  };
+
   /** `plain` has no surface; `inset` is a recessed well with rules between rows. Unknown values use `plain`. */
-  @property({ reflect: true }) variant: DescriptionListVariant = 'plain';
+  variant: DescriptionListVariant = 'plain';
 
   #warned = '';
 

@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { childChanged, owner } from '../../internal/owner.ts';
@@ -34,20 +33,28 @@ import { treeItemStyles } from './tree.styles.ts';
 export class PunkTreeItem extends PunkElement implements Owned<PunkTreeItem> {
   static override styles = treeItemStyles;
 
+  static override properties: PropertyDeclarations = {
+    label: { reflect: true },
+    value: { reflect: true },
+    expanded: { type: Boolean, reflect: true },
+    disabled: { type: Boolean, reflect: true },
+    selected: { type: Boolean, reflect: true },
+  };
+
   /** The text of the row, and the item's name. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   /** Identifies the item in `punk-activate` and the tree's `values`. */
-  @property({ reflect: true }) value = '';
+  value = '';
 
   /** Shows the children. */
-  @property({ type: Boolean, reflect: true }) expanded = false;
+  expanded = false;
 
   /** Leaves it out of the arrow keys' stops and of selection. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /** Whether it is selected. The markup's value is the first selection; after that the tree sets it. */
-  @property({ type: Boolean, reflect: true }) selected = false;
+  selected = false;
 
   /**
    * The tree that manages this item.

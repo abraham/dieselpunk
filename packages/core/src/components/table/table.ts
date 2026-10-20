@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Ledger } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
@@ -78,18 +77,25 @@ function adoptContentStyles(root: Node): void {
 export class PunkTable extends PunkElement {
   static override styles = tableStyles;
 
+  static override properties: PropertyDeclarations = {
+    sortKey: { attribute: 'sort-key', reflect: true },
+    sortDirection: { attribute: 'sort-direction', reflect: true },
+    accessibleLabel: { attribute: 'aria-label' },
+    scrollable: { attribute: false },
+    caption: { attribute: false },
+  };
+
   /** The `data-sort` of the column the rows are sorted by, or an empty string. */
-  @property({ attribute: 'sort-key', reflect: true }) sortKey = '';
+  sortKey = '';
 
   /** The direction of the sorted column. Unknown values use `ascending`. */
-  @property({ attribute: 'sort-direction', reflect: true }) sortDirection: SortDirection =
-    'ascending';
+  sortDirection: SortDirection = 'ascending';
 
   /** Mirrors the host `aria-label`, which names the scroll area. */
-  @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+  accessibleLabel: string | null = null;
 
-  @state() private scrollable = false;
-  @state() private caption = '';
+  private scrollable = false;
+  private caption = '';
 
   #observer: ResizeObserver | undefined;
   readonly #sortCells = new Ledger();

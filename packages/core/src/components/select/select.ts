@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { serverValues } from '../../internal/server-values.ts';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { PunkFieldBase } from '../../internal/field-base.ts';
 import type { FormValue } from '../../internal/form-control.ts';
 import { devWarn } from '../../utilities/warn.ts';
@@ -59,13 +58,16 @@ const describe = (option: HTMLOptionElement): OptionData => ({
 export class PunkSelect extends PunkFieldBase {
   static override styles = selectStyles;
 
+  static override properties: PropertyDeclarations = {
+    value: { noAccessor: true },
+  };
+
   #observer: MutationObserver | undefined;
   #requested: string | null = null;
   #cleared = false;
   #warnedEmpty = false;
 
   /** The value of the chosen option, or an empty string when none is. Set it to choose the option with that value. */
-  @property({ noAccessor: true })
   get value(): string {
     return this.#options[this.selectedIndex]?.value ?? '';
   }

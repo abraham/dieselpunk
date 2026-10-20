@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { serverValues } from '../../internal/server-values.ts';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { optionalNumber } from '../../internal/converters.ts';
 import { nextIndex, stepIndex } from '../../internal/grid-navigation.ts';
@@ -68,14 +67,20 @@ function setAttribute(element: Element, name: string, value: string | null): voi
 export class PunkSlotGrid extends PunkElement implements Owner<Item> {
   static override styles = slotGridStyles;
 
+  static override properties: PropertyDeclarations = {
+    columns: { converter: optionalNumber, reflect: true },
+    selection: { reflect: true },
+    disabled: { type: Boolean, reflect: true },
+  };
+
   /** The most columns to use. A narrower container uses fewer, and slots never shrink. */
-  @property({ converter: optionalNumber, reflect: true }) columns: number | undefined;
+  columns: number | undefined;
 
   /** `none` only activates items. Unknown values behave as `none`. */
-  @property({ reflect: true }) selection: GridSelection = 'none';
+  selection: GridSelection = 'none';
 
   /** Disables every item, and removes the tab stop. Items that were already disabled stay so. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /**
    * The `value` of each selected item, in item order. Assign it to select by value, before or

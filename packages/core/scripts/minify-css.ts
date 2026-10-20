@@ -59,10 +59,20 @@ function minifyPart(raw: string, state: State, atStart: boolean, atEnd: boolean)
  * (specs/performance.md §2). Strings and placeholders are kept as they are.
  */
 export function minifyCss(code: string): string {
-  const source = ts.createSourceFile('file.js', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  const source = ts.createSourceFile(
+    'file.js',
+    code,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.JS,
+  );
   const edits: { start: number; end: number; text: string }[] = [];
   const visit = (node: ts.Node) => {
-    if (ts.isTaggedTemplateExpression(node) && ts.isIdentifier(node.tag) && node.tag.text === 'css') {
+    if (
+      ts.isTaggedTemplateExpression(node) &&
+      ts.isIdentifier(node.tag) &&
+      node.tag.text === 'css'
+    ) {
       const template = node.template;
       const parts = ts.isNoSubstitutionTemplateLiteral(template)
         ? [template]

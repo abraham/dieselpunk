@@ -1,8 +1,7 @@
 import { msg } from './localize.ts';
 import { LocaleWatcher } from './locale-watch.ts';
 import { html, nothing } from 'lit';
-import type { PropertyValues, TemplateResult } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues, TemplateResult } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { ExternalAria, PopupKind } from './anchor.ts';
@@ -25,6 +24,17 @@ const sizes: readonly string[] = ['sm', 'md', 'lg'];
  * `aria-label` and an external description onto the inner button.
  */
 export abstract class PunkButtonBase extends PunkElement {
+  static override properties: PropertyDeclarations = {
+    variant: { reflect: true },
+    size: { reflect: true },
+    disabled: { type: Boolean, reflect: true },
+    loading: { type: Boolean, reflect: true },
+    type: { reflect: true },
+    accessibleLabel: { attribute: 'aria-label' },
+    accessibleExpanded: { attribute: 'aria-expanded' },
+    accessibleControls: { attribute: 'aria-controls' },
+  };
+
   readonly #localeWatcher = new LocaleWatcher(this);
 
   static formAssociated = true;
@@ -35,28 +45,28 @@ export abstract class PunkButtonBase extends PunkElement {
   };
 
   /** Unknown values render as `default`. */
-  @property({ reflect: true }) variant: ButtonVariant = 'default';
+  variant: ButtonVariant = 'default';
 
   /** Unknown values render as `md`. */
-  @property({ reflect: true }) size: ButtonSize = 'md';
+  size: ButtonSize = 'md';
 
   /** Blocks activation and focus. A disabled `<fieldset>` ancestor disables the button too. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /** Keeps focus and the accessible name, blocks activation, and shows a spinner. */
-  @property({ type: Boolean, reflect: true }) loading = false;
+  loading = false;
 
   /** Defaults to `button`, not the native `submit`, so a stray button never submits a form. */
-  @property({ reflect: true }) type: ButtonType = 'button';
+  type: ButtonType = 'button';
 
   /** Mirrors the host `aria-label`, which cannot reach the inner button on its own. */
-  @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+  accessibleLabel: string | null = null;
 
   /** Mirrors the host `aria-expanded` onto the inner button, for a disclosure toggle. An anchored overlay's state wins. */
-  @property({ attribute: 'aria-expanded' }) accessibleExpanded: string | null = null;
+  accessibleExpanded: string | null = null;
 
   /** Mirrors the host `aria-controls`: the IDs, in the host's tree, of what the button shows or hides. Read when it renders. */
-  @property({ attribute: 'aria-controls' }) accessibleControls: string | null = null;
+  accessibleControls: string | null = null;
 
   readonly #internals = this.attachInternals();
   #description: string | null = null;

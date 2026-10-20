@@ -177,6 +177,11 @@ const shippedRules = {
         'CallExpression[callee.name=/^set(Timeout|Interval)$/] > :matches(Literal, TemplateLiteral).arguments:first-child, CallExpression[callee.property.name=/^set(Timeout|Interval)$/] > :matches(Literal, TemplateLiteral).arguments:first-child',
       message: `A string passed to setTimeout or setInterval ${sink}`,
     },
+    {
+      selector: 'Decorator',
+      message:
+        'Declare reactive properties in `static properties`; a decorator adds a helper to every module (specs/component-model.md).',
+    },
   ],
   'local/url-bindings': 'error',
 };

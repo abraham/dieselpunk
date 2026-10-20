@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg } from '../../internal/localize.ts';
@@ -41,11 +41,16 @@ const placements: readonly string[] = ['start', 'end', 'top', 'bottom'];
 export class PunkDrawer extends PunkModalSurface {
   static override styles = drawerStyles;
 
+  static override properties: PropertyDeclarations = {
+    placement: { reflect: true },
+    modal: { type: Boolean, reflect: true },
+  };
+
   /** The edge it comes from. Unknown values use `start`. */
-  @property({ reflect: true }) placement: DrawerPlacement = 'start';
+  placement: DrawerPlacement = 'start';
 
   /** Makes the rest of the page inert while it is open. */
-  @property({ type: Boolean, reflect: true }) modal = false;
+  modal = false;
 
   readonly #localeWatcher = new LocaleWatcher(this);
 

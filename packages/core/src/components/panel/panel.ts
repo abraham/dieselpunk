@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
@@ -29,11 +29,16 @@ const variants: readonly string[] = ['raised', 'inset', 'flat'];
 export class PunkPanel extends PunkElement {
   static override styles = panelStyles;
 
+  static override properties: PropertyDeclarations = {
+    variant: { reflect: true },
+    density: { reflect: true },
+  };
+
   /** Surface treatment. Unknown values render as `raised`. */
-  @property({ reflect: true }) variant: PanelVariant = 'raised';
+  variant: PanelVariant = 'raised';
 
   /** Applies a density to this panel's subtree. Unset inherits from ancestors. */
-  @property({ reflect: true }) density?: PanelDensity;
+  density?: PanelDensity;
 
   readonly #slots = new SlotPresence(this, ['header', 'footer']);
 

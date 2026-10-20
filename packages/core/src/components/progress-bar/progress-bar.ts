@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { PunkElement } from '../../internal/punk-element.ts';
@@ -36,26 +36,36 @@ const valueConverter = {
 export class PunkProgressBar extends PunkElement {
   static override styles = progressBarStyles;
 
+  static override properties: PropertyDeclarations = {
+    value: { converter: valueConverter, reflect: true },
+    max: { type: Number, reflect: true },
+    variant: { reflect: true },
+    label: { reflect: true },
+    labelHidden: { type: Boolean, attribute: 'label-hidden', reflect: true },
+    showValue: { type: Boolean, attribute: 'show-value', reflect: true },
+    accessibleLabel: { attribute: 'aria-label' },
+  };
+
   /** Progress from 0 to `max`. Leave it unset for an indeterminate bar. */
-  @property({ converter: valueConverter, reflect: true }) value: number | undefined;
+  value: number | undefined;
 
   /** The value that means complete. A value that is not above zero is treated as 100. */
-  @property({ type: Number, reflect: true }) max = DEFAULT_MAX;
+  max = DEFAULT_MAX;
 
   /** Each variant has its own fill pattern, so none depends on color alone. */
-  @property({ reflect: true }) variant: ProgressVariant = 'default';
+  variant: ProgressVariant = 'default';
 
   /** The accessible name, and the visible text above the bar unless `label-hidden` is set. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   /** Keeps the label as the accessible name but does not show it. */
-  @property({ type: Boolean, attribute: 'label-hidden', reflect: true }) labelHidden = false;
+  labelHidden = false;
 
   /** Shows the percentage as text. Assistive technology always gets it. */
-  @property({ type: Boolean, attribute: 'show-value', reflect: true }) showValue = false;
+  showValue = false;
 
   /** Names the bar when there is no `label`; the host `aria-label` cannot reach the track. */
-  @property({ attribute: 'aria-label' }) accessibleLabel: string | null = null;
+  accessibleLabel: string | null = null;
 
   #problems = new Set<string>();
 

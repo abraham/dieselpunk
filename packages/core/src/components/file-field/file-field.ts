@@ -1,5 +1,5 @@
 import { html, nothing } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { PunkFieldBase } from '../../internal/field-base.ts';
@@ -39,17 +39,25 @@ import { fileFieldStyles } from './file-field.styles.ts';
 export class PunkFileField extends PunkFieldBase {
   static override styles = fileFieldStyles;
 
+  static override properties: PropertyDeclarations = {
+    accept: { reflect: true },
+    multiple: { type: Boolean, reflect: true },
+    dropZone: { attribute: 'drop-zone', type: Boolean, reflect: true },
+    chosen: { attribute: false },
+    dragging: { attribute: false },
+  };
+
   /** The kinds of file to offer, as the native attribute: extensions, MIME types, or `type/*`. */
-  @property({ reflect: true }) accept = '';
+  accept = '';
 
   /** Lets the user choose more than one file. */
-  @property({ type: Boolean, reflect: true }) multiple = false;
+  multiple = false;
 
   /** Makes the field a place to drop files, as well as the input's button. */
-  @property({ attribute: 'drop-zone', type: Boolean, reflect: true }) dropZone = false;
+  dropZone = false;
 
-  @state() private chosen: File[] = [];
-  @state() private dragging = false;
+  private chosen: File[] = [];
+  private dragging = false;
 
   /** The chosen files, as the native input holds them. */
   get files(): FileList | null {

@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { PunkFieldBase } from '../../internal/field-base.ts';
@@ -46,32 +46,44 @@ const types: readonly string[] = ['text', 'email', 'password', 'search', 'tel', 
 export class PunkTextField extends PunkFieldBase {
   static override styles = textFieldStyles;
 
+  static override properties: PropertyDeclarations = {
+    value: {},
+    type: { reflect: true },
+    placeholder: { reflect: true },
+    readonly: { type: Boolean, reflect: true },
+    minlength: { type: Number, reflect: true },
+    maxlength: { type: Number, reflect: true },
+    pattern: { reflect: true },
+    autocomplete: { reflect: true },
+    inputmode: { reflect: true },
+  };
+
   /** The text. The `value` attribute is the default a form reset goes back to. */
-  @property() value = '';
+  value = '';
 
   /** The kind of text. Unknown values use `text`. */
-  @property({ reflect: true }) type: TextFieldType = 'text';
+  type: TextFieldType = 'text';
 
   /** Shown while the field is empty. It is not a name. */
-  @property({ reflect: true }) placeholder = '';
+  placeholder = '';
 
   /** The text can be selected and copied, and not changed. */
-  @property({ type: Boolean, reflect: true }) readonly = false;
+  readonly = false;
 
   /** The fewest characters the user may leave. */
-  @property({ type: Number, reflect: true }) minlength: number | null = null;
+  minlength: number | null = null;
 
   /** The most characters the user may type. */
-  @property({ type: Number, reflect: true }) maxlength: number | null = null;
+  maxlength: number | null = null;
 
   /** A regular expression the whole value must match. */
-  @property({ reflect: true }) pattern: string | null = null;
+  pattern: string | null = null;
 
   /** What a password manager or the browser may fill in, as the native attribute. */
-  @property({ reflect: true }) autocomplete: string | null = null;
+  autocomplete: string | null = null;
 
   /** The keyboard a touch screen shows, as the native attribute. */
-  @property({ reflect: true }) inputmode: string | null = null;
+  inputmode: string | null = null;
 
   protected override formValue(): FormValue {
     return this.value;

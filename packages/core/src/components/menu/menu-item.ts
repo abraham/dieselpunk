@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations } from 'lit';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { serverValues } from '../../internal/server-values.ts';
@@ -38,17 +38,24 @@ const roles: Record<MenuItemType, string> = {
 export class PunkMenuItem extends PunkElement {
   static override styles = menuItemStyles;
 
+  static override properties: PropertyDeclarations = {
+    type: { reflect: true },
+    checked: { type: Boolean, reflect: true },
+    disabled: { type: Boolean, reflect: true },
+    value: { reflect: true },
+  };
+
   /** `item`, `checkbox`, or `radio`. Unknown values use `item`. */
-  @property({ reflect: true }) type: MenuItemType = 'item';
+  type: MenuItemType = 'item';
 
   /** Whether a checkbox or radio item is on. The menu changes it when the user activates the item. */
-  @property({ type: Boolean, reflect: true }) checked = false;
+  checked = false;
 
   /** Leaves it out of the arrow keys' stops, and stops it being activated. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /** Identifies the item in `punk-activate`. */
-  @property({ reflect: true }) value = '';
+  value = '';
 
   readonly #slots = new SlotPresence(this, ['icon', 'shortcut']);
   // A menubar's items open their menus below them, so they draw no arrow.

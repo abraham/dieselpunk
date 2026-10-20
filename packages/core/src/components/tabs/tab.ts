@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { childChanged, owner } from '../../internal/owner.ts';
 import type { Owned, Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
@@ -30,14 +29,21 @@ interface PunkTabsLike extends Element {
 export class PunkTab extends PunkElement implements RovingItem, Owned<PunkTab> {
   static override styles = tabStyles;
 
+  static override properties: PropertyDeclarations = {
+    panel: { reflect: true },
+    selected: { type: Boolean, reflect: true },
+    disabled: { type: Boolean, reflect: true },
+    orientation: { attribute: false },
+  };
+
   /** The `id` of the panel this tab shows, looked up in the same tree as the tab. */
-  @property({ reflect: true }) panel = '';
+  panel = '';
 
   /** Whether the tab is selected. The tabs keep exactly one selected. */
-  @property({ type: Boolean, reflect: true }) selected = false;
+  selected = false;
 
   /** Stops the tab from being selected or focused. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /**
    * The tabs that manage this tab.
@@ -50,7 +56,7 @@ export class PunkTab extends PunkElement implements RovingItem, Owned<PunkTab> {
   }
 
   /** Set by the tabs, for the edge that faces the panel. */
-  @property({ attribute: false }) orientation: 'horizontal' | 'vertical' = 'horizontal';
+  orientation: 'horizontal' | 'vertical' = 'horizontal';
 
   readonly #slots = new SlotPresence(this, ['icon']);
   #tabStop: boolean | null = null;

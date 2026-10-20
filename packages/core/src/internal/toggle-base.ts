@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { PunkFormControl } from './form-control.ts';
 import type { FormValue, Validation } from './form-control.ts';
 import { focusItem, itemDisabled, setTabStop } from './roving.ts';
@@ -28,11 +27,16 @@ const INTERACTIVE = 'a[href], button, input, select, textarea, [contenteditable=
  * `checked` is not reflected: the attribute is the default that a form reset restores.
  */
 export abstract class PunkToggleBase extends PunkFormControl {
+  static override properties: PropertyDeclarations = {
+    checked: { type: Boolean },
+    value: { reflect: true },
+  };
+
   /** Whether it is on. The `checked` attribute is the default a form reset goes back to. */
-  @property({ type: Boolean }) checked = false;
+  checked = false;
 
   /** What it submits under `name` while it is checked. */
-  @property({ reflect: true }) value = 'on';
+  value = 'on';
 
   protected abstract readonly toggleRole: 'checkbox' | 'switch';
 

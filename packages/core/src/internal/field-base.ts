@@ -1,8 +1,7 @@
 import { msg } from './localize.ts';
 import { LocaleWatcher } from './locale-watch.ts';
 import { LitElement, html, nothing } from 'lit';
-import type { PropertyValues, TemplateResult } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues, TemplateResult } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { PunkFormControl } from './form-control.ts';
@@ -30,12 +29,16 @@ export interface FieldParts {
  * one the control takes `aria-label`, or the text of a `<label>` that points at the host.
  */
 export abstract class PunkFieldBase extends PunkFormControl {
+  static override properties: PropertyDeclarations = {
+    label: { reflect: true },
+  };
+
   readonly #localeWatcher = new LocaleWatcher(this);
 
   static override shadowRootOptions = { ...LitElement.shadowRootOptions, delegatesFocus: true };
 
   /** The name of the field, and the text above it. Without it, use `aria-label`. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   protected readonly presence = new SlotPresence(this, ['prefix', 'suffix', 'hint']);
   #messageShown = false;

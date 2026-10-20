@@ -1,7 +1,6 @@
 import { msg } from '../../internal/localize.ts';
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { PunkFieldBase } from '../../internal/field-base.ts';
@@ -53,26 +52,36 @@ const stepConverter = {
 export class PunkNumberField extends PunkFieldBase {
   static override styles = numberFieldStyles;
 
+  static override properties: PropertyDeclarations = {
+    value: {},
+    placeholder: { reflect: true },
+    min: { type: Number, reflect: true },
+    max: { type: Number, reflect: true },
+    step: { converter: stepConverter, reflect: true },
+    readonly: { type: Boolean, reflect: true },
+    hideSteppers: { type: Boolean, reflect: true, attribute: 'hide-steppers' },
+  };
+
   /** The number, as the text the user sees. The `value` attribute is the default a form reset goes back to. */
-  @property() value = '';
+  value = '';
 
   /** Shown while the field is empty. It is not a name. */
-  @property({ reflect: true }) placeholder = '';
+  placeholder = '';
 
   /** The smallest value. */
-  @property({ type: Number, reflect: true }) min: number | null = null;
+  min: number | null = null;
 
   /** The largest value. */
-  @property({ type: Number, reflect: true }) max: number | null = null;
+  max: number | null = null;
 
   /** The distance between values, above 0, or `any` for any number. */
-  @property({ converter: stepConverter, reflect: true }) step: number | 'any' = 1;
+  step: number | 'any' = 1;
 
   /** The number can be selected and copied, and not changed. */
-  @property({ type: Boolean, reflect: true }) readonly = false;
+  readonly = false;
 
   /** Removes the two stepper buttons. */
-  @property({ type: Boolean, reflect: true, attribute: 'hide-steppers' }) hideSteppers = false;
+  hideSteppers = false;
 
   #delay: ReturnType<typeof setTimeout> | undefined;
   #repeat: ReturnType<typeof setInterval> | undefined;

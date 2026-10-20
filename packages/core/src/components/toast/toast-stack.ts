@@ -1,8 +1,7 @@
 import { msg } from '../../internal/localize.ts';
 import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { Ledger, childChanged, owner, release } from '../../internal/owner.ts';
 import type { Owner } from '../../internal/owner.ts';
@@ -50,14 +49,20 @@ export class PunkToastStack extends PunkElement implements Owner<PunkToast> {
 
   static override styles = toastStackStyles;
 
+  static override properties: PropertyDeclarations = {
+    placement: { reflect: true },
+    limit: { type: Number, reflect: true },
+    label: { reflect: true },
+  };
+
   /** The corner. `start` and `end` follow the writing direction. Unknown values use `bottom-end`. */
-  @property({ reflect: true }) placement: ToastPlacement = 'bottom-end';
+  placement: ToastPlacement = 'bottom-end';
 
   /** The most toasts it shows. A new toast past it dismisses the oldest, with the reason `limit`. */
-  @property({ type: Number, reflect: true }) limit = DEFAULT_LIMIT;
+  limit = DEFAULT_LIMIT;
 
   /** The name of the region. Without it, the localized "Notifications". */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   readonly #ledger = new Ledger();
 

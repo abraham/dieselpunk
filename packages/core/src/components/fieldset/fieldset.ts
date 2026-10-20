@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Ledger } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
@@ -44,11 +43,16 @@ function isControl(element: Element): element is HTMLElement & { disabled: boole
 export class PunkFieldset extends PunkElement {
   static override styles = fieldsetStyles;
 
+  static override properties: PropertyDeclarations = {
+    label: { reflect: true },
+    disabled: { type: Boolean, reflect: true },
+  };
+
   /** The legend, and the name of the group. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   /** Disables the controls inside it. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   readonly #slots = new SlotPresence(this, ['legend', 'hint', 'error']);
   readonly #ledger = new Ledger();

@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { childChanged, owner } from '../../internal/owner.ts';
 import type { Owned, Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
@@ -41,17 +40,24 @@ declare global {
 export class PunkAccordionItem extends PunkElement implements Owned<PunkAccordionItem> {
   static override styles = accordionItemStyles;
 
+  static override properties: PropertyDeclarations = {
+    heading: { reflect: true },
+    level: { type: Number, reflect: true },
+    expanded: { type: Boolean, reflect: true },
+    disabled: { type: Boolean, reflect: true },
+  };
+
   /** The heading text, and the name of the button. Use the `heading` slot for rich content. */
-  @property({ reflect: true }) heading = '';
+  heading = '';
 
   /** The heading level for assistive technology, 1 to 6. Out-of-range values are clamped. */
-  @property({ type: Number, reflect: true }) level = 3;
+  level = 3;
 
   /** Whether the panel is showing. */
-  @property({ type: Boolean, reflect: true }) expanded = false;
+  expanded = false;
 
   /** Stops the heading from being focused or toggled. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  disabled = false;
 
   /**
    * The accordion that manages this item, which collapses its other items.

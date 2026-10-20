@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { PunkButtonBase } from '../../internal/button-base.ts';
 import { buttonBaseStyles } from '../../internal/button-base.styles.ts';
 import { devWarn } from '../../utilities/warn.ts';
@@ -23,11 +22,15 @@ import { iconButtonStyles } from './icon-button.styles.ts';
 export class PunkIconButton extends PunkButtonBase {
   static override styles = [buttonBaseStyles, iconButtonStyles];
 
+  static override properties: PropertyDeclarations = {
+    label: { reflect: true },
+    tooltipPlacement: { attribute: 'tooltip-placement', reflect: true },
+  };
+
   /** The accessible name and tooltip text. Required: an icon alone names nothing. */
-  @property({ reflect: true }) label = '';
+  label = '';
 
   /** Where the tooltip appears relative to the button. */
-  @property({ attribute: 'tooltip-placement', reflect: true })
   tooltipPlacement: TooltipPlacement = 'top';
 
   #warnedUnnamed = false;

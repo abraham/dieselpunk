@@ -1,6 +1,5 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { childChanged, owner, release } from '../../internal/owner.ts';
 import type { Owner } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
@@ -45,8 +44,12 @@ function write(element: Element, name: string, value: string | null): void {
 export class PunkList extends PunkElement implements Owner<PunkListItem> {
   static override styles = listStyles;
 
+  static override properties: PropertyDeclarations = {
+    selection: { reflect: true },
+  };
+
   /** `none` is a plain list. Unknown values behave as `none`. */
-  @property({ reflect: true }) selection: ListSelection = 'none';
+  selection: ListSelection = 'none';
 
   /**
    * The `value` of each selected item, in order. Assign it to select by value, before or after the
