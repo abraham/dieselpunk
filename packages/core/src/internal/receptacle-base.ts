@@ -3,7 +3,7 @@ import { LocaleWatcher } from './locale-watch.ts';
 import { html } from 'lit';
 import type { PropertyDeclarations, TemplateResult } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
-import { devWarn } from '../utilities/warn.ts';
+import { warnNew } from '../utilities/warn.ts';
 import { PunkSelectableBase } from './selectable-base.ts';
 import { SlotPresence } from './slot-presence.ts';
 
@@ -45,21 +45,13 @@ export abstract class PunkReceptacleBase extends PunkSelectableBase {
   #problems = new Set<string>();
 
   protected override updated(): void {
-    const current = new Set(this.describeProblems());
-    for (const problem of current) {
-      if (!this.#problems.has(problem)) devWarn(this, problem);
-    }
-    this.#problems = current;
-  }
-
-  /** Messages for the dev warnings. Each distinct message is logged once while it stays true. */
-  protected describeProblems(): string[] {
-    const named =
-      this.hasAttribute('aria-label') ||
-      this.hasAttribute('aria-labelledby') ||
-      this.hasName ||
-      this.hasContent;
-    return named ? [] : ['It has no accessible name. Set its name, `label`, or `aria-label`.'];
+    this.#problems = warnNew(this, this.#problems, () => [
+      !this.hasAttribute('aria-label') &&
+        !this.hasAttribute('aria-labelledby') &&
+        !this.hasName &&
+        !this.hasContent &&
+        'It has no accessible name. Set its name, `label`, or `aria-label`.',
+    ]);
   }
 
   /** The words that name the item, joined into one visually hidden text node. */

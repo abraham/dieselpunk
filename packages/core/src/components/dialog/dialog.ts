@@ -71,12 +71,13 @@ export class PunkDialog extends PunkModalSurface {
   }
 
   protected override opened(): void {
-    if (this.persistent || this.#warnedFocus || firstTabbable([...this.children])) return;
-    this.#warnedFocus = true;
-    devWarn(
-      this,
-      'It has nothing to focus, and is not `persistent`, so a touch user cannot close it.',
-    );
+    if (!this.persistent && !this.#warnedFocus && !firstTabbable([...this.children])) {
+      this.#warnedFocus = true;
+      devWarn(
+        this,
+        'It has nothing to focus, and is not `persistent`, so a touch user cannot close it.',
+      );
+    }
   }
 
   readonly #handleClick = (event: Event): void => {

@@ -3,7 +3,7 @@ import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Ledger } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import type { PunkSelectionChangeDetail } from '../slot-grid/slot-grid.ts';
 import { tableContentCss, tableStyles } from './table.styles.ts';
 
@@ -99,7 +99,7 @@ export class PunkTable extends PunkElement {
 
   #observer: ResizeObserver | undefined;
   readonly #sortCells = new Ledger();
-  #warned = '';
+  #warned = new Set<string>();
 
   constructor() {
     super();
@@ -183,16 +183,14 @@ export class PunkTable extends PunkElement {
     this.#observe();
     this.#syncSort();
     this.#syncSelection();
-    const named = Boolean(
-      this.caption || this.accessibleLabel || table?.hasAttribute('aria-label'),
-    );
-    const problem = !table
-      ? 'It has no `<table>` child.'
-      : named
-        ? ''
-        : 'Its table has no name. Give it a `<caption>`, or set `aria-label`.';
-    if (problem && problem !== this.#warned) devWarn(this, problem);
-    this.#warned = problem;
+    this.#warned = warnNew(this, this.#warned, () => [
+      !table
+        ? 'It has no `<table>` child.'
+        : !this.caption &&
+          !this.accessibleLabel &&
+          !table.hasAttribute('aria-label') &&
+          'Its table has no name. Give it a `<caption>`, or set `aria-label`.',
+    ]);
   };
 
   /** Writes `aria-sort` on the sortable header cells, and gives back what the author had on any that left. */

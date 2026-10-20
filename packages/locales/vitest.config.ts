@@ -11,15 +11,6 @@ const run = browserRun(
 );
 
 export default defineConfig({
-  // The tests use core's sources and its gallery, which resolve `#dev` through core's own package.
-  resolve: {
-    alias: [
-      {
-        find: /^#dev$/,
-        replacement: fileURLToPath(new URL('../core/src/utilities/dev.dev.ts', import.meta.url)),
-      },
-    ],
-  },
   optimizeDeps: { include: preBundled },
   test: {
     include: run.include,

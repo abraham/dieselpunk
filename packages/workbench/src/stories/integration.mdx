@@ -61,7 +61,7 @@ A browser can load the installed packages as they are, with an import map that s
 <Source code={importMapPage} language="html" />
 
 - `@dieselpunk/core/` maps the `register.js` entries. A class entry is at `/node_modules/@dieselpunk/core/dist/components/<name>/index.js`.
-- `#dev` is the switch for development warnings. `dev.js` leaves them off; `dev.dev.js` turns them on.
+- To see development warnings, map `@dieselpunk/core/` to `dist/development/components/` instead. The modules there are the same with their warnings kept; a bundler picks them under the `development` condition.
 - The Lit entries cover what Lit's own modules import. Add an entry for any other package a page imports.
 
 ## Theme and density

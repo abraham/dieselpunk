@@ -9,7 +9,7 @@ import { SlotPresence } from '../../internal/slot-presence.ts';
 import { resolveStat } from '../../internal/stat-format.ts';
 import type { ProductionTrend, ResolvedStat } from '../../internal/stat-format.ts';
 import { resolveLang } from '../../utilities/locale.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { productionStatStyles } from './production-stat.styles.ts';
 
 export type ProductionStatLayout = 'stacked' | 'inline';
@@ -128,13 +128,12 @@ export class PunkProductionStat extends PunkElement {
   }
 
   protected override updated(): void {
-    const found = new Set(this.#resolve().repairs);
-    if (!this.label) found.add('It has no `label`, so it has no name.');
-    if ([...this.children].some((child) => child.slot === 'sparkline' && unnamedGraphic(child))) {
-      found.add('A graphic in `sparkline` has no `aria-hidden="true"` or text alternative.');
-    }
-    for (const problem of found) if (!this.#problems.has(problem)) devWarn(this, problem);
-    this.#problems = found;
+    this.#problems = warnNew(this, this.#problems, () => [
+      ...this.#resolve().repairs,
+      !this.label && 'It has no `label`, so it has no name.',
+      [...this.children].some((child) => child.slot === 'sparkline' && unnamedGraphic(child)) &&
+        'A graphic in `sparkline` has no `aria-hidden="true"` or text alternative.',
+    ]);
   }
 
   #word(trend: ProductionTrend): string {

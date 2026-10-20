@@ -219,9 +219,10 @@ export class PunkTabs extends PunkElement implements Owner<PunkTab> {
   }
 
   #warnOnce(key: string, message: string): void {
-    if (this.#warned.has(key)) return;
-    this.#warned.add(key);
-    devWarn(this, message);
+    if (!this.#warned.has(key)) {
+      this.#warned.add(key);
+      devWarn(this, message);
+    }
   }
 
   /** Writes the panels' roles and visibility, and gives back those of panels no tab names now. */
@@ -248,7 +249,9 @@ export class PunkTabs extends PunkElement implements Owner<PunkTab> {
       }
       const panel = this.#panelOf(tab);
       if (!panel) {
-        if (!parsing) this.#warnOnce(`missing:${tab.id}`, `No panel has the id "${tab.panel}".`);
+        if (!parsing) {
+          this.#warnOnce(`missing:${tab.id}`, `No panel has the id "${tab.panel}".`);
+        }
         continue;
       }
       if (wanted.has(panel)) {

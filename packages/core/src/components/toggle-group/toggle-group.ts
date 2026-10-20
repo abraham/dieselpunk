@@ -5,7 +5,7 @@ import { Ledger } from '../../internal/owner.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { nextRovingIndex } from '../../internal/roving-keys.ts';
 import { SelectionModel } from '../../internal/selection-model.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import type { PunkSelectionChangeDetail } from '../slot-grid/slot-grid.ts';
 import { toggleGroupStyles } from './toggle-group.styles.ts';
 
@@ -69,7 +69,7 @@ export class PunkToggleGroup extends PunkElement {
   #requested: string[] | undefined;
   #last: HTMLButtonElement | undefined;
   #built = false;
-  #reported = '';
+  #reported = new Set<string>();
 
   constructor() {
     super();
@@ -103,16 +103,13 @@ export class PunkToggleGroup extends PunkElement {
     const found = children.filter(
       (child): child is HTMLButtonElement => child.localName === 'button',
     );
-    const problems: string[] = [];
-    if (found.length !== children.length) {
-      problems.push('It contains elements that are not `<button>`, so they are ignored.');
-    }
-    if (!this.accessibleLabel && !this.hasAttribute('aria-labelledby')) {
-      problems.push('It has no accessible name. Set `aria-label`.');
-    }
-    const report = problems.join('\n');
-    if (report && report !== this.#reported) for (const problem of problems) devWarn(this, problem);
-    this.#reported = report;
+    this.#reported = warnNew(this, this.#reported, () => [
+      found.length !== children.length &&
+        'It contains elements that are not `<button>`, so they are ignored.',
+      !this.accessibleLabel &&
+        !this.hasAttribute('aria-labelledby') &&
+        'It has no accessible name. Set `aria-label`.',
+    ]);
 
     for (const button of this.#buttons) if (!found.includes(button)) this.#release(button);
     for (const button of found) {

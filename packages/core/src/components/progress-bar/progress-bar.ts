@@ -4,7 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { formatPercent, resolveLang } from '../../utilities/locale.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { progressBarStyles } from './progress-bar.styles.ts';
 
 export type ProgressVariant = 'default' | 'success' | 'warning' | 'danger';
@@ -70,11 +70,27 @@ export class PunkProgressBar extends PunkElement {
   #problems = new Set<string>();
 
   protected override updated(): void {
-    const current = new Set(this.#describeProblems());
-    for (const problem of current) {
-      if (!this.#problems.has(problem)) devWarn(this, this.#messages[problem] ?? problem);
-    }
-    this.#problems = current;
+    this.#problems = warnNew(
+      this,
+      this.#problems,
+      () => {
+        const raw = this.value;
+        return [
+          !(Number.isFinite(this.max) && this.max > 0) && 'max',
+          raw !== undefined && !Number.isFinite(raw)
+            ? 'non-finite'
+            : raw !== undefined && raw !== this.#resolve().value && 'range',
+          !this.label && !this.accessibleLabel && 'unnamed',
+        ];
+      },
+      (problem) =>
+        ({
+          max: `\`max\` is ${this.max}; using ${DEFAULT_MAX} because it must be a number above zero.`,
+          'non-finite': `\`value\` is ${this.value}, which is not a finite number; showing an indeterminate bar.`,
+          range: `\`value\` ${this.value} is outside 0 to ${this.#resolve().max}; it is clamped.`,
+          unnamed: 'A progress bar needs a `label` or an `aria-label` to have an accessible name.',
+        })[problem] ?? problem,
+    );
   }
 
   /** Effective values after clamping and fallbacks, shared by rendering and warnings. */
@@ -83,25 +99,6 @@ export class PunkProgressBar extends PunkElement {
     const raw = this.value;
     if (raw === undefined || !Number.isFinite(raw)) return { max, value: undefined };
     return { max, value: Math.min(Math.max(raw, 0), max) };
-  }
-
-  #describeProblems(): string[] {
-    const found: string[] = [];
-    if (!(Number.isFinite(this.max) && this.max > 0)) found.push('max');
-    const raw = this.value;
-    if (raw !== undefined && !Number.isFinite(raw)) found.push('non-finite');
-    else if (raw !== undefined && raw !== this.#resolve().value) found.push('range');
-    if (!this.label && !this.accessibleLabel) found.push('unnamed');
-    return found;
-  }
-
-  get #messages(): Record<string, string> {
-    return {
-      max: `\`max\` is ${this.max}; using ${DEFAULT_MAX} because it must be a number above zero.`,
-      'non-finite': `\`value\` is ${this.value}, which is not a finite number; showing an indeterminate bar.`,
-      range: `\`value\` ${this.value} is outside 0 to ${this.#resolve().max}; it is clamped.`,
-      unnamed: 'A progress bar needs a `label` or an `aria-label` to have an accessible name.',
-    };
   }
 
   protected override render() {

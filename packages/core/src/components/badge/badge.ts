@@ -38,7 +38,9 @@ export class PunkBadge extends PunkElement {
 
   protected override updated(): void {
     const hasText = this.#presence.has('');
-    if (!hasText && this.#hasText) devWarn(this, 'It has no text, and its text is all it says.');
+    if (!hasText && this.#hasText) {
+      devWarn(this, 'It has no text, and its text is all it says.');
+    }
     this.#hasText = hasText;
   }
 

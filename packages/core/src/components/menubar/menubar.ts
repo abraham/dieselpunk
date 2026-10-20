@@ -51,7 +51,9 @@ export class PunkMenubar extends PunkElement {
     if (!this.accessibleLabel && !this.hasAttribute('aria-labelledby')) {
       devWarn(this, 'It has no accessible name. Set `aria-label`.');
     }
-    if (this.#items().length === 0) devWarn(this, 'It has no `punk-menu-item` children.');
+    if (this.#items().length === 0) {
+      devWarn(this, 'It has no `punk-menu-item` children.');
+    }
   }
 
   #items(): HTMLElement[] {

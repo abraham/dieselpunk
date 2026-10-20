@@ -6,7 +6,7 @@ import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { SlotPresence } from '../../internal/slot-presence.ts';
 import { renderCloseButton } from '../../styles/close-button.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { connectionRowStyles } from './connection-row.styles.ts';
 
 export type ConnectionDirection = 'forward' | 'backward' | 'both';
@@ -153,20 +153,16 @@ export class PunkConnectionRow extends PunkElement {
   }
 
   protected override updated(): void {
-    const found = new Set<string>();
-    const named = this.#presence.has('source') || this.#presence.has('destination');
-    if (!named && !this.removeLabel) {
-      found.add('It has no `source` or `destination`, so nothing says what it connects.');
-    }
-    if (
+    this.#problems = warnNew(this, this.#problems, () => [
+      !this.#presence.has('source') &&
+        !this.#presence.has('destination') &&
+        !this.removeLabel &&
+        'It has no `source` or `destination`, so nothing says what it connects.',
       this.status !== 'neutral' &&
-      statuses.includes(this.status) &&
-      !this.#presence.has('status')
-    ) {
-      found.add('A `status` other than `neutral` has no text in the `status` slot.');
-    }
-    for (const problem of found) if (!this.#problems.has(problem)) devWarn(this, problem);
-    this.#problems = found;
+        statuses.includes(this.status) &&
+        !this.#presence.has('status') &&
+        'A `status` other than `neutral` has no text in the `status` slot.',
+    ]);
   }
 
   protected override render() {

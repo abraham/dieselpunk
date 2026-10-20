@@ -56,7 +56,9 @@ export class PunkStatusLight extends PunkElement {
 
   protected override updated(): void {
     const hasText = this.#presence.has('');
-    if (!hasText && this.#hasText) devWarn(this, 'It has no text. The text carries the meaning.');
+    if (!hasText && this.#hasText) {
+      devWarn(this, 'It has no text. The text carries the meaning.');
+    }
     this.#hasText = hasText;
   }
 

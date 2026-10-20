@@ -110,9 +110,10 @@ export abstract class PunkModalSurface extends PunkElement {
   }
 
   #warnName(): void {
-    if (this.heading || this.accessibleLabel || this.#warnedName) return;
-    this.#warnedName = true;
-    devWarn(this, 'It has no name. Set `heading`, or `aria-label`.');
+    if (!this.heading && !this.accessibleLabel && !this.#warnedName) {
+      this.#warnedName = true;
+      devWarn(this, 'It has no name. Set `heading`, or `aria-label`.');
+    }
   }
 
   readonly #onResize = (): void => this.syncScrollable();

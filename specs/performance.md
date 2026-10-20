@@ -29,6 +29,7 @@ Sizes are minified and gzip-compressed, with Lit (and, for the locales package, 
 - **Splitting before raising.** When an entry would pass its budget, the first remedy is to move code that only some users need out of the shared base.
 - **Token defaults are inlined at build.** `scripts/inline-tokens.ts` writes each `${token('name')}` in `dist/` as its `var()` text, so an entry carries the defaults it uses rather than every token's ([visual-system.md §1.2](visual-system.md)).
 - **Styles are minified at build.** `scripts/minify-css.ts` removes comments and needless whitespace from every `css` template in `dist/`, keeping strings and placeholders as they are; the source stays readable.
+- **Development warnings cost nothing in production.** `dist/` is built without them, and only the `development` condition gets them ([package-contract.md §6](package-contract.md)).
 
 **Why** whole-entry measurement: it is what an application pays. A shared base counts in every entry that imports it, but an application that imports several pays for it once, and the docs' Performance guide says so.
 
@@ -89,7 +90,7 @@ With every component mounted at once (the gallery) and no input for a second aft
 
 ## Gaps
 
-- **Twenty entries exceed the 5 kB component budget,** each with a stated reason: button, item stack, tabs, window, the toast pair, range slider, text field, number field, select, date field, time field, file field, icon button, radio group, textarea, combobox, menu, menubar, tree, and drawer. Most of the excess is a shared base counted in each entry (the form base and field styles are about 3.5 kB of each field, and the modal surface most of the drawer). The tree is over by a few bytes, and the button by about 0.13 kB. Closing it means shrinking the shared bases (the form base, the receptacle, the modal surface) rather than raising limits.
+- **Nineteen entries exceed the 5 kB component budget,** each with a stated reason: button, item stack, tabs, window, the toast pair, range slider, text field, number field, select, date field, time field, file field, icon button, radio group, textarea, combobox, menu, menubar, and drawer. Most of the excess is a shared base counted in each entry (the form base and field styles are about 3.4 kB of each field, and the modal surface most of the drawer). The button is over by about 0.13 kB. Closing it means shrinking the shared bases (the form base, the receptacle, the modal surface) rather than raising limits.
 - **Many entries have under 100 bytes of headroom.** Any feature added to them must first take something out.
 - **The Japanese and Arabic locale modules exceed the 1 kB budget** (about 1.02 kB each), with a stated reason: each is one table of every component's messages in a multi-byte script, and the Latin packs are about 0.8 kB. Closing it means loading messages per component rather than one table per locale.
 - **Virtualizer safety is untested.** No test renders components inside `<lit-virtualizer>`. Closing it: a browser test, with `@lit-labs/virtualizer` as a development dependency, that scrolls 1,000 connection rows and stats through a virtualizer and requires correct names and states on reused elements, no development warnings, and no listener, timer, or observer left by removed ones.

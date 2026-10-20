@@ -160,9 +160,10 @@ export abstract class PunkFormControl extends PunkElement {
 
   /** Warns once when a control has no name, since a screen reader user would meet it unlabeled. */
   protected warnIfUnnamed(name: string | null): void {
-    if (name || this.#warnedName) return;
-    this.#warnedName = true;
-    devWarn(this, 'It has no accessible name. Set `label` or `aria-label`.');
+    if (!name && !this.#warnedName) {
+      this.#warnedName = true;
+      devWarn(this, 'It has no accessible name. Set `label` or `aria-label`.');
+    }
   }
 
   /** Called by the browser when the form is reset: restores the value the author wrote. */

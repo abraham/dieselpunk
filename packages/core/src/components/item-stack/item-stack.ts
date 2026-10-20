@@ -6,6 +6,7 @@ import { optionalNumber } from '../../internal/converters.ts';
 import { PunkReceptacleBase } from '../../internal/receptacle-base.ts';
 import { receptacleStyles } from '../../styles/receptacle.ts';
 import { formatNumber, formatPercent, resolveLang } from '../../utilities/locale.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { itemStackStyles } from './item-stack.styles.ts';
 
 const MAX_QUALITY = 5;
@@ -104,24 +105,25 @@ export class PunkItemStack extends PunkReceptacleBase {
     return { count, capacity, durability, quality, rawCount, rawQuality };
   }
 
-  protected override describeProblems(): string[] {
-    const found = super.describeProblems();
-    const { count, capacity, durability, quality, rawCount, rawQuality } = this.#resolve();
-    if (count !== rawCount) {
-      found.push(`\`count\` is ${rawCount}; using ${count}, because it must be 0 or more.`);
-    }
-    if (this.capacity !== undefined && capacity === undefined) {
-      found.push(`\`capacity\` is ${this.capacity}; ignoring it, because it must be above 0.`);
-    }
-    if (this.durability !== undefined && durability !== this.durability) {
-      found.push(
-        `\`durability\` is ${this.durability}; using ${durability ?? 'none'}, from 0 to 1.`,
-      );
-    }
-    if (quality !== rawQuality) {
-      found.push(`\`quality\` is ${rawQuality}; using ${quality}, a whole number from 0 to 5.`);
-    }
-    return found;
+  #problems = new Set<string>();
+
+  protected override updated(): void {
+    super.updated();
+    this.#problems = warnNew(this, this.#problems, () => {
+      const { count, capacity, durability, quality, rawCount, rawQuality } = this.#resolve();
+      return [
+        count !== rawCount &&
+          `\`count\` is ${rawCount}; using ${count}, because it must be 0 or more.`,
+        this.capacity !== undefined &&
+          capacity === undefined &&
+          `\`capacity\` is ${this.capacity}; ignoring it, because it must be above 0.`,
+        this.durability !== undefined &&
+          durability !== this.durability &&
+          `\`durability\` is ${this.durability}; using ${durability ?? 'none'}, from 0 to 1.`,
+        quality !== rawQuality &&
+          `\`quality\` is ${rawQuality}; using ${quality}, a whole number from 0 to 5.`,
+      ];
+    });
   }
 
   protected get hasName(): boolean {

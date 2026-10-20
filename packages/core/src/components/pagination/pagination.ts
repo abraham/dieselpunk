@@ -5,7 +5,7 @@ import { LocaleWatcher } from '../../internal/locale-watch.ts';
 import { msg, str } from '../../internal/localize.ts';
 import { PunkElement } from '../../internal/punk-element.ts';
 import { formatNumber, resolveLang } from '../../utilities/locale.ts';
-import { devWarn } from '../../utilities/warn.ts';
+import { warnNew } from '../../utilities/warn.ts';
 import { pageWindow } from './page-window.ts';
 import { paginationStyles } from './pagination.styles.ts';
 
@@ -63,7 +63,7 @@ export class PunkPagination extends PunkElement {
   label = '';
 
   readonly #localeWatcher = new LocaleWatcher(this);
-  #warned = '';
+  #warned = new Set<string>();
   #refocus: string | undefined;
 
   get #pages(): number {
@@ -77,14 +77,12 @@ export class PunkPagination extends PunkElement {
 
   protected override willUpdate(changed: PropertyValues<this>): void {
     if (!changed.has('page') && !changed.has('pages')) return;
-    const problem =
+    this.#warned = warnNew(this, this.#warned, () => [
       !Number.isFinite(this.pages) || this.pages < 1
         ? `\`pages\` is ${this.pages}, so it is 1.`
-        : this.#page !== this.page
-          ? `\`page\` ${this.page} is outside 1 to ${this.#pages}, so it is ${this.#page}.`
-          : '';
-    if (problem && problem !== this.#warned) devWarn(this, problem);
-    this.#warned = problem;
+        : this.#page !== this.page &&
+          `\`page\` ${this.page} is outside 1 to ${this.#pages}, so it is ${this.#page}.`,
+    ]);
   }
 
   protected override updated(): void {
