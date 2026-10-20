@@ -124,4 +124,4 @@ Planned and rejected components are in [components.md](components.md) §3 to §5
 
 ## Gaps
 
-- **1.0 is not released.** The published packages are at `0.4.0`. Criterion 12 has not been run for any combination, criterion 13 is unmet (all five translations are drafts), and criterion 5's baselines have not been compared with an amd64 CI render ([testing.md](testing.md) Gaps).
+- **1.0 is not released.** Criterion 12 has not been run for any combination, criterion 13 is unmet (all five translations are drafts), and criterion 5's baselines have not been compared with an amd64 CI render ([testing.md](testing.md) Gaps).

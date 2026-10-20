@@ -1,6 +1,6 @@
 {
   "name": "@dieselpunk/core",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Industrial game-style UI Web Components built with Lit.",
   "license": "MIT",
   "publishConfig": {
