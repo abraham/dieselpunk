@@ -2,6 +2,7 @@ import { html } from 'lit';
 import type { PropertyDeclarations } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { fieldAffix } from '../../internal/field-affix.ts';
 import { PunkFieldBase } from '../../internal/field-base.ts';
 import type { FormValue } from '../../internal/form-control.ts';
 import { textFieldStyles } from './text-field.styles.ts';
@@ -105,7 +106,8 @@ export class PunkTextField extends PunkFieldBase {
   protected override render() {
     const aria = this.ariaBindings();
     return this.renderField({
-      affixes: true,
+      prefix: fieldAffix(this.presence, 'prefix'),
+      suffix: fieldAffix(this.presence, 'suffix'),
       readonly: this.readonly,
       // `live` compares with what the input holds, so typing is never written back: a script-set
       // value would end the native user-edit state that `minlength` and `maxlength` depend on.

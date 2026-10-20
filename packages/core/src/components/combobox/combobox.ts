@@ -448,7 +448,6 @@ export class PunkCombobox extends PunkFieldBase {
     const aria = this.ariaBindings();
     const disabled = this.isDisabled;
     return this.renderField({
-      affixes: false,
       control: html`<input
         part="control"
         class="control"

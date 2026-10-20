@@ -193,7 +193,6 @@ export class PunkSelect extends PunkFieldBase {
     const option = (data: OptionData) =>
       html`<option value=${data.value} ?disabled=${data.disabled}>${data.label}</option>`;
     return this.renderField({
-      affixes: false,
       control: html`<select
         part="control"
         class="control"

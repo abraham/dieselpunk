@@ -4,6 +4,7 @@ import type { PropertyDeclarations, PropertyValues } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { devWarn } from '../utilities/warn.ts';
+import { fieldAffix } from './field-affix.ts';
 import { PunkFieldBase } from './field-base.ts';
 import type { FormValue } from './form-control.ts';
 
@@ -89,7 +90,8 @@ export abstract class PunkDateTimeFieldBase extends PunkFieldBase {
   protected override render() {
     const aria = this.ariaBindings();
     return this.renderField({
-      affixes: true,
+      prefix: fieldAffix(this.presence, 'prefix'),
+      suffix: fieldAffix(this.presence, 'suffix'),
       readonly: this.readonly,
       control: html`<input
         part="control"

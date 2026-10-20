@@ -156,7 +156,6 @@ ${''}</textarea>`;
       ? bake(control.strings, this.value)
       : (emptyStrings ??= bake(control.strings, ''));
     return this.renderField({
-      affixes: false,
       readonly: this.readonly,
       control: { ...control, strings: this.#strings, values: control.values.slice(0, -1) },
       after: html`<span part="count" class="count" id="count" ?hidden=${!this.showCount}

@@ -294,7 +294,7 @@
     "path": "dist/components/textarea/register.js",
     "ignore": ["lit"],
     "gzip": true,
-    "limit": "5.75 kB"
+    "limit": "5.5 kB"
   },
   {
     "name": "punk-combobox",

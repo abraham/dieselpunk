@@ -123,7 +123,6 @@ export class PunkFileField extends PunkFieldBase {
     const lang = resolveLang(this);
     const zone = this.dropZone && !this.isDisabled;
     const field = this.renderField({
-      affixes: false,
       control: html`<input
           part="control"
           class="control"

@@ -1,5 +1,5 @@
 import { css } from 'lit';
-import { fieldStyles } from '../../styles/field.ts';
+import { fieldAffixStyles, fieldStyles } from '../../styles/field.ts';
 import { raisedHoverShadow, raisedSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
@@ -7,6 +7,7 @@ import { token } from '../../tokens/token.ts';
 // the end of the box, flush with its edge, and are 40px targets under a coarse pointer.
 export const numberFieldStyles = css`
   ${fieldStyles}
+  ${fieldAffixStyles}
 
   .control {
     appearance: textfield;
