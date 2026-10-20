@@ -53,7 +53,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && node scripts/build-css.ts && npm run build:manifest",
+    "build": "tsc -p tsconfig.build.json && node scripts/inline-tokens.ts && node scripts/build-css.ts && npm run build:manifest",
     "build:css": "node scripts/build-css.ts",
     "build:manifest": "cem analyze --config custom-elements-manifest.config.mjs && node scripts/compact-manifest.ts",
     "build:pseudo": "node scripts/build-pseudo.ts",

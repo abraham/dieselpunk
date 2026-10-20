@@ -71,7 +71,7 @@ There is no `tsx`, `ts-node`, or script build step: every script runs as `node <
 
 | Workspace | `npm run build`                                                                                                                                                                 |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| core      | `tsc -p tsconfig.build.json` (emits `dist/` from `src/`, no tests), then `scripts/build-css.ts` (`tokens.css`, `themes.css`, `surfaces.css`), then the Custom Elements Manifest |
+| core      | `tsc -p tsconfig.build.json` (emits `dist/` from `src/`, no tests), then `scripts/inline-tokens.ts` (token defaults written into `dist/`), then `scripts/build-css.ts` (`tokens.css`, `themes.css`, `surfaces.css`), then the Custom Elements Manifest |
 | locales   | `lit-localize build` (generated runtime modules from the XLIFF), then `tsc`, then `check:locales`                                                                               |
 | workbench | Builds the workbench against the built packages                                                                                                                                 |
 
