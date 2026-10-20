@@ -50,7 +50,7 @@ export class PunkProgressBar extends PunkElement {
   value: number | undefined;
 
   /** The value that means complete. A value that is not above zero is treated as 100. */
-  max = DEFAULT_MAX;
+  max = 100;
 
   /** Each variant has its own fill pattern, so none depends on color alone. */
   variant: ProgressVariant = 'default';

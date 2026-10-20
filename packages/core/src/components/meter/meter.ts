@@ -69,7 +69,7 @@ export class PunkMeter extends PunkElement {
   optimum: number | undefined;
 
   /** How many segments the meter is cut into, from 2 to 100. */
-  segments = DEFAULT_SEGMENTS;
+  segments = 10;
 
   /** Unknown values render as `horizontal`. */
   orientation: MeterOrientation = 'horizontal';

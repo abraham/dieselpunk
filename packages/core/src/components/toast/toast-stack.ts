@@ -59,7 +59,7 @@ export class PunkToastStack extends PunkElement implements Owner<PunkToast> {
   placement: ToastPlacement = 'bottom-end';
 
   /** The most toasts it shows. A new toast past it dismisses the oldest, with the reason `limit`. */
-  limit = DEFAULT_LIMIT;
+  limit = 5;
 
   /** The name of the region. Without it, the localized "Notifications". */
   label = '';
