@@ -19,12 +19,12 @@ import '@dieselpunk/core/button/register.js';
 
 ## Packages
 
-| Package                                    | Contents                                                   |
-| ------------------------------------------ | ---------------------------------------------------------- |
-| [`@dieselpunk/core`](packages/core)        | The components, design tokens, and themes                  |
-| [`@dieselpunk/locales`](packages/locales)  | Translations of the components' messages, for Lit Localize |
-| [`packages/workbench`](packages/workbench) | The Storybook published at dieselpunk.dev (private)        |
-| [`packages/testing`](packages/testing)     | Shared test tooling (private)                              |
+| Package                                    | Contents                                                   | npm                                                                  |
+| ------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------- |
+| [`@dieselpunk/core`](packages/core)        | The components, design tokens, and themes                  | ![npm Version](https://img.shields.io/npm/v/%40dieselpunk%2Fcore)    |
+| [`@dieselpunk/locales`](packages/locales)  | Translations of the components' messages, for Lit Localize | ![npm Version](https://img.shields.io/npm/v/%40dieselpunk%2Flocales) |
+| [`packages/workbench`](packages/workbench) | The Storybook published at dieselpunk.dev (private)        |                                                                      |
+| [`packages/testing`](packages/testing)     | Shared test tooling (private)                              |                                                                      |
 
 ## Development
 
