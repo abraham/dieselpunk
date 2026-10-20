@@ -1,7 +1,7 @@
 # Server Rendering
 
-**Scope:** rendering core's components to HTML on a server with Lit SSR (`@lit-labs/ssr`), what that HTML holds and what it cannot, what a component does when its definition loads over it, and hydration.
-**Code:** `packages/core/src/internal/punk-element.ts`, `src/internal/server-values.ts`, `src/hydrate.ts`, and the constructor, `willUpdate()`, and `render()` of every component; the SSR fixture of `check:consumer` (`test/package/ssr/`).
+**Scope:** rendering core's components to HTML on a server with Lit SSR (`@lit-labs/ssr`), what that HTML holds and what it cannot, what a component does when its definition loads over it, hydration, and sharing styles between server-rendered shadow roots.
+**Code:** `packages/core/src/internal/punk-element.ts`, `src/internal/server-values.ts`, `src/hydrate.ts`, `src/ssr.ts`, and the constructor, `willUpdate()`, and `render()` of every component; the SSR fixture of `check:consumer` (`test/package/ssr/`).
 
 ## 1. Model
 
@@ -50,7 +50,7 @@ A page hydrates core's components by importing `@lit-labs/ssr-client/lit-element
 - **Agreement.** Lit records the hydrating render's values as committed without reading the DOM, so that render must produce exactly what the server sent: a value that differs would stay as the server rendered it until it changed again, and a different template throws `Hydration value mismatch`. The hydrating render therefore runs with `serverValues()` true, and every read of an input the server cannot see takes the server's value: the inputs of §3, a form control's name from `<label>` elements, a disabled `<fieldset>`, a date or time field's parsing, and state written to a component before it hydrates, by its owner or its own connect (a step's position, a radio's checked state, a menu item in a menubar, a button's tab stop in a toolbar).
 - **Empty text.** Lit hydrates an empty text binding with no text node and would write later text into the closing marker, so `hydrate.js` gives each one a node.
 - **Then the page's values.** In the microtask after hydrating, once the children already queued have hydrated, the component requests every property again and fires `slotchange` on each of its slots, which were assigned while the page was parsed. Owners find their children ([component-model.md §8](component-model.md)), slot presence is read, and an ordinary update commits only what differs from the server's.
-- **Styles.** A hydrated shadow root removes the server's `<style>` and adopts its shared sheets, so [component-model.md §10](component-model.md) holds as after a client render.
+- **Styles.** A hydrated shadow root removes the server's style elements (§6) and adopts its shared sheets, so [component-model.md §10](component-model.md) holds as after a client render.
 - **Before and after.** Interaction before the upgrade works as in §4, and focus stays because the nodes stay. Text typed into a field is kept as in §4, since the field's value binding is committed while hydrating. The final state equals a client render of the same markup.
 - **Without either import,** components replace as §4 says. Core never loads Lit's hydration support itself and gains no dependency for it.
 - **Order is evaluation order.** Lit's support patches `LitElement` only if it evaluates before `lit-element`, and the page's import order does not guarantee that once a bundler groups or hoists modules (a Rolldown or Vite `codeSplitting` group orders modules across the whole graph). Unpatched Lit would render a second tree into each server root. `hydrate.js` therefore claims a root only when the patch is in place (`observedAttributes` includes `defer-hydration`); otherwise components replace as §4 says, and it warns once in development. The application keeps the support first: its own entry module or `<script type="module">` ahead of the app bundle, or a bundler setting that keeps execution order (Rolldown's `strictExecutionOrder`).
@@ -59,7 +59,17 @@ A page hydrates core's components by importing `@lit-labs/ssr-client/lit-element
 ## 6. Cost
 
 - **Client.** The upgrade renders each element once, as a client-only page does, and a hydrated element twice (§5). The replacement of §4 and the hook for §5 live in `PunkElement` and are counted in every entry's size ([performance.md §2](performance.md)); hydration itself is `hydrate.js`, its own size entry.
-- **Server output.** Lit SSR writes a component's styles into every instance's declarative shadow root, and styles are most of each instance's bytes. Compression absorbs the repetition: 100 server-rendered slots are about 634 kB of HTML and about 7 kB gzipped. Pages are served compressed, and long collections are rendered on the client ([performance.md §4.1](performance.md)).
+- **Server output.** Lit SSR writes a component's styles into every instance's declarative shadow root, and styles are most of each instance's bytes: 100 server-rendered slots are about 692 kB of HTML. Brotli absorbs the repetition (about 2.2 kB), but gzip's 32 KB window does not when instances are far apart: nine icon buttons about 40 KB apart add 32.3 kB gzipped against 2.5 kB with brotli, and a host that serves only gzip (GitHub Pages) pays the larger figure. Shared styles (below) write each sheet once: 94 kB raw and 3.1 kB gzipped for the slots, 8.6 kB gzipped for the buttons. Long collections are still rendered on the client ([performance.md §4.1](performance.md)).
+
+**Shared styles.** A server may render with `shareStyles(LitElementRenderer)` from `@dieselpunk/core/ssr.js` (`src/ssr.ts`), with the page running `sharedStylesScript` in its `<head>`. **Why** a script: markup has no way to share a style sheet between shadow roots, and a `<link>` in each root costs a request and may paint unstyled until it loads.
+
+- **Once per render.** A shadow root whose sheets were all written earlier in the same render holds only `<punk-styles sheets="…">`, naming its sheets in order. Any other root writes every one of its sheets as a `<style data-punk-sheet="…">`, then the same `<punk-styles>`. A root never mixes written and named sheets, so the cascade order is the component's.
+- **Ids** are a 64-bit hash of a sheet's text, so separately rendered parts of a page, and different processes, agree on them. Sheets are shared within one `render()` call; a page assembled from several writes each part's sheets again, which is correct but larger.
+- **Every Lit element.** The renderer extends Lit SSR's `LitElementRenderer`, which core imports nothing from: the application passes its own in. It shares the sheets of every Lit element it renders, the application's too, and leaves any root that is not shaped as Lit SSR writes it untouched.
+- **The script** defines `<punk-styles>` (about 0.43 kB gzipped). When one connects, it builds a constructed sheet from each `<style data-punk-sheet>` its root holds and has not seen, adopts the named sheets into its root in order, and removes those `<style>` elements and itself. In the `<head>` it runs before the body is parsed, so each root is styled as it is parsed, before the first paint. Run later, it upgrades every `<punk-styles>` in document order, and roots that only name their sheets paint unstyled until then. A root that names a sheet no earlier root wrote, such as one whose first writer was inside a `<template>`, is left as it is.
+- **Without the script** only the roots that write their sheets are styled. Pages that must paint styled without script do not share styles.
+- **The upgrade** is unchanged: replacing (§4) empties the root and adopts the component's own sheets, and hydrating (§5) removes any `<style>` and `<punk-styles>` the script did not, then adopts them.
+- **The tag** `punk-styles` is defined only by the script, in the page; `ssr.js` registers nothing when imported ([package-contract.md §2](package-contract.md)).
 
 ## 7. Application setup
 
@@ -92,24 +102,46 @@ import '@dieselpunk/core/panel/register.js';
 import '@dieselpunk/core/button/register.js';
 ```
 
-`tokens.css` and `themes.css` are linked as in a client-only page; their custom properties reach declarative shadow roots like any other. The workbench's Server rendering guide shows this setup, both ways of loading the components, and what the first paint cannot know ([workbench.md §4](workbench.md)).
+`tokens.css` and `themes.css` are linked as in a client-only page; their custom properties reach declarative shadow roots like any other. The workbench's Server rendering guide shows this setup, both ways of loading the components, sharing styles, and what the first paint cannot know ([workbench.md §4](workbench.md)).
 
-**Content Security Policy.** A server-rendered page takes the policy of [security.md §4.3](security.md) and adds `style-src-elem 'unsafe-inline'`, or the hashes of the components' styles: each declarative shadow root carries its component's styles in a `<style>` element, where a client-only page adopts them as constructed stylesheets. Scripts stay as strict; hydration needs no inline script. No gate renders a server page under this policy, since the SSR fixture drives its pages with inline scripts.
+To share styles (§6), the server renders the whole page in one render with the shared renderer, which it can create once, and inlines the script ahead of the body:
+
+```ts
+// server.ts
+import { LitElementRenderer, html, renderThunked } from '@lit-labs/ssr';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { shareStyles, sharedStylesScript } from '@dieselpunk/core/ssr.js';
+
+const elementRenderers = [shareStyles(LitElementRenderer)];
+const page = html`<!doctype html>
+  <html lang="en">
+    <head>
+      ${unsafeHTML(`<script>${sharedStylesScript}</script>`)}
+      <link rel="stylesheet" href="/tokens.css" />
+      <script type="module" src="/client.js"></script>
+    </head>
+    <body>
+      …
+    </body>
+  </html>`;
+response.body = new RenderResultReadable(renderThunked(page, { elementRenderers }));
+```
+
+**Content Security Policy.** A server-rendered page takes the policy of [security.md §4.3](security.md) and adds `style-src-elem 'unsafe-inline'`, or the hashes of the components' styles: each declarative shadow root carries its component's styles in a `<style>` element, where a client-only page adopts them as constructed stylesheets. With shared styles, only the roots that write their sheets carry them, and `script-src` adds the hash of `sharedStylesScript` (`'sha256-'` and the base64 SHA-256 of its text), which the server can compute when it starts. Scripts stay as strict otherwise; hydration needs no inline script. No gate renders a server page under this policy, since the SSR fixture drives its pages with inline scripts.
 
 ## Verification
 
 - **`check:consumer`** installs the packed core with `@lit-labs/ssr` and `@lit-labs/ssr-client` into a throwaway project of its own ([testing.md §8](testing.md)) and runs the SSR fixture in `test/package/ssr/`:
-  - Under Node, it imports every registration entry and renders every tag, empty and with representative attributes and children. It fails on a throw, a logged error, output without a declarative shadow root, or a generated id.
-  - In Chromium, it serves a server-rendered page with `lang="de"` and `dir="rtl"` and lets it upgrade four times: without Lit's hydration support, with it alone, with it and `hydrate.js`, and with both evaluated after `lit-element`, which must replace and warn once. Every element's shadow tree and host attributes must equal a client render of the same markup, and so must the whole subtree of each composed case (owners with their children, a control named by a `<label>`, a control in a disabled `<fieldset>`, fields with values and hints, groups that set their children's state); every shadow root must adopt its shared sheets and hold no `<style>`; numbers are German, strips with content are shown, an overlay with `open` is open; a value typed before the upgrade is the control's value; and nothing is logged.
-  - Each element's first server node is marked before the upgrade. It must be the same node after it on the third page, and gone on the other two.
+  - Under Node, it imports every registration entry and renders every tag, empty and with representative attributes and children. It fails on a throw, a logged error, output without a declarative shadow root, or a generated id. With shared styles, nine icon buttons in one render must write as many `<style>` elements as one, and every shadow root must name its sheets.
+  - In Chromium, it serves a server-rendered page with `lang="de"` and `dir="rtl"` and lets it upgrade four times: without Lit's hydration support, with it alone, with it and `hydrate.js`, and with both evaluated after `lit-element`, which must replace and warn once. It serves the same page rendered in one render with shared styles twice more, replacing and hydrating; before the upgrade, each element's first server node must look as on the first page (its computed display, colors, border, padding, font, and size), and no shadow root may hold a `<style>` or `<punk-styles>`. Every element's shadow tree and host attributes must equal a client render of the same markup, and so must the whole subtree of each composed case (owners with their children, a control named by a `<label>`, a control in a disabled `<fieldset>`, fields with values and hints, groups that set their children's state); every shadow root must adopt its shared sheets and hold no `<style>`; numbers are German, strips with content are shown, an overlay with `open` is open; a value typed before the upgrade is the control's value; and nothing is logged.
+  - Each element's first server node is marked before the upgrade. It must be the same node after it on the pages that hydrate, and gone on the others.
 - §2's rule that server code reads no tree is enforced by the Node render, which throws on any such read.
 - `src/internal/punk-element.test.ts`: an element defined over a filled shadow root replaces it and adopts the shared sheets, moves focus from the old tree to itself, and a text field keeps text typed before the upgrade with no event.
+- `src/ssr.test.ts` (each browser engine): the renderer writes a root's sheets once per render and then only names them, writes every sheet of a root with a new one, starts over in each render with the same ids, and leaves other roots alone. Pages parsed in a frame adopt the named sheets in order while they are parsed, through nested roots, with no `<style>` or `<punk-styles>` left; the script also works after the body, leaves a root that names an unwritten sheet as it is, and defines its tag once.
 
 ## Gaps
 
 - **Messages while hydrating.** A hydrating render reads messages in the page's active Lit Localize locale, which agrees with the server only when both use the same one at that moment (English, without configuration). A page whose locale differs then keeps the server's words until the locale changes. Closing it: the server writes its locale into the page, and `hydrate.js` renders the hydrating pass in it.
 - **No new state is checked automatically.** A component that adds state written before it hydrates, outside §3, must read it through `serverValues()`; the fixture finds a missed one only if a composed case covers it.
-- **Styles repeat in every instance.** Lit SSR writes a component's styles into each declarative shadow root as a `<style>` (about 10 KB raw for an icon button and its tooltip), since markup has no way to share a sheet between shadow roots. Brotli absorbs the repeats, but gzip's 32 KB window does not when they are far apart: nine icon buttons about 40 KB apart cost 28.5 KB gzipped against 4.1 KB with brotli, and a host that serves only gzip (GitHub Pages) pays the larger figure. Closing it, still to decide:
-  - **A link mode.** An opt-in Lit SSR element renderer that replaces each root's `<style>` with a `<link rel="stylesheet">` to one content-hashed file per component, built from `elementStyles` with a tag-to-file manifest; `hydrate.js` removes the `<link>` as it removes the `<style>`. Also drops `style-src-elem 'unsafe-inline'` (§7). Open questions: whether a stylesheet link inside a declarative shadow root blocks the first paint, or the component paints unstyled until it loads (measure on a throttled network, with and without a preload in `<head>`); and whether the base and field styles become shared files, which needs field styles split out of each field's sheet.
-  - **The application extracts.** A page that post-processes its server output does the same replacement itself; core only needs `hydrate.js` to remove a `<link>`, and documents the pattern.
-  - **The platform.** Declarative sharing of style sheets between shadow roots is proposed but ships in no engine; revisit when it does.
+- **Shared styles need script.** Without `sharedStylesScript`, a root that only names its sheets paints unstyled (§6), so a page that must paint styled without script keeps a `<style>` in every root and its gzip cost. Closing it: declarative sharing of style sheets between shadow roots, proposed but shipped in no engine; revisit when it ships, and render to it instead.
+- **No gate renders under the policy.** The hash of `sharedStylesScript` and the `<style>` elements of the roots that write their sheets are not checked under a Content Security Policy (§7).

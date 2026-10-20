@@ -445,6 +445,8 @@ async function checkServerRendering(core: string): Promise<void> {
       'client-plain.bundle': join(outDir, 'client-plain.js'),
       'client-support.bundle': join(outDir, 'client-support.js'),
       'client-hydrate.bundle': join(outDir, 'client-hydrate.js'),
+      'client-shared.bundle': join(outDir, 'client-shared.js'),
+      'client-shared-hydrate.bundle': join(outDir, 'client-shared-hydrate.js'),
     },
     bundle: true,
     format: 'esm',
@@ -473,15 +475,29 @@ async function checkServerRendering(core: string): Promise<void> {
 
   const { server, port } = await serveStatic(outDir);
   const browser = await chromium.launch();
+  // How the server's nodes look before the upgrade, with a `<style>` in every root.
+  let inlineStyles: string[] = [];
   try {
-    for (const name of ['plain', 'support', 'hydrate', 'late']) {
+    for (const name of ['plain', 'support', 'hydrate', 'late', 'shared', 'shared-hydrate']) {
       const tab = await browser.newPage();
       const messages = watchPage(tab);
       await tab.goto(`http://localhost:${port}/${name}.html`);
       await tab.evaluate('window.markServerNodes()');
+      // specs/ssr.md §6: shared styles look the same before the upgrade, and leave no element.
+      const styles = (await tab.evaluate('window.serverStyles()')) as string[];
+      if (name === 'plain') inlineStyles = styles;
+      if (name.startsWith('shared')) {
+        const differ = styles.filter((style, index) => style !== inlineStyles[index]);
+        if (differ.length > 0 || styles.length !== inlineStyles.length) {
+          problems.push(`${name}.html looks different before the upgrade: ${differ.join(' | ')}`);
+        }
+        const left = (await tab.evaluate('window.serverStyleElements()')) as number;
+        if (left > 0) problems.push(`${name}.html kept ${left} style elements in shadow roots`);
+      }
       await tab.locator('#typed input').fill('Ada');
       await tab.evaluate('window.upgrade()');
-      const found = (await tab.evaluate(`window.checkUpgrade(${name === 'hydrate'})`)) as string[];
+      const hydrated = name === 'hydrate' || name === 'shared-hydrate';
+      const found = (await tab.evaluate(`window.checkUpgrade(${hydrated})`)) as string[];
       problems.push(...found.map((problem) => `${name}.html: ${problem}`));
       if (name === 'late') {
         const late = messages.filter((message) =>

@@ -5,6 +5,7 @@
     "./*/register.js",
     "./custom-elements.json",
     "./hydrate.js",
+    "./ssr.js",
     "./surfaces.css",
     "./themes.css",
     "./tokens.css"

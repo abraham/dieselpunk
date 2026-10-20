@@ -53,6 +53,12 @@
     "limit": "0.75 kB"
   },
   {
+    "name": "Shared styles for server rendering (@dieselpunk/core/ssr.js)",
+    "path": "dist/ssr.js",
+    "gzip": true,
+    "limit": "1 kB"
+  },
+  {
     "name": "Close button and status shapes (shared by window, toast, and fields)",
     "path": ["dist/styles/close-button.js", "dist/styles/status-shape.js"],
     "ignore": ["lit"],

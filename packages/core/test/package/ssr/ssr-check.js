@@ -1,11 +1,49 @@
 // The browser half of the SSR fixture (specs/ssr.md §4): after `upgrade()` loads the definitions
 // over the server's HTML, every element must equal a client render of the same markup.
-/* global customElements, document, Node, setTimeout, window */
+/* global customElements, document, getComputedStyle, Node, setTimeout, window */
 // Before the upgrade: the first rendered node of each element, to tell a kept tree from a new one.
 window.markServerNodes = () => {
   window.serverNodes = [...document.querySelectorAll('[data-case] > *')]
     .map((host) => [host, [...host.shadowRoot.children].find((el) => el.localName !== 'style')])
     .filter(([, node]) => node);
+};
+
+// Before the upgrade: how each element's first server node looks, to compare shared styles with
+// a `<style>` in every root (specs/ssr.md §6).
+window.serverStyles = () => {
+  const properties = [
+    'display',
+    'color',
+    'background-color',
+    'border-top-width',
+    'border-top-color',
+    'padding-top',
+    'font-size',
+    'font-weight',
+    'width',
+    'height',
+  ];
+  return window.serverNodes.map(([host, node]) => {
+    const style = getComputedStyle(node);
+    return `${host.localName}: ${properties.map((name) => style.getPropertyValue(name)).join(' ')}`;
+  });
+};
+
+// Every shadow root's `<style>` and `<punk-styles>` children, through nested roots.
+window.serverStyleElements = () => {
+  let found = 0;
+  const visit = (root) => {
+    for (const element of root.querySelectorAll('*')) {
+      if (element.shadowRoot) {
+        found += [...element.shadowRoot.children].filter((child) =>
+          /^(style|punk-styles)$/.test(child.localName),
+        ).length;
+        visit(element.shadowRoot);
+      }
+    }
+  };
+  visit(document);
+  return found;
 };
 
 // `hydrated`: whether the page loaded Lit's hydration support, so the server's nodes must stay.

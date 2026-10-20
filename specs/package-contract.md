@@ -18,6 +18,7 @@
     "./surfaces.css": "./dist/css/surfaces.css",
     "./custom-elements.json": "./custom-elements.json",
     "./hydrate.js": { "types": "./dist/hydrate.d.ts", "default": "./dist/hydrate.js" },
+    "./ssr.js": { "types": "./dist/ssr.d.ts", "default": "./dist/ssr.js" },
     "./*/register.js": "./dist/components/*/register.js",
     "./*": { "types": "./dist/components/*/index.d.ts", "default": "./dist/components/*/index.js" }
   },
@@ -33,6 +34,7 @@
 - `tokens.css`, `themes.css`, and `surfaces.css` are optional ([visual-system.md §1](visual-system.md)).
 - `custom-elements.json` is published for tooling.
 - `hydrate.js` installs the hydration of server-rendered components; a page that hydrates imports it after Lit's hydration support and before any component ([ssr.md §5](ssr.md)). It registers no element.
+- `ssr.js` is for servers: `shareStyles()` extends the application's Lit SSR renderer to write each style sheet once per render, and `sharedStylesScript` is the script the page inlines for it ([ssr.md §6](ssr.md)). It has no side effects and registers no element; the script defines `punk-styles` when it runs in the page.
 
 `@dieselpunk/locales` has `sideEffects: false`, an entry for the loader (`.`), one per target locale, and `document`. None registers an element, and each language is its own chunk ([localization.md §5](localization.md)).
 
@@ -150,7 +152,7 @@ These are implementation contracts between the library's own classes, not applic
 
 ## Verification
 
-- `check:package`: the license field, the `LICENSE` copy, and public access (§10), export resolution (`register.js` wins), `sideEffects` exactly the register entries and CSS, nothing but a register entry calls `define`, each register bundle holds its own family and only its documented dependency, a class-only import registers nothing; `publint --strict`; `attw` with the `esm-only` profile. The same for the locales package, with its chunk rules.
+- `check:package`: the license field, the `LICENSE` copy, and public access (§10), export resolution (`register.js` wins), `sideEffects` exactly the register entries and CSS, nothing but a register entry calls `define` (except `ssr.js`, whose script for the page does), each register bundle holds its own family and only its documented dependency, a class-only import registers nothing; `publint --strict`; `attw` with the `esm-only` profile. The same for the locales package, with its chunk rules.
 - `*.registration.test.ts` beside each component: the class entry defines nothing; `register.js` defines the family; a second import does not throw.
 - `test/browser/manifest.test.ts`: the manifest against rendered parts and slots, observed attributes, read CSS properties, and descriptions.
 - `check:api`: the snapshot and descriptions.
