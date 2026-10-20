@@ -2,7 +2,7 @@ import { css } from 'lit';
 import { token } from '../tokens/token.ts';
 import { forcedColorsSurface } from './forced-colors.ts';
 import { requiredMarkStyles } from './required-mark.ts';
-import { statusLensStyles, statusShapeStyles } from './status-shape.ts';
+import { statusLensStyles, warningShapeStyles } from './status-shape.ts';
 
 // The shape of a text, number, or select field:
 //
@@ -149,7 +149,7 @@ export const fieldStyles = css`
   }
 
   ${statusLensStyles}
-  ${statusShapeStyles}
+  ${warningShapeStyles}
   ${forcedColorsSurface('.box', { face: 'Field', text: 'FieldText' })}
 
   @media (forced-colors: active) {

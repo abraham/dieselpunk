@@ -13,7 +13,7 @@
 ## 2. Messages
 
 - Core imports `msg`, `str`, and the status event name from the modules that define them, through `internal/localize.ts`, not from the `@lit/localize` entry. **Why:** the entry also loads the runtime and decorators, whose top-level effects would add about 1.7 kB to every component.
-- Every `msg()` call has an explicit `id` and a `desc`, both string literals. The id is stable: rewording the English keeps the id, and a change of meaning gets a new id, because extraction keeps a unit's old translation under its id.
+- Every `msg()` call has an explicit `id` and a `desc`, both string literals. The build drops each `desc` from `dist/`, since only extraction reads it (`scripts/drop-descriptions.ts`). The id is stable: rewording the English keeps the id, and a change of meaning gets a new id, because extraction keeps a unit's old translation under its id.
 - Values are written with `str` and become XLIFF placeholders (`<x equiv-text="${count}"/>`). No message uses `html`; the words are text.
 - No plural or select syntax. Messages are worded so a number does not attach to a noun that inflects ("can craft ${count}", not "${count} item(s)").
 - `msg()` is called in `render()` only: never at module load, in a static field, or in a constructor.

@@ -1,7 +1,7 @@
 import { css } from 'lit';
 import { toggleBaseStyles } from '../../internal/toggle-base.styles.ts';
 import { requiredMarkStyles } from '../../styles/required-mark.ts';
-import { statusLensStyles, statusShapeStyles } from '../../styles/status-shape.ts';
+import { statusLensStyles, warningShapeStyles } from '../../styles/status-shape.ts';
 import { raisedHoverShadow } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
@@ -93,7 +93,7 @@ export const radioGroupStyles = css`
   }
 
   ${statusLensStyles}
-  ${statusShapeStyles}
+  ${warningShapeStyles}
 
   .label {
     font-weight: 600;

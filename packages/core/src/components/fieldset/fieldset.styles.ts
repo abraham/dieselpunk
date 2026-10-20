@@ -1,5 +1,5 @@
 import { css } from 'lit';
-import { statusLensStyles, statusShapeStyles } from '../../styles/status-shape.ts';
+import { statusLensStyles, warningShapeStyles } from '../../styles/status-shape.ts';
 import { insetSurface } from '../../styles/surfaces.ts';
 import { token } from '../../tokens/token.ts';
 
@@ -17,7 +17,7 @@ export const fieldsetStyles = css`
   }
 
   ${statusLensStyles}
-  ${statusShapeStyles}
+  ${warningShapeStyles}
 
   .fieldset {
     display: grid;
