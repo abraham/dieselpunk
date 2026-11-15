@@ -36,16 +36,7 @@ updates:
       # TypeScript is held at 6.0 until typescript-eslint supports a newer release (specs/toolchain.md §2).
       - dependency-name: typescript
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
-      # A new major of a framework is a change to its guide, and is made by hand.
-      - dependency-name: react
-        update-types: ['version-update:semver-major']
-      - dependency-name: react-dom
-        update-types: ['version-update:semver-major']
-      - dependency-name: vue
-        update-types: ['version-update:semver-major']
-      - dependency-name: svelte
-        update-types: ['version-update:semver-major']
-      # The types follow the Node major in .nvmrc.
+      # The types follow the Node major in package.json engines.
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
 

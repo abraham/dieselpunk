@@ -1,5 +1,5 @@
 name: Setup
-description: Node from .nvmrc, npm ci, and optionally Playwright browsers and the build (specs/ci.md §4).
+description: Node from package.json engines, npm ci, and optionally Playwright browsers and the build (specs/ci.md §4).
 
 inputs:
   browsers:
@@ -14,7 +14,7 @@ runs:
   steps:
     - uses: actions/setup-node@v7.1.0
       with:
-        node-version-file: .nvmrc
+        node-version-file: package.json
         cache: npm
 
     - run: npm ci

@@ -7,7 +7,7 @@
 
 1. **Fast feedback.** A pull request learns whether it is formatted, linted, typed, and builds within 2 minutes, and gets a full result within 5.
 2. **Scales with the library.** Twice the components adds jobs, not minutes to each job. No job's duration depends on the total number of components.
-3. **One required check.** Branch protection requires `ci-success` alone, so jobs can be added, split, or removed without touching repository settings.
+3. **One required check.** Branch protection requires `ci-required` alone, so jobs can be added, split, or removed without touching repository settings.
 4. **One place for each decision.** Setup is written once, the matrices are generated once, and the visual jobs are defined once for checking and for updating baselines.
 5. **Every failure is legible.** A failing job names what failed (an engine, a gallery group, a gate) and keeps going in its siblings, so one run shows every failure.
 
@@ -18,7 +18,7 @@
 - **Select tests before fixtures.** A job lists only the tests it runs, through tags and `grep` (Playwright) or environment-selected groups (Vitest). A test never calls `test.skip()` from its body to opt out of a project. **Why:** Playwright creates the `page` fixture before the test body runs, so a skipped test still opens and closes a page, about a second each in Firefox. At 846 skipped tests per job that was most of the job.
 - **Generate matrices; never hand-edit them.** A `plan` job computes every matrix from the groups and test counts.
 - **Rebuild rather than pass artifacts** when the build is cheaper than an upload and download. **Why:** `npm run build` takes about 11s; moving `dist/` folders between jobs costs more and couples jobs. Artifacts are for outputs a person or a later workflow needs (reports, baselines, the site).
-- **Fail late.** No matrix fails fast, and `ci-success` reports every job.
+- **Fail late.** No matrix fails fast, and `ci-required` reports every job.
 - **Budgets, not hope.** Every job has a target duration and a hard timeout (§9). When a job outgrows its target, the matrix splits it; the target is not raised.
 
 ## 3. Topology
@@ -32,7 +32,7 @@ flowchart LR
   browser[browser: engine x part]
   visual[visual: project x groups]
   security[security]
-  static & integration & smoke & browser & visual & security --> ok[ci-success]
+  static & integration & smoke & browser & visual & security --> ok[ci-required]
 ```
 
 | Job           | Needs  | Runs                                                                                                                                                                                                                                        | Installs      |
@@ -44,7 +44,7 @@ flowchart LR
 | `browser`     | `plan` | `test:browser` for one engine and one part (§5)                                                                                                                                                                                             | That engine   |
 | `visual`      | `plan` | `test:visual` for one project and a set of groups, in the pinned Playwright image                                                                                                                                                           | The container |
 | `security`    | `plan` | Dependency review on a pull request, CodeQL, and `scripts/check-codeql.ts` on a pull request's results ([security.md §8](security.md))                                                                                                      | Node only     |
-| `ci-success`  | all    | Fails if any job failed or was cancelled, or was skipped when `plan` said it should run                                                                                                                                                     | None          |
+| `ci-required` | all    | Fails if any job failed or was cancelled, or was skipped when `plan` said it should run                                                                                                                                                     | None          |
 
 - `static` does not wait for `plan`, so the fastest feedback starts at once. It runs `build` before `typecheck`, and no typecheck script builds anything itself.
 - `integration` is separate from `static` because it is the only non-browser work that needs a browser.
@@ -55,7 +55,7 @@ flowchart LR
 
 `.github/actions/setup` is a composite action, used as `$/.github/actions/setup` so that it is pinned with the workflow ([security.md §6.2](security.md)), that every job in every workflow uses after `actions/checkout`:
 
-- `actions/setup-node` with `node-version-file: .nvmrc` and the npm cache;
+- `actions/setup-node` with `node-version-file: package.json` and the npm cache;
 - `npm ci`;
 - with a `browsers` input (`chromium`, `firefox`, `webkit`, or a list), the Playwright browsers restored from a cache keyed by the installed Playwright version and the engine, then `npx playwright install --with-deps` for those engines, which then only installs the system packages;
 - with `build: true`, `npm run build`.
@@ -105,7 +105,7 @@ A Node test covers the packing. The browser parts are packed the same way, from 
 ## 7. What runs
 
 - **Change detection.** `plan` compares the change with its base (the first parent of the pull request's merge commit): a change limited to `specs/**`, `*.md` outside the workbench, or `.github/dependabot.yml` runs only `static`. Every other change runs everything. A push to `main` always runs everything.
-- **`ci-success`** accepts a skipped job only if `plan` skipped it on purpose; a failed, cancelled, or unexpectedly skipped job fails it.
+- **`ci-required`** accepts a skipped job only if `plan` skipped it on purpose; a failed, cancelled, or unexpectedly skipped job fails it.
 - **Superseded runs.** A `concurrency` group keyed on the pull request cancels an older run when a newer commit arrives. Runs on `main` are never cancelled.
 
 ## 8. Other workflows
@@ -113,7 +113,7 @@ A Node test covers the packing. The browser parts are packed the same way, from 
 - **Visual jobs are one reusable workflow,** `visual.yml` (`workflow_call`), with a `mode` input of `check` or `update`. `ci.yml` calls it with `check`. `update-visual-baselines.yml` calls it with `update` on the same matrix, and each job uploads its groups' baselines as an artifact, merged into one artifact to commit. The update workflow takes optional `groups` and `themes` inputs (all by default): a palette change in one theme re-renders only that theme's baselines in each group. The baselines being rendered are deleted first, so baselines of removed tests do not linger, and those outside the inputs are kept. `scripts/merge-baselines.ts` does the merge; it reads a baseline's theme from its file name, and a capture named for no theme belongs to the default theme, as its test's tag says. **Why:** rendering every baseline in one job grows with every component, two definitions of the visual matrix would drift, and a change to one theme should not rewrite every other theme's files.
 - **Docs** (`docs.yml`) builds and deploys the workbench on a push to `main` and runs no tests ([workbench.md §8](workbench.md)).
 - **Security** checks run in the jobs above and in `publish.yml`, with a `security` job in `ci.yml` for dependency review and CodeQL; nothing runs on a schedule ([security.md §8](security.md)).
-- **Publish** (`publish.yml`) runs when a GitHub release is published. It fails unless the tagged commit was once the tip of `main` and the release tag is `v<version>` for both packages' version, installs with no cache, runs `check:lockfile`, builds, runs `check:package`, writes each package's SBOM, and publishes core and then locales to npm through trusted publishing (`id-token: write`, no token), in the `npm` environment, which only `v*` tags may deploy to ([package-contract.md §10](package-contract.md)). A second job attaches the SBOMs to the release ([security.md §7](security.md)). It runs no other tests: `main`'s ruleset requires `ci-success`, so CI has tested the commit.
+- **Publish** (`publish.yml`) runs when a GitHub release is published. It fails unless the tagged commit was once the tip of `main` and the release tag is `v<version>` for both packages' version, installs with no cache, runs `check:lockfile`, builds, runs `check:package`, writes each package's SBOM, and publishes core and then locales to npm through trusted publishing (`id-token: write`, no token), in the `npm` environment, which only `v*` tags may deploy to ([package-contract.md §10](package-contract.md)). A second job attaches the SBOMs to the release ([security.md §7](security.md)). It runs no other tests: `main`'s ruleset requires `ci-required`, so CI has tested the commit.
 
 ## 9. Budgets
 
@@ -127,11 +127,11 @@ A Node test covers the packing. The browser parts are packed the same way, from 
 | `security`                       | 4 minutes               | 15 minutes |
 | the whole run                    | 5 minutes               |            |
 
-The packing cap of §6 is set so a packed job meets its target. The `plan` job writes the slowest jobs of the last successful run on `main` to its summary, against their targets, so a job creeping toward its target is seen before it misses it. A job that misses its target is split by the matrix, or its suite is made cheaper; the target stays. Jobs outside this table (`ci-success`, the baseline merge, the docs jobs) have a timeout of 5 or 10 minutes.
+The packing cap of §6 is set so a packed job meets its target. The `plan` job writes the slowest jobs of the last successful run on `main` to its summary, against their targets, so a job creeping toward its target is seen before it misses it. A job that misses its target is split by the matrix, or its suite is made cheaper; the target stays. Jobs outside this table (`ci-required`, the baseline merge, the docs jobs) have a timeout of 5 or 10 minutes.
 
 ## Verification
 
-- `ci-success` is the required check on `main`.
+- `ci-required` is the required check on `main`.
 - `packages/testing/test/ci.test.ts` covers the planning that `scripts/ci-matrix.ts` runs: packing, the split by theme, the oversized-unit failure, selections, change detection, and the budget report. `merge-baselines.test.ts` covers what a selection replaces and keeps.
 - `packages/testing/test/visual-ci.test.ts` fails if any workflow pins a Playwright image other than the installed version.
 - The budgets of §9 are reported, not asserted; a missed target is visible in the `plan` summary.

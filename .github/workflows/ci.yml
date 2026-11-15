@@ -174,11 +174,12 @@ jobs:
         run: node scripts/check-codeql.ts codeql-results
 
   # The one check to require in branch protection: it passes only when every job above passed.
-  ci-success:
+  ci-required:
     if: always()
     needs: [plan, static, integration, smoke, browser, visual, security]
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions: {}
     steps:
       # A job may be skipped only when the plan skipped it for a prose-only change.
       - if: >-
