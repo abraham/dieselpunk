@@ -22,14 +22,18 @@ runs:
 
     - id: playwright
       if: inputs.browsers != ''
-      run: echo "version=$(node -p "require('./node_modules/@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      # Playwright downloads a build per OS release (WebKit for Ubuntu 26.04 links other libraries
+      # than the 24.04 one), so the release is part of the cache key.
+      run: |
+        echo "version=$(node -p "require('./node_modules/@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+        echo "os=$(. /etc/os-release && echo "$ID-$VERSION_ID")" >> "$GITHUB_OUTPUT"
       shell: bash
 
     - if: inputs.browsers != ''
       uses: actions/cache@v6.1.0
       with:
         path: ~/.cache/ms-playwright
-        key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-${{ inputs.browsers }}
+        key: playwright-${{ steps.playwright.outputs.os }}-${{ steps.playwright.outputs.version }}-${{ inputs.browsers }}
 
     # With the browsers restored, this only installs their system packages.
     - if: inputs.browsers != ''

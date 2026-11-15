@@ -57,7 +57,7 @@ flowchart LR
 
 - `actions/setup-node` with `node-version-file: package.json` and the npm cache;
 - `npm ci`;
-- with a `browsers` input (`chromium`, `firefox`, `webkit`, or a list), the Playwright browsers restored from a cache keyed by the installed Playwright version and the engine, then `npx playwright install --with-deps` for those engines, which then only installs the system packages;
+- with a `browsers` input (`chromium`, `firefox`, `webkit`, or a list), the Playwright browsers restored from a cache keyed by the OS release, the installed Playwright version, and the engine, then `npx playwright install --with-deps` for those engines, which then only installs the system packages;
 - with `build: true`, `npm run build`.
 
 **Why:** setup is the same six lines in ten jobs and three workflows today, and a change to it (a cache key, a Node flag) has to be made in each.
