@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=26"
+    "node": "26"
   },
   "workspaces": [
     "packages/*"
@@ -28,13 +28,14 @@
     "check:lockfile": "node scripts/check-lockfile.ts",
     "check:frameworks": "npm run check:frameworks --workspace @dieselpunk/core",
     "check:strings": "npm run check:strings --workspace @dieselpunk/locales",
-    "check:locales": "npm run check:locales --workspace @dieselpunk/locales"
+    "check:locales": "npm run check:locales --workspace @dieselpunk/locales",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.5",
     "eslint": "^10.13.0",
-    "prettier": "^3.9.10",
+    "prettier": "3.9.10",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.0"
   },

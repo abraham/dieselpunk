@@ -6,7 +6,7 @@
 ## 1. Goals
 
 1. **No change adds a hole.** A pull request cannot add an injection sink, a code-scanning alert of high or critical severity, a dependency with a known high or critical advisory, an unreviewed install script, or a workflow that leaks its token.
-2. **What is on npm is what CI built.** A package version can only come from a reviewed commit on `main` that passed `ci-success`, built by `publish.yml`, with provenance that says so.
+2. **What is on npm is what CI built.** A package version can only come from a reviewed commit on `main` that passed `ci-required`, built by `publish.yml`, with provenance that says so.
 3. **No injection sinks in consumers' pages.** The library adds no way for data to become markup or script, and works on a page with a strict Content Security Policy and Trusted Types.
 4. **Automated, with a person only for judgment.** Every check runs on the change or release that it guards, without anyone starting it. A person decides only whether a finding is fixed or exempted, and writes down why.
 5. **Quiet enough to be read.** A check that fails a pull request fails for something the pull request changed. **Why:** an advisory published against unchanged code is not the next pull request's fault; Dependabot turns it into a pull request of its own (§5.1).
@@ -119,7 +119,7 @@ GitHub secret scanning and push protection are on: a push containing a recognize
 `publish.yml`, beyond what [ci.md §8](ci.md) describes:
 
 - runs in a GitHub environment, `npm`, that only release tags may deploy to, and npm's trusted publisher for each package names that workflow and environment, so no other workflow or branch can publish;
-- fails unless the tagged commit was once the tip of `main`: it is in `main`'s first-parent history. `main`'s ruleset requires `ci-success` and forbids force pushes, so such a commit has passed CI, and the check needs no token. **Why** first-parent: a commit merged in from a branch is reachable from `main` without having been its tip, so CI may never have checked it as it stands;
+- fails unless the tagged commit was once the tip of `main`: it is in `main`'s first-parent history. `main`'s ruleset requires `ci-required` and forbids force pushes, so such a commit has passed CI, and the check needs no token. **Why** first-parent: a commit merged in from a branch is reachable from `main` without having been its tip, so CI may never have checked it as it stands;
 - installs with `npm ci`, runs `check:lockfile`, builds, runs `check:package`, then publishes with provenance, which links each version to this workflow run and commit;
 - before publishing, writes a CycloneDX SBOM of each package with `scripts/sbom.ts`, which packs it, resolves the tarball on its own as a consumer would install it, and runs `npm sbom` with its peers left out (those versions are the consumer's). A second job, the only one with `contents: write`, attaches the SBOMs to the GitHub release, so a consumer can see what each version depends on. **Why** not `npm sbom -w`: in a workspace it describes the repository root, with every private workspace in it.
 
@@ -136,7 +136,7 @@ GitHub secret scanning and push protection are on: a push containing a recognize
 | Secret scanning and push protection (§6.3)      | Refuses the push                              | Refuses the push |         |
 | Provenance checks (§7)                          |                                               |                  | Gate    |
 
-Every check runs in `ci.yml` or `publish.yml`; there is no separate security workflow. The `security` job (dependency review on pull requests, CodeQL on both) is in `ci.yml`, and `ci-success` needs it, so branch protection still requires one check ([ci.md §1](ci.md)). It runs whenever `plan` runs everything, has a target of 4 minutes and a timeout of 15, and is the only job with `security-events: write`.
+Every check runs in `ci.yml` or `publish.yml`; there is no separate security workflow. The `security` job (dependency review on pull requests, CodeQL on both) is in `ci.yml`, and `ci-required` needs it, so branch protection still requires one check ([ci.md §1](ci.md)). It runs whenever `plan` runs everything, has a target of 4 minutes and a timeout of 15, and is the only job with `security-events: write`.
 
 ## 9. Response
 

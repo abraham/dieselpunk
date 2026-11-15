@@ -1,5 +1,5 @@
 name: Setup
-description: Node from .nvmrc, npm ci, and optionally Playwright browsers and the build (specs/ci.md §4).
+description: Node from package.json engines, npm ci, and optionally Playwright browsers and the build (specs/ci.md §4).
 
 inputs:
   browsers:
@@ -14,7 +14,7 @@ runs:
   steps:
     - uses: actions/setup-node@v7.1.0
       with:
-        node-version-file: .nvmrc
+        node-version-file: package.json
         cache: npm
 
     - run: npm ci
@@ -22,14 +22,18 @@ runs:
 
     - id: playwright
       if: inputs.browsers != ''
-      run: echo "version=$(node -p "require('./node_modules/@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      # Playwright downloads a build per OS release (WebKit for Ubuntu 26.04 links other libraries
+      # than the 24.04 one), so the release is part of the cache key.
+      run: |
+        echo "version=$(node -p "require('./node_modules/@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+        echo "os=$(. /etc/os-release && echo "$ID-$VERSION_ID")" >> "$GITHUB_OUTPUT"
       shell: bash
 
     - if: inputs.browsers != ''
       uses: actions/cache@v6.1.0
       with:
         path: ~/.cache/ms-playwright
-        key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-${{ inputs.browsers }}
+        key: playwright-${{ steps.playwright.outputs.os }}-${{ steps.playwright.outputs.version }}-${{ inputs.browsers }}
 
     # With the browsers restored, this only installs their system packages.
     - if: inputs.browsers != ''

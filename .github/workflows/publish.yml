@@ -19,7 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # Only `v*` tags may deploy to it, and npm's trusted publisher accepts only this environment.
-    environment: npm
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/@dieselpunk/core
     permissions:
       contents: read
       id-token: write
@@ -30,7 +32,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # main's ruleset requires ci-success, so a commit that was once main's tip has passed it. A
+      # main's ruleset requires ci-required, so a commit that was once main's tip has passed it. A
       # commit merged in from a branch is reachable from main without having been its tip.
       - name: Check that the tagged commit is on main
         run: |
@@ -42,7 +44,7 @@ jobs:
       # Not the shared setup action: a release installs from the lockfile with no cache.
       - uses: actions/setup-node@v7.1.0
         with:
-          node-version-file: .nvmrc
+          node-version-file: package.json
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
 

@@ -1,6 +1,12 @@
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
-const REQUIRED_NODE_MAJOR = 26;
+const rootPackage = JSON.parse(
+  readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+) as {
+  engines: { node: string };
+};
+const REQUIRED_NODE_MAJOR = Number(rootPackage.engines.node);
 const REQUIRED_TYPESCRIPT = /^6\.0\.\d+$/;
 
 interface TreeNode {

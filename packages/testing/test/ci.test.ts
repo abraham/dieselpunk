@@ -76,7 +76,7 @@ test('the budget report lists the slowest jobs against their targets', () => {
     [
       { name: 'static', started_at: at(0), completed_at: at(90) },
       { name: 'visual / chromium · shell', started_at: at(0), completed_at: at(300) },
-      { name: 'ci-success', started_at: at(0), completed_at: at(5) },
+      { name: 'ci-required', started_at: at(0), completed_at: at(5) },
       { name: 'smoke (1/1)', started_at: null, completed_at: null },
     ],
     2,

@@ -6,8 +6,7 @@
 ## 1. Layout
 
 ```text
-package.json              private workspace root: engines.node >=26, the one TypeScript, root scripts
-.nvmrc                    26
+package.json              private workspace root: engines.node 26, the one TypeScript, root scripts
 tsconfig.base.json        shared compiler options
 tsconfig.scripts.json     Node-run code (§3)
 scripts/                  the repository's glue: check-toolchain, ci-matrix, merge-baselines
@@ -40,7 +39,7 @@ A component's tests live beside it. Tests that span components (the gallery suit
 | Concern          | Choice                                                                                                                                                           |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Package manager  | npm workspaces, one lockfile                                                                                                                                     |
-| Development Node | Node.js 26, from `.nvmrc`; `engines.node` is on the private root only, since the published packages are browser code                                             |
+| Development Node | Node.js 26, from `engines.node`, which is on the private root only, since the published packages are browser code                                                |
 | Language         | TypeScript `~6.0`, declared once at the root, `strict`, `target` and `module` `ESNext`, `lib` `ESNext`, `DOM`, `DOM.Iterable`                                    |
 | Decorators       | `experimentalDecorators: true`, `useDefineForClassFields: false`, as Lit documents                                                                               |
 | Rendering        | Lit 3                                                                                                                                                            |
@@ -95,13 +94,13 @@ Root scripts aggregate the workspaces (`--workspaces --if-present`) or delegate 
 - **Development:** Vitest with the Playwright provider, Playwright, `axe-core`, `@custom-elements-manifest/analyzer`, `@lit/localize-tools`, `size-limit` with its esbuild plugin, `publint`, `@arethetypeswrong/cli`, Storybook with `@wc-toolkit/storybook-helpers`, `@fontsource` fonts for the workbench, and the framework fixture dependencies.
 - **Updates:** Dependabot opens weekly grouped pull requests for npm and GitHub Actions. Packages that release together are one group (Storybook, `size-limit`, Vitest, linting, fonts, framework fixtures). Held back on purpose:
   - **TypeScript** takes patch updates only (§2).
-  - **`@types/node`** takes no major update; it follows `.nvmrc`.
+  - **`@types/node`** takes no major update; it follows the root `engines.node`.
   - **Playwright** takes no automatic update. Its version is also the tag of the CI container image, and every new version invalidates every visual baseline. It is upgraded by hand: package versions and both workflow image tags together, then the baseline workflow ([testing.md §6](testing.md)).
   - **React, Vue, and Svelte** take no automatic major update; each is upgraded with its integration guide.
 
 ## 8. Continuous integration
 
-The workflows, their jobs, how they split the suites, and their time budgets are specified in [ci.md](ci.md). Every job runs on the Node of `.nvmrc`, and every check it runs is a root script listed in [testing.md §9](testing.md), so CI never runs a command a developer cannot run locally.
+The workflows, their jobs, how they split the suites, and their time budgets are specified in [ci.md](ci.md). Every job runs on the Node of the root `engines.node`, and every check it runs is a root script listed in [testing.md §9](testing.md), so CI never runs a command a developer cannot run locally.
 
 ## Verification
 
