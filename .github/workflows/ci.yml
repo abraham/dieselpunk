@@ -154,7 +154,7 @@ jobs:
           persist-credentials: false
       # Licenses are checked by check:lockfile, for the published packages' runtime trees only.
       - if: github.event_name == 'pull_request'
-        uses: actions/dependency-review-action@v5.0.0
+        uses: actions/dependency-review-action@v5.0.1
         with:
           fail-on-severity: high
           fail-on-scopes: runtime, development, unknown
